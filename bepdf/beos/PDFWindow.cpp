@@ -56,8 +56,8 @@
 #include "AnnotationWindow.h"
 #include "AnnotWriter.h"
 #include "AttachmentView.h"
-#include "BePDF.h"
-#include "BepdfApplication.h"
+#include "Globals.h"
+#include "Application.h"
 #include "EntryMenuItem.h"
 #include "FileInfoWindow.h"
 #include "FindTextWindow.h"
@@ -650,7 +650,7 @@ BMenuBar* PDFWindow::BuildMenu()
 			.AddItem(B_TRANSLATE("Visit homepage" B_UTF8_ELLIPSIS), HOME_PAGE_CMD)
 			.AddItem(B_TRANSLATE("Issue tracker" B_UTF8_ELLIPSIS), BUG_REPORT_CMD)
 			.AddSeparator()
-			.AddItem(B_TRANSLATE("About BePDF" B_UTF8_ELLIPSIS), ABOUT_APP_CMD)
+			.AddItem(B_TRANSLATE("About Tsundoku" B_UTF8_ELLIPSIS), ABOUT_APP_CMD)
 		.End();
 
 		mZoomMenu->SetRadioMode (true);
@@ -2008,7 +2008,7 @@ void PDFWindow::SaveFile(BMessage* msg) {
 			thread->Resume();
 		} else {
 			BAlert* alert = NULL;
-			alert = new BAlert(B_TRANSLATE("Warning"), B_TRANSLATE("Can not overwrite a PDF file that's currently opened in BePDF! Please choose another file name."), B_TRANSLATE("OK"));
+			alert = new BAlert(B_TRANSLATE("Warning"), B_TRANSLATE("Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name."), B_TRANSLATE("OK"));
 			alert->Go();
 		}
 	}

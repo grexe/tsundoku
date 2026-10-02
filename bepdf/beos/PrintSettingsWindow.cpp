@@ -27,7 +27,7 @@
 #include <PopUpMenu.h>
 #include <StringView.h>
 
-#include "BePDF.h"
+#include "Globals.h"
 #include "LayoutUtils.h"
 #include "PDFWindow.h"
 #include "PrintSettingsWindow.h"

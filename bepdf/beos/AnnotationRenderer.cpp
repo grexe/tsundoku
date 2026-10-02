@@ -31,7 +31,7 @@
 #include <Polygon.h>
 #include <Picture.h>
 
-#include "BepdfApplication.h"
+#include "Application.h"
 
 // Font conversion
 #include "BeFontEncoding.h"

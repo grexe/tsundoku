@@ -21,7 +21,7 @@
  */
 
 #if defined(__BEOS__) || defined(__HAIKU__)
-#include "BepdfApplication.h"
+#include "Application.h"
 #include "AnnotationRenderer.h"
 #include <Bitmap.h>
 #include <View.h>

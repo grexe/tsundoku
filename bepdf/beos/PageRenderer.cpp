@@ -34,10 +34,10 @@
 #include <be/storage/Path.h>
 #include <Debug.h>
 
-#include "BepdfApplication.h" // for images only
+#include "Application.h" // for images only
 #include "PageRenderer.h"
 #include "CachedPage.h"
-#include "BePDF.h"
+#include "Globals.h"
 #include "Annotation.h"
 #include "AnnotationRenderer.h"
 

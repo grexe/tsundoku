@@ -1,4 +1,4 @@
-1	Catalan	application/x-vnd.mp-xpdf	1765081836
+1	Catalan	application/x-vnd.sen-labs.Tsundoku	3143983007
  in	PrintSettingsWindow		 a
 All pages	PrintSettingsWindow		Totes les pàgines
 Color	PrintSettingsWindow		Color
@@ -26,8 +26,8 @@ Zoom must be between 25 and 400!	PrintSettingsWindow		L'ampliació ha de ser d'e
 [link type 'movie' not supported]	PDFView		[no s'admet el tipus d'enllaç "movie"]
 [unknown link]	PDFView		[enllaç desconegut]
 Annotation	PDFView		Anotació
-BePDF reading file: 	PDFView		Fitxer de lectura de BePDF:
-BePDF: Launch	PDFView		BePDF: inicia
+Tsundoku reading file: 	PDFView		Fitxer de lectura de Tsundoku:
+Tsundoku: Launch	PDFView		Tsundoku: inicia
 Cancel	PDFView		Cancel·la
 Copy link	PDFView		Copia l'enllaç
 Delete	PDFView		Suprimeix
@@ -55,8 +55,8 @@ Save selected attachment to file	AttachmentView		Desa l'adjunt seleccionat en un
 Save selected attachments into directory	AttachmentView		Desa els adjunts seleccionats en un directori
 Saving attachment(s):	AttachmentView		Es desen els adjunts:
 Abort	PrintingProgressWindow		Avorta
-BePDF printing	PrintingProgressWindow		El BePDF imprimeix
-BePDF printing document: 	PrintingProgressWindow		Document que el BePDF imprimeix:
+Tsundoku printing	PrintingProgressWindow		El Tsundoku imprimeix
+Tsundoku printing document: 	PrintingProgressWindow		Document que el Tsundoku imprimeix:
 Page:	PrintingProgressWindow		Pàgina:
 Page: %d	PrintingProgressWindow		Pàgina: %d
 Stop	PrintingProgressWindow		Atura
@@ -90,7 +90,7 @@ Title:	FileInfoWindow		Títol:
 Type	FileInfoWindow		Tipus
 Version:	FileInfoWindow		Versió:
 Yes	FileInfoWindow		Sí
-About BePDF…	PDFWindow		Quant a BePDF…
+About Tsundoku…	PDFWindow		Quant a Tsundoku…
 Add	PDFWindow		Afegeix
 Add circle annotation	PDFWindow		Afegeix una anotació de cercle
 Add comment text annotation	PDFWindow		Afegeix una anotació de text de comentari
@@ -120,7 +120,7 @@ Add widget annotation	PDFWindow		Afegeix una anotació de giny
 Back	PDFWindow		Enrere
 Back in page history list	PDFWindow		Enrere en la llista de l'historial de pàgines
 Bookmark	PDFWindow		Marcador
-Can not overwrite a PDF file that's currently opened in BePDF! Please choose another file name.	PDFWindow		No es pot sobreescriure un fitxer PDF obert actualment al BePDF! Si us plau, trieu un altre nom de fitxer.
+Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		No es pot sobreescriure un fitxer PDF obert actualment al Tsundoku! Si us plau, trieu un altre nom de fitxer.
 Close	PDFWindow		Tanca
 Copy selection	PDFWindow		Copia la selecció
 Could not write PDF file!	PDFWindow		No s'ha pogut escriure el fitxer PDF!
@@ -221,8 +221,8 @@ Title:	AnnotationWindow		Títol:
 User fonts	AnnotationWindow		Lletres de l'usuari
 Will take effect at next program launch.	AnnotationWindow		Tindrà efecte al proper inici del programa.
 Alpha	BepdfApplication		Alfa
-BePDF is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	BePDF està basat en XPDF %s, %s.
-BePDF: Error opening file!	BepdfApplication		BePDF: error en obrir el fitxer!
+Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku està basat en XPDF %s, %s.
+Tsundoku: Error opening file!	BepdfApplication		Tsundoku: error en obrir el fitxer!
 Beta	BepdfApplication		Beta
 Close	BepdfApplication		Tanca
 Development	BepdfApplication		Desenvolupament
@@ -236,7 +236,7 @@ Auto open	TraceWindow		Obre automàticament
 Clear	TraceWindow		Neteja
 Error messages	TraceWindow		Missatges d'error
 Floating	TraceWindow		Flotant
-BePDF status	StatusWindow		Estat del BePDF
+Tsundoku status	StatusWindow		Estat del Tsundoku
 Enter Password	PasswordWindow		Escriviu la contrasenya
 OK	PasswordWindow		D'acord
 Owner password	PasswordWindow		Contrasenya del propietari
@@ -252,3 +252,6 @@ Search backwards	FindTextWindow		Cerca enrere
 Stop	FindTextWindow		Interromp
 OK	PDFSearch		D'acord
 Search string not found.	PDFSearch		No s'ha trobat la cadena de cerca.
+Tsundoku is a fork of BePDF, extended for SEN.	BepdfApplication		
+Error getting page number!	BepdfApplication		
+Invalid file reference received!	BepdfApplication		

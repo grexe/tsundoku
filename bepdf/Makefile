@@ -5,7 +5,7 @@
 ## architecture of Haiku.
 
 # The name of the binary.
-NAME = BePDF
+NAME = Tsundoku
 TARGET_DIR= ../dist
 
 # The type of binary, must be one of:
@@ -16,7 +16,7 @@ TARGET_DIR= ../dist
 TYPE = APP
 
 # 	If you plan to use localization, specify the application's MIME signature.
-APP_MIME_SIG = application/x-vnd.mp-xpdf
+APP_MIME_SIG = application/x-vnd.sen-labs.Tsundoku
 
 #	The following lines tell Pe and Eddie where the SRCS, RDEFS, and RSRCS are
 #	so that Pe and Eddie can fill them in for you.
@@ -36,8 +36,8 @@ SRCS = beos/AnnotAppearance.cpp \
 	beos/AnnotationWindow.cpp \
 	beos/AttachmentView.cpp \
 	beos/BeFontEncoding.cpp \
-	beos/BePDF.cpp \
-	beos/BepdfApplication.cpp \
+	beos/Globals.cpp \
+	beos/Application.cpp \
 	beos/BitmapPool.cpp \
 	beos/CachedPage.cpp \
 	beos/DisplayCIDFonts.cpp \
@@ -71,7 +71,7 @@ SRCS = beos/AnnotAppearance.cpp \
 
 #	Specify the resource definition files to use. Full or relative paths can be
 #	used.
-RDEFS = beos/BePDF.rdef
+RDEFS = beos/Tsundoku.rdef
 
 #	Specify the resource files to use. Full or relative paths can be used.
 #	Both RDEFS and RSRCS can be utilized in the same Makefile.

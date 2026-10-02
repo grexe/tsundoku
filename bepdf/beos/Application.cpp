@@ -41,10 +41,10 @@
 
 #include "Init.h"
 #include "PDFWindow.h"
-#include "BepdfApplication.h"
+#include "Application.h"
 #include "ResourceLoader.h"
 #include "PasswordWindow.h"
-#include "BePDF.h"
+#include "Globals.h"
 #include "TraceWindow.h"
 #include "FileInfoWindow.h"
 
@@ -63,7 +63,7 @@ static const char * GPLCopyright =
 
 static const char *PAGE_NUM_MSG_KEY = "bepdf:page_num";
 
-static const char *settingsFilename = "BePDF";
+static const char *settingsFilename = "Tsundoku";
 
 static const char* attachmentNames[] = {
 	"GRAPH_ANNOT",
@@ -358,7 +358,7 @@ void BepdfApplication::ReadyToRun()
 void BepdfApplication::AboutRequested()
 {
 	BString version;
-	BString str("BePDF\n");
+	BString str("Tsundoku\n");
 	str += B_TRANSLATE("Version");
 	str += " ";
 	str += GetVersion(version);
@@ -367,8 +367,10 @@ void BepdfApplication::AboutRequested()
 	str += bePDFCopyright;
 	str += "\n";
 
-	str += BString().SetToFormat(B_TRANSLATE_COMMENT("BePDF is based on XPDF %s, %s.", "XPDF version, copyright"),
+	str += BString().SetToFormat(B_TRANSLATE_COMMENT("Tsundoku is based on XPDF %s, %s.", "XPDF version, copyright"),
 		xpdfVersion, xpdfCopyright);
+	str += "\n";
+	str += B_TRANSLATE("Tsundoku is a fork of BePDF, extended for SEN.");
 
 	str += GPLCopyright;
 
@@ -590,7 +592,7 @@ void BepdfApplication::RefsReceived(BMessage *msg)
 
 			if (!ok) {
 				if (!encrypted) {
-			 		BAlert *error = new BAlert(B_TRANSLATE("Error"), B_TRANSLATE("BePDF: Error opening file!"), B_TRANSLATE("Close"), NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT);
+			 		BAlert *error = new BAlert(B_TRANSLATE("Error"), B_TRANSLATE("Tsundoku: Error opening file!"), B_TRANSLATE("Close"), NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT);
 			 		error->Go();
 
                     if (mWindow == NULL) {  // fixme: always true even if a PDF window is already open!

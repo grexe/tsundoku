@@ -1,4 +1,4 @@
-1	Polish	application/x-vnd.mp-xpdf	1765081836
+1	Polish	application/x-vnd.sen-labs.Tsundoku	3143983007
  in	PrintSettingsWindow		z
 All pages	PrintSettingsWindow		Wszystkie
 Color	PrintSettingsWindow		Kolorowy
@@ -26,8 +26,8 @@ Zoom must be between 25 and 400!	PrintSettingsWindow		Powiększenie musi być w 
 [link type 'movie' not supported]	PDFView		[odnośnik typu „film” nie jest obsługiwany]
 [unknown link]	PDFView		[nieznany odnośnik]
 Annotation	PDFView		Adnotacja
-BePDF reading file: 	PDFView		BePDF odczytuje plik:
-BePDF: Launch	PDFView		BePDF: Uruchom
+Tsundoku reading file: 	PDFView		Tsundoku odczytuje plik:
+Tsundoku: Launch	PDFView		Tsundoku: Uruchom
 Cancel	PDFView		Anuluj
 Copy link	PDFView		Kopiuj odnośnik
 Delete	PDFView		Usuń
@@ -55,8 +55,8 @@ Save selected attachment to file	AttachmentView		Zapisz zaznaczony załącznik d
 Save selected attachments into directory	AttachmentView		Zapisz zaznaczone załączniki do katalogu
 Saving attachment(s):	AttachmentView		Zapisywanie załączników:
 Abort	PrintingProgressWindow		Przerwij
-BePDF printing	PrintingProgressWindow		BePDF drukuje
-BePDF printing document: 	PrintingProgressWindow		BePDF drukuje dokument:
+Tsundoku printing	PrintingProgressWindow		Tsundoku drukuje
+Tsundoku printing document: 	PrintingProgressWindow		Tsundoku drukuje dokument:
 Page:	PrintingProgressWindow		Strona:
 Page: %d	PrintingProgressWindow		Strona: %d
 Stop	PrintingProgressWindow		Zatrzymaj
@@ -90,7 +90,7 @@ Title:	FileInfoWindow		Tytuł:
 Type	FileInfoWindow		Typ
 Version:	FileInfoWindow		Wersja:
 Yes	FileInfoWindow		Tak
-About BePDF…	PDFWindow		O BePDF…
+About Tsundoku…	PDFWindow		O Tsundoku…
 Add	PDFWindow		Dodaj
 Add circle annotation	PDFWindow		Dodaj okrąg
 Add comment text annotation	PDFWindow		Dodaj komentarz
@@ -120,7 +120,7 @@ Add widget annotation	PDFWindow		Dodaj widżet
 Back	PDFWindow		W tył
 Back in page history list	PDFWindow		Poprzednia strona w historii
 Bookmark	PDFWindow		Zakładki
-Can not overwrite a PDF file that's currently opened in BePDF! Please choose another file name.	PDFWindow		Nie można nadpisać pliku obecnie otwartego w BePDF! Wybierz inną nazwę.
+Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Nie można nadpisać pliku obecnie otwartego w Tsundoku! Wybierz inną nazwę.
 Close	PDFWindow		Zamknij
 Copy selection	PDFWindow		Kopiuj zaznaczenie
 Could not write PDF file!	PDFWindow		Nie można zapisać pliku PDF!
@@ -221,8 +221,8 @@ Title:	AnnotationWindow		Tytuł
 User fonts	AnnotationWindow		Fonty użytkownika
 Will take effect at next program launch.	AnnotationWindow		Zmiany pojawią się po ponownym uruchomieniu.
 Alpha	BepdfApplication		Alfa
-BePDF is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	BePDF bazuje na XPDF %s, %s.
-BePDF: Error opening file!	BepdfApplication		BePDF: Błąd podczas otwierania pliku!
+Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku bazuje na XPDF %s, %s.
+Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Błąd podczas otwierania pliku!
 Beta	BepdfApplication		Beta
 Close	BepdfApplication		Zamknij
 Development	BepdfApplication		Rozwojowa
@@ -236,7 +236,7 @@ Auto open	TraceWindow		Automatyczne otwieranie
 Clear	TraceWindow		Wyczyść
 Error messages	TraceWindow		Błędy
 Floating	TraceWindow		Pływające okno
-BePDF status	StatusWindow		Status BePDF
+Tsundoku status	StatusWindow		Status Tsundoku
 Enter Password	PasswordWindow		Wpisz hasło
 OK	PasswordWindow		OK
 Owner password	PasswordWindow		Hasło właściciela
@@ -252,3 +252,6 @@ Search backwards	FindTextWindow		Szukaj od tyłu
 Stop	FindTextWindow		Zatrzymaj
 OK	PDFSearch		OK
 Search string not found.	PDFSearch		Szukana fraza nie została znaleziona.
+Tsundoku is a fork of BePDF, extended for SEN.	BepdfApplication		
+Error getting page number!	BepdfApplication		
+Invalid file reference received!	BepdfApplication		

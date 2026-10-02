@@ -8,11 +8,11 @@ resource app_version {
 	variety = B_APPV_FINAL,
 	internal = 0,
 
-	short_info = "PDF reader",
-	long_info = "Full-featured PDF reader"
+	short_info = "Document reader",
+	long_info = "Document reader with SEN extensions"
 };
 
-resource app_signature "application/x-vnd.mp-xpdf";
+resource app_signature "application/x-vnd.sen-labs.Tsundoku";
 
 resource file_types message {
 	"types" = "application/pdf"

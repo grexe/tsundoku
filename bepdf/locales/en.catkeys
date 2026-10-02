@@ -1,8 +1,8 @@
-1	English	application/x-vnd.mp-xpdf	1765081836
+1	English	application/x-vnd.sen-labs.Tsundoku	3143983007
 Editing of annotations in an encrypted PDF file isn't supported yet!	PDFWindow		Editing of annotations in an encrypted PDF file isn't supported yet!
 Selection rectangle	AnnotationWindow		Selection rectangle
-About BePDF…	PDFWindow		About BePDF…
 Cancel	PDFView		Cancel
+Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Error opening file!
 Go to previous page	PDFWindow		Go to previous page
 Subject:	FileInfoWindow		Subject:
 Filled rectangle	AnnotationWindow		Filled rectangle
@@ -16,6 +16,7 @@ Search string not found.	PDFSearch		Search string not found.
 Normal	PrintSettingsWindow		Normal
 System fonts	AnnotationWindow		System fonts
 Add widget annotation	PDFWindow		Add widget annotation
+Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.
 Zoom in	PDFWindow		Zoom in
 Unknown link action type: '%s'	PDFView		Unknown link action type: '%s'
 Page:	FindTextWindow		Page:
@@ -24,8 +25,6 @@ Gamma	BepdfApplication		Gamma
 Error messages	TraceWindow		Error messages
 Jump to page	PDFWindow		Jump to page
 Fullscreen mode	AnnotationWindow		Fullscreen mode
-BePDF printing	PrintingProgressWindow		BePDF printing
-BePDF status	StatusWindow		BePDF status
 Mode	PrintSettingsWindow		Mode
 Save as…	PDFWindow		Save as…
 Execute the command:	PDFView		Execute the command:
@@ -40,19 +39,19 @@ Date:	AnnotationWindow		Date:
 Show toolbar, statusbar and scrollbars, too	AnnotationWindow		Show toolbar, statusbar and scrollbars, too
 Show page list	PDFWindow		Show page list
 current	AnnotationWindow		current
-Name	FileInfoWindow		Name
 OK	PasswordWindow		OK
+Name	FileInfoWindow		Name
 Document	OutlinesWindow		Document
 Hide side bar	PDFWindow		Hide side bar
-Can not overwrite a PDF file that's currently opened in BePDF! Please choose another file name.	PDFWindow		Can not overwrite a PDF file that's currently opened in BePDF! Please choose another file name.
 Invert vertical mouse scrolling	AnnotationWindow		Invert vertical mouse scrolling
+Tsundoku: Launch	PDFView		Tsundoku: Launch
 Page setup…	PDFWindow		Page setup…
 Add ink annotation	PDFWindow		Add ink annotation
 Stroked rectangle	AnnotationWindow		Stroked rectangle
 Find: 	FindTextWindow		Find: 
 Zoom	PDFWindow		Zoom
 Open in workspace:	AnnotationWindow		Open in workspace:
-BePDF reading file: 	PDFView		BePDF reading file: 
+About Tsundoku…	PDFWindow		About Tsundoku…
 Go to next page	PDFWindow		Go to next page
 Add square annotation	PDFWindow		Add square annotation
 [internal link]	PDFView		[internal link]
@@ -62,6 +61,7 @@ Last	PDFWindow		Last
 Abort	FileInfoWindow		Abort
 Find next	PDFWindow		Find next
 All pages	PrintSettingsWindow		All pages
+Tsundoku printing document: 	PrintingProgressWindow		Tsundoku printing document: 
 Show annotation toolbar	PDFWindow		Show annotation toolbar
 File name	AttachmentView		File name
 Go to start of document	PDFWindow		Go to start of document
@@ -85,6 +85,7 @@ Clear	TraceWindow		Clear
 Print	PrintSettingsWindow		Print
 Online help…	PDFWindow		Online help…
 Enter Password	PasswordWindow		Enter Password
+Tsundoku status	StatusWindow		Tsundoku status
 Filename:	FileInfoWindow		Filename:
 Embedded name	FileInfoWindow		Embedded name
 Copy link	PDFView		Copy link
@@ -110,7 +111,6 @@ Pages	PrintSettingsWindow		Pages
 Add movie annotation	PDFWindow		Add movie annotation
 Final	BepdfApplication		Final
 Add circle annotation	PDFWindow		Add circle annotation
-BePDF printing document: 	PrintingProgressWindow		BePDF printing document: 
 Show error messages	PDFWindow		Show error messages
 Document	FileInfoWindow		Document
 Width: 	PrintSettingsWindow		Width: 
@@ -126,7 +126,6 @@ Properties	PDFView		Properties
 Add comment text annotation	PDFWindow		Add comment text annotation
 Description	AttachmentView		Description
 Add underline annotation	PDFWindow		Add underline annotation
-BePDF: Launch	PDFView		BePDF: Launch
 Saving copy of PDF file:	PDFWindow		Saving copy of PDF file:
 Page: %d	FindTextWindow		Page: %d
 Page	PDFWindow		Page
@@ -137,9 +136,9 @@ Producer:	FileInfoWindow		Producer:
 Keywords:	FileInfoWindow		Keywords:
 Forward in page history list	PDFWindow		Forward in page history list
 Page:	PrintingProgressWindow		Page:
-BePDF: Error opening file!	BepdfApplication		BePDF: Error opening file!
 Find next…	PDFWindow		Find next…
 Display	AnnotationWindow		Display
+Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku is based on XPDF %s, %s.
 Visit homepage…	PDFWindow		Visit homepage…
 Even pages	PrintSettingsWindow		Even pages
 Stop	FindTextWindow		Stop
@@ -152,6 +151,7 @@ Annotation	AnnotationWindow		Annotation
 Bookmark	PDFWindow		Bookmark
 Next	PDFWindow		Next
 Reverse	PrintSettingsWindow		Reverse
+Tsundoku reading file: 	PDFView		Tsundoku reading file: 
 Close	BepdfApplication		Close
 Page: %d	PrintingProgressWindow		Page: %d
 Select none	PDFWindow		Select none
@@ -163,9 +163,11 @@ Forward	PDFWindow		Forward
 Size:	AnnotationWindow		Size:
 Asian fonts	AnnotationWindow		Asian fonts
 Golden Master	BepdfApplication		Golden Master
+Tsundoku is a fork of BePDF, extended for SEN.	BepdfApplication		Tsundoku is a fork of BePDF, extended for SEN.
 Author	AnnotationWindow		Author
 User fonts	AnnotationWindow		User fonts
 Zoom out	PDFWindow		Zoom out
+Error getting page number!	BepdfApplication		Error getting page number!
 Restore window position and size	AnnotationWindow		Restore window position and size
 Modified:	FileInfoWindow		Modified:
 Go to page %d	PDFView		Go to page %d
@@ -214,6 +216,7 @@ No title	OutlinesWindow		No title
 Page	PrintSettingsWindow		Page
 Created:	FileInfoWindow		Created:
 Title:	AnnotationWindow		Title:
+Tsundoku printing	PrintingProgressWindow		Tsundoku printing
 Saving file attachment:	PDFView		Saving file attachment:
 Open in new window	PDFView		Open in new window
 Height: 	PrintSettingsWindow		Height: 
@@ -241,9 +244,9 @@ Fullscreen	PDFWindow		Fullscreen
 Save selected attachment to file	AttachmentView		Save selected attachment to file
 Add note text annotation	PDFWindow		Add note text annotation
 Editing:	FileInfoWindow		Editing:
+Invalid file reference received!	BepdfApplication		Invalid file reference received!
 User password	PasswordWindow		User password
 Find	FindTextWindow		Find
-BePDF is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	BePDF is based on XPDF %s, %s.
 Could not write PDF file!	PDFWindow		Could not write PDF file!
 Ignore case	FindTextWindow		Ignore case
 Creator:	FileInfoWindow		Creator:

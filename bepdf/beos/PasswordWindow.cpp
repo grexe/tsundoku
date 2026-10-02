@@ -81,7 +81,7 @@ PasswordWindow::PasswordWindow(entry_ref *ref, BRect aRect, BLooper *looper)
 	Show();
 }
 
-#include "BepdfApplication.h"
+#include "Application.h"
 
 bool PasswordWindow::QuitRequested() {
 	if (!mPasswordSent) {

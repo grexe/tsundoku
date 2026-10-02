@@ -1,4 +1,4 @@
-1	Friulian	application/x-vnd.mp-xpdf	1765081836
+1	Friulian	application/x-vnd.sen-labs.Tsundoku	3143983007
  in	PrintSettingsWindow		in
 All pages	PrintSettingsWindow		Dutis lis pagjinis
 Color	PrintSettingsWindow		Colôr
@@ -26,8 +26,8 @@ Zoom must be between 25 and 400!	PrintSettingsWindow		L'ingrandiment al scugne j
 [link type 'movie' not supported]	PDFView		[gjenar di colegament 'movie' no supuartât]
 [unknown link]	PDFView		[colegament no cognossût]
 Annotation	PDFView		Note
-BePDF reading file: 	PDFView		BePDF leture file:
-BePDF: Launch	PDFView		BePDF: Invie
+Tsundoku reading file: 	PDFView		Tsundoku leture file:
+Tsundoku: Launch	PDFView		Tsundoku: Invie
 Cancel	PDFView		Anule
 Copy link	PDFView		Copie colegament
 Delete	PDFView		Elimine
@@ -55,8 +55,8 @@ Save selected attachment to file	AttachmentView		Salve la zonte selezionade sul 
 Save selected attachments into directory	AttachmentView		Salve lis zontis selezionadis inte cartele
 Saving attachment(s):	AttachmentView		Salvament alegât(s):
 Abort	PrintingProgressWindow		Interomp
-BePDF printing	PrintingProgressWindow		Stampe BePDF
-BePDF printing document: 	PrintingProgressWindow		Stampe di document BePDF:
+Tsundoku printing	PrintingProgressWindow		Stampe Tsundoku
+Tsundoku printing document: 	PrintingProgressWindow		Stampe di document Tsundoku:
 Page:	PrintingProgressWindow		Pagjine:
 Page: %d	PrintingProgressWindow		Pagjine: %d
 Stop	PrintingProgressWindow		Ferme
@@ -90,7 +90,7 @@ Title:	FileInfoWindow		Titul:
 Type	FileInfoWindow		Gjenar
 Version:	FileInfoWindow		Version:
 Yes	FileInfoWindow		Sì
-About BePDF…	PDFWindow		Informazions su BePDF…
+About Tsundoku…	PDFWindow		Informazions su Tsundoku…
 Add	PDFWindow		Zonte
 Add circle annotation	PDFWindow		Zonte note circolâr
 Add comment text annotation	PDFWindow		Zonte note di coment testuâl
@@ -120,7 +120,7 @@ Add widget annotation	PDFWindow		Zonte note di widget
 Back	PDFWindow		Indaûr
 Back in page history list	PDFWindow		Indaûr te liste de cronologjie des pagjinis
 Bookmark	PDFWindow		Segnelibri
-Can not overwrite a PDF file that's currently opened in BePDF! Please choose another file name.	PDFWindow		No si pues sorescrivi un file PDF che al è ancjemò viert in BePDF! Par plasê sielç un altri non pal file.
+Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		No si pues sorescrivi un file PDF che al è ancjemò viert in Tsundoku! Par plasê sielç un altri non pal file.
 Close	PDFWindow		Siere
 Copy selection	PDFWindow		Copie selezion
 Could not write PDF file!	PDFWindow		Impussibil scrivi il file PDF!
@@ -221,8 +221,8 @@ Title:	AnnotationWindow		Titul:
 User fonts	AnnotationWindow		Caratars dal utent
 Will take effect at next program launch.	AnnotationWindow		Si varan i efiets al prossim inviament di program.
 Alpha	BepdfApplication		Alfa
-BePDF is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	BePDF al è basât su XPDF %s, %s.
-BePDF: Error opening file!	BepdfApplication		BePDF: Erôr tal vierzi il file!
+Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku al è basât su XPDF %s, %s.
+Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Erôr tal vierzi il file!
 Beta	BepdfApplication		Beta
 Close	BepdfApplication		Siere
 Development	BepdfApplication		Disvilup
@@ -236,7 +236,7 @@ Auto open	TraceWindow		Auto-vierç
 Clear	TraceWindow		Nete
 Error messages	TraceWindow		Messaçs di erôr
 Floating	TraceWindow		Flutuant
-BePDF status	StatusWindow		Stât di BePDF
+Tsundoku status	StatusWindow		Stât di Tsundoku
 Enter Password	PasswordWindow		Inserìs Password
 OK	PasswordWindow		Va ben
 Owner password	PasswordWindow		Password proprietari
@@ -252,3 +252,6 @@ Search backwards	FindTextWindow		Cîr indaûr
 Stop	FindTextWindow		Ferme
 OK	PDFSearch		Va ben
 Search string not found.	PDFSearch		Stringhe di ricercje no cjatade.
+Tsundoku is a fork of BePDF, extended for SEN.	BepdfApplication		
+Error getting page number!	BepdfApplication		
+Invalid file reference received!	BepdfApplication		

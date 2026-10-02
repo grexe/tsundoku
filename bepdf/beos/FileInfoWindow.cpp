@@ -32,7 +32,7 @@
 #include <StringView.h>
 #include <TabView.h>
 
-#include "BePDF.h"
+#include "Globals.h"
 #include "FileInfoWindow.h"
 #include "LayoutUtils.h"
 #include "TextConversion.h"

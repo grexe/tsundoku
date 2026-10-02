@@ -37,7 +37,7 @@
 #include <private/interface/ColumnTypes.h>
 
 // bepdf
-#include "BepdfApplication.h" // for save panel
+#include "Application.h" // for save panel
 #include "ResourceLoader.h"
 #include "LayoutUtils.h"
 #include "SaveThread.h"

@@ -25,14 +25,14 @@
 #include <StatusBar.h>
 #include <StringView.h>
 
-#include "BepdfApplication.h"
+#include "Application.h"
 #include "StatusWindow.h"
 
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "StatusWindow"
 
 StatusWindow::StatusWindow(const char *text, BRect aRect)
-	: BWindow(aRect, B_TRANSLATE("BePDF status"),
+	: BWindow(aRect, B_TRANSLATE("Tsundoku status"),
 		B_MODAL_WINDOW ,
 		B_NOT_RESIZABLE|B_NOT_ZOOMABLE|B_NOT_CLOSABLE) {
 

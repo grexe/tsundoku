@@ -38,7 +38,7 @@
 #include <ScrollView.h>
 #include <StringView.h>
 #include <String.h>
-#include "BepdfApplication.h"
+#include "Application.h"
 #include "LayoutUtils.h"
 #include "PreferencesWindow.h"
 

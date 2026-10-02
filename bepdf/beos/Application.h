@@ -31,7 +31,7 @@
 #include "Settings.h"
 #include "Annotation.h"
 
-#define BEPDF_APP_SIG "application/x-vnd.mp-xpdf"
+#define BEPDF_APP_SIG "application/x-vnd.sen-labs.Tsundoku"
 
 class PDFWindow;
 class OutputTracer;

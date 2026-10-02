@@ -20,7 +20,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "BePDF.h"
+#include "Globals.h"
 
 BLocker* gPdfLock = NULL;
 BScreen* gScreen = NULL;

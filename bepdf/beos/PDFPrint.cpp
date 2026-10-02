@@ -26,10 +26,10 @@
 #include <Object.h>
 #include <Gfx.h>
 // BePDF
-#include "BepdfApplication.h"
+#include "Application.h"
 #include "PDFView.h"
 #include "PrintingProgressWindow.h"
-#include "BePDF.h"
+#include "Globals.h"
 #include "AnnotationRenderer.h"
 
 ///////////////////////////////////////////////////////////////////////////

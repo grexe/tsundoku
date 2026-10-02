@@ -57,8 +57,8 @@
 // BePDF
 #include "AnnotationWindow.h"
 #include "AnnotWriter.h"
-#include "BePDF.h"
-#include "BepdfApplication.h"
+#include "Globals.h"
+#include "Application.h"
 #include "CachedPage.h"
 #include "FileInfoWindow.h"
 #include "FindTextWindow.h"
@@ -214,7 +214,7 @@ PDFView::UpdatePanelDirectory(BPath* path) {
 void
 PDFView::MakeTitleString(BPath* path) {
 	delete mTitle;
-	mTitle = new BString("BePDF: ");
+	mTitle = new BString("Tsundoku: ");
 
 	Object obj;
 	if (mDoc->getDocInfo(&obj) && obj.isDict()) {
@@ -298,7 +298,7 @@ PDFView::RestoreWindowFrame(BWindow* w) {
 ///////////////////////////////////////////////////////////////////////////
 bool
 PDFView::LoadFile(entry_ref *ref, FileAttributes *fileAttributes, const char *ownerPassword, const char *userPassword, bool init, bool *encrypted) {
-	BString s(B_TRANSLATE("BePDF reading file: "));
+	BString s(B_TRANSLATE("Tsundoku reading file: "));
 	s += ref->name;
 	ShowLoadProgressStatusWindow statusWindow(s.String());
 	EndDoc();
@@ -1430,7 +1430,7 @@ PDFView::HandleLink(BPoint point) {
 			BString string(B_TRANSLATE("Execute the command:"));
 			string += fileName->getCString();
 			string += "?";
-			BAlert *dialog = new BAlert(B_TRANSLATE("BePDF: Launch"),
+			BAlert *dialog = new BAlert(B_TRANSLATE("Tsundoku: Launch"),
 					 string.String(),
 					 B_TRANSLATE("OK"), B_TRANSLATE("Cancel"));
 			if (dialog->Go() == 0)

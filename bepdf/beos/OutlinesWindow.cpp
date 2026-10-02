@@ -35,7 +35,7 @@
 #include <Link.h>
 #include <Object.h>
 // BePDF
-#include "BePDF.h"
+#include "Globals.h"
 #include "LayoutUtils.h"
 #include "TextConversion.h"
 #include "OutlinesWindow.h"
