@@ -9,3 +9,5 @@ Español.pdf
 Italiano.pdf
 dist/Tsundoku
 xpdf/libxpdf.a
+*.hpkg
+package-build/

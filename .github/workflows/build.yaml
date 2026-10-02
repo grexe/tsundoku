@@ -28,4 +28,4 @@ jobs:
           architecture: ${{ matrix.config.architecture }}
           run: |
             ssh user@localhost "pkgman update -y devel:libbz2 devel:libfreetype devel:libpng16 devel:libz cmd:gcc gcc_syslibs_devel cmd:htmldoc cmd:make cmd:pkg_config cmd:ps2pdf" &&
-            make -C xpdf && make -C tsundoku && make -C tsundoku bindcatalogs
+            make -C xpdf && make -C tsundoku && make -C tsundoku bindcatalogs && ./package.sh

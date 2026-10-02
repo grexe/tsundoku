@@ -67,6 +67,9 @@ This builds the XPDF library and the application into `dist/Tsundoku`, which nee
 and `encodings` folders there. The script also downloads the user manual, which is still the one of BePDF. It will be replaced once Tsundoku
 differs from BePDF enough to warrant its own.
 
+To build an installable package (`tsundoku-<version>-<arch>.hpkg`) from the result, run `./package.sh`. Copy it to
+`~/config/packages` to install it for your user.
+
 Bug reports and ideas: [issues](https://github.com/grexe/tsundoku/issues).
 
 ## Credits and license
