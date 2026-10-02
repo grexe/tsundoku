@@ -36,6 +36,12 @@
 #include <ControlLook.h>
 #include <IconUtils.h>
 #include <Resources.h>
+#include <Button.h>
+#include <LayoutBuilder.h>
+#include <Messenger.h>
+#include <TextView.h>
+#include <View.h>
+#include <Window.h>
 
 #include <gtypes.h>
 #include <GHash.h>
@@ -363,8 +369,54 @@ void BepdfApplication::ReadyToRun()
 }
 
 ///////////////////////////////////////////////////////////
+// grey stripe with the app icon centered in it, like the one of BAlert,
+// but sized to the icon
+class AboutStripeView : public BView {
+public:
+	AboutStripeView(BBitmap *icon)
+		: BView("stripe", B_WILL_DRAW), mIcon(icon)
+	{
+		float spacing = be_control_look->DefaultLabelSpacing();
+		float width = (mIcon ? mIcon->Bounds().Width() + 1 : 0) + 4 * spacing;
+		SetViewUIColor(B_PANEL_BACKGROUND_COLOR);
+		SetExplicitMinSize(BSize(width, B_SIZE_UNSET));
+		SetExplicitMaxSize(BSize(width, B_SIZE_UNSET));
+	}
+
+	~AboutStripeView() { delete mIcon; }
+
+	void Draw(BRect updateRect)
+	{
+		SetHighColor(tint_color(ViewColor(), B_DARKEN_1_TINT));
+		FillRect(Bounds());
+		if (mIcon == NULL)
+			return;
+		BRect b = Bounds(), i = mIcon->Bounds();
+		SetDrawingMode(B_OP_ALPHA);
+		SetBlendingMode(B_PIXEL_ALPHA, B_ALPHA_OVERLAY);
+		DrawBitmap(mIcon, BPoint(floorf((b.Width() - i.Width()) / 2),
+			floorf((b.Height() - i.Height()) / 2)));
+	}
+
+private:
+	BBitmap *mIcon;
+};
+
+static BMessenger sAboutWindow;
+
 void BepdfApplication::AboutRequested()
 {
+	// only one About window at a time
+	BLooper *looper = NULL;
+	if (sAboutWindow.IsValid() && sAboutWindow.Target(&looper) != NULL && looper != NULL
+		&& looper->Lock()) {
+		BWindow *open = dynamic_cast<BWindow*>(looper);
+		if (open != NULL)
+			open->Activate();
+		looper->Unlock();
+		return;
+	}
+
 	BString version;
 	BString str("Tsundoku\n");
 	str += B_TRANSLATE("a universal document reader based on BePDF, extended for SEN");
@@ -384,41 +436,75 @@ void BepdfApplication::AboutRequested()
 
 	str += GPLCopyright;
 
-	BAlert *about = new BAlert("About", str.String(), "OK");
-	BTextView *v = about->TextView();
-	if (v) {
-		rgb_color red = {255, 0, 51, 255};
-		rgb_color blue = {0, 102, 255, 255};
+	float spacing = be_control_look->DefaultLabelSpacing();
+	float textWidth = be_plain_font->StringWidth("M") * 42;
 
-		v->SetStylable(true);
-		char *text = (char*)v->Text();
-		char *s = text;
-		// set all Be in BePDF in blue and red
-		while ((s = strstr(s, "BePDF")) != NULL) {
-			int32 i = s - text;
-			v->SetFontAndColor(i, i+1, NULL, 0, &blue);
-			v->SetFontAndColor(i+1, i+2, NULL, 0, &red);
-			s += 2;
-		}
-		// first text line
-		s = strchr(text, '\n');
-		BFont font;
-		v->GetFontAndColor(0, &font);
-		font.SetSize(16);
-		v->SetFontAndColor(0, s-text+1, &font, B_FONT_SIZE);
-	};
+	BTextView *v = new BTextView(BRect(0, 0, textWidth, 100), "text", BRect(0, 0, textWidth, 100),
+		B_FOLLOW_NONE, B_WILL_DRAW);
+	v->SetViewUIColor(B_PANEL_BACKGROUND_COLOR);
+	v->SetWordWrap(true);
+	v->MakeEditable(false);
+	v->MakeSelectable(false);
+	v->SetStylable(true);
+	v->SetText(str.String());
+
+	rgb_color red = {255, 0, 51, 255};
+	rgb_color blue = {0, 102, 255, 255};
+	char *text = (char*)v->Text();
+	char *s = text;
+	// set all Be in BePDF in blue and red
+	while ((s = strstr(s, "BePDF")) != NULL) {
+		int32 i = s - text;
+		v->SetFontAndColor(i, i+1, NULL, 0, &blue);
+		v->SetFontAndColor(i+1, i+2, NULL, 0, &red);
+		s += 2;
+	}
+	// first text line
+	s = strchr(text, '\n');
+	BFont font;
+	v->GetFontAndColor(0, &font);
+	font.SetSize(16);
+	v->SetFontAndColor(0, s-text+1, &font, B_FONT_SIZE);
+
+	float textHeight = v->TextHeight(0, v->CountLines() - 1);
+	v->SetExplicitMinSize(BSize(textWidth, textHeight));
+	v->SetExplicitMaxSize(BSize(textWidth, textHeight));
+
+	// app icon for the stripe, 96px, so the full-detail variant of the icon
+	BBitmap *icon = NULL;
 	BResources *resources = BApplication::AppResources();
 	size_t iconSize = 0;
 	const void *iconData = resources ? resources->LoadResource(B_VECTOR_ICON_TYPE, "BEOS:ICON", &iconSize) : NULL;
 	if (iconData != NULL) {
-		BSize size = BControlLook::ComposeIconSize(32);
-		BBitmap *icon = new BBitmap(BRect(0, 0, size.width - 1, size.height - 1), B_RGBA32);
-		if (BIconUtils::GetVectorIcon((const uint8 *)iconData, iconSize, icon) == B_OK)
-			about->SetIcon(icon);
-		else
+		BSize size = BControlLook::ComposeIconSize(96);
+		icon = new BBitmap(BRect(0, 0, size.width - 1, size.height - 1), B_RGBA32);
+		if (BIconUtils::GetVectorIcon((const uint8 *)iconData, iconSize, icon) != B_OK) {
 			delete icon;
+			icon = NULL;
+		}
 	}
-	about->Go();
+
+	BWindow *about = new BWindow(BRect(0, 0, 100, 100), B_TRANSLATE("About Tsundoku"),
+		B_TITLED_WINDOW_LOOK, B_NORMAL_WINDOW_FEEL,
+		B_NOT_ZOOMABLE | B_NOT_RESIZABLE | B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS
+			| B_CLOSE_ON_ESCAPE);
+	BButton *ok = new BButton("ok", B_TRANSLATE("OK"), new BMessage(B_QUIT_REQUESTED));
+	ok->MakeDefault(true);
+
+	BLayoutBuilder::Group<>(about, B_HORIZONTAL, 0)
+		.Add(new AboutStripeView(icon))
+		.AddGroup(B_VERTICAL, spacing)
+			.SetInsets(spacing * 2)
+			.Add(v)
+			.AddGroup(B_HORIZONTAL)
+				.AddGlue()
+				.Add(ok)
+			.End()
+		.End();
+
+	sAboutWindow = BMessenger(about);
+	about->CenterOnScreen();
+	about->Show();
 }
 
 /*
