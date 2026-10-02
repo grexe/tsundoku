@@ -17,15 +17,13 @@ grep -q 'variety[[:space:]]*=[[:space:]]*B_APPV_DEVELOPMENT' $RDEF && VERSION="$
 VERSION="$VERSION-${REVISION:-1}"
 ARCH=$(getarch)
 
-for manual in English Deutsch Español Italiano; do
-	[ -f "dist/docs/$manual.pdf" ] || echo "warning: manual dist/docs/$manual.pdf is missing, build.sh downloads it" >&2
-done
-
 # The app finds docs, fonts and encodings next to itself, so they all go into apps/Tsundoku.
 STAGE=package-build
 rm -rf $STAGE
 mkdir -p $STAGE/apps/Tsundoku $STAGE/data/deskbar/menu/Applications
-cp -a $APP dist/docs dist/fonts dist/encodings dist/license $STAGE/apps/Tsundoku/
+cp -a $APP dist/fonts dist/encodings dist/license $STAGE/apps/Tsundoku/
+mkdir $STAGE/apps/Tsundoku/docs
+cp -a dist/docs/Start.pdf $STAGE/apps/Tsundoku/docs/   # the start page, shown when no file is given
 ln -s ../../../../apps/Tsundoku/Tsundoku $STAGE/data/deskbar/menu/Applications/Tsundoku
 sed -e "s|@VERSION@|$VERSION|g" -e "s|@ARCH@|$ARCH|g" package/PackageInfo.in > $STAGE/.PackageInfo
 

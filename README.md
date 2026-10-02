@@ -64,8 +64,10 @@ cd tsundoku
 ```
 
 This builds the XPDF library and the application into `dist/Tsundoku`, which needs to stay next to the `docs`, `fonts`
-and `encodings` folders there. The script also downloads the user manual, which is still the one of BePDF. It will be replaced once Tsundoku
-differs from BePDF enough to warrant its own.
+and `encodings` folders there.
+
+Tsundoku has no manual of its own yet. Since it works like BePDF, use the [BePDF manual](http://haikuarchives.github.io/BePDF/English/table_of_contents.html)
+for now; "Help" in the application opens it as well.
 
 To build an installable package (`tsundoku-<version>-<arch>.hpkg`) from the result, run `./package.sh`. Copy it to
 `~/config/packages` to install it for your user.

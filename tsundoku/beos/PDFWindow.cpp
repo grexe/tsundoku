@@ -1493,8 +1493,10 @@ PDFWindow::OpenPDFHelp(const char* name)
 void
 PDFWindow::OpenHelp()
 {
-	OpenPDFHelp(B_TRANSLATE_COMMENT("English.pdf",
-		"Replace with the PDF name of the help document, if there is one for your language."));
+	// Tsundoku does not ship a manual of its own yet, so fall back to the online one of BePDF
+	if (!OpenPDFHelp(B_TRANSLATE_COMMENT("English.pdf",
+			"Replace with the PDF name of the help document, if there is one for your language.")))
+		LaunchHTMLBrowser("http://haikuarchives.github.io/BePDF/English/table_of_contents.html");
 }
 
 
