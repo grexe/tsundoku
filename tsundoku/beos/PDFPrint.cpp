@@ -22,15 +22,12 @@
 
 // BeOS
 #include <be/interface/PrintJob.h>
-// xpdf
-#include <Object.h>
-#include <Gfx.h>
 // BePDF
 #include "Application.h"
 #include "PDFView.h"
+#include "PageRenderer.h"
 #include "PrintingProgressWindow.h"
 #include "Globals.h"
-#include "AnnotationRenderer.h"
 
 ///////////////////////////////////////////////////////////////////////////
 /*
@@ -65,28 +62,20 @@ PDFView::PageSetup()
 ///////////////////////////////////////////////////////////////////////////
 class PrintView : public BView {
 public:
-	PrintView(PDFView *view, PDFDoc *mDoc, PageRenderer* pageRenderer, BMessage *printSettings, const char *title, BRect rect);
+	PrintView(PDFView *view, Document *mDoc, BMessage *printSettings, const char *title, BRect rect);
 
 	void SetPage(int32 page);
 	void Draw(BRect updateRect);
 	friend int32 printing_thread(void *data);
-	
+
 	void Print();
 
 private:
-	static void RedrawCallback(void *data, int left, int top, int right, int bottom, bool composited);
-	void Redraw(int left, int top, int right, int bottom, bool composited);
-	static GBool AbortCheckCallback(void *data);
-
 	PDFView *mView;
-	PDFDoc *mDoc;
+	Document *mDoc;
 	bool mColorMode;
-	PageRenderer *mPageRenderer;
-	BeSplashOutputDev *mOutputDev;
 	int mPageWidth; // of print page
 	int mPageHeight; // of print page
-	int mSliceY;
-	int mSliceHeight;
 	int32 mCurrentPage;
 	char *mTitle;
 	int mZoom;
@@ -100,62 +89,24 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////
-PrintView::PrintView(PDFView *view, PDFDoc *doc, PageRenderer* pageRenderer, BMessage *printSettings, const char *title, BRect rect) :
+PrintView::PrintView(PDFView *view, Document *doc, BMessage *printSettings, const char *title, BRect rect) :
 	BView (BRect(1000, 1000, 1000+rect.Width(), 1000+rect.Height()), "print_view", B_FOLLOW_NONE, B_WILL_DRAW) {
 	GlobalSettings *s = gApp->GetSettings();
 	mView = view; // PDFView
-	mDoc = doc; 
-	mPageRenderer = pageRenderer;
+	mDoc = doc;
 	mPrintSettings = printSettings;
 	mTitle = (char*)title;
-	mZoom = s->GetZoomPrinter(); 
+	mZoom = s->GetZoomPrinter();
 	mRotation = (int)s->GetRotationPrinter();
 	mRect = rect;
 	mScale = s->GetDPI() / 72.0;
 	mPrintSelection = s->GetPrintSelection();
 	mPrintOrder = s->GetPrintOrder();
-
-	SplashColor backgroundColor;
-	backgroundColor[0] = 255;
-	backgroundColor[1] = 255;
-	backgroundColor[2] = 255;
-	
-	BeSplashOutputDev::ColorMode colorMode;
+	// the printer driver takes care of gray scale
 	mColorMode = s->GetPrintColorMode() == GlobalSettings::PRINT_COLOR_MODE;
-	if (mColorMode) {
-		colorMode = BeSplashOutputDev::kColorMode;
-	} else {
-		colorMode = BeSplashOutputDev::kGrayScaleMode;
-	}
-	
-	mOutputDev = new BeSplashOutputDev(gFalse, backgroundColor, gFalse, RedrawCallback, this, colorMode);
-	
-	mOutputDev->startDoc(NULL);
-	mOutputDev->startDoc(doc->getXRef());
-}
-
-
-///////////////////////////////////////////////////////////////////////////
-GBool PrintView::AbortCheckCallback(void *data) {
-	PrintView *printView = static_cast<PrintView*>(data);
-	PrintingProgressWindow *progress = printView->mProgressWindow;
-	return progress->Stopped() || progress->Aborted();
-}
-
-///////////////////////////////////////////////////////////////////////////
-void PrintView::RedrawCallback(void *data, int left, int top, int right, int bottom, bool composited) {
-	PrintView *printView = (PrintView*)data;
-	printView->Redraw(left, top, right, bottom, composited);
-}
-
-#define SLICE 1
-
-void PrintView::Redraw(int left, int top, int right, int bottom, bool composited) {
-#if SLICE
-	mOutputDev->redraw(0, 0, this, 0, mSliceY, mPageWidth, mSliceHeight, composited);
-#else
-	mOutputDev->redraw(0, 0, this, 0, 0, mPageWidth, mPageHeight, composited);
-#endif
+	mProgressWindow = NULL;
+	mCurrentPage = 1;
+	mPageWidth = mPageHeight = 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -168,67 +119,55 @@ void
 PrintView::Draw(BRect updateRect)
 {
 	if (Window()->Lock()) {
-		// PDFLock lock;
 		int32 zoomDPI = mZoom * 72 / 100;
 		double dpi = mScale * zoomDPI;
-#if SLICE
-		// About 4 MB per slice (color mode requires 4 bytes per pixel;
-		// monochrome mode requires 1 bytes per pixel).
-		// Note because xpdf rasterizes into a bitmap and when the
-		// rendered slice is drawn into the view, this it is converted to a
-		// BBitmap actually twice as much memory is allocated temporary.
-		const int64 maxSize = 
-			mColorMode ? 
-				1024 * 1024 : 
-				4 * 1024 * 1024;
-		int64 slices = mPageWidth * (int64)mPageHeight / maxSize;
+
+		fz_matrix matrix;
+		int width, height;
+		if (!mDoc->PageMatrix(mCurrentPage, dpi, mRotation, &matrix, &width, &height)) {
+			Window()->Unlock();
+			return;
+		}
+
+		// The page is rendered in slices of about 4 MB (4 bytes per pixel), to keep the memory needed
+		// within bounds when it is printed with a high resolution.
+		const int64 maxSize = 1024 * 1024;
+		int64 slices = (int64)width * height / maxSize;
 		if (slices <= 0) {
 			slices = 1;
-		}		
-		mSliceHeight = mPageHeight / slices;
-		if (mSliceHeight <= 0) {
-			mSliceHeight = 1;
 		}
-		for (mSliceY = 0; mSliceY < mPageHeight; mSliceY += mSliceHeight) {
-			if (mSliceY + mSliceHeight > mPageHeight) {
-				mSliceHeight = mPageHeight - mSliceY;
+		int sliceHeight = height / slices;
+		if (sliceHeight <= 0) {
+			sliceHeight = 1;
+		}
+
+		BBitmap* bitmap = NULL;
+		for (int sliceY = 0; sliceY < height; sliceY += sliceHeight) {
+			if (mProgressWindow != NULL && (mProgressWindow->Stopped() || mProgressWindow->Aborted()))
+				break;
+			if (sliceY + sliceHeight > height) {
+				sliceHeight = height - sliceY;
 			}
-		
-			// fprintf(stderr, "sliceY %d sliceHeight %d\n",
-			//	mSliceY, mSliceHeight);
-			
-			if (mSliceHeight <= 0) {
+			if (sliceHeight <= 0) {
 				break;
 			}
-		
-			mDoc->displayPageSlice (mOutputDev, mCurrentPage, 
-				dpi, dpi, // h/v DPI
-				mRotation, 
-				gFalse, // use media box
-				gFalse, // crop
-				gTrue, // printing
-				0, // slice X
-				mSliceY,
-				mPageWidth, // slice width
-				mSliceHeight,
-				AbortCheckCallback, this);
-			
+
+			if (bitmap == NULL || bitmap->Bounds().Height() + 1 < sliceHeight || bitmap->Bounds().Width() + 1 < width) {
+				delete bitmap;
+				bitmap = new BBitmap(BRect(0, 0, width - 1, sliceHeight - 1), B_RGB32);
+			}
+
+			// the slice starts at sliceY
+			fz_matrix sliceMatrix = fz_concat(matrix, fz_translate(0, -sliceY));
+			fz_cookie cookie;
+			memset(&cookie, 0, sizeof(cookie));
+			PageRenderer::RenderToBitmap(mDoc, mCurrentPage, sliceMatrix, bitmap, width, sliceHeight, &cookie);
+			DrawBitmap(bitmap, BRect(0, 0, width - 1, sliceHeight - 1),
+				BRect(0, sliceY, width - 1, sliceY + sliceHeight - 1));
+			Sync();
 		}
-#else
-		mDoc->displayPage (mOutputDev, mCurrentPage, 
-			dpi, dpi, // h/v DPI
-			mRotation, 
-			gFalse, // use media box
-			gFalse, // crop
-			gTrue, // printing
-			AbortCheckCallback, this);
-#endif		
-		
-		Annotations* annots = mPageRenderer->GetAnnotationsForPage(mCurrentPage);
-		{ // Don't remove this block; ar-dtor must be called after Iterate()!
-			AnnotationRenderer ar(this, mOutputDev->getDefCTM(), mScale * zoomDPI, false);
-			annots->Iterate(&ar);
-		}
+		delete bitmap;
+
 		Flush();
 		Window()->Unlock();
 	}
@@ -257,7 +196,7 @@ void PrintView::Print() {
 		int32  pagesInDocument;
 		BRect  pageRect = printJob.PrintableRect();
 
-		pagesInDocument = mDoc->getNumPages ();
+		pagesInDocument = mDoc->PageCount();
 		firstPage = printJob.FirstPage();
 		lastPage = printJob.LastPage();
 		if (firstPage < 1) {
@@ -336,20 +275,15 @@ void PrintView::Print() {
 		for (; ((normalOrder && (curPage <= lastPage)) || (!normalOrder && (curPage >= firstPage))) && !progress->Stopped(); curPage += incr) {
 			SetPage(curPage);
 			progress->SetPage(curPage);
-			float width = RealSize (mDoc->getPageCropWidth (curPage), zoomDPI);
-			float height = RealSize (mDoc->getPageCropHeight (curPage), zoomDPI);
+			fz_matrix pageMatrix;
+			int pageWidth, pageHeight;
+			if (!mDoc->PageMatrix(curPage, zoomDPI, mRotation, &pageMatrix, &pageWidth, &pageHeight))
+				continue;
+			float width = pageWidth;
+			float height = pageHeight;
 
-			if ((mDoc->getPageRotate(curPage) == 90) ||
-				(mDoc->getPageRotate(curPage) == 270)) {
-				float h = width; width = height; height = h;
-			}
-
-			if ((mRotation == 90) || (mRotation == 270)) {
-				float h = width; width = height; height = h;
-			}
-			
-			mPageWidth = (int)width;
-			mPageHeight = (int)height;
+			mPageWidth = pageWidth;
+			mPageHeight = pageHeight;
 			BRect curPageRect(0, 0, width, height);
 			// center page
 			BPoint origin((pageRect.Width() - width / mScale) / 2,
@@ -378,14 +312,6 @@ void PrintView::Print() {
 catastrophic_exit:
 	if (progress != NULL) progress->PostMessage(B_QUIT_REQUESTED);
 	if (hiddenWin != NULL) hiddenWin->PostMessage(B_QUIT_REQUESTED);
-	delete mOutputDev;
-	
-	// restore the page 
-	BWindow *w = mView->Window();
-	if (w->Lock()) {
-		mView->RestartDoc();
-		w->Unlock();
-	}
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -396,7 +322,7 @@ PDFView::Print()
 		return;
 	}
 	
-	PrintView *pView = new PrintView(this, mDoc, &mPageRenderer, mPrintSettings, 
+	PrintView *pView = new PrintView(this, mDoc, mPrintSettings, 
 		mTitle->String(), 
 		Bounds());
 

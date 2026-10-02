@@ -23,15 +23,11 @@
 #ifndef PREFERENCES_WINDOW_H
 #define PREFERENCES_WINDOW_H
 
-// xpdf
-#include <PDFDoc.h>
-#include <XRef.h>
 // BeOS
 #include <FindDirectory.h>
 #include <Looper.h>
 #include <Window.h>
 
-#include "DisplayCIDFonts.h"
 #include "Settings.h"
 
 class BView;
@@ -86,22 +82,14 @@ private:
 		WORKSPACE_CHANGED             = 'WSch',
 		AUTHOR_CHANGED                = 'Atch',
 		INVERT_VERTICAL_SCROLLING_CHANGED = 'IvSl',
-		DISPLAY_CID_FONT_SELECTED     = 'DCFs',
 	};
 	BLooper          *mLooper;
 	BOutlineListView *mPreferences;
 	BCardLayout      *mLayers;
 	GlobalSettings   *mSettings;
 	BMenuField       *mOpenInWorkspace;
-	DisplayCIDFonts  *mDisplayCIDFonts;
-	BMessage          mFontMenuFields;
 
 	void SetupView();
-	BView* BuildAsianFontsView();
-	DisplayCIDFonts::Type GetType(const char* file);
-	void FillFontFileMenu(BMenuField* menuField, const char* name, const char* file);
-	void FillFontFileMenu(BMenuField* menuField, directory_which which, const char* name, const char* label, const char* file);
-	void DisplayCIDFontSelected(BMessage* msg);
 	void ClearView();
 	void BuildWorkspaceMenu(BMenu *menu);
 	void SelectMenuItem(int kind, BMessage* msg);

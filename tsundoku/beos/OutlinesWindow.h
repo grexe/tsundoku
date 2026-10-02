@@ -23,15 +23,15 @@
 #ifndef OUTLINES_WINDOW_H
 #define OUTLINES_WINDOW_H
 
-// xpdf
-#include <PDFDoc.h>
-#include <XRef.h>
 // BeOS
 #include <Font.h>
 #include <Looper.h>
 #include <List.h>
 #include <SupportDefs.h>
 
+#include <vector>
+
+#include "Document.h"
 #include "LayoutUtils.h" // for Bitset
 #include "Settings.h"
 
@@ -69,16 +69,18 @@ public:
 class OutlineListItem : public BListItem {
 	BString mString;
 	enum {
-		linkDest,
-		linkPageNum,
-		linkString,
+		linkDest,       // an entry of the outline of the document: a page and maybe a position
+		linkPageNum,    // a bookmark of the user
+		linkString,     // somewhere else
 		linkUndefined
 	} mType;
-	union {
-		LinkDest *dest;
-		GString  *string;
-		int       pageNum;
-	} mLink;
+	BString       mLink;
+	struct {
+		int   page;
+		float x, y;
+		bool  hasPosition;
+	} mDest;
+	int           mPageNum;
 	OutlineStyle *mStyle;
 	int           mResolvedPage;     // page this entry points to, 0 if unknown
 
@@ -87,8 +89,8 @@ public:
 	virtual ~OutlineListItem();
 	const char* Text() const { return mString.String(); }
 	void SetStyle(OutlineStyle* style) { mStyle = style; }
-	void SetLink(LinkDest *dest);
-	void SetLink(GString *s);
+	void SetDest(int page, float x, float y, bool hasPosition);
+	void SetLink(const char* link);
 	void SetPageNum(int pageNum);
 
 	void DrawItem(BView* owner, BRect frame, bool complete);
@@ -96,9 +98,12 @@ public:
 	bool isDest() const        { return mType == linkDest; }
 	bool isString() const      { return mType == linkString; }
 	bool isPageNum() const     { return mType == linkPageNum; }
-	LinkDest *getDest() const  { return mLink.dest; }
-	GString *getString() const { return mLink.string; }
-	int getPageNum() const     { return mLink.pageNum; }
+	int getDestPage() const    { return mDest.page; }
+	float getDestX() const     { return mDest.x; }
+	float getDestY() const     { return mDest.y; }
+	bool hasDestPosition() const { return mDest.hasPosition; }
+	const char* getString() const { return mLink.String(); }
+	int getPageNum() const     { return mPageNum; }
 	void SetResolvedPage(int pageNum) { mResolvedPage = pageNum; }
 	int GetResolvedPage() const       { return mResolvedPage; }
 };
@@ -107,7 +112,7 @@ class OutlinesView : public BScrollView {
 	BLooper          *mLooper;
 	OutlineStyleList  mOutlineStyleList;
 	BOutlineListView *mList;
-	Catalog          *mCatalog;
+	Document         *mDocument;
 	BMessage         *mBookmarks;    // archived bookmarks
 	bool              mNeedsUpdate;
 	OutlineListItem  *mUserDefined;
@@ -116,9 +121,7 @@ class OutlinesView : public BScrollView {
 	bool              mHasDocumentOutline;
 	int               mCurrentPage;  // last page requested via SelectPage(), 0 if none
 
-	void ReadOutlines(Object *o, uint32 level);
-	int  PageOfDest(LinkDest *dest);
-	int  ResolvePage(const OutlineListItem *item);
+	void ReadOutlines(const std::vector<DocOutlineEntry>& entries);
 	bool HasUserBookmarks();
 	OutlineListItem* FindUserBookmark(int pageNum);
 	void InsertUserBookmark(int pageNum, const char *label);
@@ -129,20 +132,17 @@ public:
 	// message sent to mLooper has this fields:
 	enum {
 		// what                          attribute(s):
-		PAGE_NOTIFY         = 'OWPg', // "page"
-		REF_NOTIFY          = 'OWRf', // "num", "gen"
-		STRING_NOTIFY       = 'OWSt', // "string"
-		DEST_NOTIFY         = 'OWDt', // "dest" pointer to LinkDest
+		PAGE_NOTIFY         = 'OWPg', // "page", and "x" and "y" (page space) if the entry has a position
 		QUIT_NOTIFY         = 'ORQt',
 		STATE_CHANGE_NOTIFY = 'OWCg'
 	};
 
-	OutlinesView(Catalog *catalog, BMessage *bookmarks, GlobalSettings *settings, BLooper *looper, uint32 flags);
+	OutlinesView(Document *document, BMessage *bookmarks, GlobalSettings *settings, BLooper *looper, uint32 flags);
 	~OutlinesView();
 	void AttachedToWindow();
 	void MessageReceived(BMessage *msg);
 
-	void SetCatalog(Catalog *catalog, BMessage* bookmarks);
+	void SetDocument(Document *document, BMessage* bookmarks);
 	bool HasUserBookmark(int pageNum);
 	bool IsUserBMSelected();
 	const char *GetUserBMLabel(int pageNum);

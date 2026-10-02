@@ -23,9 +23,7 @@
 #ifndef PRINT_SETTINGS_WINDOW_H
 #define PRINT_SETTINGS_WINDOW_H
 
-// xpdf
-#include <PDFDoc.h>
-#include <XRef.h>
+#include "Document.h"
 // BeOS
 #include <Looper.h>
 #include <Window.h>
@@ -39,7 +37,7 @@ class BPopUpMenu;
 class BGridLayout;
 
 class PrintSettingsWindow : public BWindow {
-	PDFDoc *mDoc;
+	Document *mDoc;
 	BLooper *mLooper;
 	GlobalSettings *mSettings;
 	int32 mZoomValue;
@@ -72,8 +70,8 @@ public:
 		QUIT_NOTIFY  = 'PSeQ',
 		PRINT_NOTIFY = 'PSeP'
 	};
-	PrintSettingsWindow(PDFDoc *doc, GlobalSettings *settings, BLooper *looper);
-	void Refresh(PDFDoc *doc);
+	PrintSettingsWindow(Document *doc, GlobalSettings *settings, BLooper *looper);
+	void Refresh(Document *doc);
 	void MessageReceived(BMessage *msg);
 	virtual bool QuitRequested();
 	virtual void FrameMoved(BPoint point);

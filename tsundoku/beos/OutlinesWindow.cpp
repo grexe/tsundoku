@@ -31,13 +31,9 @@
 #include <ScrollView.h>
 #include <TextControl.h>
 #include <Window.h>
-// xpdf
-#include <Link.h>
-#include <Object.h>
 // BePDF
 #include "Globals.h"
 #include "LayoutUtils.h"
-#include "TextConversion.h"
 #include "OutlinesWindow.h"
 
 #undef B_TRANSLATION_CONTEXT
@@ -100,14 +96,16 @@ OutlineListItem::OutlineListItem(const char *string, uint32 level, bool expanded
 	BListItem(level, expanded),
 	mString(string),
 	mType(linkUndefined),
+	mPageNum(0),
 	mStyle(style),
 	mResolvedPage(0)
 {
+	mDest.page = 0;
+	mDest.x = mDest.y = 0;
+	mDest.hasPosition = false;
 }
 
 OutlineListItem::~OutlineListItem() {
-	if (mType == linkDest) delete mLink.dest;
-	else if (mType == linkString) delete mLink.string;
 }
 
 
@@ -141,180 +139,85 @@ void OutlineListItem::DrawItem(BView* owner, BRect frame, bool complete)
 	owner->PopState();
 }
 
-void OutlineListItem::SetLink(LinkDest *dest) {
-	if (dest->isOk() && (mType == linkUndefined)) {
+void OutlineListItem::SetDest(int page, float x, float y, bool hasPosition) {
+	if (mType == linkUndefined) {
 		mType = linkDest;
-		mLink.dest = dest;
-	} else {
-		delete dest;
+		mDest.page = page;
+		mDest.x = x;
+		mDest.y = y;
+		mDest.hasPosition = hasPosition;
+		mResolvedPage = page;
 	}
-};
+}
 
-void OutlineListItem::SetLink(GString *s) {
+void OutlineListItem::SetLink(const char* link) {
 	if (mType == linkUndefined) {
 		mType = linkString;
-		mLink.string = s;
+		mLink = link;
 	}
 }
 
 void OutlineListItem::SetPageNum(int pageNum) {
 	if (mType == linkUndefined) {
 		mType = linkPageNum;
-		mLink.pageNum = pageNum;
+		mPageNum = pageNum;
 	}
 }
 
 // Implementation of OutlinesView
-void OutlinesView::ReadOutlines(Object *o, uint32 level) {
-	Object *current = new Object();
-	o->copy(current);
-	Object title;
-	Object child;
-	bool loop;
-	do {
-		if (current->dictLookup("Title", &title) && !title.isNull()) {
-			bool open = true;
-			Object count;
-			if (current->dictLookup("Count", &count) && count.isInt()) {
-				open = count.getInt() > 0;
-			}
-			count.free();
+void OutlinesView::ReadOutlines(const std::vector<DocOutlineEntry>& entries) {
+	std::vector<OutlineListItem*> items;
+	for (size_t i = 0; i < entries.size(); i++) {
+		const DocOutlineEntry& entry = entries[i];
 
-			OutlineListItem *item;
-			if (title.isString()) {
-				BString *s = TextToUtf8(title.getString()->getCString(), title.getString()->getLength());
-				if (s && s->Length() > 0) {
-					// end string at first newline character
-					char *str = s->LockBuffer(s->Length());
-					char *newline = strchr(str, '\n');
-					if (newline) *newline = 0;
-					s->UnlockBuffer();
+		// end string at first newline character
+		BString title(entry.title);
+		int32 newline = title.FindFirst('\n');
+		if (newline >= 0)
+			title.Truncate(newline);
 
-					item = new OutlineListItem(s->String(), level, open, GetDefaultStyle());
-					delete s;
-				} else {
-					item = new OutlineListItem(B_TRANSLATE("No title"), level, open, GetDefaultStyle());
-				}
-			} else {
-				item = new OutlineListItem(B_TRANSLATE("No title"), level, open, GetDefaultStyle());
-			}
-			mList->AddItem(item);
-
-			Object dest;
-			if (current->dictLookup("Dest", &dest)) {
-				if (dest.isName()) {
-					item->SetLink(new GString(dest.getName()));
-				} else if (dest.isArray()) {
-					item->SetLink(new LinkDest(dest.getArray()));
-				} else if (dest.isString()) {
-					item->SetLink(dest.getString()->copy());
-				}
-			}
-			dest.free();
-
-			Object dict;
-			if (current->dictLookup("A", &dict) && dict.isDict()) {
-				Object s;
-				dict.dictLookup("S", &s);
-				// GoTo action
-				if (s.isName("GoTo")) {
-					dict.dictLookup("D", &dest);
-					if (dest.isName()) {
-						item->SetLink(new GString(dest.getName()));
-					} else if (dest.isArray()) {
-						item->SetLink(new LinkDest(dest.getArray()));
-					} else if (dest.isString()) {
-						item->SetLink(dest.getString()->copy());
-					}
-					dest.free();
-				}
-				s.free();
-			}
-			dict.free();
-
-			// PDF 1.4
-			rgb_color item_color = {0, 0, 0, 0};
-			Object color;
-			if (current->dictLookup("C", &color) && color.isArray() && color.arrayGetLength() == 3) {
-				Object c;
-				rgb_color rgb;
-				if (color.arrayGet(0, &c) && c.isReal()) {
-					rgb.red = (int)(255*c.getReal());
-					c.free();
-					if (color.arrayGet(1, &c) && c.isReal()) {
-						rgb.green = (int)(255*c.getReal());
-						c.free();
-						if (color.arrayGet(2, &c) && c.isReal()) {
-							rgb.blue = (int)(255*c.getReal());
-							// set font color
-							item_color = rgb;
-						}
-					}
-				}
-				c.free();
-			}
-			color.free();
-
-			Object style;
-			int item_style = OutlineStyleList::PLAIN_STYLE;
-			if (current->dictLookup("F", &style) && style.isInt()) {
-				int s = style.getInt();
-				bool bold = (s & 1) != 0;
-				bool italic = (s & 2) != 0;;
-				// set font style
-				if (bold) item_style |= OutlineStyleList::BOLD_STYLE;
-				if (italic) item_style |= OutlineStyleList::ITALIC_STYLE;
-			}
-			style.free();
-
-			item->SetStyle(mOutlineStyleList.GetStyle(item_style, item_color));
-/*
-			Object aa;
-			if (current->dictLookup("AA", &aa) && !aa.isNull()) {
-				fprintf(stderr, " <AA>\n");
-			}
-			aa.free();
-
-			Object se;
-			if (current->dictLookup("SE", &se) && !se.isNull()) {
-				fprintf(stderr, " <SE>\n");
-			}
-			se.free();
-*/
-			// traverse child
-			if (current->dictLookup("First", &child) && child.isDict() && !child.isNull()) {
-					ReadOutlines(&child, level + 1);
-			}
-			child.free();
-
-			// expanded argument of OutlineListItem constructor does not work!
-			if (open) mList->Expand(item); else mList->Collapse(item);
+		rgb_color color = {0, 0, 0, 0};
+		if (entry.hasColor) {
+			color.red = entry.red;
+			color.green = entry.green;
+			color.blue = entry.blue;
 		}
-		title.free();
+		int style = OutlineStyleList::PLAIN_STYLE;
+		if (entry.bold)
+			style |= OutlineStyleList::BOLD_STYLE;
+		if (entry.italic)
+			style |= OutlineStyleList::ITALIC_STYLE;
 
+		OutlineListItem *item = new OutlineListItem(
+			title.Length() > 0 ? title.String() : B_TRANSLATE("No title"),
+			(uint32)entry.level + 1, entry.open, mOutlineStyleList.GetStyle(style, color));
+		if (entry.page > 0)
+			item->SetDest(entry.page, entry.x, entry.y, entry.hasPosition);
+		else if (entry.uri.Length() > 0)
+			item->SetLink(entry.uri.String());
+		mList->AddItem(item);
+		items.push_back(item);
+	}
 
-		Object *next = new Object();
-		if (current->dictLookup("Next", next) && next->isDict() && !next->isNull()) {
-			current->free();
-			delete current;
-			current = next;
-			loop = true;
-		} else {
-			loop = false;
-			delete next;
-		}
-	} while (loop);
-	current->free();
-	delete current;
+	// expanded argument of OutlineListItem constructor does not work! Children first.
+	for (size_t i = entries.size(); i > 0; i--) {
+		OutlineListItem *item = items[i - 1];
+		if (mList->CountItemsUnder(item, true) == 0)
+			continue;
+		if (entries[i - 1].open)
+			mList->Expand(item);
+		else
+			mList->Collapse(item);
+	}
 }
 
-OutlinesView::OutlinesView(Catalog *catalog, BMessage *bookmarks,
+OutlinesView::OutlinesView(Document *document, BMessage *bookmarks,
 	GlobalSettings *settings, BLooper *looper, uint32 flags)
 	:
 	BScrollView("BookmarksScroll", NULL, 0, true, true),
 	mLooper(looper),
 	mList(NULL),
-	mCatalog(NULL),
+	mDocument(NULL),
 	mBookmarks(NULL),
 	mNeedsUpdate(true),
 	mUserDefined(NULL),
@@ -325,7 +228,7 @@ OutlinesView::OutlinesView(Catalog *catalog, BMessage *bookmarks,
 	SetTarget(mList = new BOutlineListView("", B_SINGLE_SELECTION_LIST));
 	mEmptyUserBM = new OutlineListItem(B_TRANSLATE("<empty>"), 1, true,
 		GetDefaultStyle());
-	SetCatalog(catalog, bookmarks);
+	SetDocument(document, bookmarks);
 }
 
 OutlinesView::~OutlinesView() {
@@ -345,9 +248,9 @@ void OutlinesView::AttachedToWindow() {
 	mList->SetTarget(this);
 }
 
-void OutlinesView::SetCatalog(Catalog *catalog, BMessage *bookmarks) {
-	if (mCatalog != catalog) {
-		mCatalog     = catalog;
+void OutlinesView::SetDocument(Document *document, BMessage *bookmarks) {
+	if (mDocument != document) {
+		mDocument    = document;
 		mBookmarks   = bookmarks;
 		mNeedsUpdate = true;
 		mHasDocumentOutline = false;
@@ -361,56 +264,19 @@ void OutlinesView::Activate() {
 		mNeedsUpdate = false;
 		mList->RemoveItem(mEmptyUserBM); // keep mEmptyUserBM
 		MakeEmpty(mList);
-		Object obj;
 		mList->AddItem(new OutlineListItem(B_TRANSLATE("Document"), 0, true, GetDefaultStyle()));
-		gPdfLock->Lock();
-		if (mCatalog->getOutline()->isDict() && mCatalog->getOutline()->dictLookup("First", &obj) && !obj.isNull()) {
-			ReadOutlines(&obj, 1);
-		}
-		// remember which page each entry points to, so the outline can follow the current page
-		for (int32 i = 1; i < mList->FullListCountItems(); i++) {
-			OutlineListItem *item = (OutlineListItem*)mList->FullListItemAt(i);
-			item->SetResolvedPage(ResolvePage(item));
-		}
-		gPdfLock->Unlock();
+		std::vector<DocOutlineEntry> entries;
+		if (mDocument != NULL && mDocument->LoadOutline(entries))
+			ReadOutlines(entries);
 		mHasDocumentOutline = mList->CountItems() > 1;
 		if (!mHasDocumentOutline) {
 			mList->AddItem(new OutlineListItem(B_TRANSLATE("<empty>"), 1, true, GetDefaultStyle()));
 		}
-		obj.free();
 		mUserDefined = new OutlineListItem(B_TRANSLATE("User defined"), 0, true, GetDefaultStyle());
 		mList->AddItem(mUserDefined);
 		InitUserBookmarks(false);
 		SelectPage(mCurrentPage);
 	}
-}
-
-int OutlinesView::PageOfDest(LinkDest *dest) {
-	if (dest->isPageRef()) {
-		Ref r = dest->getPageRef();
-		return mCatalog->findPage(r.num, r.gen);
-	}
-	return dest->getPageNum();
-}
-
-// the caller must hold gPdfLock
-int OutlinesView::ResolvePage(const OutlineListItem *item) {
-	if (item->isPageNum()) {
-		return item->getPageNum();
-	}
-	if (item->isDest()) {
-		return PageOfDest(item->getDest());
-	}
-	if (item->isString()) {
-		LinkDest *dest = mCatalog->findDest(item->getString());
-		if (dest == NULL) {
-			return 0;
-		}
-		int pageNum = PageOfDest(dest);
-		delete dest;
-		return pageNum;
-	}
-	return 0;
 }
 
 bool OutlinesView::HasUserBookmarks() {
@@ -605,47 +471,16 @@ void OutlinesView::MessageReceived(BMessage *msg) {
 			bool msgSent = false;
 			OutlineListItem *item = (OutlineListItem*)mList->ItemAt(selected);
 			if (item) {
-				LinkDest *link = NULL;
-				bool deleteLink = false;
-				if (item->isDest()) {
-					link = item->getDest();
-				}
-				if (link != NULL) {
-					// XXX: race condition: Link handled after a new pdf document has been loaded.
-					// Should add a field to the message that represents the current document,
-					// to check in the handler of this message if still contains a vaild pointer.
-					BMessage msg(DEST_NOTIFY);
-					msg.AddPointer("dest", link);
-					mLooper->PostMessage(&msg);
-					msgSent = true;
-				} else if (item->isString()) {
-					BMessage msg(STRING_NOTIFY);
-					msg.AddString("string", item->getString()->getCString());
-					mLooper->PostMessage(&msg);
-					msgSent = true;
-				} else if (link && link->isPageRef()) {
-					BMessage msg(REF_NOTIFY);
-					Ref r = link->getPageRef();
-					int32 num = r.num, gen = r.gen;
-					msg.AddInt32("num", num);
-					msg.AddInt32("gen", gen);
-					mLooper->PostMessage(&msg);
-					msgSent = true;
-				} else {
-					int32 p = -1;
-					if (item->isPageNum()) {
-						p = item->getPageNum();
-					} else if (link) {
-						p = link->getPageNum();
+				if (item->isDest() || item->isPageNum()) {
+					BMessage msg(PAGE_NOTIFY);
+					msg.AddInt32("page", item->isDest() ? item->getDestPage() : item->getPageNum());
+					if (item->isDest() && item->hasDestPosition()) {
+						msg.AddFloat("x", item->getDestX());
+						msg.AddFloat("y", item->getDestY());
 					}
-					if (p != -1) {
-						BMessage msg(PAGE_NOTIFY);
-						msg.AddInt32("page", p);
-						mLooper->PostMessage(&msg);
-						msgSent = true;
-					}
+					mLooper->PostMessage(&msg);
+					msgSent = true;
 				}
-				if (deleteLink) delete link;
 				if (!msgSent) {
 					// notify window that state has changed
 					BMessage msg(STATE_CHANGE_NOTIFY);

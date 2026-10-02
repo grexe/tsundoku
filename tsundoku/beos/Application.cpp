@@ -43,19 +43,13 @@
 #include <View.h>
 #include <Window.h>
 
-#include <gtypes.h>
-#include <GHash.h>
-#include <parseargs.h>
-#include "config.h"
-#include "Error.h"
-
-#include "Init.h"
 #include "PDFWindow.h"
 #include "Application.h"
 #include "ResourceLoader.h"
 #include "PasswordWindow.h"
 #include "Globals.h"
 #include "TraceWindow.h"
+#include "Document.h"
 #include "FileInfoWindow.h"
 
 #undef B_TRANSLATION_CONTEXT
@@ -71,32 +65,13 @@ static const char * bePDFCopyright =
 	"© 1998-2000 Hubert Figuiere\n"
 	"© 1997 Benoit Triquet\n";
 
-static const char * GPLCopyright =
+static const char * licenseCopyright =
     "\n\n"
-    "This program is free software under the GNU GPL v2, or any later version.\n";
+    "This program is free software under the GNU AGPL v3, or any later version.\n";
 
 static const char *PAGE_NUM_MSG_KEY = "bepdf:page_num";
 
 static const char *settingsFilename = "Tsundoku";
-
-static const char* attachmentNames[] = {
-	"GRAPH_ANNOT",
-	"PAPER_CLIP_ANNOT",
-	"PUSH_PIN_ANNOT",
-	"TAG_ANNOT",
-	"UNKNOWN_ATTACHMENT_ANNOT"
-};
-
-static const char* textAnnotNames[] = {
-	"COMMENT_ANNOT",
-	"HELP_ANNOT",
-	"INSERT_ANNOT",
-	"KEY_ANNOT",
-	"NEW_PARAGRAPH_ANNOT",
-	"NOTE_ANNOT",
-	"PARAGRAPH_ANNOT",
-	"UNKNOWN_TEXT_ANNOT"
-};
 
 // Implementation of PDFFilter
 class PDFFilter : public BRefFilter {
@@ -148,22 +123,6 @@ int main()
 
 
 ///////////////////////////////////////////////////////////
-void BepdfApplication::LoadImages(BBitmap* images[], const char* names[], int num) {
-	for (int i = 0; i < num; i++) {
-		images[i] = LoadBitmap(names[i], 'BBMP');
-		if (!images[i])
-			fprintf(stderr, "Could not load bitmap %s\n", names[i]);
-	}
-}
-
-///////////////////////////////////////////////////////////
-void BepdfApplication::FreeImages(BBitmap* images[], int num) {
-	for (int i = 0; i < num; i++) {
-		delete images[i]; images[i] = NULL;
-	}
-}
-
-///////////////////////////////////////////////////////////
 BepdfApplication::BepdfApplication()
 		: BApplication ( BEPDF_APP_SIG )
 {
@@ -187,9 +146,6 @@ BepdfApplication::BepdfApplication()
 	splitVCursor = new BCursor(B_CURSOR_ID_RESIZE_NORTH_SOUTH);
 	resizeCursor = new BCursor(B_CURSOR_ID_RESIZE_NORTH_WEST_SOUTH_EAST);
 
-	LoadImages(mAttachmentImages, attachmentNames, FileAttachmentAnnot::no_of_types);
-	LoadImages(mTextAnnotImages,  textAnnotNames,  TextAnnot::no_of_types);
-
 	BEntry entry; app_info info;
 	if (B_OK == be_app->GetAppInfo(&info)) {
 		mTeamID = info.team;
@@ -209,115 +165,10 @@ BepdfApplication::BepdfApplication()
 	InitBePDF();
 }
 
-#include <GlobalParams.h>
-#include <GList.h>
-#include <GString.h>
-#include "DisplayCIDFonts.h"
-
-static void setGlobalParameter(const char* type, const char* arg1, const char* arg2 = NULL) {
-	GString line;
-	line.append(type);
-	line.append(" ");
-	line.append(arg1);
-	if (arg2 != NULL) {
-		line.append(" ");
-		line.append(arg2);
-	}
-	GString name("BepdfApplication");
-	globalParams->parseLine(line.getCString(), &name, 0);
-}
-
-/* copied from xpdf/GlobalParams.cc as it was removed in XPDF 4 */
-GList* getCIDToUnicodeNames(GlobalParams* globalParams) {
-  GList *list = new GList();
-  GString *key;
-  void *value;
-  GHashIter *iter = NULL;
-  globalParams->cidToUnicodes->startIter(&iter);
-  while (globalParams->cidToUnicodes->getNext(&iter, &key, &value)) {
-       list->append(key->copy());
-  }
-  globalParams->cidToUnicodes->killIter(&iter);
-  return list;
-}
-
 void
 BepdfApplication::Initialize()
 {
-	if (!mInitialized) {
-		mInitialized = true;
-
-		// built in fonts
-		BPath fontDirectory(mAppPath);
-		fontDirectory.Append("fonts");
-
-		// built in encodings
-		BPath encodingDirectory(mAppPath);
-		encodingDirectory.Append("encodings");
-
-		InitXpdf(NULL, fontDirectory.Path(), encodingDirectory.Path());
-
-		// system fonts
-		BPath systemFontsPath;
-		if (find_directory(B_BEOS_FONTS_DIRECTORY, &systemFontsPath) == B_OK) {
-			BDirectory directory(systemFontsPath.Path());
-			BEntry entry;
-			while (directory.GetNextEntry(&entry) == B_OK) {
-				if (!entry.IsDirectory())
-					continue;
-				BPath fontDirectory;
-				if (entry.GetPath(&fontDirectory) != B_OK)
-					continue;
-				setGlobalParameter("fontDir", fontDirectory.Path());
-			}
-		}
-
-		// CID fonts
-		BMessage msg;
-		mSettings->GetDisplayCIDFonts(msg);
-		DisplayCIDFonts displayNames(msg);
-
-		// record new names
-		bool foundNewName = false;
-		GList* list = getCIDToUnicodeNames(globalParams);
-		for (int i = 0; i < list->getLength(); i ++) {
-			GString* name = (GString*)list->get(i);
-			if (displayNames.Contains(name->getCString())) {
-				continue;
-			}
-			// record name
-			displayNames.Set(name->getCString());
-			foundNewName = true;
-		}
-
-		// store in settings
-		if (foundNewName) {
-			msg.MakeEmpty();
-			displayNames.Archive(msg);
-			mSettings->SetDisplayCIDFonts(msg);
-		}
-
-		// set CID fonts
-		for (int i = 0; i < list->getLength(); i ++) {
-		    GString* name = (GString*)list->get(i);
-			BString file;
-			DisplayCIDFonts::Type type;
-
-			displayNames.Get(name->getCString(), file, type);
-			if (type == DisplayCIDFonts::kUnknownType ||
-				file.Length() == 0) {
-				continue;
-			}
-
-			if (type == DisplayCIDFonts::kTrueType) {
-				setGlobalParameter("displayCIDFontTT", name->getCString(), file.String());
-			} else {
-				setGlobalParameter("displayCIDFontT1", name->getCString(), file.String());
-			}
-		}
-
-		deleteGList(list, GString);
-	}
+	mInitialized = true;
 }
 
 ///////////////////////////////////////////////////////////
@@ -334,9 +185,6 @@ BepdfApplication::~BepdfApplication()
 	delete zoomCursor;          zoomCursor = NULL;
 	delete splitVCursor;        splitVCursor = NULL;
 	delete resizeCursor;        resizeCursor = NULL;
-
-	FreeImages(mAttachmentImages, FileAttachmentAnnot::no_of_types);
-	FreeImages(mTextAnnotImages,  TextAnnot::no_of_types);
 
 	ExitBePDF();
 }
@@ -438,10 +286,10 @@ void BepdfApplication::AboutRequested()
 	str += bePDFCopyright;
 	str += "\n";
 
-	str += BString().SetToFormat(B_TRANSLATE_COMMENT("Tsundoku is based on XPDF %s, %s.", "XPDF version, copyright"),
-		xpdfVersion, xpdfCopyright);
+	str += BString().SetToFormat(B_TRANSLATE_COMMENT("Tsundoku renders with MuPDF %s, %s.", "MuPDF version, copyright"),
+		FZ_VERSION, "© Artifex Software, Inc.");
 
-	str += GPLCopyright;
+	str += licenseCopyright;
 
 	float spacing = be_control_look->DefaultLabelSpacing();
 	float textWidth = be_plain_font->StringWidth("M") * 42;
@@ -784,44 +632,26 @@ BepdfApplication::MessageReceived (BMessage * msg)
 void
 BepdfApplication::ArgvReceived (int32 argc, char **argv)
 {
-	GBool ok;
 	int pg;
 	entry_ref fileToOpen;
 
-	// copy args because parseArgs might be change it
-	char **argvCopy = new char*[argc];
-	for (int i = 0; i < argc; i ++) {
-		argvCopy[i] = argv[i];
-	}
-
-	int intArgc = argc;
-	ok = parseArgs(GetGlobalArgDesc(), &intArgc, argvCopy);
-	argc = intArgc;
-
 	// check command line
-	if (!ok || !(argc == 2 || argc == 3) || GetPrintHelp()) {
-		printUsage(argvCopy[0], "[<PDF-file> [<page>]]", GetGlobalArgDesc());
+	if (!(argc == 2 || argc == 3) || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
+		fprintf(stderr, "usage: %s [<file> [<page>]]\n", argv[0]);
 		exit(1);
 	}
 	if (argc == 3) {
-		pg = atoi(argvCopy[2]);
+		pg = atoi(argv[2]);
 	} else {
 		pg = 1;
 	}
 
-	// print banner
-//	fprintf(errFile, "BePDF version %s\n", pdfViewerVersion);
-//	fprintf(errFile, "based on xpdf %s %s\n", xpdfVersion, xpdfCopyright);
-//	fprintf(errFile, "and based on BePDF %s\n%s\n", bePDFVersion, bePDFCopyright);
-//	fprintf(errFile, "%s%s\n", pdfViewerCopyright, GPLCopyright);
-
 	BMessage msg(B_REFS_RECEIVED);
 	msg.AddInt32 (PAGE_NUM_MSG_KEY, pg);
-	get_ref_for_path (argvCopy[1], &fileToOpen);
+	get_ref_for_path (argv[1], &fileToOpen);
 	msg.AddRef ("refs", &fileToOpen);
 	PostMessage (&msg);
 	mGotSomething = true;
-	delete argvCopy;
 }
 
 
@@ -858,8 +688,6 @@ static struct {
 	{"PDF:created",     "Created",     "CreationDate", B_TIME_TYPE},
 	{"PDF:modified",    "Modified",    "ModDate",      B_TIME_TYPE},
 	{"META:pages",      "Pages",       NULL,           B_INT32_TYPE},
-	{"PDF:version",     "Version",     NULL,           B_DOUBLE_TYPE},
-	{"PDF:linearized",  "Linearized",  NULL,           B_BOOL_TYPE},
 	{NULL, NULL, NULL, 0}
 };
 
@@ -875,7 +703,7 @@ BepdfApplication::UpdateAttr(BNode &node, const char *name, type_code type, off_
 
 ///////////////////////////////////////////////////////////
 void
-BepdfApplication::UpdateFileAttributes(PDFDoc *doc, entry_ref *ref) {
+BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 	BNode node(ref);
 	if (node.InitCheck() != B_OK) return;
 
@@ -887,33 +715,24 @@ BepdfApplication::UpdateFileAttributes(PDFDoc *doc, entry_ref *ref) {
 		}
 	}
 
-	int32 pages = (int32)doc->getNumPages();
+	int32 pages = (int32)doc->PageCount();
 	UpdateAttr(node, "META:pages", B_INT32_TYPE, 0, &pages, sizeof(int32));
-	bool b = doc->isLinearized();
-	UpdateAttr(node, "PDF:linearized", B_BOOL_TYPE, 0, &b, sizeof(b));
-	double d = doc->getPDFVersion();
-	UpdateAttr(node, "PDF:version", B_DOUBLE_TYPE, 0, &d, sizeof(d));
 
-	Object obj;
-	if (doc->getDocInfo(&obj) && obj.isDict()) {
-		Dict *dict = obj.getDict();
-		for (int i = 0; gAttrInfo[i].name; i++) {
-			time_t time;
-			if (gAttrInfo[i].pdf_name == NULL) continue;
-			BString *s = FileInfoWindow::GetProperty(dict, gAttrInfo[i].pdf_name, &time);
-			if (s) {
-				if (gAttrInfo[i].type_code == B_TIME_TYPE) {
-					if (time != 0) {
-						UpdateAttr(node, gAttrInfo[i].name, B_TIME_TYPE, 0, &time, sizeof(time));
-					}
-				} else {
-					UpdateAttr(node, gAttrInfo[i].name, B_STRING_TYPE, 0, (void*)s->String(), s->Length()+1);
+	for (int i = 0; gAttrInfo[i].name; i++) {
+		if (gAttrInfo[i].pdf_name == NULL) continue;
+
+		time_t time;
+		BString value;
+		if (FileInfoWindow::GetProperty(doc, gAttrInfo[i].pdf_name, &value, &time)) {
+			if (gAttrInfo[i].type_code == B_TIME_TYPE) {
+				if (time != 0) {
+					UpdateAttr(node, gAttrInfo[i].name, B_TIME_TYPE, 0, &time, sizeof(time));
 				}
-				delete s;
+			} else {
+				UpdateAttr(node, gAttrInfo[i].name, B_STRING_TYPE, 0, (void*)value.String(), value.Length()+1);
 			}
 		}
 	}
-	obj.free();
 }
 
 

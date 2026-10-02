@@ -24,10 +24,6 @@
 #include <stdio.h>
 #include <ctype.h>
 
-// xpdf
-#include <Object.h>
-#include <Gfx.h>
-
 // BeOS
 #include <locale/Catalog.h>
 #include <be/app/Roster.h>
@@ -53,9 +49,6 @@
 #include <LayoutBuilder.h>
 
 // BePDF
-#include "AnnotationWindow.h"
-#include "AnnotWriter.h"
-#include "AttachmentView.h"
 #include "Globals.h"
 #include "Application.h"
 #include "EntryMenuItem.h"
@@ -63,7 +56,6 @@
 #include "FindTextWindow.h"
 #include "LayoutUtils.h"
 #include "OutlinesWindow.h"
-#include "PageLabels.h"
 #include "PageRenderer.h"
 #include "PasswordWindow.h"
 #include "PDFView.h"
@@ -71,7 +63,6 @@
 #include "PreferencesWindow.h"
 #include "PrintSettingsWindow.h"
 #include "ResourceLoader.h"
-#include "SaveThread.h"
 #include "StatusBar.h"
 #include "TraceWindow.h"
 
@@ -134,7 +125,6 @@ PDFWindow::PDFWindow(entry_ref* ref, BRect frame, const char *ownerPassword,
 {
 	mMainView = NULL;
 	mPagesView = NULL;
-	mAttachmentView = NULL;
 	mPageNumberItem = NULL;
 	mPrintSettings = NULL;
 	mTotalPageNumberItem = NULL;
@@ -149,7 +139,6 @@ PDFWindow::PDFWindow(entry_ref* ref, BRect frame, const char *ownerPassword,
 	mOWMessenger = NULL;
 	mFIWMessenger = NULL;
 	mPSWMessenger = NULL;
-	mAWMessenger = NULL;
 
 	mPrintSettingsWindowOpen = false;
 
@@ -159,12 +148,9 @@ PDFWindow::PDFWindow(entry_ref* ref, BRect frame, const char *ownerPassword,
 
 	mPendingMask = 0;
 
-	mPressedAnnotationButton = NULL;
 
 	AddHandler(&mEntryChangedMonitor);
 	mEntryChangedMonitor.SetEntryChangedListener(this);
-
-	InitAnnotTemplates();
 
 	SetUpViews(ref, ownerPassword, userPassword, encrypted);
 
@@ -190,7 +176,6 @@ PDFWindow::~PDFWindow()
 {
 	RemoveHandler(&mEntryChangedMonitor);
 
-	DeleteAnnotTemplates();
 	if (mPagesView) {
 		MakeEmpty(mPagesView);
 	}
@@ -219,9 +204,9 @@ void PDFWindow::InitAfterOpen() {
 		}
 
 		// set page number list
-		if (gPdfLock->LockWithTimeout(0) == B_OK) {
+		if (mMainView->GetDocument()->Lock()->LockWithTimeout(0) == B_OK) {
 			UpdatePageList();
-			gPdfLock->Unlock();
+			mMainView->GetDocument()->Lock()->Unlock();
 		} else {
 			FillPageList();
 			SetPending(UPDATE_PAGE_LIST_PENDING);
@@ -248,32 +233,39 @@ void PDFWindow::FillPageList() {
 
 	MakeEmpty(mPagesView);
 	mPagesView->AddList(&list);
-	// clear attachments
-	mAttachmentView->Empty();
 }
 
 
 void PDFWindow::UpdatePageList() {
-	gPdfLock->Lock();
-	PageLabels labels(mMainView->GetNumPages()-1);
-	Object catDict;
-	mMainView->GetPDFDoc()->getXRef()->getCatalog(&catDict);
-	Object* pageLabels = new Object;
-	catDict.dictLookup("PageLabels", pageLabels);
-	if (labels.Parse(pageLabels)) {
-		labels.Replace(mPagesView);
+	Document* document = mMainView->GetDocument();
+	int pages = document->PageCount();
+	// the labels need every page to be loaded, which takes a while for really large documents
+	if (pages > 2000)
+		return;
+
+	BList list;
+	bool hasLabels = false;
+	for (int i = 1; i <= pages; i++) {
+		BString label = document->PageLabel(i);
+		BString number;
+		number << i;
+		if (label.Length() > 0 && label != number)
+			hasLabels = true;
+		list.AddItem(new BStringItem(label.Length() > 0 ? label.String() : number.String()));
 	}
 
-	// update attachments as well
-	mAttachmentView->Fill(mMainView->GetPDFDoc()->getXRef(),
-		mMainView->GetPDFDoc());
-
-	gPdfLock->Unlock();
+	if (hasLabels) {
+		MakeEmpty(mPagesView);
+		mPagesView->AddList(&list);
+	} else {
+		for (int32 i = list.CountItems() - 1; i >= 0; i--)
+			delete (BStringItem*)list.ItemAt(i);
+	}
 }
 
 bool PDFWindow::SetPendingIfLocked(uint32 mask) {
-	if (gPdfLock->LockWithTimeout(0) == B_OK) {
-		gPdfLock->Unlock();
+	if (mMainView->GetDocument()->Lock()->LockWithTimeout(0) == B_OK) {
+		mMainView->GetDocument()->Lock()->Unlock();
 		return false;
 	} else {
 		// could not lock, schedule action later
@@ -328,7 +320,6 @@ bool PDFWindow::QuitRequested() {
 
 ///////////////////////////////////////////////////////////
 void PDFWindow::CleanUpBeforeLoad() {
-	EditAnnotation(false);
 }
 
 
@@ -413,34 +404,10 @@ bool PDFWindow::CanClose()
 	return true;
 }
 
-///////////////////////////////////////////////////////////
-AnnotationWindow* PDFWindow::GetAnnotationWindow() {
-	if (mAWMessenger && mAWMessenger->LockTarget()) {
-		BLooper *looper;
-		mAWMessenger->Target(&looper);
-		return (AnnotationWindow*)looper;
-	} else {
-		return NULL;
-	}
-}
-
-///////////////////////////////////////////////////////////
-AnnotationWindow* PDFWindow::ShowAnnotationWindow() {
-	AnnotationWindow* w = GetAnnotationWindow();
-	if (!w) {
-		delete mAWMessenger;
-		w = new AnnotationWindow(gApp->GetSettings(), this);
-		mAWMessenger = new BMessenger(w);
-		w->Lock();
-	}
-	return w;
-}
-
-
 void PDFWindow::UpdateInputEnabler()
 {
 	if (mMainView) {
-		PDFDoc* doc = mMainView->GetPDFDoc();
+		Document* doc = mMainView->GetDocument();
 		int num_pages = mMainView->GetNumPages();
 		int page = mMainView->Page();
 		bool b = num_pages > 1 && page != 1;
@@ -471,18 +438,12 @@ void PDFWindow::UpdateInputEnabler()
 		int active = mLayerView->CardLayout()->VisibleIndex();
 		mToolBar->SetActionPressed(SHOW_PAGE_LIST_CMD, mShowLeftPanel && active == PAGE_LIST_PANEL);
 		mToolBar->SetActionPressed(SHOW_BOOKMARKS_CMD, mShowLeftPanel && active == BOOKMARKS_PANEL);
-		mToolBar->SetActionPressed(SHOW_ANNOT_TOOLBAR_CMD, mShowLeftPanel && active == ANNOTATIONS_PANEL);
-		mToolBar->SetActionPressed(SHOW_ATTACHMENTS_CMD, mShowLeftPanel && active == ATTACHMENTS_PANEL);
 		mToolBar->SetActionPressed(FULL_SCREEN_CMD, mFullScreen);
 
 		fMenuBar->FindItem(SHOW_PAGE_LIST_CMD)
 			->SetMarked(mShowLeftPanel && active == PAGE_LIST_PANEL);
 		fMenuBar->FindItem(SHOW_BOOKMARKS_CMD)
 			->SetMarked(mShowLeftPanel && active == BOOKMARKS_PANEL);
-		fMenuBar->FindItem(SHOW_ANNOT_TOOLBAR_CMD)
-			->SetMarked(mShowLeftPanel && active == ANNOTATIONS_PANEL);
-		fMenuBar->FindItem(SHOW_ATTACHMENTS_CMD)
-			->SetMarked(mShowLeftPanel && active == ATTACHMENTS_PANEL);
 		fMenuBar->FindItem(HIDE_LEFT_PANEL_CMD)->SetEnabled(mShowLeftPanel);
 
 		fMenuBar->FindItem(OPEN_FILE_CMD)->SetEnabled(!mFullScreen);
@@ -490,12 +451,12 @@ void PDFWindow::UpdateInputEnabler()
 		fMenuBar->FindItem(RELOAD_FILE_CMD)->SetEnabled(!mFullScreen);
 		mToolBar->SetActionEnabled(RELOAD_FILE_CMD, !mFullScreen);
 		fMenuBar->FindItem(PRINT_SETTINGS_CMD)
-			->SetEnabled(!mFullScreen && !mPrintSettingsWindowOpen && doc->okToPrint());
+			->SetEnabled(!mFullScreen && !mPrintSettingsWindowOpen && doc->CanPrint());
 		mToolBar->SetActionEnabled(PRINT_SETTINGS_CMD,
-			!mFullScreen && !mPrintSettingsWindowOpen && doc->okToPrint());
+			!mFullScreen && !mPrintSettingsWindowOpen && doc->CanPrint());
 
 		// PDF security settings
-		bool okToCopy = doc->okToCopy();
+		bool okToCopy = doc->CanCopy();
 		fMenuBar->FindItem(COPY_SELECTION_CMD)->SetEnabled(okToCopy);
 		fMenuBar->FindItem(SELECT_ALL_CMD)->SetEnabled(okToCopy);
 		fMenuBar->FindItem(SELECT_NONE_CMD)->SetEnabled(okToCopy);
@@ -505,10 +466,6 @@ void PDFWindow::UpdateInputEnabler()
 		fMenuBar->FindItem(ADD_USER_BOOKMARK_CMD)->SetEnabled(!hasUserBookmark);
 		fMenuBar->FindItem(EDIT_USER_BOOKMARK_CMD)->SetEnabled(selected);
 		fMenuBar->FindItem(DELETE_USER_BOOKMARK_CMD)->SetEnabled(selected);
-
-		// Annotation
-		bool editAnnot = mMainView->EditingAnnot();
-		mToolBar->SetActionEnabled(DONE_EDIT_ANNOT_CMD, editAnnot);
 	}
 }
 
@@ -555,8 +512,6 @@ BMenuBar* PDFWindow::BuildMenu()
 				B_TRANSLATE("Open in new window" B_UTF8_ELLIPSIS),
 				OPEN_IN_NEW_WINDOW_CMD))
 			.AddItem(B_TRANSLATE("Reload"), RELOAD_FILE_CMD, 'R')
-			.AddItem(B_TRANSLATE("Save as" B_UTF8_ELLIPSIS),
-				SAVE_FILE_AS_CMD, 'S', B_SHIFT_KEY)
 			.AddItem(mFileInfoItem = new BMenuItem(B_TRANSLATE("File info" B_UTF8_ELLIPSIS),
 				new BMessage(FILE_INFO_CMD), 'I'))
 			.AddSeparator()
@@ -580,8 +535,6 @@ BMenuBar* PDFWindow::BuildMenu()
 		.AddMenu(B_TRANSLATE("View"))
 			.AddItem(B_TRANSLATE("Show bookmarks"), SHOW_BOOKMARKS_CMD, 'B')
 			.AddItem(B_TRANSLATE("Show page list"), SHOW_PAGE_LIST_CMD, 'L')
-			.AddItem(B_TRANSLATE("Show annotation tool bar"), SHOW_ANNOT_TOOLBAR_CMD)
-			.AddItem(B_TRANSLATE("Show attachments"), SHOW_ATTACHMENTS_CMD)
 			.AddItem(B_TRANSLATE("Hide side bar"), HIDE_LEFT_PANEL_CMD, 'H')
 			.AddSeparator()
 			.AddItem(mFullScreenItem = new BMenuItem(B_TRANSLATE("Fullscreen"),
@@ -694,12 +647,6 @@ BToolBar* PDFWindow::BuildToolBar()
 	mToolBar->AddAction(SHOW_PAGE_LIST_CMD, this,
 		LoadVectorIcon("SHOW_PAGE_LIST"), B_TRANSLATE("Show page list"), NULL,
 		true);
-	mToolBar->AddAction(SHOW_ANNOT_TOOLBAR_CMD, this,
-		LoadVectorIcon("SHOW_ANNOT"), B_TRANSLATE("Show annotation toolbar"),
-		NULL, true);
-	mToolBar->AddAction(SHOW_ATTACHMENTS_CMD, this,
-		LoadVectorIcon("SHOW_ATTACHMENTS"), B_TRANSLATE("Show attachments"),
-		NULL, true);
 	// mToolBar->AddAction(HIDE_LEFT_PANEL_CMD, this,
 	//	LoadVectorIcon("HIDE_PAGE_LIST"), B_TRANSLATE("Hide page list"),
 	//	NULL, true);
@@ -792,11 +739,9 @@ BCardView* PDFWindow::BuildLeftPanel()
 	BCardView* layerView = new BCardView("layers");
 
 	// PageList
-	mOutlinesView = new OutlinesView(mMainView->GetPDFDoc()->getCatalog(),
+	mOutlinesView = new OutlinesView(mMainView->GetDocument(),
 		mFileAttributes.GetBookmarks(), gApp->GetSettings(),
 		this, B_FRAME_EVENTS);
-
-	mAttachmentView = new AttachmentView(gApp->GetSettings(), this, 0);
 
 	// LayerView contains the page numbers
 	mPagesView = new BListView("pagesList", B_SINGLE_SELECTION_LIST,
@@ -808,8 +753,6 @@ BCardView* PDFWindow::BuildLeftPanel()
 
 	layerView->CardLayout()->AddView(mOutlinesView);
 	layerView->CardLayout()->AddView(pageView);
-	layerView->CardLayout()->AddView(BuildAnnotToolBar("annotationToolBar", NULL));
-	layerView->CardLayout()->AddView(mAttachmentView);
 
 	return layerView;
 }
@@ -870,7 +813,8 @@ void PDFWindow::SetUpViews(entry_ref* ref,
     GlobalSettings *s = gApp->GetSettings();
 
 	// show or hide panel that is stored in settings
-	ShowLeftPanel(s->GetLeftPanel());
+	// the annotation and attachment panels of older versions do not exist any more
+	ShowLeftPanel(s->GetLeftPanel() == PAGE_LIST_PANEL ? PAGE_LIST_PANEL : BOOKMARKS_PANEL);
 	if (!s->GetShowLeftPanel()) {
 		// hide panel
 		ToggleLeftPanel();
@@ -917,17 +861,15 @@ int16 i;
 	item->SetMarked(true);
 }
 
-void PDFWindow::NewDoc(PDFDoc *doc) {
-	Catalog *catalog = doc->getCatalog();
-
-	mOutlinesView->SetCatalog(catalog, mFileAttributes.GetBookmarks());
+void PDFWindow::NewDoc(Document *doc) {
+	mOutlinesView->SetDocument(doc, mFileAttributes.GetBookmarks());
 	ActivateOutlines();
 	CollapseOutlinePanelIfEmpty();
 
 	if (mFIWMessenger && mFIWMessenger->LockTarget()) {
 		BLooper *looper;
 		FileInfoWindow *w = (FileInfoWindow*)mFIWMessenger->Target(&looper);
-		w->Refresh(&mCurrentFile, doc, mFileAttributes.GetPage());
+		w->Refresh(&mCurrentFile, doc);
 		looper->Unlock();
 	}
 	if (mPSWMessenger && mPSWMessenger->LockTarget()) {
@@ -936,21 +878,10 @@ void PDFWindow::NewDoc(PDFDoc *doc) {
 		w->Refresh(doc);
 		looper->Unlock();
 	}
-	if (mAWMessenger && mAWMessenger->LockTarget()) {
-		BLooper *looper;
-		AnnotationWindow *w = (AnnotationWindow*)mAWMessenger->Target(&looper);
-		w->Quit();
-	}
 }
 ///////////////////////////////////////////////////////////
 void PDFWindow::NewPage(int page) {
 	UpdateInputEnabler();
-	if (mFIWMessenger && mFIWMessenger->LockTarget()) {
-		BLooper *looper;
-		FileInfoWindow *w = (FileInfoWindow*)mFIWMessenger->Target(&looper);
-		w->RefreshFontList(&mCurrentFile, mMainView->GetPDFDoc(), page);
-		looper->Unlock();
-	}
 }
 ///////////////////////////////////////////////////////////
 void PDFWindow::FrameMoved(BPoint p) {
@@ -1002,7 +933,6 @@ PDFWindow::MessageReceived(BMessage* message)
 	switch (message->what) {
 	case OPEN_FILE_CMD:
 		mMainView->WaitForPage();
-		EditAnnotation(false);
 		gApp->OpenFilePanel();
 		break;
 	case NEW_WINDOW_CMD:
@@ -1021,9 +951,6 @@ PDFWindow::MessageReceived(BMessage* message)
 		break;
 	case RELOAD_FILE_CMD:
 		Reload();
-		break;
-	case SAVE_FILE_AS_CMD:
-		gApp->OpenSaveFilePanel(this, GetPdfFilter());
 		break;
 	case CLOSE_FILE_CMD:
 		mMainView->WaitForPage(true);
@@ -1221,7 +1148,7 @@ PDFWindow::MessageReceived(BMessage* message)
 		if (!ActivateWindow(mFIWMessenger)) {
 			FileInfoWindow *w;
 			mMainView->WaitForPage();
-			w = new FileInfoWindow(gApp->GetSettings(), &mCurrentFile, mMainView->GetPDFDoc(), this, mFileAttributes.GetPage());
+			w = new FileInfoWindow(gApp->GetSettings(), &mCurrentFile, mMainView->GetDocument(), this);
 			mFIWMessenger = new BMessenger(w);
 		}
 		break;
@@ -1230,7 +1157,7 @@ PDFWindow::MessageReceived(BMessage* message)
 			PrintSettingsWindow *w;
 			mPrintSettingsWindowOpen = true;
 			UpdateInputEnabler();
-			w = new PrintSettingsWindow(mMainView->GetPDFDoc(), gApp->GetSettings(), this);
+			w = new PrintSettingsWindow(mMainView->GetDocument(), gApp->GetSettings(), this);
 			mPSWMessenger = new BMessenger(w);
 		}
 		break;
@@ -1246,18 +1173,6 @@ PDFWindow::MessageReceived(BMessage* message)
 		else
 			ShowLeftPanel(PAGE_LIST_PANEL);
 		break;
-	case SHOW_ANNOT_TOOLBAR_CMD:
-		if (mShowLeftPanel && mLayerView->CardLayout()->VisibleIndex() == ANNOTATIONS_PANEL)
-			HideLeftPanel();
-		else
-			ShowLeftPanel(ANNOTATIONS_PANEL);
-		break;
-	case SHOW_ATTACHMENTS_CMD:
-		if (mShowLeftPanel && mLayerView->CardLayout()->VisibleIndex() == ATTACHMENTS_PANEL)
-			HideLeftPanel();
-		else
-			ShowLeftPanel(ATTACHMENTS_PANEL);
-		break;
 	case HIDE_LEFT_PANEL_CMD:
 		HideLeftPanel();
 		break;
@@ -1271,14 +1186,6 @@ PDFWindow::MessageReceived(BMessage* message)
 		break;
 	case SHOW_TRACER_CMD: OutputTracer::ShowWindow(gApp->GetSettings());
 		break;
-	// Annotation
-	case DONE_EDIT_ANNOT_CMD: EditAnnotation(false);
-		break;
-	// Attachments
-	case ATTACHMENT_SELECTION_CHANGED_MSG:
-		message->PrintToStream();
-		break;
-
 	case CUSTOM_ZOOM_FACTOR_MSG: {
 		int16 zoom;
 		if (message->FindInt16("zoom", &zoom) == B_OK) {
@@ -1324,7 +1231,6 @@ PDFWindow::MessageReceived(BMessage* message)
 		break;
 
 	// Page Renderer
-	case PageRenderer::UPDATE_MSG:
 	case PageRenderer::FINISH_MSG: {
 			thread_id id;
 			BBitmap *bitmap;
@@ -1372,15 +1278,6 @@ PDFWindow::MessageReceived(BMessage* message)
 		delete mFIWMessenger;
 		mFIWMessenger = NULL;
 		break;
-	case FileInfoWindow::START_QUERY_ALL_FONTS_MSG:
-		mMainView->WaitForPage(); // need exculsive access to PDFDoc
-		if (mFIWMessenger && mFIWMessenger->LockTarget()) {
-			BLooper *looper;
-			FileInfoWindow *w = (FileInfoWindow*)mFIWMessenger->Target(&looper);
-			looper->Unlock();
-			w->QueryAllFonts(mMainView->GetPDFDoc());
-		}
-		break;
 	// Print Settings Window
 	case PrintSettingsWindow::QUIT_NOTIFY:
 		// mPrintSettingsItem->SetEnabled(true);
@@ -1398,30 +1295,12 @@ PDFWindow::MessageReceived(BMessage* message)
 	case OutlinesView::PAGE_NOTIFY: {
 			int32 page;
 			if (message->FindInt32("page", &page) == B_OK) {
-				mMainView->MoveToPage(page);
+				float x, y;
+				if (message->FindFloat("x", &x) == B_OK && message->FindFloat("y", &y) == B_OK)
+					mMainView->GotoPosition(page, x, y);
+				else
+					mMainView->MoveToPage(page);
 				UpdateInputEnabler();
-			}
-		}
-		break;
-	case OutlinesView::REF_NOTIFY: {
-			int32 num, gen;
-			if (message->FindInt32("num", &num) == B_OK && message->FindInt32("gen", &gen) == B_OK) {
-				mMainView->MoveToPage(num, gen, true);
-			}
-		}
-		break;
-	case OutlinesView::STRING_NOTIFY: {
-			BString s;
-			if (message->FindString("string", &s) == B_OK) {
-				mMainView->MoveToPage(s.String());
-			}
-		}
-		break;
-	case OutlinesView::DEST_NOTIFY: {
-			void* link;
-			if (message->FindPointer("dest", &link) == B_OK) {
-				LinkDest* dest = static_cast<LinkDest*>(link);
-				mMainView->GotoDest(dest);
 			}
 		}
 		break;
@@ -1442,27 +1321,69 @@ PDFWindow::MessageReceived(BMessage* message)
 				UpdateInputEnabler();
 			}
 		}
-	case AnnotationWindow::QUIT_NOTIFY:
-			delete mAWMessenger; mAWMessenger = NULL;
-			break;
-	case AnnotationWindow::CHANGE_NOTIFY:
-		{
-			void *p;
-			if (message->FindPointer("annotation", &p) == B_OK) {
-				mMainView->UpdateAnnotation((Annotation*)p, message);
+		break;
+
+#ifdef TSUNDOKU_TESTING
+	case 'TSTX': {
+			BString cmd;
+			message->FindString("cmd", &cmd);
+			{
+				FILE* out = fopen("/tmp/ts_test.out", "a");
+				if (out != NULL) {
+					char* type; type_code t; int32 c;
+					fprintf(out, "TSTX cmd=[%s]", cmd.String());
+					for (int32 i = 0; message->GetInfo(B_ANY_TYPE, i, &type, &t, &c) == B_OK; i++)
+						fprintf(out, " %s(%.4s)", type, (char*)&t);
+					fputc('\n', out);
+					fclose(out);
+				}
 			}
+			if (cmd == "find") {
+				// as the find window does it
+				if (mFindWindow == NULL)
+					mFindWindow = new FindTextWindow(gApp->GetSettings(), "", this);
+				BString text;
+				message->FindString("text", &text);
+				int32 ignoreCase = 1, backward = 0;
+				message->FindInt32("ignoreCase", &ignoreCase);
+				message->FindInt32("backward", &backward);
+				BMessage start(FindTextWindow::FIND_START_NOTIFY_MSG);
+				start.AddString("text", text);
+				start.AddBool("ignoreCase", ignoreCase != 0);
+				start.AddBool("backward", backward != 0);
+				MessageReceived(&start);
+			} else if (cmd.StartsWith("do_")) {
+				// any command of the window by name
+				static const struct { const char* name; uint32 what; } commands[] = {
+					{ "fileinfo", FILE_INFO_CMD }, { "preferences", PREFERENCES_FILE_CMD },
+					{ "printsettings", PRINT_SETTINGS_CMD }, { "rotate", ROTATE_CLOCKWISE_CMD },
+					{ "fitwidth", FIT_TO_PAGE_WIDTH_CMD }, { "fitpage", FIT_TO_PAGE_CMD },
+					{ "back", HISTORY_BACK_CMD }, { "forward", HISTORY_FORWARD_CMD },
+					{ "pagelist", SHOW_PAGE_LIST_CMD }, { "bookmarks", SHOW_BOOKMARKS_CMD },
+					{ "zoomin", ZOOM_IN_CMD }, { "zoomout", ZOOM_OUT_CMD }, { "next", NEXT_PAGE_CMD },
+					{ "previous", PREVIOUS_PAGE_CMD }, { "last", LAST_PAGE_CMD }, { "first", FIRST_PAGE_CMD },
+					{ "copy", COPY_SELECTION_CMD }, { "selectall", SELECT_ALL_CMD }, { "addbookmark", ADD_USER_BOOKMARK_CMD },
+					{ NULL, 0 }
+				};
+				BString name(cmd.String() + 3);
+				for (int i = 0; commands[i].name != NULL; i++) {
+					if (name == commands[i].name) {
+						FILE* out = fopen("/tmp/ts_test.out", "a");
+						if (out != NULL) {
+							fprintf(out, "command %s\n", name.String());
+							fclose(out);
+						}
+						BMessage m(commands[i].what);
+						MessageReceived(&m);
+					}
+				}
+			} else
+				mMainView->TestCommand(message);
 		}
 		break;
-
-	case B_SAVE_REQUESTED:
-		SaveFile(message);
-		break;
-
+#endif
 	default:
-		if (FIRST_ANNOT_CMD <= message->what && message->what <= LAST_ANNOT_CMD) {
-			InsertAnnotation(message->what);
-		} else
-			BWindow::MessageReceived(message);
+		BWindow::MessageReceived(message);
 	}
 }
 
@@ -1762,272 +1683,4 @@ void PDFWindow::SaveUserBookmarks()
 	
 	mFileAttributes.SetBookmarks(&bm);
 	mFileAttributes.Write(&cur_ref, gApp->GetSettings());
-}
-
-// #pragma mark - Annotations
-
-static const int32 kAnnotDescEOL = -1;
-static const int32 kAnnotDescSeparator = -2;
-
-static AnnotDesc annotDescs[] = {
-	{ PDFWindow::ADD_COMMENT_TEXT_ANNOT_CMD, B_TRANSLATE("Add comment text annotation"), "ANNOT_COMMENT"},
-	{ PDFWindow::ADD_HELP_TEXT_ANNOT_CMD, B_TRANSLATE("Add help text annotation"), "ANNOT_HELP"},
-	{ PDFWindow::ADD_INSERT_TEXT_ANNOT_CMD, B_TRANSLATE("Add insert text annotation"), "ANNOT_INSERT"},
-	{ PDFWindow::ADD_KEY_TEXT_ANNOT_CMD, B_TRANSLATE("Add key text annotation"), "ANNOT_KEY"},
-	{ PDFWindow::ADD_NEW_PARAGRAPH_TEXT_ANNOT_CMD, B_TRANSLATE("Add new paragraph text annotation"), "ANNOT_NEW_PARAGRAPH"},
-	{ PDFWindow::ADD_NOTE_TEXT_ANNOT_CMD, B_TRANSLATE("Add note text annotation"), "ANNOT_NOTE"},
-	{ PDFWindow::ADD_PARAGRAPH_TEXT_ANNOT_CMD, B_TRANSLATE("Add paragraph text annotation"), "ANNOT_PARAGRAPH"},
-	{ PDFWindow::ADD_LINK_ANNOT_CMD, B_TRANSLATE("Add link annotation"), "ANNOT_LINK"},
-	{ kAnnotDescSeparator, NULL, NULL},
-	{ PDFWindow::ADD_FREETEXT_ANNOT_CMD, B_TRANSLATE("Add free text annotation"), "ANNOT_FREETEXT"},
-	{ PDFWindow::ADD_LINE_ANNOT_CMD, B_TRANSLATE("Add line annotation"), "ANNOT_LINE"},
-	{ PDFWindow::ADD_SQUARE_ANNOT_CMD, B_TRANSLATE("Add square annotation"), "ANNOT_SQUARE"},
-	{ PDFWindow::ADD_CIRCLE_ANNOT_CMD, B_TRANSLATE("Add circle annotation"), "ANNOT_CIRCLE"},
-	{ PDFWindow::ADD_HIGHLIGHT_ANNOT_CMD, B_TRANSLATE("Add highlight annotation"), "ANNOT_HIGHLIGHT"},
-	{ PDFWindow::ADD_UNDERLINE_ANNOT_CMD, B_TRANSLATE("Add underline annotation"), "ANNOT_UNDERLINE"},
-	{ PDFWindow::ADD_SQUIGGLY_ANNOT_CMD, B_TRANSLATE("Add squiggly annotation"), "ANNOT_SQUIGGLY"},
-	{ PDFWindow::ADD_STRIKEOUT_ANNOT_CMD, B_TRANSLATE("Add strikeout annotation"), "ANNOT_STRIKEOUT"},
-	{ PDFWindow::ADD_STAMP_ANNOT_CMD, B_TRANSLATE("Add stamp annotation"), "ANNOT_STAMP"},
-	{ PDFWindow::ADD_INK_ANNOT_CMD, B_TRANSLATE("Add ink annotation"), "ANNOT_INK"},
-	{ PDFWindow::ADD_POPUP_ANNOT_CMD, B_TRANSLATE("Add popup annotation"), "ANNOT_POPUP"},
-	{ PDFWindow::ADD_FILEATTACHMENT_ANNOT_CMD, B_TRANSLATE("Add file attachment annotation"), "ANNOT_FILEATTACHMENT"},
-	{ PDFWindow::ADD_SOUND_ANNOT_CMD, B_TRANSLATE("Add sound annotation"), "ANNOT_SOUND"},
-	{ PDFWindow::ADD_MOVIE_ANNOT_CMD, B_TRANSLATE("Add movie annotation"), "ANNOT_MOVIE"},
-	{ PDFWindow::ADD_WIDGET_ANNOT_CMD, B_TRANSLATE("Add widget annotation"), "ANNOT_WIDGET"},
-	{ PDFWindow::ADD_PRINTERMARK_ANNOT_CMD, B_TRANSLATE("Add printer mark annotation"), "ANNOT_PRINTERMARK"},
-	{ PDFWindow::ADD_TRAPNET_ANNOT_CMD, B_TRANSLATE("Add trapnet annotation"), "ANNOT_TRAPNET"},
-	{ kAnnotDescEOL, NULL, NULL}
-};
-
-BView* PDFWindow::BuildAnnotToolBar(const char* name, AnnotDesc* desc)
-{
-	mAnnotationBar = new BToolBar(B_VERTICAL);
-	mAnnotationBar->SetName(name);
-
-	mAnnotationBar->AddAction(DONE_EDIT_ANNOT_CMD, this,
-		LoadVectorIcon("DONE_ANNOT"),
-		B_TRANSLATE("Leave annotation editing mode"));
-	mAnnotationBar->AddAction(SAVE_FILE_AS_CMD, this,
-		LoadVectorIcon("SAVE_FILE_AS"), B_TRANSLATE("Save file as"));
-
-	mAnnotationBar->AddSeparator();
-
-	// add buttons for supported annotations
-	for (desc = annotDescs; desc->mCmd != kAnnotDescEOL; desc ++) {
-		if (desc->mCmd == kAnnotDescSeparator) {
-			mAnnotationBar->AddSeparator();
-			continue;
-		}
-
-		Annotation* annot = GetAnnotTemplate(desc->mCmd);
-		if (annot == NULL)
-			continue;
-
-		mAnnotationBar->AddAction(desc->mCmd, this,
-			LoadVectorIcon(desc->mButtonPrefix), desc->mToolTip, NULL, true);
-	}
-	mAnnotationBar->AddGlue();
-
-	/*BScrollView* sc = new BScrollView("AnnotToolbarScroll", mAnnotationBar,
-		0, false, true, B_PLAIN_BORDER);
-	sc->SetExplicitMinSize(BSize(0, 0));
-	BScrollBar* sb = sc->ScrollBar(B_VERTICAL);
-	float range;
-	sb->GetRange(NULL, &range);
-	sb->SetRange(0, range * 0.35);
-	sb->SetSteps(5, 15);
-	sb->SetProportion(0.5);*/
-	BView* CV = new BView("CV", 0);
-	BLayoutBuilder::Group<>(CV, B_HORIZONTAL)
-		.AddGlue(0)
-		.Add(mAnnotationBar)
-		.AddGlue(0)
-	.End();
-	return CV;
-}
-
-bool PDFWindow::TryEditAnnot() {
-	if (mMainView->GetPDFDoc()->isEncrypted()) {
-		BAlert* alert = new BAlert(B_TRANSLATE("Warning"), B_TRANSLATE("Editing of annotations in an encrypted PDF file isn't supported yet!"), B_TRANSLATE("OK"));
-		alert->Go();
-		return false;
-	} else {
-		EditAnnotation(true);
-		return true;
-	}
-}
-
-void PDFWindow::EditAnnotation(bool edit) {
-	if (edit == mMainView->EditingAnnot()) {
-		return;
-	}
-	if (edit) {
-		mMainView->BeginEditAnnot();
-	} else {
-		ReleaseAnnotationButton();
-		mMainView->EndEditAnnot();
-	}
-	mMainView->Invalidate();
-	UpdateInputEnabler();
-}
-
-void PDFWindow::InitAnnotTemplates() {
-	for (int i = 0; i < NUM_ANNOTS; i++) mAnnotTemplates[i] = NULL;
-
-	PDFRectangle rect;
-	// rect.x1 == -1 means that when the annotation is added to the the page
-	// resize mode should be enabled otherwise the rectangle should be used
-	// as default and move mode should be enabled.
-	rect.x1 = -1; rect.x2 = 40;
-	rect.y1 = 0; rect.y2 = 40;
-
-	for (int i = 0; i < TextAnnot::no_of_types-1; i++) {
-		BBitmap* bitmap = gApp->GetTextAnnotImage(i);
-		PDFRectangle rect;
-		BRect bounds(bitmap->Bounds());
-		rect.x1 = rect.y1 = 0;
-		rect.x2 = bounds.right;
-		rect.y2 = bounds.bottom;
-		SetAnnotTemplate(ADD_COMMENT_TEXT_ANNOT_CMD+i, new TextAnnot(rect, (TextAnnot::text_annot_type)i));
-	}
-
-	PDFPoint line[2];
-	line[0] = PDFPoint(rect.x1, rect.y1);
-	line[1] = PDFPoint(rect.x2, rect.y1);
-
-	PDFFont* font = BePDFAcroForm::GetStandardFonts()->FindByName("Helvetica");
-	ASSERT(font != NULL);
-	SetAnnotTemplate(ADD_FREETEXT_ANNOT_CMD, new FreeTextAnnot(rect, font));
-
-	SetAnnotTemplate(ADD_LINE_ANNOT_CMD, new LineAnnot(rect, line));
-
-	SetAnnotTemplate(ADD_SQUARE_ANNOT_CMD, new SquareAnnot(rect));
-	SetAnnotTemplate(ADD_CIRCLE_ANNOT_CMD, new CircleAnnot(rect));
-	SetAnnotTemplate(ADD_HIGHLIGHT_ANNOT_CMD, new HighlightAnnot(rect));
-	SetAnnotTemplate(ADD_UNDERLINE_ANNOT_CMD, new UnderlineAnnot(rect));
-	SetAnnotTemplate(ADD_SQUIGGLY_ANNOT_CMD, new SquigglyAnnot(rect));
-	SetAnnotTemplate(ADD_STRIKEOUT_ANNOT_CMD, new StrikeOutAnnot(rect));
-}
-
-void PDFWindow::DeleteAnnotTemplates() {
-	for (int i = 0; i < NUM_ANNOTS; i++) {
-		delete mAnnotTemplates[i];
-		mAnnotTemplates[i] = NULL;
-	}
-}
-
-void PDFWindow::SetAnnotTemplate(int cmd, Annotation* a) {
-	ASSERT(FIRST_ANNOT_CMD <= cmd && cmd <= LAST_ANNOT_CMD);
-	ASSERT(mAnnotTemplates[cmd - FIRST_ANNOT_CMD] == NULL);
-	if (CanWrite(a)) {
-		mAnnotTemplates[cmd - FIRST_ANNOT_CMD] = a;
-		// add popup annotation to annotation if it's not a FreeTextAnnot
-		if (dynamic_cast<FreeTextAnnot*>(a) == NULL) {
-			PDFRectangle rect;
-			rect.x1 = 0; rect.x2 = 300;
-			rect.y1 = 0; rect.y2 = 200;
-			PopupAnnot* popup = new PopupAnnot(rect);
-			a->SetPopup(popup);
-		}
-	} else {
-		delete a;
-	}
-}
-
-Annotation* PDFWindow::GetAnnotTemplate(int cmd) {
-	ASSERT(FIRST_ANNOT_CMD <= cmd && cmd <= LAST_ANNOT_CMD);
-	return mAnnotTemplates[cmd - FIRST_ANNOT_CMD];
-}
-
-void PDFWindow::InsertAnnotation(int cmd) {
-	ReleaseAnnotationButton();
-
-	if (!mMainView->EditingAnnot() && !TryEditAnnot()) {
-		return;
-	}
-
-	PressAnnotationButton();
-	Annotation* templateAnnotation = GetAnnotTemplate(cmd);
-	if (templateAnnotation != NULL) {
-		mMainView->InsertAnnotation(templateAnnotation);
-	} else {
-		ReleaseAnnotationButton();
-	}
-}
-
-class SaveFileThread : public SaveThread {
-public:
-	SaveFileThread(const char* title, XRef* xref, const char* path, PDFView* view)
-		: SaveThread(title, xref)
-		, mPath(path)
-		, mMainView(view)
-	{
-
-	}
-
-	int32 Run() {
-		BAlert* alert = NULL;
-
-		AnnotWriter writer(GetXRef(), mMainView->GetPDFDoc(),
-			mMainView->GetPageRenderer()->GetAnnotsList(),
-			mMainView->GetBePDFAcroForm());
-		if (writer.WriteTo(mPath.String())) {
-			alert = new BAlert("Information", B_TRANSLATE("PDF file successfully written!"), B_TRANSLATE("OK"), 0, 0, B_WIDTH_AS_USUAL, B_STOP_ALERT);
-		} else {
-			alert = new BAlert("Error", B_TRANSLATE("Could not write PDF file!"), B_TRANSLATE("OK"), 0, 0, B_WIDTH_AS_USUAL, B_STOP_ALERT);
-		}
-
-		alert->Go();
-		delete this;
-		return 0;
-	}
-
-private:
-	BString  mPath;
-	PDFView* mMainView;
-};
-
-void PDFWindow::SaveFile(BMessage* msg) {
-	entry_ref dir;
-	BString   name;
-	if (msg->FindRef("directory", &dir) == B_OK &&
-		msg->FindString("name", &name) == B_OK) {
-		BEntry entry(&dir);
-		BPath  path(&entry);
-		path.Append(name.String());
-		BEntry newFile(path.Path());
-		if (newFile != mCurrentFile) {
-			gPdfLock->Lock();
-			mMainView->SyncAnnotation(false);
-			gPdfLock->Unlock();
-
-			SaveFileThread* thread = new SaveFileThread(
-				B_TRANSLATE("Saving copy of PDF file:"),
-				mMainView->GetPDFDoc()->getXRef(),
-				path.Path(),
-				mMainView);
-
-			thread->Resume();
-		} else {
-			BAlert* alert = NULL;
-			alert = new BAlert(B_TRANSLATE("Warning"), B_TRANSLATE("Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name."), B_TRANSLATE("OK"));
-			alert->Go();
-		}
-	}
-}
-
-void PDFWindow::PressAnnotationButton() {
-	BMessage* msg = CurrentMessage();
-	BControl* control;
-	if (msg && msg->FindPointer("source", (void**)&control) == B_OK) {
-		control->SetValue(B_CONTROL_ON);
-		mPressedAnnotationButton = control;
-	}
-}
-
-void PDFWindow::ReleaseAnnotationButton() {
-	if (mPressedAnnotationButton) {
-		mPressedAnnotationButton->SetValue(B_CONTROL_OFF);
-		mPressedAnnotationButton = NULL;
-	}
 }

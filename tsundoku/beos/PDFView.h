@@ -20,26 +20,26 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+
 #ifndef _PDFVIEW_H_
 #define _PDFVIEW_H_
+
+#include <vector>
 
 #include <be/interface/Bitmap.h>
 #include <be/interface/Menu.h>
 #include <be/interface/View.h>
+#include <String.h>
 
-#include "Page.h"
-#include "XRef.h"
-#include "Catalog.h"
-
-#include "PDFDoc.h"
-#include "BeSplashOutputDev.h"
+#include "Document.h"
 #include "History.h"
 #include "FindTextWindow.h"
 #include "PageRenderer.h"
+#include "Settings.h"
 
 class PDFWindow;
 class CachedPage;
-class Annotation;
+class FileAttributes;
 
 #define MIN_ZOOM	0
 #define MAX_ZOOM	10
@@ -58,8 +58,7 @@ class PDFView
 {
 private:
 	bool mLoading;
-	PDFDoc * mDoc;
-	BePDFAcroForm* mBePDFAcroForm;
+	Document * mDoc;
 	bool mOk;
 	int mZoom;
 	BBitmap * mBitmap;
@@ -77,9 +76,7 @@ private:
 	BString *mTitle;
 	float mLeft, mTop;	// position of page inside the view
 	float mWidth, mHeight;		//document width and height
-	LinkAction *mLinkAction;
-	Annotation *mAnnotation;
-	Annotation *mAnnotInEditor;
+	const DocLink *mLink;      // link under the mouse
 	History mHistory;
 	enum {
 		kNotInHistory, kInHistory
@@ -91,16 +88,10 @@ private:
 		MOVE_ACTION,
 		SELECT_ACTION,
 		DND_ACTION,
-		ZOOM_ACTION,
-		RESIZE_ANNOT_ACTION,
-		MOVE_ANNOT_ACTION
+		ZOOM_ACTION
 	} mMouseAction;
 	BPoint mMousePosition;
 	bool mDragStarted;
-	bool mEditAnnot;
-	bool mResizeVertOnly;
-	PDFRectangle mAnnotStartRect;
-	Annotation*  mInsertAnnot;
 
 	float mMouseWheelDY;
 	enum {
@@ -115,34 +106,50 @@ private:
 		DO_SELECTION = 1,
 		SELECTED = 2
 	} mSelected;
+	// What is selected: text that follows the flow of the text between two points, a rectangle (also for
+	// copying an image), or the places where text has been found.
+	enum {
+		kSelectText,
+		kSelectArea
+	} mSelectionKind;
 	bool mFilledSelection;
 
+	// text selection: end points in page space and the area they cover (page space)
+	fz_point mTextStart, mTextEnd;
+	std::vector<fz_quad> mQuads;
+	// area selection (and zoom to selection): in coordinates of the bitmap
 	BPoint mSelectionStart;
 	BRect mSelection;
 
 	BMessage * mPrintSettings;
 
-	// find
+	// find: where the last hit was, to go on after it
 	bool mStopFindThread;
+	int mFindPage, mFindIndex;
+	BString mFindNeedle;
+	bool mFindCaseSensitive;
 
 	BPoint CorrectMousePos(const BPoint point);
-	PDFPoint CvtDevToUser(BPoint dev);
-	BPoint CvtUserToDev(PDFPoint user);
-	BRect  CvtUserToDev(PDFRectangle* user);
 	void OnMouseWheelChanged(BMessage *msg);
 
 	PDFWindow* GetPDFWindow();
 
-	void SaveFileAttachment(BMessage* msg);
+	// selection of text
+	void StartTextSelection(BPoint point);
+	void ExtendTextSelection(BPoint point);
+	bool SelectTextAt(BPoint point, int mode);
+	void UpdateQuads(bool invalidate);
+	bool InTextSelection(BPoint point);
+	bool InSelection(BPoint point);
+	BRect SelectionBounds();
 
 public:
 	PDFView(entry_ref* ref, FileAttributes *fileAttributs,
-		const char *name, uint32 flags,	const char *ownerPassword,
+		const char *name, uint32 flags, const char *ownerPassword,
 		const char *userPassword, bool *encrypted);
 	virtual ~PDFView();
 
 	void SetPassword(const char *owner, const char *user);
-	GString *ConvertPassword(const char *password);
 
 	void EndDoc();
 
@@ -159,7 +166,6 @@ public:
 	bool InPage(BPoint p);  // NOT USED
 	BPoint LimitToPage(BPoint p);
 
-	void DrawAnnotations(BRect updateRect);
 	void DrawPage(BRect updateRect);
 	void DrawBackground(BRect updateRect);
 	void DrawSelection(BRect updateRect);
@@ -172,17 +178,6 @@ public:
 	virtual void KeyDown (const char * bytes, int32 numBytes);
 	void SetAction(mouse_action action);
 
-	void CurrentDate(BString& date);
-	bool OnAnnotation(BPoint p);
-	bool OnAnnotResizeRect(BPoint p, bool& vertOnly);
-	void InsertAnnotation(BPoint where, bool* hasFixedSize);
-	void AnnotMoveOrResize(BPoint point, bool annotInserted, bool fixedSize);
-	bool AnnotMouseDown(BPoint point, uint32 button);
-	void MoveAnnotation(BPoint point);
-	void ResizeAnnotation(BPoint point);
-	bool AnnotMouseMoved (BPoint point, uint32 transit, const BMessage *msg);
-	bool AnnotMouseUp (BPoint point);
-
 	uint32 GetButtons();
 	virtual void MouseDown (BPoint point);
 	void ScrollIfOutside (BPoint point);
@@ -193,19 +188,15 @@ public:
 	virtual void ScrollTo (BPoint point);
 	void ScrollTo(float x, float y);
 	virtual void MessageReceived(BMessage *msg);
-	LinkAction* OnLink(BPoint p);
-	void LinkToString(LinkAction* action, BString* string);
-	BMenuItem* AddAnnotItem(BMenu* menu, const char* label, uint32 what);
-	void ShowAnnotPopUpMenu(BPoint point);
-	void ShowPopUpMenu(BPoint point, LinkAction* action);
+	const DocLink* OnLink(BPoint p);
+	void LinkToString(const DocLink* link, BString* string);
+	void ShowPopUpMenu(BPoint point, const DocLink* link);
 	void CopyText(BString *str);
 	bool IsOk() { return mOk; }
 
 	void SetPage (int page);
 
 	void MoveToPage (int page, bool top = true);
-	void MoveToPage (int num, int gen, bool top = true);
-	void MoveToPage (const char *string, bool top = true);
 	int Page()      { return mCurrentPage; } ;
 
 	// history
@@ -228,11 +219,11 @@ public:
 	void SetRotation ( float rot );
 	void RotateClockwise();
 	void RotateAntiClockwise();
-	void Redraw(PDFDoc *doc = NULL);
+	void Redraw();
 	void PostRedraw(thread_id id, BBitmap *bitmap);
 	void RedrawAborted(thread_id id, BBitmap *bitmap);
 	void WaitForPage(bool abort = false);
-	// Rerender this page with new parameters for font renderer and colorspace
+	// Rerender this page
 	void RestartDoc();
 
 	// called when size of window changes
@@ -240,28 +231,25 @@ public:
 	void CenterPage();
 	void FixScrollbars ();
 
-	int GetNumPages() 		    { return mDoc->getNumPages(); };
-	int GetPageWidth(int page)  { return (int)mDoc->getPageCropWidth (page); };
-	int GetPageHeight(int page) { return (int)mDoc->getPageCropHeight (page); };
+	int GetNumPages() 		    { return mDoc->PageCount(); };
 
 	status_t PageSetup();
 	void Print();
 	void SetPrintingDpi(int dpi);
 
-	bool IsLinkToPDF(LinkAction* action, BString* path);
+	// follows a link; the position is for a link inside of the document
 	bool HandleLink(BPoint point);
-	void GotoDest(LinkDest* dest);
+	bool IsLinkToDocument(const DocLink* link, BString* path);
+	// goes to the page and scrolls to the position (page space, may be NaN)
+	void GotoPosition(int page, float x, float y);
 	void DisplayLink(BPoint point);
 
 	void Find(const char *s, bool ignoreCase, bool backward, FindTextWindow *findWindow);
 	void StopFind();
 
-	void Dump(); // called from BeOutputDev
-	friend class PrintView;
-
 	void SelectionChanged();
-	void SetSelection(int xMin, int yMin, int xMax, int yMax, bool display = false);
-	void GetSelection(int &xMin, int &yMin, int &xMax, int &yMax);
+	// Selects the text found by a search (from start to end in page space of the current page), scrolls to it.
+	void SelectFound(fz_point start, fz_point end);
 	void CopySelection();
 	void SelectAll();
 	void SelectNone();
@@ -279,24 +267,20 @@ public:
 
 	void SetInvertVerticalScrolling(bool reverse) { mInvertVerticalScrolling = reverse; }
 
-	PDFDoc* GetPDFDoc() { return mDoc; }
+	Document* GetDocument() { return mDoc; }
 	CachedPage* GetPage() { return mPage; }
 	PageRenderer* GetPageRenderer() { return &mPageRenderer; }
-	bool HasSelection() { return mSelected != NOT_SELECTED; }
+	bool HasSelection() { return mSelected == SELECTED; }
 
 	void UpdateSettings(GlobalSettings* settings);
 
-	// Annotation
-	BePDFAcroForm* GetBePDFAcroForm() { return mBePDFAcroForm; }
-	void BeginEditAnnot();
-	void InsertAnnotation(Annotation* a);
-	void ClearAnnotationWindow();
-	void SyncAnnotation(bool clearWindow);
-	void UpdateAnnotation(Annotation* a, const char* contents, const char* font, float size, const char* align);
-	void UpdateAnnotation(Annotation* a, BMessage* data);
-	void EndEditAnnot();
-	bool EditingAnnot() const { return mEditAnnot; }
-	void ShowAnnotWindow(bool editable, bool updateOnly = false);
+	friend class PrintView;
+	friend class FindThread;
+
+#ifdef TSUNDOKU_TESTING
+	// drives the view without mouse and keyboard, see PDFView.cpp
+	void TestCommand(BMessage* message);
+#endif
 };
 
 #endif

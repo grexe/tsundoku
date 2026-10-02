@@ -1,40 +1,39 @@
-/*  
- * BePDF: The PDF reader for Haiku.
+/*
+ * Tsundoku: a universal document reader for Haiku, extended for SEN.
+ * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
+ *
+ * Based on BePDF:
  * 	 Copyright (C) 1997 Benoit Triquet.
  * 	 Copyright (C) 1998-2000 Hubert Figuiere.
  * 	 Copyright (C) 2000-2011 Michael Pfeiffer.
  * 	 Copyright (C) 2013 waddlesplash.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero
+ * General Public License as published by the Free Software Foundation, either version 3 of the License, or (at
+ * your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public
+ * License for more details.
  */
-
 #ifndef _CACHED_PAGE_H
 #define _CACHED_PAGE_H
 
-// xpdf
-#include<XRef.h>
-#include<Link.h>
-#include<TextOutputDev.h>
-#include<PDFDoc.h>
-#include"Annotation.h"
-// BeOS
-#include<Bitmap.h>
-#include<SupportDefs.h>
+#include <vector>
 
-class PageCache;
+#include <Bitmap.h>
+#include <Point.h>
+#include <Rect.h>
+#include <SupportDefs.h>
 
+#include "Document.h"
+
+class PageRenderer;
+
+// The rendered page that is shown: the bitmap and what is needed to interact with it (links, text).
+//
+// Page space is the coordinate system of MuPDF for the page (points, y points down, rotation of the page
+// applied). The bitmap is a transformation of it, see Matrix().
 class CachedPage {
 public:
 	CachedPage();
@@ -48,66 +47,47 @@ public:
 	};
 
 	enum State GetState() const { return mState; }
-	// Is this page displayed?
-	bool GetDisplayed() const   { return mDisplayed; }
-	
-	GBool FindText(Unicode *s, int len,
-		 GBool startAtTop, GBool stopAtBottom,
-		 GBool startAtLast, GBool stopAtLast,
-		 GBool caseSensitive, GBool backward,
-		double *xMin, double *yMin, double *xMax, double *yMax);
-	GString *GetText(int xMin, int yMin, int xMax, int yMax);
-	
-	// If point <x>,<y> is in a link, return the associated action;
-	// else return NULL.
-	LinkAction *FindLink(double x, double y);
 
-	// Return true if <x>,<y> is in a link.
-	GBool OnLink(double x, double y);
-	
-	void CvtDevToUser(int dx, int dy, double *ux, double *uy);
-	void CvtUserToDev(double ux, double uy, int *dx, int *dy);
-	
-	BBitmap *GetBitmap() const { return mBitmap; }
+	BBitmap* GetBitmap() const { return mBitmap; }
 	int32 GetWidth() const     { return mWidth; }
 	int32 GetHeight() const    { return mHeight; }
-	
-	float GetDeltaX()          { return mGSdeltaX; }
-	float GetDeltaY()          { return mGSdeltaY; }
 
-	void SetAnnotations(Annotations* a) { mAnnotations = a; }
-	Annotations* GetAnnotations()       { return mAnnotations; }
+	// maps page space to pixels of the bitmap
+	const fz_matrix& Matrix() const { return mMatrix; }
 
-	friend class PageCache;	
+	fz_point  DevToPage(BPoint dev) const;
+	BPoint    PageToDev(fz_point page) const;
+	// the bounding box in the bitmap
+	BRect     PageToDev(fz_rect page) const;
+	BRect     PageToDev(fz_quad quad) const;
+
+	// The link at the position (page space), NULL if there is none. Valid until the page is rendered again.
+	const DocLink* FindLink(fz_point point) const;
+
+	// Structured text of the page for selecting and copying; NULL as long as the page is rendering.
+	// The caller holds the lock of the document while it uses it.
+	fz_stext_page* Text() const { return mState == READY ? mText : NULL; }
+	Document* GetDocument() const { return mDocument; }
+
 	friend class PageRenderer;
-	friend int gsdll_callback(int message, char *str, unsigned long count);
+	friend class PDFView;
 
-	double *GetCTM() { return mCtm; }
+	// forgets the text and links (they belong to the document), keeps the bitmap
+	void MakeEmpty();
 
 protected:
-	void MakeEmpty();
-	void SetState(enum State state) { mState = state; };
-	void SetDisplayed(bool displayed) { mDisplayed = displayed; };
-	void SetText(TextPage *text);
-	void SetLinks(Links *links);
-	void InitCTM(OutputDev *outputDev);
-	void SetBitmap(BBitmap *bitmap, int32 width, int32 height);
-	void SetBitmapSize(int32 width, int32 height) { mWidth = width; mHeight = height; };
-	enum State mState;
-	bool mDisplayed;   
+	void SetState(enum State state) { mState = state; }
+	void SetBitmap(BBitmap* bitmap, int32 width, int32 height);
+	void SetBitmapSize(int32 width, int32 height) { mWidth = width; mHeight = height; }
+	void SetMatrix(const fz_matrix& matrix);
 
-	BBitmap *mBitmap;
+	enum State mState;
+	BBitmap* mBitmap;
 	int32 mWidth, mHeight;
-	int32 mPage, mZoom, mRotation;
-	// correction for Ghostscript
-	double mGSdeltaX, mGSdeltaY;
-	// from BeOutputDev
-	TextPage *mText;
-	// from PDFDoc
-	Links *mLinks;
-	// from OutputDev
-	double mCtm[6], mIctm[6];
-	Annotations *mAnnotations;
+	fz_matrix mMatrix, mInverse;
+	Document* mDocument;
+	fz_stext_page* mText;
+	std::vector<DocLink> mLinks;
 };
 
 #endif

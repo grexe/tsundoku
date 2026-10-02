@@ -4,6 +4,9 @@
 ## Makefile-Engine will do all of the hard work for you. This handles any
 ## architecture of Haiku.
 
+# The MuPDF source tree, built with "make build=release libs", see PLAN-mupdf.md
+MUPDF_DIR ?= $(HOME)/Develop/3rd-party/mupdf-1.28.5-source
+
 # The name of the binary.
 NAME = Tsundoku
 TARGET_DIR= ../dist
@@ -29,22 +32,13 @@ APP_MIME_SIG = application/x-vnd.sen-labs.Tsundoku
 #	means this Makefile will not work correctly if two source files with the
 #	same name (source.c or source.cpp) are included from different directories.
 #	Also note that spaces in folder names do not work well with this Makefile.
-SRCS = beos/AnnotAppearance.cpp \
-	beos/AnnotWriter.cpp \
-	beos/Annotation.cpp \
-	beos/AnnotationRenderer.cpp \
-	beos/AnnotationWindow.cpp \
-	beos/AttachmentView.cpp \
-	beos/BeFontEncoding.cpp \
-	beos/Globals.cpp \
-	beos/Application.cpp \
-	beos/BitmapPool.cpp \
-	beos/CachedPage.cpp \
-	beos/DisplayCIDFonts.cpp \
+SRCS = beos/CachedPage.cpp \
+	beos/Document.cpp \
 	beos/EntryChangedMonitor.cpp \
 	beos/FileInfoWindow.cpp \
-	beos/FileSpec.cpp \
 	beos/FindTextWindow.cpp \
+	beos/Globals.cpp \
+	beos/Application.cpp \
 	beos/History.cpp \
 	beos/LayoutUtils.cpp \
 	beos/OutlinesWindow.cpp \
@@ -52,19 +46,14 @@ SRCS = beos/AnnotAppearance.cpp \
 	beos/PDFSearch.cpp \
 	beos/PDFView.cpp \
 	beos/PDFWindow.cpp \
-	beos/PageCache.cpp \
-	beos/PageLabels.cpp \
 	beos/PageRenderer.cpp \
 	beos/PasswordWindow.cpp \
 	beos/PreferencesWindow.cpp \
 	beos/PrintSettingsWindow.cpp \
 	beos/PrintingProgressWindow.cpp \
-	beos/SaveThread.cpp \
 	beos/Settings.cpp \
 	beos/StatusWindow.cpp \
-	beos/TextConversion.cpp \
 	beos/TraceWindow.cpp \
-	beos/TreeParser.cpp \
 	beos/utils/EntryMenuItem.cpp \
 	beos/utils/ResourceLoader.cpp \
 	beos/utils/Thread.cpp
@@ -94,7 +83,9 @@ RSRCS =
 #		you need to specify the path to the library and it's name.
 #		(e.g. for mylib.a, specify "mylib.a" or "path/mylib.a")
 LIBS = shared be textencoding columnlistview tracker translation localestub \
-	../xpdf/libxpdf.a $(STDCPPLIBS)
+	$(MUPDF_DIR)/build/release/libmupdf.a $(MUPDF_DIR)/build/release/libmupdf-third.a \
+	freetype harfbuzz openjp2 jbig2dec brotlidec brotlienc brotlicommon jpeg z \
+	$(STDCPPLIBS)
 
 #	Specify additional paths to directories following the standard libXXX.so
 #	or libXXX.a naming scheme. You can specify full paths or paths relative
@@ -106,12 +97,7 @@ LIBPATHS =
 #	Additional paths to look for system headers. These use the form
 #	"#include <header>". Directories that contain the files in SRCS are
 #	NOT auto-included here.
-SYSTEM_INCLUDE_PATHS = ../xpdf \
-	../xpdf/beos \
-	../xpdf/fofi \
-	../xpdf/goo \
-	../xpdf/splash \
-	../xpdf/xpdf \
+SYSTEM_INCLUDE_PATHS = $(MUPDF_DIR)/include \
 	/system/develop/headers/private/interface
 
 #	Additional paths paths to look for local headers. These use the form

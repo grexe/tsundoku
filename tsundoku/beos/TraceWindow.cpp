@@ -33,7 +33,6 @@
 #include <ScrollView.h>
 
 #include "LayoutUtils.h"
-#include "TextConversion.h"
 #include "TraceWindow.h"
 
 #undef B_TRANSLATION_CONTEXT

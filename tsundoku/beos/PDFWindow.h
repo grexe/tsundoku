@@ -39,18 +39,7 @@
 #include "PDFView.h"
 #include "ToolTip.h"
 
-// xpdf
-#include <Catalog.h>
-
-class AnnotationWindow;
-class AttachmentView;
 class OutlinesView;
-
-typedef struct {
-	int mCmd;
-	const char* mToolTip;
-	const char* mButtonPrefix;
-} AnnotDesc;
 
 class RecentDocumentsMenu : public BMenu
 {
@@ -102,36 +91,6 @@ public:
 		FIT_TO_PAGE_WIDTH_CMD,
 		FIT_TO_PAGE_CMD,
 
-		// Annotations
-		FIRST_ANNOT_CMD,
-			ADD_COMMENT_TEXT_ANNOT_CMD = FIRST_ANNOT_CMD,
-			ADD_HELP_TEXT_ANNOT_CMD,
-			ADD_INSERT_TEXT_ANNOT_CMD,
-			ADD_KEY_TEXT_ANNOT_CMD,
-			ADD_NEW_PARAGRAPH_TEXT_ANNOT_CMD,
-			ADD_NOTE_TEXT_ANNOT_CMD,
-			ADD_PARAGRAPH_TEXT_ANNOT_CMD,
-		ADD_LINK_ANNOT_CMD,
-		ADD_FREETEXT_ANNOT_CMD,
-		ADD_LINE_ANNOT_CMD,
-		ADD_SQUARE_ANNOT_CMD,
-		ADD_CIRCLE_ANNOT_CMD,
-		ADD_HIGHLIGHT_ANNOT_CMD,
-		ADD_UNDERLINE_ANNOT_CMD,
-		ADD_SQUIGGLY_ANNOT_CMD,
-		ADD_STRIKEOUT_ANNOT_CMD,
-		ADD_STAMP_ANNOT_CMD,
-		ADD_INK_ANNOT_CMD,
-		ADD_POPUP_ANNOT_CMD,
-		ADD_FILEATTACHMENT_ANNOT_CMD,
-		ADD_SOUND_ANNOT_CMD,
-		ADD_MOVIE_ANNOT_CMD,
-		ADD_WIDGET_ANNOT_CMD,
-		ADD_PRINTERMARK_ANNOT_CMD,
-		ADD_TRAPNET_ANNOT_CMD,
-		LAST_ANNOT_CMD = ADD_TRAPNET_ANNOT_CMD,
-		DONE_EDIT_ANNOT_CMD,
-
 		// Page
 		FIRST_PAGE_CMD,
 		NEXT_N_PAGE_CMD,
@@ -149,9 +108,6 @@ public:
 		SET_ROTATE_VALUE_CMD,
 		ROTATE_CLOCKWISE_CMD,
 		ROTATE_ANTI_CLOCKWISE_CMD,
-		// Attachments
-		ATTACHMENT_SELECTION_CHANGED_MSG,
-
 		SHOW_TRACER_CMD,
 
 		// Search
@@ -181,8 +137,6 @@ public:
 		// show/hide Page List
 		SHOW_BOOKMARKS_CMD,
 		SHOW_PAGE_LIST_CMD,
-		SHOW_ANNOT_TOOLBAR_CMD,
-		SHOW_ATTACHMENTS_CMD,
 		HIDE_LEFT_PANEL_CMD,
 		// full screen
 		FULL_SCREEN_CMD,
@@ -190,16 +144,13 @@ public:
 
 	enum {
 		TOOLBAR_HEIGHT = 30,
-		TOOLBAR_WIDTH = 30,
-		NUM_ANNOTS = LAST_ANNOT_CMD - FIRST_ANNOT_CMD + 1
+		TOOLBAR_WIDTH = 30
 	};
 
 	// active view in left panel
 	enum {
 		BOOKMARKS_PANEL = 0,
 		PAGE_LIST_PANEL,
-		ANNOTATIONS_PANEL,
-		ATTACHMENTS_PANEL,
 	};
 
 	// pending mask
@@ -224,8 +175,6 @@ private:
 	BCardView*		mLayerView;
 	BListView      *mPagesView;
 	OutlinesView   *mOutlinesView;
-	BToolBar*		mAnnotationBar;
-	AttachmentView *mAttachmentView;
 
 	BMessage       *mPrintSettings;
 	FindTextWindow *mFindWindow;
@@ -243,7 +192,6 @@ private:
 	BMessenger     *mOWMessenger;  // outlines window messenger
 	BMessenger     *mFIWMessenger; // file info window messenger
 	BMessenger     *mPSWMessenger; // printing settings window messenger
-	BMessenger     *mAWMessenger;  // annotation window messenger
 	bool           mPrintSettingsWindowOpen;
 
 	bool           mShowLeftPanel;
@@ -255,9 +203,6 @@ private:
 	int32          mCurrentWorkspace;
 
 	uint32         mPendingMask;
-
-	Annotation*    mAnnotTemplates[NUM_ANNOTS];
-	BControl*      mPressedAnnotationButton;
 
 public:
 	PDFWindow (entry_ref* ref, BRect frame, const char *ownerPassword,
@@ -296,11 +241,9 @@ public:
 	static bool GetEntryRef(const char* file, entry_ref* ref);
 	static void Launch(const char *file);
 	static void OpenInWindow(const char* file);
-	AnnotationWindow* GetAnnotationWindow();
-	AnnotationWindow* ShowAnnotationWindow();
 
 	// hook function
-	void NewDoc(PDFDoc *doc);
+	void NewDoc(Document *doc);
 	void NewPage(int page);
 
 	enum {
@@ -324,8 +267,6 @@ public:
 	void UpdatePageList();
 	void HandlePendingActions(bool ok);
 
-	void EditAnnotation(bool edit);
-	void ReleaseAnnotationButton();
 
 protected:
 	bool CancelCommand(BMessage* msg);
@@ -353,17 +294,6 @@ protected:
 	void DeleteUserBookmark();
 	void EditUserBookmark();
 	void SaveUserBookmarks();
-
-	// Annotations
-	void PressAnnotationButton();
-	BView* BuildAnnotToolBar(const char* name, AnnotDesc* desc);
-	bool TryEditAnnot();
-	void InitAnnotTemplates();
-	void DeleteAnnotTemplates();
-	void SetAnnotTemplate(int cmd, Annotation* a);
-	Annotation* GetAnnotTemplate(int cmd);
-	void InsertAnnotation(int cmd);
-	void SaveFile(BMessage* msg);
 };
 
 

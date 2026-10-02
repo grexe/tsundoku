@@ -1,115 +1,116 @@
 /*
- * BePDF: The PDF reader for Haiku.
+ * Tsundoku: a universal document reader for Haiku, extended for SEN.
+ * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
+ *
+ * Based on BePDF:
  * 	 Copyright (C) 1997 Benoit Triquet.
  * 	 Copyright (C) 1998-2000 Hubert Figuiere.
  * 	 Copyright (C) 2000-2011 Michael Pfeiffer.
  * 	 Copyright (C) 2013 waddlesplash.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero
+ * General Public License as published by the Free Software Foundation, either version 3 of the License, or (at
+ * your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public
+ * License for more details.
  */
-
 #include "CachedPage.h"
 
-/////////////////////////////////////////////////////////////////////////
-CachedPage::CachedPage() :
+#include <math.h>
+
+CachedPage::CachedPage()
+	:
 	mState(EMPTY),
 	mBitmap(NULL),
-	mText(NULL),
-	mLinks(NULL),
-	mAnnotations(NULL) {
-}
-
-CachedPage::~CachedPage() {
-	delete mBitmap; delete mText; delete mLinks;
-}
-
-/////////////////////////////////////////////////////////////////////////
-void CachedPage::InitCTM(OutputDev *outputDev) {
-	for (int i = 0; i < 6; i++) mCtm[i] = outputDev->getDefCTM()[i];
-	for (int i = 0; i < 6; i++) mIctm[i] = outputDev->getDefICTM()[i];
-}
-
-void CachedPage::CvtDevToUser(int dx, int dy, double *ux, double *uy) {
-  *ux = mIctm[0] * dx + mIctm[2] * dy + mIctm[4];
-  *uy = mIctm[1] * dx + mIctm[3] * dy + mIctm[5];
-}
-
-void CachedPage::CvtUserToDev(double ux, double uy, int *dx, int *dy) {
-  *dx = (int)(mCtm[0] * ux + mCtm[2] * uy + mCtm[4] + 0.5);
-  *dy = (int)(mCtm[1] * ux + mCtm[3] * uy + mCtm[5] + 0.5);
-}
-
-/////////////////////////////////////////////////////////////////////////
-void CachedPage::SetLinks(Links *links) {
-	// ASSERT(mLinks == NULL);
-	mLinks = links;
-}
-
-LinkAction *CachedPage::FindLink(double x, double y) {
-	if (mLinks) {
-		return mLinks->find(x, y);
-	} else {
-		return NULL;
-	}
-}
-
-GBool CachedPage::OnLink(double x, double y) {
-	if (mLinks) {
-		return mLinks->onLink(x, y);
-	} else {
-		return false;
-	}
-}
-
-void CachedPage::SetText(TextPage *text)
+	mWidth(0),
+	mHeight(0),
+	mMatrix(fz_identity),
+	mInverse(fz_identity),
+	mDocument(NULL),
+	mText(NULL)
 {
-	// ASSERT(mText == NULL);
-	mText = text;
 }
 
-GBool CachedPage::FindText(Unicode *s, int len,
-		 GBool startAtTop, GBool stopAtBottom,
-		 GBool startAtLast, GBool stopAtLast,
-		 GBool caseSensitive, GBool backward,
-		double *xMin, double *yMin, double *xMax, double *yMax) {
-	if (mText && mText->findText(s, len, startAtTop, stopAtBottom,
-		startAtLast, stopAtLast,
-		caseSensitive, backward, false, // wordwise -- TODO/FIXME
-		xMin, yMin, xMax, yMax)) {
-		return gTrue;
-	}
-	return gFalse;
+
+CachedPage::~CachedPage()
+{
+	MakeEmpty();
+	delete mBitmap;
 }
 
-GString *CachedPage::GetText(int xMin, int yMin, int xMax, int yMax) {
-	if (mText) {
-		return mText->getText((double)xMin, (double)yMin,
-							   (double)xMax, (double)yMax);
-	} else {
+
+void
+CachedPage::SetMatrix(const fz_matrix& matrix)
+{
+	mMatrix = matrix;
+	mInverse = fz_invert_matrix(matrix);
+}
+
+
+fz_point
+CachedPage::DevToPage(BPoint dev) const
+{
+	return fz_transform_point(fz_make_point(dev.x, dev.y), mInverse);
+}
+
+
+BPoint
+CachedPage::PageToDev(fz_point page) const
+{
+	fz_point p = fz_transform_point(page, mMatrix);
+	return BPoint(p.x, p.y);
+}
+
+
+BRect
+CachedPage::PageToDev(fz_rect page) const
+{
+	fz_rect r = fz_transform_rect(page, mMatrix);
+	return BRect(floorf(r.x0), floorf(r.y0), ceilf(r.x1), ceilf(r.y1));
+}
+
+
+BRect
+CachedPage::PageToDev(fz_quad quad) const
+{
+	return PageToDev(fz_rect_from_quad(quad));
+}
+
+
+const DocLink*
+CachedPage::FindLink(fz_point point) const
+{
+	if (mState != READY)
 		return NULL;
+
+	for (size_t i = 0; i < mLinks.size(); i++) {
+		const fz_rect& r = mLinks[i].rect;
+		if (point.x >= r.x0 && point.x < r.x1 && point.y >= r.y0 && point.y < r.y1)
+			return &mLinks[i];
 	}
+	return NULL;
 }
 
-/////////////////////////////////////////////////////////////////////////
-void CachedPage::SetBitmap(BBitmap *bitmap, int32 width, int32 height) {
+
+void
+CachedPage::SetBitmap(BBitmap* bitmap, int32 width, int32 height)
+{
 	mBitmap = bitmap;
-	mWidth = width; mHeight = height;
+	mWidth = width;
+	mHeight = height;
 }
 
-void CachedPage::MakeEmpty() {
-	delete mLinks; mLinks = NULL;
-	delete mText; mText = NULL;
-	// don't delete mBitmap
+
+void
+CachedPage::MakeEmpty()
+{
+	mLinks.clear();
+	if (mText != NULL && mDocument != NULL) {
+		DocumentLocker locker(mDocument);
+		fz_drop_stext_page(mDocument->Context(), mText);
+	}
+	mText = NULL;
+	// don't delete mBitmap, it is reused
 }

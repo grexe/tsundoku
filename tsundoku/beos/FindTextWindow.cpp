@@ -32,7 +32,6 @@
 
 #include "FindTextWindow.h"
 #include "LayoutUtils.h"
-#include "TextConversion.h"
 
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "FindTextWindow"

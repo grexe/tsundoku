@@ -29,13 +29,12 @@
 #include <be/storage/Path.h>
 #include <be/storage/Node.h>
 #include "Settings.h"
-#include "Annotation.h"
 
 #define BEPDF_APP_SIG "application/x-vnd.sen-labs.Tsundoku"
 
 class PDFWindow;
 class OutputTracer;
-class PDFDoc;
+class Document;
 
 // Returns a filter for PDF files
 BRefFilter* GetPdfFilter();
@@ -89,17 +88,12 @@ public:
 	void Notify(uint32 cmd);
 	void WindowClosed()       { mWindow = NULL; }
 	
-	BBitmap* GetAttachmentImage(int i) { return mAttachmentImages[i]; }
-	BBitmap* GetTextAnnotImage(int i)  { return mTextAnnotImages[i]; }
-
 	static void UpdateAttr(BNode &node, const char* name, type_code type, off_t offset, void* buffer, size_t length);
-	static void UpdateFileAttributes(PDFDoc* doc, entry_ref* ref);
+	static void UpdateFileAttributes(Document* doc, entry_ref* ref);
 	
 private:
 	const char* GetVersion(BString &version);
 	void Initialize();
-	void LoadImages(BBitmap* images[], const char* names[], int num);
-	void FreeImages(BBitmap* images[], int num);
 	void OpenSaveFilePanel(BHandler* handler, bool fileMode, BRefFilter* filter, BMessage* msg, const char* name);
 
 	bool           mInitialized;
@@ -116,9 +110,6 @@ private:
 	GlobalSettings* mSettings;
 	OutputTracer*   mStdoutTracer;
 	OutputTracer*   mStderrTracer;
-
-	BBitmap* mAttachmentImages[FileAttachmentAnnot::no_of_types];
-	BBitmap* mTextAnnotImages[TextAnnot::no_of_types];
 };
 
 #define gApp ((BepdfApplication*)(be_app))

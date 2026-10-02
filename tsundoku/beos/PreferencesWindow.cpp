@@ -20,8 +20,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-// xpdf
-#include <GlobalParams.h>
+#include <stdio.h>
 
 #include <locale/Catalog.h>
 #include <Box.h>
@@ -31,7 +30,6 @@
 #include <LayoutBuilder.h>
 #include <MenuField.h>
 #include <MenuItem.h>
-#include <ObjectList.h>
 #include <Path.h>
 #include <PopUpMenu.h>
 #include <RadioButton.h>
@@ -85,8 +83,6 @@ void PreferencesWindow::SetupView() {
 	mPreferences->AddItem(new BStringItem(B_TRANSLATE("Document")));
 
 	mPreferences->AddItem(item = new BStringItem(B_TRANSLATE("Display")));
-		// reverse order:
-		mPreferences->AddUnder(new BStringItem(B_TRANSLATE("Asian fonts")), item);
 
 	mPreferences->SetSelectionMessage(new BMessage(PREFERENCE_SELECTED));
 	mPreferences->SetExplicitMinSize(BSize(200, 0));
@@ -166,10 +162,6 @@ void PreferencesWindow::SetupView() {
 		new BMessage(INVERT_VERTICAL_SCROLLING_CHANGED));
 	scrolling->SetValue(settings->GetInvertVerticalScrolling());
 
-	BBox *asian = new BBox("asian");
-	asian->SetLabel(B_TRANSLATE("Asian fonts"));
-	asian->AddChild(BuildAsianFontsView());
-
 	BLayoutBuilder::Group<>(this, B_HORIZONTAL)
 		.SetInsets(B_USE_WINDOW_INSETS)
 		.Add(prefScroll)
@@ -181,7 +173,6 @@ void PreferencesWindow::SetupView() {
 				.Add(scrolling)
 				.AddGlue()
 			.End()
-			.Add(asian)
 			.GetLayout(&mLayers)
 		.End();
 
@@ -197,156 +188,6 @@ void PreferencesWindow::SetupView() {
 	CenterOnScreen();
 }
 
-static int comparePopupLabels(const BMenuField* p1,
-	const BMenuField* p2) {
-	return strcmp(p1->Label(), p2->Label());
-}
-
-BView* PreferencesWindow::BuildAsianFontsView() {
-	if (mDisplayCIDFonts->GetSize() == 0) {
-		return new BView("languages", 0);
-	}
-
-	BObjectList<BMenuField> menus;
-	for (int32 index = 0; index < mDisplayCIDFonts->GetSize(); index ++) {
-		BString name;
-		BString file;
-		DisplayCIDFonts::Type type;
-		mDisplayCIDFonts->Get(index, name, file, type);
-
-		BString label(B_TRANSLATE(name.String()));
-		label << ":";
-		BPopUpMenu *popupInner = new BPopUpMenu("");
-		BMenuField *popup = new BMenuField("popup", label.String(), popupInner);
-		FillFontFileMenu(popup, name.String(), file.String());
-
-		menus.AddItem(popup);
-	}
-
-	// sort MPopup alphabetically by label
-	menus.SortItems(comparePopupLabels);
-
-	BStringView *restart = new BStringView("restart",
-		B_TRANSLATE("Will take effect at next program launch."));
-
-	// add popup menus into vertical group
-	BGridLayout *grid = new BGridLayout();
-	BView *ret = new BView("ret" , 0);
-	BLayoutBuilder::Group<>(ret, B_VERTICAL)
-		.SetInsets(B_USE_SMALL_INSETS)
-		.Add(grid)
-		.AddGlue()
-		.Add(restart);
-
-	for (int32 index = 0; index < menus.CountItems(); index ++) {
-		BMenuField *item = menus.ItemAt(index);
-		grid->AddItem(item->CreateLabelLayoutItem(), 0, index);
-		grid->AddItem(item->CreateMenuBarLayoutItem(), 1, index);
-	}
-
-	return ret;
-}
-
-static bool endsWith(const BString& string, const char* suffix) {
-	const char* stringPtr = string.String();
-	int stringLength = string.Length();
-	int suffixLength = strlen(suffix);
-	if (stringLength < suffixLength) {
-		return gFalse;
-	}
-
-	return strcmp(suffix, &stringPtr[stringLength - suffixLength]) == 0;
-}
-
-DisplayCIDFonts::Type PreferencesWindow::GetType(const char* file) {
-	BString string(file);
-	string.ToLower();
-	if (endsWith(string, ".ttf") ||
-		endsWith(string, ".ttc")) {
-		return DisplayCIDFonts::kTrueType;
-	} else if (endsWith(string, ".pfb")) {
-		return DisplayCIDFonts::kType1;
-	}
-	return DisplayCIDFonts::kUnknownType;
-}
-
-void PreferencesWindow::FillFontFileMenu(BMenuField* menuField, const char* name, const char* file) {
-	FillFontFileMenu(menuField, B_SYSTEM_FONTS_DIRECTORY, B_TRANSLATE("System fonts"), name, file);
-	FillFontFileMenu(menuField, B_USER_FONTS_DIRECTORY, B_TRANSLATE("User fonts"), name, file);
-	FillFontFileMenu(menuField, B_SYSTEM_NONPACKAGED_FONTS_DIRECTORY, B_TRANSLATE("System fonts"), name, file);
-	FillFontFileMenu(menuField, B_USER_NONPACKAGED_FONTS_DIRECTORY, B_TRANSLATE("User fonts"), name, file);
-
-	// B_USER_FONTS_DIRECTORY is same as B_COMMON_FONTS_DIRECTORY in
-	// BeOS R5
-	// FillFontFileMenu(menu, B_USER_FONTS_DIRECTORY, B_TRANSLATE("User fonts"), name, file);
-}
-
-void PreferencesWindow::FillFontFileMenu(BMenuField* menuField, directory_which which, const char* label, const char* name, const char* file) {
-	BMenu* menu = menuField->Menu();
-	mFontMenuFields.AddPointer(name, menuField);
-
-	BPath path;
-	if (find_directory(which, &path) != B_OK) {
-		return;
-	}
-
-	BDirectory fontDirectory(path.Path());
-	BEntry entry;
-	BMenu* fontMenu = NULL;
-	// iterate through font directory
-	while (fontDirectory.GetNextEntry(&entry) == B_OK) {
-		if (!entry.IsDirectory()) {
-			continue;
-		}
-		BDirectory subDirectory(&entry);
-		BEntry fontFile;
-		BMenu* fontSubMenu = NULL;
-		// iteratoe through sub directory in font directory
-		while (subDirectory.GetNextEntry(&fontFile) == B_OK) {
-			if (!fontFile.IsFile()) {
-				continue;
-			}
-
-			BPath filePath;
-			if (fontFile.GetPath(&filePath) != B_OK) {
-				continue;
-			}
-			// skip unknown font types
-			if (GetType(filePath.Path()) == DisplayCIDFonts::kUnknownType) {
-				continue;
-			}
-
-			if (fontMenu == NULL) {
-				// lazy add font menu
-				fontMenu = new BMenu(label);
-				fontMenu->SetRadioMode(false);
-				menu->AddItem(fontMenu);
-			}
-
-			if (fontSubMenu == NULL) {
-				// lazy add sub font menu
-				char name[B_FILE_NAME_LENGTH+1];
-				entry.GetName(name);
-				fontSubMenu = new BMenu(name);
-				fontSubMenu->SetRadioMode(false);
-				fontMenu->AddItem(fontSubMenu);
-			}
-
-			// add menu item for font
-			BMessage* msg = new BMessage(DISPLAY_CID_FONT_SELECTED);
-			msg->AddString("name", name);
-			msg->AddString("file", filePath.Path());
-			BMenuItem* item = new BMenuItem(filePath.Leaf(), msg);
-			fontSubMenu->AddItem(item);
-
-			// set label from current font
-			if (strcmp(filePath.Path(), file) == 0) {
-				menuField->MenuItem()->SetLabel(filePath.Leaf());
-			}
-		}
-	}
-}
-
 void PreferencesWindow::ClearView()
 {
 }
@@ -360,10 +201,6 @@ PreferencesWindow::PreferencesWindow(GlobalSettings *settings, BLooper *looper)
 	, mLooper(looper)
 	, mSettings(settings)
 {
-	BMessage msg;
-	settings->GetDisplayCIDFonts(msg);
-	mDisplayCIDFonts = new DisplayCIDFonts(msg);
-
 	AddCommonFilter(new EscapeMessageFilter(this, B_QUIT_REQUESTED));
 
 	SetupView();
@@ -372,8 +209,6 @@ PreferencesWindow::PreferencesWindow(GlobalSettings *settings, BLooper *looper)
 }
 
 PreferencesWindow::~PreferencesWindow() {
-	delete mDisplayCIDFonts;
-	mDisplayCIDFonts = NULL;
 }
 
 class TranslatedFileItem : public BStringItem {
@@ -398,32 +233,6 @@ void PreferencesWindow::Notify(uint32 what) {
 
 void PreferencesWindow::NotifyRestartDoc() {
 	Notify(RESTART_DOC_NOTIFY);
-}
-
-void PreferencesWindow::DisplayCIDFontSelected(BMessage* msg) {
-	BString name;
-	BString file;
-	if (msg->FindString("name", &name) != B_OK ||
-		msg->FindString("file", &file) != B_OK) {
-		return;
-	}
-	DisplayCIDFonts::Type type = GetType(file.String());
-
-	// save new font to global settings
-	mDisplayCIDFonts->Set(name.String(), file.String(), type);
-	BMessage archive;
-	mDisplayCIDFonts->Archive(archive);
-	mSettings->SetDisplayCIDFonts(archive);
-
-	// set menu field label
-	void* pointer;
-	if (mFontMenuFields.FindPointer(name.String(), &pointer) != B_OK) {
-		return;
-	}
-
-	BPath path(file.String());
-	BMenuField* menuField = (BMenuField*)pointer;
-	menuField->MenuItem()->SetLabel(path.Leaf());
 }
 
 void PreferencesWindow::MessageReceived(BMessage *msg) {
@@ -465,9 +274,6 @@ void PreferencesWindow::MessageReceived(BMessage *msg) {
 	case INVERT_VERTICAL_SCROLLING_CHANGED:
 		mSettings->SetInvertVerticalScrolling(IsOn(msg));
 		Notify(UPDATE_NOTIFY);
-		break;
-	case DISPLAY_CID_FONT_SELECTED:
-		DisplayCIDFontSelected(msg);
 		break;
 	case FILLED_SELECTION_FILLED:
 	case FILLED_SELECTION_STROKED: {

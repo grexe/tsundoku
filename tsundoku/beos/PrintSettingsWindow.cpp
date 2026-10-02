@@ -35,7 +35,7 @@
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "PrintSettingsWindow"
 
-PrintSettingsWindow::PrintSettingsWindow(PDFDoc *doc, GlobalSettings *settings, BLooper *looper)
+PrintSettingsWindow::PrintSettingsWindow(Document *doc, GlobalSettings *settings, BLooper *looper)
 	: BWindow(BRect(0, 0, 100, 100), B_TRANSLATE("Print settings"),
 		B_TITLED_WINDOW_LOOK, B_FLOATING_APP_WINDOW_FEEL, B_AUTO_UPDATE_SIZE_LIMITS),
 	mDoc(doc), mLooper(looper), mSettings(settings), mZoomValue(settings->GetZoomPrinter()) {
@@ -118,7 +118,7 @@ PrintSettingsWindow::PrintSettingsWindow(PDFDoc *doc, GlobalSettings *settings, 
 	grid->AddView(height, 0, row);
 	grid->AddView(mHeight, 1, row);
 
-	mPrint->SetEnabled(mDoc->okToPrint());
+	mPrint->SetEnabled(mDoc->CanPrint());
 
 	SetDefaultButton(mPrint);
 
@@ -172,9 +172,9 @@ PrintSettingsWindow::PrintSettingsWindow(PDFDoc *doc, GlobalSettings *settings, 
 	Show();
 }
 
-void PrintSettingsWindow::Refresh(PDFDoc *doc) {
+void PrintSettingsWindow::Refresh(Document *doc) {
 	mDoc = doc;
-	mPrint->SetEnabled(mDoc->okToPrint());
+	mPrint->SetEnabled(mDoc->CanPrint());
 	GetPageSize(1);
 }
 
@@ -241,8 +241,8 @@ int32 index;
 				int32 z = atoi(mPage->Text());
 				if (z < 1) {
 					z = 1;
-				} else if (z > mDoc->getNumPages()) {
-					z = mDoc->getNumPages();
+				} else if (z > mDoc->PageCount()) {
+					z = mDoc->PageCount();
 				}
 				GetPageSize(z);
 			}
@@ -278,13 +278,15 @@ void PrintSettingsWindow::FrameResized(float w, float h) {
 }
 
 void PrintSettingsWindow::GetPageSize(uint32 page) {
-	PDFLock lock;
+	fz_rect bounds;
+	if (!mDoc->PageBounds(page, &bounds))
+		return;
 	BString s; char size[40];
-	sprintf(size, "%4.2f", mDoc->getPageCropWidth(page) / 72.0);
+	sprintf(size, "%4.2f", (bounds.x1 - bounds.x0) / 72.0);
 	s << size << B_TRANSLATE(" in");
 	mWidth->SetText(s.String());
 
-	sprintf(size, "%2.2f", mDoc->getPageCropHeight(page) / 72.0);
+	sprintf(size, "%2.2f", (bounds.y1 - bounds.y0) / 72.0);
 	s = "";
 	s << size << B_TRANSLATE(" in");
 	mHeight->SetText(s.String());
