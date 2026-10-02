@@ -408,6 +408,8 @@ private:
 };
 
 static BMessenger sAboutWindow;
+static const char *kTitleFamily = "Noto Emoji";
+static const char *kTitleStyle = "Bold";
 
 void BepdfApplication::AboutRequested()
 {
@@ -423,7 +425,7 @@ void BepdfApplication::AboutRequested()
 	}
 
 	BString version;
-	BString str("Tsundoku\n");
+	BString str("Tsundoku\n\n");
 	str += B_TRANSLATE("a universal document reader based on BePDF, extended for SEN");
 	str += "\n";
 	str += B_TRANSLATE("Version");
@@ -464,12 +466,17 @@ void BepdfApplication::AboutRequested()
 		v->SetFontAndColor(i+1, i+2, NULL, 0, &red);
 		s += 2;
 	}
-	// first text line
+	// first text line: the name, large and bold, set slightly apart from the rest
 	s = strchr(text, '\n');
-	BFont font;
-	v->GetFontAndColor(0, &font);
-	font.SetSize(16);
-	v->SetFontAndColor(0, s-text+1, &font, B_FONT_SIZE);
+	int32 titleEnd = s - text + 1;
+	BFont titleFont(be_plain_font);
+	titleFont.SetFamilyAndStyle(kTitleFamily, kTitleStyle);
+	titleFont.SetSize(be_plain_font->Size() * 2);
+	v->SetFontAndColor(0, titleEnd, &titleFont, B_FONT_ALL);
+	// the empty line after it is just a small gap
+	BFont gapFont(be_plain_font);
+	gapFont.SetSize(be_plain_font->Size() * 0.6);
+	v->SetFontAndColor(titleEnd, titleEnd + 1, &gapFont, B_FONT_ALL);
 
 	float textHeight = v->TextHeight(0, v->CountLines() - 1);
 	v->SetExplicitMinSize(BSize(textWidth, textHeight));
