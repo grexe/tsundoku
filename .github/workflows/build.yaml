@@ -7,42 +7,38 @@ permissions:
 jobs:
   build-haiku:
     timeout-minutes: 60
-    runs-on: ${{ matrix.config.runner }}
-    name: build-${{ matrix.config.os }}-${{ matrix.config.version }}-${{ matrix.config.architecture }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-          # The OS versions supported are specific to the version of the action
-          # https://github.com/cross-platform-actions/action/blob/master/changelog.md
-          - { os: haiku, version: 'r1beta5', runner: 'ubuntu-latest', architecture: 'x86-64' }
-          - { os: haiku, version: 'r1beta5', runner: 'ubuntu-latest', architecture: 'x86' }
-          - { os: haiku, version: 'nightly', runner: 'ubuntu-latest', architecture: 'x86-64' }
-          - { os: haiku, version: 'nightly', runner: 'ubuntu-latest', architecture: 'x86' }
+    runs-on: ubuntu-latest
+    name: build-haiku-r1beta6-x86-64
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: korli/action@v0.25.0-haiku4
+      - name: Start Haiku VM
+        uses: cross-platform-actions/action@v1.6.0
         with:
-          operating_system: ${{ matrix.config.os }}
-          version: ${{ matrix.config.version }}
-          architecture: ${{ matrix.config.architecture }}
-          run: |
-            ssh user@localhost "pkgman update -y devel:libbz2 devel:libfreetype devel:libpng16 devel:libz cmd:gcc gcc_syslibs_devel cmd:htmldoc cmd:make cmd:pkg_config cmd:ps2pdf" &&
-            make -C xpdf && make -C tsundoku && make -C tsundoku bindcatalogs && ./package.sh
+          operating_system: haiku
+          architecture: x86-64
+          version: 'r1beta6'
 
-      # the VM syncs its files back, so the package is in the workspace now
-      - uses: actions/upload-artifact@v4
+      # the steps below run inside the VM, files are synced both ways
+      - name: Install build dependencies
+        shell: cpa.sh {0}
+        run: pkgman update -y devel:libbz2 devel:libfreetype devel:libpng16 devel:libz cmd:gcc gcc_syslibs_devel cmd:htmldoc cmd:make cmd:pkg_config cmd:ps2pdf
+
+      - name: Build and package
+        shell: cpa.sh {0}
+        run: make -C xpdf && make -C tsundoku && make -C tsundoku bindcatalogs && ./package.sh
+
+      # the package is back in the workspace now
+      - uses: actions/upload-artifact@v7
         with:
-          name: tsundoku-${{ matrix.config.version }}-${{ matrix.config.architecture }}
+          name: tsundoku-haiku-r1beta6-x86-64
           path: "*.hpkg"
           if-no-files-found: error
 
-      # pushing a tag like v0.1.0 publishes the package of the release configuration
-      - uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/v') && matrix.config.version == 'r1beta5' && matrix.config.architecture == 'x86-64'
+      # pushing a tag like v0.1.0 publishes the package as a release
+      - uses: softprops/action-gh-release@v3
+        if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: "*.hpkg"
           generate_release_notes: true
