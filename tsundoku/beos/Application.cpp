@@ -369,15 +369,17 @@ void BepdfApplication::ReadyToRun()
 }
 
 ///////////////////////////////////////////////////////////
-// grey stripe with the app icon centered in it, like the one of BAlert,
-// but sized to the icon
+// grey stripe with the app icon centered on its right border, vertically
+// centered; the view reserves the room for the half of the icon sticking out
 class AboutStripeView : public BView {
 public:
 	AboutStripeView(BBitmap *icon)
 		: BView("stripe", B_WILL_DRAW), mIcon(icon)
 	{
 		float spacing = be_control_look->DefaultLabelSpacing();
-		float width = (mIcon ? mIcon->Bounds().Width() + 1 : 0) + 4 * spacing;
+		float half = (mIcon ? (mIcon->Bounds().Width() + 1) / 2 : 0);
+		mStripeWidth = floorf(half + 2 * spacing);
+		float width = mStripeWidth + half;
 		SetViewUIColor(B_PANEL_BACKGROUND_COLOR);
 		SetExplicitMinSize(BSize(width, B_SIZE_UNSET));
 		SetExplicitMaxSize(BSize(width, B_SIZE_UNSET));
@@ -387,19 +389,22 @@ public:
 
 	void Draw(BRect updateRect)
 	{
+		BRect stripe = Bounds();
+		stripe.right = mStripeWidth - 1;
 		SetHighColor(tint_color(ViewColor(), B_DARKEN_1_TINT));
-		FillRect(Bounds());
+		FillRect(stripe);
 		if (mIcon == NULL)
 			return;
 		BRect b = Bounds(), i = mIcon->Bounds();
 		SetDrawingMode(B_OP_ALPHA);
 		SetBlendingMode(B_PIXEL_ALPHA, B_ALPHA_OVERLAY);
-		DrawBitmap(mIcon, BPoint(floorf((b.Width() - i.Width()) / 2),
+		DrawBitmap(mIcon, BPoint(floorf(mStripeWidth - (i.Width() + 1) / 2),
 			floorf((b.Height() - i.Height()) / 2)));
 	}
 
 private:
 	BBitmap *mIcon;
+	float mStripeWidth;
 };
 
 static BMessenger sAboutWindow;
