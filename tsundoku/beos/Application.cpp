@@ -32,6 +32,10 @@
 #include <be/StorageKit.h>
 #include <Deskbar.h>
 #include <be/interface/Alert.h>
+#include <Bitmap.h>
+#include <ControlLook.h>
+#include <IconUtils.h>
+#include <Resources.h>
 
 #include <gtypes.h>
 #include <GHash.h>
@@ -403,6 +407,17 @@ void BepdfApplication::AboutRequested()
 		font.SetSize(16);
 		v->SetFontAndColor(0, s-text+1, &font, B_FONT_SIZE);
 	};
+	BResources *resources = BApplication::AppResources();
+	size_t iconSize = 0;
+	const void *iconData = resources ? resources->LoadResource(B_VECTOR_ICON_TYPE, "BEOS:ICON", &iconSize) : NULL;
+	if (iconData != NULL) {
+		BSize size = BControlLook::ComposeIconSize(32);
+		BBitmap *icon = new BBitmap(BRect(0, 0, size.width - 1, size.height - 1), B_RGBA32);
+		if (BIconUtils::GetVectorIcon((const uint8 *)iconData, iconSize, icon) == B_OK)
+			about->SetIcon(icon);
+		else
+			delete icon;
+	}
 	about->Go();
 }
 
