@@ -1,6 +1,9 @@
 name: "haiku-ci"
 on: [push, pull_request]
 
+permissions:
+  contents: write   # to attach the package to a release
+
 jobs:
   build-haiku:
     timeout-minutes: 60
@@ -29,3 +32,17 @@ jobs:
           run: |
             ssh user@localhost "pkgman update -y devel:libbz2 devel:libfreetype devel:libpng16 devel:libz cmd:gcc gcc_syslibs_devel cmd:htmldoc cmd:make cmd:pkg_config cmd:ps2pdf" &&
             make -C xpdf && make -C tsundoku && make -C tsundoku bindcatalogs && ./package.sh
+
+      # the VM syncs its files back, so the package is in the workspace now
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tsundoku-${{ matrix.config.version }}-${{ matrix.config.architecture }}
+          path: "*.hpkg"
+          if-no-files-found: error
+
+      # pushing a tag like v0.1.0 publishes the package of the release configuration
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.config.version == 'r1beta5' && matrix.config.architecture == 'x86-64'
+        with:
+          files: "*.hpkg"
+          generate_release_notes: true
