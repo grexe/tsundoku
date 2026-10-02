@@ -1207,10 +1207,10 @@ PDFWindow::MessageReceived(BMessage* message)
 		LaunchHTMLBrowser("http://haikuarchives.github.io/BePDF/English/table_of_contents.html");
 		break;
 	case HOME_PAGE_CMD:
-		LaunchHTMLBrowser("http://haikuarchives.github.io/BePDF/");
+		LaunchHTMLBrowser("https://github.com/grexe/tsundoku");
 		break;
 	case BUG_REPORT_CMD:
-		LaunchHTMLBrowser("http://github.com/HaikuArchives/BePDF/issues/");
+		LaunchHTMLBrowser("https://github.com/grexe/tsundoku/issues/");
 		break;
 	case PREFERENCES_FILE_CMD:
 		mPreferencesItem->SetEnabled(false);

@@ -58,11 +58,16 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
 On Haiku, with the FreeType development files installed (`pkgman install freetype_devel`):
 
 ```
+git clone https://github.com/grexe/tsundoku
+cd tsundoku
 ./build.sh
 ```
 
 This builds the XPDF library and the application into `dist/Tsundoku`, which needs to stay next to the `docs`, `fonts`
-and `encodings` folders there. The script also downloads the user manual, which is still the one of BePDF.
+and `encodings` folders there. The script also downloads the user manual, which is still the one of BePDF. It will be replaced once Tsundoku
+differs from BePDF enough to warrant its own.
+
+Bug reports and ideas: [issues](https://github.com/grexe/tsundoku/issues).
 
 ## Credits and license
 

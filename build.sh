@@ -11,6 +11,6 @@ fi
 
 cd xpdf
 make $@
-cd ../bepdf
+cd ../tsundoku
 make $@
 cd ..
