@@ -22,6 +22,8 @@ STAGE=package-build
 rm -rf $STAGE
 mkdir -p $STAGE/apps/Tsundoku $STAGE/data/deskbar/menu/Applications
 cp -a $APP dist/license $STAGE/apps/Tsundoku/
+mkdir -p $STAGE/data/licenses
+cp -a dist/license/AGPL-3.0 "$STAGE/data/licenses/GNU AGPL v3"
 mkdir $STAGE/apps/Tsundoku/docs
 cp -a dist/docs/Start.pdf $STAGE/apps/Tsundoku/docs/   # the start page, shown when no file is given
 ln -s ../../../../apps/Tsundoku/Tsundoku $STAGE/data/deskbar/menu/Applications/Tsundoku

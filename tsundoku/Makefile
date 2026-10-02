@@ -4,8 +4,8 @@
 ## Makefile-Engine will do all of the hard work for you. This handles any
 ## architecture of Haiku.
 
-# The MuPDF source tree, built with "make build=release libs", see PLAN-mupdf.md
-MUPDF_DIR ?= $(CURDIR)/../3rd-party/mupdf-1.28.5-source
+# MuPDF: from the mupdf1.28 packages (mupdf1.28_devel) by default, or from a source tree that has been built
+# with "make build=release libs", see build.sh, if MUPDF_DIR is set.
 
 # The name of the binary.
 NAME = Tsundoku
@@ -82,23 +82,30 @@ RSRCS =
 #	- 	if your library does not follow the standard library naming scheme,
 #		you need to specify the path to the library and it's name.
 #		(e.g. for mylib.a, specify "mylib.a" or "path/mylib.a")
-LIBS = shared be textencoding columnlistview tracker translation localestub \
-	$(MUPDF_DIR)/build/release/libmupdf.a $(MUPDF_DIR)/build/release/libmupdf-third.a \
-	freetype harfbuzz openjp2 jbig2dec brotlidec brotlienc brotlicommon jpeg z \
-	$(STDCPPLIBS)
+LIBS = shared be textencoding columnlistview tracker translation localestub $(STDCPPLIBS)
+ifdef MUPDF_DIR
+LIBS += $(MUPDF_DIR)/build/release/libmupdf.a $(MUPDF_DIR)/build/release/libmupdf-third.a \
+	freetype harfbuzz openjp2 jbig2dec brotlidec brotlienc brotlicommon jpeg z
+else
+LIBS += mupdf1.28
+endif
 
 #	Specify additional paths to directories following the standard libXXX.so
 #	or libXXX.a naming scheme. You can specify full paths or paths relative
 #	to the Makefile. The paths included are not parsed recursively, so
 #	include all of the paths where libraries must be found. Directories where
 #	source files were specified are	automatically included.
-LIBPATHS =
+LIBPATHS = /boot/home/config/develop/lib
 
 #	Additional paths to look for system headers. These use the form
 #	"#include <header>". Directories that contain the files in SRCS are
 #	NOT auto-included here.
-SYSTEM_INCLUDE_PATHS = $(MUPDF_DIR)/include \
-	/system/develop/headers/private/interface
+SYSTEM_INCLUDE_PATHS = /system/develop/headers/private/interface
+ifdef MUPDF_DIR
+SYSTEM_INCLUDE_PATHS += $(MUPDF_DIR)/include
+else
+SYSTEM_INCLUDE_PATHS += /system/develop/headers/mupdf1.28 /boot/home/config/develop/headers/mupdf1.28
+endif
 
 #	Additional paths paths to look for local headers. These use the form
 #	#include "header". Directories that contain the files in SRCS are

@@ -1,18 +1,24 @@
 #!/bin/sh
-# Builds MuPDF (once) and Tsundoku. Arguments are passed on to the make of Tsundoku, e.g. ./build.sh bindcatalogs
+# Builds Tsundoku. Arguments are passed on to the make of Tsundoku, e.g. ./build.sh bindcatalogs
 #
-# MuPDF is taken from $MUPDF_DIR, or downloaded to 3rd-party/. Libraries that exist as HaikuPorts packages are
-# not built but taken from the system, see PLAN-mupdf.md for the packages needed:
+# MuPDF comes from the mupdf1.28_devel package if it is installed (https://kiri.sen-labs.org/x86_64). Otherwise it
+# is built once from source, taken from $MUPDF_DIR or downloaded to 3rd-party/. Libraries that exist as HaikuPorts
+# packages are not built but taken from the system, see MUPDF-NOTES.md for the packages needed:
 #   pkgman install harfbuzz_devel openjpeg_devel jbig2dec_devel brotli_devel libjpeg_turbo_devel freetype_devel
 
 set -e
 cd "$(dirname "$0")"
 
 MUPDF_VERSION=1.28.5
-[ -n "$MUPDF_DIR" ] || MUPDF_DIR="$PWD/3rd-party/mupdf-$MUPDF_VERSION-source"
-export MUPDF_DIR
+if [ -z "$MUPDF_DIR" ] && { [ -f /system/develop/headers/mupdf1.28/mupdf/fitz.h ] \
+		|| [ -f /boot/home/config/develop/headers/mupdf1.28/mupdf/fitz.h ]; }; then
+	unset MUPDF_DIR
+else
+	[ -n "$MUPDF_DIR" ] || MUPDF_DIR="$PWD/3rd-party/mupdf-$MUPDF_VERSION-source"
+	export MUPDF_DIR
+fi
 
-if [ ! -f "$MUPDF_DIR/build/release/libmupdf.a" ]; then
+if [ -n "$MUPDF_DIR" ] && [ ! -f "$MUPDF_DIR/build/release/libmupdf.a" ]; then
 	if [ ! -d "$MUPDF_DIR" ]; then
 		mkdir -p 3rd-party
 		(

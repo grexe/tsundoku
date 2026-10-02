@@ -29,11 +29,5 @@ provides		{
 requires		{
 	haiku
 	lib:libfreetype
-	lib:libharfbuzz
-	lib:libopenjp2
-	lib:libjbig2dec
-	lib:libbrotlidec
-	lib:libbrotlienc
-	lib:libbrotlicommon
-	lib:libjpeg
+	lib:libmupdf1.28 >= 1.28
 }
