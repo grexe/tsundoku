@@ -80,6 +80,7 @@ class OutlineListItem : public BListItem {
 		int       pageNum;
 	} mLink;
 	OutlineStyle *mStyle;
+	int           mResolvedPage;     // page this entry points to, 0 if unknown
 
 public:
 	OutlineListItem(const char *string, uint32 level, bool expanded, OutlineStyle* style);
@@ -98,6 +99,8 @@ public:
 	LinkDest *getDest() const  { return mLink.dest; }
 	GString *getString() const { return mLink.string; }
 	int getPageNum() const     { return mLink.pageNum; }
+	void SetResolvedPage(int pageNum) { mResolvedPage = pageNum; }
+	int GetResolvedPage() const       { return mResolvedPage; }
 };
 
 class OutlinesView : public BScrollView {
@@ -110,8 +113,13 @@ class OutlinesView : public BScrollView {
 	OutlineListItem  *mUserDefined;
 	OutlineListItem  *mEmptyUserBM;  // cached value
 	Bitset            mBookmark;
+	bool              mHasDocumentOutline;
+	int               mCurrentPage;  // last page requested via SelectPage(), 0 if none
 
 	void ReadOutlines(Object *o, uint32 level);
+	int  PageOfDest(LinkDest *dest);
+	int  ResolvePage(const OutlineListItem *item);
+	bool HasUserBookmarks();
 	OutlineListItem* FindUserBookmark(int pageNum);
 	void InsertUserBookmark(int pageNum, const char *label);
 	void InitUserBookmarks(bool initOnly);
@@ -144,6 +152,12 @@ public:
 	bool GetBookmarks(BMessage *bookmarks);
 
 	void Activate();
+
+	// selects and scrolls to the outline entry (chapter) the given page belongs to,
+	// without navigating to it.
+	void SelectPage(int pageNum);
+	// true if the document has an outline or the user has defined bookmarks.
+	bool HasEntries();
 };
 
 class BTextControl;

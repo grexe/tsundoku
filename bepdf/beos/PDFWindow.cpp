@@ -154,6 +154,7 @@ PDFWindow::PDFWindow(entry_ref* ref, BRect frame, const char *ownerPassword,
 	mPrintSettingsWindowOpen = false;
 
 	mShowLeftPanel = true;
+	mOutlineAutoCollapsed = false;
 	mFullScreen = false;
 
 	mPendingMask = 0;
@@ -849,8 +850,11 @@ void PDFWindow::SetUpViews(entry_ref* ref,
 
 	// SplitView
 	mSplitView = new BSplitView(B_HORIZONTAL);
-	mSplitView->AddChild(mLayerView, 1);
-	mSplitView->AddChild(fMainContainer, 9);
+	// the outline needs room for chapter titles (the divider can still be dragged)
+	mLayerView->SetExplicitMinSize(
+		BSize(be_plain_font->StringWidth("M") * 20, B_SIZE_UNSET));
+	mSplitView->AddChild(mLayerView, 3);
+	mSplitView->AddChild(fMainContainer, 10);
 	mSplitView->SetInsets(0);
 	mSplitView->SetSpacing(4);
 
@@ -871,6 +875,7 @@ void PDFWindow::SetUpViews(entry_ref* ref,
 		// hide panel
 		ToggleLeftPanel();
 	}
+	CollapseOutlinePanelIfEmpty();
 
 	// set focus to PDFView, so it receives mouse and keyboard events
 	mMainView->MakeFocus();
@@ -917,6 +922,7 @@ void PDFWindow::NewDoc(PDFDoc *doc) {
 
 	mOutlinesView->SetCatalog(catalog, mFileAttributes.GetBookmarks());
 	ActivateOutlines();
+	CollapseOutlinePanelIfEmpty();
 
 	if (mFIWMessenger && mFIWMessenger->LockTarget()) {
 		BLooper *looper;
@@ -980,6 +986,7 @@ PDFWindow::SetPage(int32 page) {
 	mPageNumberItem->SetText (pageStr);
 	mPagesView->Select(page-1);
 	mPagesView->ScrollToSelection();
+	mOutlinesView->SelectPage(page);
 }
 
 
@@ -1587,6 +1594,34 @@ PDFWindow::ActivateOutlines()
 
 
 void
+PDFWindow::CollapseOutlinePanelIfEmpty()
+{
+	if (mLayerView->CardLayout()->VisibleIndex() != BOOKMARKS_PANEL)
+		return;
+	// hidden by the user: leave it alone
+	if (!mShowLeftPanel && !mOutlineAutoCollapsed)
+		return;
+
+	mMainView->WaitForPage();
+	bool empty = !mOutlinesView->HasEntries();
+	if (empty == !mShowLeftPanel)
+		return;
+
+	// not a user choice, so don't store it in the settings: the panel should be
+	// back for the next document that has bookmarks.
+	mShowLeftPanel = !empty;
+	mOutlineAutoCollapsed = empty;
+	mSplitView->SetItemCollapsed(0, empty);
+	if (empty)
+		mSplitView->SetFlags((~B_NAVIGABLE) & mSplitView->Flags());
+	else
+		mSplitView->SetFlags(B_NAVIGABLE | mSplitView->Flags());
+	UpdateInputEnabler();
+	mMainView->Resize();
+}
+
+
+void
 PDFWindow::ShowLeftPanel(int panel)
 {
 	if (!mShowLeftPanel) {
@@ -1615,6 +1650,7 @@ PDFWindow::HideLeftPanel()
 void
 PDFWindow::ToggleLeftPanel()
 {
+	mOutlineAutoCollapsed = false;
 	mShowLeftPanel = !mShowLeftPanel;
 	mSplitView->SetItemCollapsed(0, !mShowLeftPanel);
 	gApp->GetSettings()->SetShowLeftPanel(mShowLeftPanel);

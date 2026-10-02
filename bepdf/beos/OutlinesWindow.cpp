@@ -100,7 +100,8 @@ OutlineListItem::OutlineListItem(const char *string, uint32 level, bool expanded
 	BListItem(level, expanded),
 	mString(string),
 	mType(linkUndefined),
-	mStyle(style)
+	mStyle(style),
+	mResolvedPage(0)
 {
 }
 
@@ -317,7 +318,9 @@ OutlinesView::OutlinesView(Catalog *catalog, BMessage *bookmarks,
 	mBookmarks(NULL),
 	mNeedsUpdate(true),
 	mUserDefined(NULL),
-	mEmptyUserBM(NULL)
+	mEmptyUserBM(NULL),
+	mHasDocumentOutline(false),
+	mCurrentPage(0)
 {
 	SetTarget(mList = new BOutlineListView("", B_SINGLE_SELECTION_LIST));
 	mEmptyUserBM = new OutlineListItem(B_TRANSLATE("<empty>"), 1, true,
@@ -347,6 +350,8 @@ void OutlinesView::SetCatalog(Catalog *catalog, BMessage *bookmarks) {
 		mCatalog     = catalog;
 		mBookmarks   = bookmarks;
 		mNeedsUpdate = true;
+		mHasDocumentOutline = false;
+		mCurrentPage = 0;
 		InitUserBookmarks(true);
 	}
 }
@@ -362,15 +367,112 @@ void OutlinesView::Activate() {
 		if (mCatalog->getOutline()->isDict() && mCatalog->getOutline()->dictLookup("First", &obj) && !obj.isNull()) {
 			ReadOutlines(&obj, 1);
 		}
+		// remember which page each entry points to, so the outline can follow the current page
+		for (int32 i = 1; i < mList->FullListCountItems(); i++) {
+			OutlineListItem *item = (OutlineListItem*)mList->FullListItemAt(i);
+			item->SetResolvedPage(ResolvePage(item));
+		}
 		gPdfLock->Unlock();
-		if (mList->CountItems() == 1) {
+		mHasDocumentOutline = mList->CountItems() > 1;
+		if (!mHasDocumentOutline) {
 			mList->AddItem(new OutlineListItem(B_TRANSLATE("<empty>"), 1, true, GetDefaultStyle()));
 		}
 		obj.free();
 		mUserDefined = new OutlineListItem(B_TRANSLATE("User defined"), 0, true, GetDefaultStyle());
 		mList->AddItem(mUserDefined);
 		InitUserBookmarks(false);
+		SelectPage(mCurrentPage);
 	}
+}
+
+int OutlinesView::PageOfDest(LinkDest *dest) {
+	if (dest->isPageRef()) {
+		Ref r = dest->getPageRef();
+		return mCatalog->findPage(r.num, r.gen);
+	}
+	return dest->getPageNum();
+}
+
+// the caller must hold gPdfLock
+int OutlinesView::ResolvePage(const OutlineListItem *item) {
+	if (item->isPageNum()) {
+		return item->getPageNum();
+	}
+	if (item->isDest()) {
+		return PageOfDest(item->getDest());
+	}
+	if (item->isString()) {
+		LinkDest *dest = mCatalog->findDest(item->getString());
+		if (dest == NULL) {
+			return 0;
+		}
+		int pageNum = PageOfDest(dest);
+		delete dest;
+		return pageNum;
+	}
+	return 0;
+}
+
+bool OutlinesView::HasUserBookmarks() {
+	for (int32 i = 0; i < mList->CountItemsUnder(mUserDefined, true); i++) {
+		OutlineListItem *item = (OutlineListItem*)mList->ItemUnderAt(mUserDefined, true, i);
+		if (item != NULL && item->isPageNum()) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool OutlinesView::HasEntries() {
+	Activate();
+	return mHasDocumentOutline || HasUserBookmarks();
+}
+
+void OutlinesView::SelectPage(int pageNum) {
+	mCurrentPage = pageNum;
+	if (mNeedsUpdate || !mHasDocumentOutline || pageNum <= 0) {
+		return;
+	}
+
+	// the entry of the user's choice stays if it points to this very page, e.g. after clicking it
+	int32 selected = mList->CurrentSelection(0);
+	if (selected >= 0) {
+		OutlineListItem *item = (OutlineListItem*)mList->ItemAt(selected);
+		if (item != NULL && item->GetResolvedPage() == pageNum) {
+			return;
+		}
+	}
+
+	// otherwise the page belongs to the entry that starts closest before it (the last one
+	// if several start on the same page). Outlines are not necessarily ordered by page.
+	OutlineListItem *chapter = NULL;
+	int bestPage = 0;
+	int32 end = mList->FullListIndexOf(mUserDefined);
+	for (int32 i = 1; i < end; i++) {
+		OutlineListItem *item = (OutlineListItem*)mList->FullListItemAt(i);
+		int itemPage = item->GetResolvedPage();
+		if (itemPage > 0 && itemPage <= pageNum && itemPage >= bestPage) {
+			chapter = item;
+			bestPage = itemPage;
+		}
+	}
+	if (chapter == NULL || chapter->IsSelected()) {
+		return;
+	}
+
+	// make sure the entry is visible
+	for (BListItem *parent = mList->Superitem(chapter); parent != NULL;
+			parent = mList->Superitem(parent)) {
+		if (!parent->IsExpanded()) {
+			mList->Expand(parent);
+		}
+	}
+
+	// selecting would send the selection message and navigate to the entry's destination
+	mList->SetSelectionMessage(NULL);
+	mList->Select(mList->IndexOf(chapter));
+	mList->SetSelectionMessage(new BMessage('Outl'));
+	mList->ScrollToSelection();
 }
 
 

@@ -247,6 +247,8 @@ private:
 	bool           mPrintSettingsWindowOpen;
 
 	bool           mShowLeftPanel;
+	// panel was collapsed because there are no bookmarks, not by the user's choice
+	bool           mOutlineAutoCollapsed;
 
 	BRect          mWindowFrame;
 	bool           mFullScreen;
@@ -331,6 +333,9 @@ protected:
 	void AddItem(BMenu *subMenu, const char *label, uint32 cmd, bool marked, char shortcut = 0, uint32 modifiers = 0);
 
 	void ActivateOutlines();
+	// after loading a document: collapse the bookmarks panel if there are neither
+	// document nor user bookmarks, bring it back if the new document has some
+	void CollapseOutlinePanelIfEmpty();
 
 	bool ActivateWindow(BMessenger *messenger);
 	void WorkspaceActivated(int32 workspace, bool active);
