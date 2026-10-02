@@ -369,8 +369,8 @@ void BepdfApplication::ReadyToRun()
 }
 
 ///////////////////////////////////////////////////////////
-// grey stripe with the app icon centered on its right border, vertically
-// centered; the view reserves the room for the half of the icon sticking out
+// grey stripe with the app icon centered on its right border, with its center
+// at a third of the height; the view reserves the room for the half of the icon sticking out
 class AboutStripeView : public BView {
 public:
 	AboutStripeView(BBitmap *icon)
@@ -399,7 +399,7 @@ public:
 		SetDrawingMode(B_OP_ALPHA);
 		SetBlendingMode(B_PIXEL_ALPHA, B_ALPHA_OVERLAY);
 		DrawBitmap(mIcon, BPoint(floorf(mStripeWidth - (i.Width() + 1) / 2),
-			floorf((b.Height() - i.Height()) / 2)));
+			floorf(b.Height() / 3 - (i.Height() + 1) / 2)));
 	}
 
 private:
