@@ -6,7 +6,7 @@ permissions:
 
 jobs:
   build-haiku:
-    timeout-minutes: 60
+    timeout-minutes: 120
     runs-on: ubuntu-latest
     name: build-haiku-r1beta6-x86-64
 
@@ -23,11 +23,11 @@ jobs:
       # the steps below run inside the VM, files are synced both ways
       - name: Install build dependencies
         shell: cpa.sh {0}
-        run: pkgman update -y devel:libbz2 devel:libfreetype devel:libpng16 devel:libz cmd:gcc gcc_syslibs_devel cmd:htmldoc cmd:make cmd:pkg_config cmd:ps2pdf
+        run: pkgman install -y freetype_devel harfbuzz_devel openjpeg_devel jbig2dec_devel brotli_devel libjpeg_turbo_devel zlib_devel cmd:gcc gcc_syslibs_devel cmd:make cmd:pkg_config cmd:wget
 
       - name: Build and package
         shell: cpa.sh {0}
-        run: make -C xpdf && make -C tsundoku && make -C tsundoku bindcatalogs && ./package.sh
+        run: ./build.sh && make -C tsundoku bindcatalogs && ./package.sh
 
       # the package is back in the workspace now
       - uses: actions/upload-artifact@v7

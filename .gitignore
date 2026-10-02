@@ -3,11 +3,7 @@ objects*/
 *.swp
 *docs-build*
 
-English.pdf
-Deutsch.pdf
-Español.pdf
-Italiano.pdf
 dist/Tsundoku
-xpdf/libxpdf.a
 *.hpkg
 package-build/
+3rd-party/

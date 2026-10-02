@@ -93,6 +93,16 @@ PageRenderer::Start(CachedPage* page, int pageNo, int zoomDPI, int rotation, thr
 	if (mBitmap == NULL || width > mBitmap->Bounds().Width() + 1 || height > mBitmap->Bounds().Height() + 1) {
 		delete mBitmap;
 		mBitmap = new BBitmap(BRect(0, 0, width - 1, height - 1), B_RGB32);
+		if (mBitmap->InitCheck() != B_OK) {
+			// out of memory, e.g. a large page with a high zoom: show a white pixel instead of crashing
+			fprintf(stderr, "Tsundoku: cannot allocate a bitmap of %dx%d pixels\n", width, height);
+			delete mBitmap;
+			width = height = 1;
+			mWidth = mHeight = 1;
+			mBitmap = new BBitmap(BRect(0, 0, 0, 0), B_RGB32);
+			memset(mBitmap->Bits(), 0xff, mBitmap->BitsLength());
+			matrix = fz_identity;
+		}
 		mPage->SetBitmap(mBitmap, width, height);
 	} else
 		mPage->SetBitmapSize(width, height);

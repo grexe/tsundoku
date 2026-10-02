@@ -3,9 +3,9 @@ version			@VERSION@
 architecture	@ARCH@
 summary			"A universal document reader for Haiku, extended for SEN"
 description		"Tsundoku is a document reader for Haiku, based on BePDF and
-XPDF. It reads PDF files and adds support for the semantic relations of SEN
-(Semantic Extensions Native), e.g. jumping to a page handed over by a
-relation. Settings and per-file bookmarks stay compatible with BePDF."
+rendering with MuPDF. It reads PDF files and adds support for the semantic
+relations of SEN (Semantic Extensions Native), e.g. jumping to a page handed
+over by a relation. Settings and per-file bookmarks stay compatible with BePDF."
 packager		"Gregor B. Rosenauer <semantic.extensions@gmail.com>"
 vendor			"SEN Laboratories"
 copyrights		{
@@ -14,10 +14,10 @@ copyrights		{
 	"2000-2011 Michael Pfeiffer"
 	"1998-2000 Hubert Figuiere"
 	"1997 Benoit Triquet"
-	"1996-2017 Glyph & Cog, LLC (XPDF)"
+	"Artifex Software, Inc. (MuPDF)"
 }
 licenses		{
-	"GNU GPL v2"
+	"GNU AGPL v3"
 }
 urls			{
 	"https://github.com/grexe/tsundoku"
@@ -29,4 +29,11 @@ provides		{
 requires		{
 	haiku
 	lib:libfreetype
+	lib:libharfbuzz
+	lib:libopenjp2
+	lib:libjbig2dec
+	lib:libbrotlidec
+	lib:libbrotlienc
+	lib:libbrotlicommon
+	lib:libjpeg
 }

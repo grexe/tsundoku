@@ -1,0 +1,11 @@
+Tsundoku is free software under the GNU Affero General Public License, version 3 or any later version
+(AGPL-3.0, in this folder). It is based on BePDF (GNU GPL version 2 or any later version, which allows
+this) and renders with MuPDF by Artifex Software, Inc. (GNU AGPL version 3, https://mupdf.com).
+
+Copyright:
+  2026 Gregor B. Rosenauer & Claude
+  2013-2017 waddlesplash (BePDF)
+  2000-2011 Michael Pfeiffer (BePDF)
+  1998-2000 Hubert Figuiere (BePDF)
+  1997 Benoit Triquet (BePDF)
+  Artifex Software, Inc. (MuPDF)

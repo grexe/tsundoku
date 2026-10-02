@@ -5,7 +5,7 @@
 ## architecture of Haiku.
 
 # The MuPDF source tree, built with "make build=release libs", see PLAN-mupdf.md
-MUPDF_DIR ?= $(HOME)/Develop/3rd-party/mupdf-1.28.5-source
+MUPDF_DIR ?= $(CURDIR)/../3rd-party/mupdf-1.28.5-source
 
 # The name of the binary.
 NAME = Tsundoku

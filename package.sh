@@ -17,11 +17,11 @@ grep -q 'variety[[:space:]]*=[[:space:]]*B_APPV_DEVELOPMENT' $RDEF && VERSION="$
 VERSION="$VERSION-${REVISION:-1}"
 ARCH=$(getarch)
 
-# The app finds docs, fonts and encodings next to itself, so they all go into apps/Tsundoku.
+# The app finds the start page next to itself, so it goes into apps/Tsundoku.
 STAGE=package-build
 rm -rf $STAGE
 mkdir -p $STAGE/apps/Tsundoku $STAGE/data/deskbar/menu/Applications
-cp -a $APP dist/fonts dist/encodings dist/license $STAGE/apps/Tsundoku/
+cp -a $APP dist/license $STAGE/apps/Tsundoku/
 mkdir $STAGE/apps/Tsundoku/docs
 cp -a dist/docs/Start.pdf $STAGE/apps/Tsundoku/docs/   # the start page, shown when no file is given
 ln -s ../../../../apps/Tsundoku/Tsundoku $STAGE/data/deskbar/menu/Applications/Tsundoku
