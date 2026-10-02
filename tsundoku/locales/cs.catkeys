@@ -1,4 +1,4 @@
-1	Czech	application/x-vnd.sen-labs.Tsundoku	3143983007
+1	Czech	application/x-vnd.sen-labs.Tsundoku	2450431064
  in	PrintSettingsWindow		 v
 All pages	PrintSettingsWindow		Všechny stránky
 Color	PrintSettingsWindow		Barevný
@@ -252,6 +252,6 @@ Search backwards	FindTextWindow		Hledat v opačném směru
 Stop	FindTextWindow		Zastavit
 OK	PDFSearch		OK
 Search string not found.	PDFSearch		Hledaný řetězec nenalezen.
-Tsundoku is a fork of BePDF, extended for SEN.	BepdfApplication		
 Error getting page number!	BepdfApplication		
 Invalid file reference received!	BepdfApplication		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		

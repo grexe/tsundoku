@@ -1,8 +1,9 @@
-1	English	application/x-vnd.sen-labs.Tsundoku	3143983007
+1	English	application/x-vnd.sen-labs.Tsundoku	2450431064
 Editing of annotations in an encrypted PDF file isn't supported yet!	PDFWindow		Editing of annotations in an encrypted PDF file isn't supported yet!
 Selection rectangle	AnnotationWindow		Selection rectangle
 Cancel	PDFView		Cancel
 Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Error opening file!
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		a universal document reader based on BePDF, extended for SEN
 Go to previous page	PDFWindow		Go to previous page
 Subject:	FileInfoWindow		Subject:
 Filled rectangle	AnnotationWindow		Filled rectangle
@@ -163,7 +164,6 @@ Forward	PDFWindow		Forward
 Size:	AnnotationWindow		Size:
 Asian fonts	AnnotationWindow		Asian fonts
 Golden Master	BepdfApplication		Golden Master
-Tsundoku is a fork of BePDF, extended for SEN.	BepdfApplication		Tsundoku is a fork of BePDF, extended for SEN.
 Author	AnnotationWindow		Author
 User fonts	AnnotationWindow		User fonts
 Zoom out	PDFWindow		Zoom out

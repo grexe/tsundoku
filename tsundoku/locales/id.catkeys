@@ -1,4 +1,4 @@
-1	Indonesian	application/x-vnd.sen-labs.Tsundoku	3143983007
+1	Indonesian	application/x-vnd.sen-labs.Tsundoku	2450431064
  in	PrintSettingsWindow		dalam
 All pages	PrintSettingsWindow		Semua halaman
 Color	PrintSettingsWindow		Warna
@@ -252,6 +252,6 @@ Search backwards	FindTextWindow		Search backwards
 Stop	FindTextWindow		Berhenti
 OK	PDFSearch		OKE
 Search string not found.	PDFSearch		Pencarian kata tidak ditemukan.
-Tsundoku is a fork of BePDF, extended for SEN.	BepdfApplication		
 Error getting page number!	BepdfApplication		
 Invalid file reference received!	BepdfApplication		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		

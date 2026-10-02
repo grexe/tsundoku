@@ -1,4 +1,4 @@
-1	English (Australian)	application/x-vnd.sen-labs.Tsundoku	3143983007
+1	English (Australian)	application/x-vnd.sen-labs.Tsundoku	2450431064
  in	PrintSettingsWindow		 in
 All pages	PrintSettingsWindow		All pages
 Color	PrintSettingsWindow		Colour
@@ -252,6 +252,6 @@ Search backwards	FindTextWindow		Search backwards
 Stop	FindTextWindow		Stop
 OK	PDFSearch		OK
 Search string not found.	PDFSearch		Search string not found.
-Tsundoku is a fork of BePDF, extended for SEN.	BepdfApplication		
 Error getting page number!	BepdfApplication		
 Invalid file reference received!	BepdfApplication		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		

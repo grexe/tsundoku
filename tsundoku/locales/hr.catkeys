@@ -1,4 +1,4 @@
-1	Croatian	application/x-vnd.sen-labs.Tsundoku	3143983007
+1	Croatian	application/x-vnd.sen-labs.Tsundoku	2450431064
 Close	BepdfApplication		Zatvori
 Error	BepdfApplication		Greška
 Beta	BepdfApplication		Beta
@@ -252,6 +252,6 @@ User password	PasswordWindow		Lozinka korisnika
 Enter Password	PasswordWindow		Unesi lozinku
 Owner password	PasswordWindow		Lozinka vlasnika
 OK	PasswordWindow		U redu
-Tsundoku is a fork of BePDF, extended for SEN.	BepdfApplication		
 Error getting page number!	BepdfApplication		
 Invalid file reference received!	BepdfApplication		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		

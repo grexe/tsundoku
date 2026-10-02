@@ -1,4 +1,4 @@
-1	Catalan	application/x-vnd.sen-labs.Tsundoku	3143983007
+1	Catalan	application/x-vnd.sen-labs.Tsundoku	2450431064
  in	PrintSettingsWindow		 a
 All pages	PrintSettingsWindow		Totes les pàgines
 Color	PrintSettingsWindow		Color
@@ -252,6 +252,6 @@ Search backwards	FindTextWindow		Cerca enrere
 Stop	FindTextWindow		Interromp
 OK	PDFSearch		D'acord
 Search string not found.	PDFSearch		No s'ha trobat la cadena de cerca.
-Tsundoku is a fork of BePDF, extended for SEN.	BepdfApplication		
 Error getting page number!	BepdfApplication		
 Invalid file reference received!	BepdfApplication		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		

@@ -51,11 +51,15 @@
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "BepdfApplication"
 
+static const char * tsundokuCopyright =
+	"© 2026 Gregor B. Rosenauer & Claude\n";
+
+// history of BePDF, newest first
 static const char * bePDFCopyright =
-	"© 1997 Benoit Triquet\n"
-	"© 1998-2000 Hubert Figuiere\n"
+    "© 2013-2017 waddlesplash\n"
     "© 2000-2011 Michael Pfeiffer\n"
-    "© 2013-2017 waddlesplash\n";
+	"© 1998-2000 Hubert Figuiere\n"
+	"© 1997 Benoit Triquet\n";
 
 static const char * GPLCopyright =
     "\n\n"
@@ -359,9 +363,13 @@ void BepdfApplication::AboutRequested()
 {
 	BString version;
 	BString str("Tsundoku\n");
+	str += B_TRANSLATE("a universal document reader based on BePDF, extended for SEN");
+	str += "\n";
 	str += B_TRANSLATE("Version");
 	str += " ";
 	str += GetVersion(version);
+	str += "\n";
+	str += tsundokuCopyright;
 	str += "\n";
 
 	str += bePDFCopyright;
@@ -369,8 +377,6 @@ void BepdfApplication::AboutRequested()
 
 	str += BString().SetToFormat(B_TRANSLATE_COMMENT("Tsundoku is based on XPDF %s, %s.", "XPDF version, copyright"),
 		xpdfVersion, xpdfCopyright);
-	str += "\n";
-	str += B_TRANSLATE("Tsundoku is a fork of BePDF, extended for SEN.");
 
 	str += GPLCopyright;
 

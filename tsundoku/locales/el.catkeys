@@ -1,4 +1,4 @@
-1	Greek (Modern)	application/x-vnd.sen-labs.Tsundoku	3143983007
+1	Greek (Modern)	application/x-vnd.sen-labs.Tsundoku	2450431064
  in	PrintSettingsWindow		σε
 All pages	PrintSettingsWindow		Όλες οι σελίδες
 Color	PrintSettingsWindow		Χρώμα
@@ -252,6 +252,6 @@ Search backwards	FindTextWindow		Ανάποδη αναζήτηση
 Stop	FindTextWindow		Σταμάτημα
 OK	PDFSearch		Εντάξει
 Search string not found.	PDFSearch		Η αναζητούμενη συμβολοσειρά δεν βρέθηκε.
-Tsundoku is a fork of BePDF, extended for SEN.	BepdfApplication		
 Error getting page number!	BepdfApplication		
 Invalid file reference received!	BepdfApplication		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		

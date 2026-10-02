@@ -1,4 +1,4 @@
-1	Italian	application/x-vnd.sen-labs.Tsundoku	3143983007
+1	Italian	application/x-vnd.sen-labs.Tsundoku	2450431064
  in	PrintSettingsWindow		pollici
 All pages	PrintSettingsWindow		Tutte le pagine
 Color	PrintSettingsWindow		Colore
@@ -252,6 +252,6 @@ Search backwards	FindTextWindow		Ricerca retrograda
 Stop	FindTextWindow		Ferma
 OK	PDFSearch		OK
 Search string not found.	PDFSearch		Stringa di ricerca non trovata.
-Tsundoku is a fork of BePDF, extended for SEN.	BepdfApplication		
 Error getting page number!	BepdfApplication		
 Invalid file reference received!	BepdfApplication		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		

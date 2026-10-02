@@ -1,4 +1,4 @@
-1	Romanian	application/x-vnd.sen-labs.Tsundoku	3143983007
+1	Romanian	application/x-vnd.sen-labs.Tsundoku	2450431064
  in	PrintSettingsWindow		în
 All pages	PrintSettingsWindow		Toate paginile
 Color	PrintSettingsWindow		Culoare
@@ -252,6 +252,6 @@ Search backwards	FindTextWindow		Caută invers
 Stop	FindTextWindow		Oprește
 OK	PDFSearch		OK
 Search string not found.	PDFSearch		Șirul căutat nu a fost găsit.
-Tsundoku is a fork of BePDF, extended for SEN.	BepdfApplication		
 Error getting page number!	BepdfApplication		
 Invalid file reference received!	BepdfApplication		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		
