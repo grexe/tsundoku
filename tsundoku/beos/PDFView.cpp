@@ -34,6 +34,7 @@
 #include <be/app/MessageQueue.h>
 #include <be/app/Roster.h>
 
+#include <be/interface/Button.h>
 #include <be/interface/ScrollBar.h>
 #include <be/interface/PrintJob.h>
 #include <be/interface/Alert.h>
@@ -47,6 +48,7 @@
 #include <be/storage/File.h>
 #include <be/storage/NodeInfo.h>
 #include <be/translation/BitmapStream.h>
+#include <be/translation/TranslatorFormats.h>
 #include <be/translation/TranslationUtils.h>
 #include <be/translation/TranslatorRoster.h>
 #include <be/support/String.h>
@@ -1983,6 +1985,31 @@ TestLog(const char* format, ...)
 	fclose(out);
 }
 
+bool DrawPageInSlices(Document* document, int page, double dpi, int rotation, BView* view,
+	PrintingProgressWindow* progress);
+
+// invokes the default button of every window that has one, except the main window
+static int32
+TestPressDialogs(void*)
+{
+	for (int i = 0; i < 120; i++) {
+		snooze(500000);
+		for (int32 w = 0; w < be_app->CountWindows(); w++) {
+			BWindow* window = be_app->WindowAt(w);
+			// the main window is locked by the thread that waits for the dialog
+			if (window == NULL || window->LockWithTimeout(100000) != B_OK)
+				continue;
+			BButton* button = window->DefaultButton();
+			if (button != NULL && button->IsEnabled() && !window->IsHidden()) {
+				TestLog("pressing %s in [%s]", button->Label(), window->Title());
+				button->Invoke();
+			}
+			window->Unlock();
+		}
+	}
+	return 0;
+}
+
 // hey passes numbers as it likes
 static float
 TestNumber(BMessage* message, const char* name)
@@ -2057,6 +2084,38 @@ PDFView::TestCommand(BMessage* message)
 					r.bottom, internal ? "page" : "external", internal ? target : 0);
 		}
 		TestLog("page %d has %d links", mCurrentPage, (int)mPage->mLinks.size());
+	} else if (cmd == "printslices") {
+		// the drawing of the printing, into a bitmap that is saved: x1 is the dpi, page the page
+		bool drawn = false;
+		fz_matrix matrix;
+		int width = 0, height = 0;
+		if (mDoc->PageMatrix(page, x1, (int)mRotation, &matrix, &width, &height)) {
+			BBitmap bitmap(BRect(0, 0, width - 1, height - 1), B_RGB32, true);
+			BView* view = new BView(bitmap.Bounds(), "print", B_FOLLOW_NONE, B_WILL_DRAW);
+			if (bitmap.Lock()) {
+				bitmap.AddChild(view);
+				drawn = DrawPageInSlices(mDoc, page, x1, (int)mRotation, view, NULL);
+				view->Sync();
+				bitmap.RemoveChild(view);
+				bitmap.Unlock();
+			}
+			delete view;
+			BString path;
+			path << "/tmp/printslices-" << (int)page << "-" << (int)x1 << ".png";
+			BBitmapStream stream(&bitmap);
+			BFile file(path.String(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
+			status_t status = BTranslatorRoster::Default()->Translate(&stream, NULL, NULL, &file, B_PNG_FORMAT);
+			BBitmap* detached;
+			stream.DetachBitmap(&detached);
+			TestLog("printslices page %d at %g dpi: %dx%d, drawn %d, saved %s", (int)page, x1, width, height, drawn,
+				status == B_OK ? path.String() : "FAILED");
+		}
+	} else if (cmd == "print") {
+		// presses the default button of the dialogs of the printing (page setup and job), then prints
+		TestLog("print: starting");
+		thread_id helper = spawn_thread(TestPressDialogs, "press dialogs", B_NORMAL_PRIORITY, NULL);
+		resume_thread(helper);
+		Print();
 	} else if (cmd == "goto") {
 		MoveToPage(page);
 		TestLog("goto %d: page now %d", (int)page, mCurrentPage);

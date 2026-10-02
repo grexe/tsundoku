@@ -115,59 +115,65 @@ void PrintView::SetPage(int32 page) {
 }
 
 ///////////////////////////////////////////////////////////////////////////
+// Draws the page into the view, in slices of about 4 MB (4 bytes per pixel) to keep the memory needed within
+// bounds when it is printed with a high resolution. The view is scaled, so it draws in device pixels.
+// Returns false if the page does not exist.
+bool
+DrawPageInSlices(Document* document, int page, double dpi, int rotation, BView* view,
+	PrintingProgressWindow* progress)
+{
+	fz_matrix matrix;
+	int width, height;
+	if (!document->PageMatrix(page, dpi, rotation, &matrix, &width, &height))
+		return false;
+
+	const int64 maxSize = 1024 * 1024;
+	int64 slices = (int64)width * height / maxSize;
+	if (slices <= 0) {
+		slices = 1;
+	}
+	int sliceHeight = height / slices;
+	if (sliceHeight <= 0) {
+		sliceHeight = 1;
+	}
+
+	BBitmap* bitmap = NULL;
+	for (int sliceY = 0; sliceY < height; sliceY += sliceHeight) {
+		if (progress != NULL && (progress->Stopped() || progress->Aborted()))
+			break;
+		if (sliceY + sliceHeight > height) {
+			sliceHeight = height - sliceY;
+		}
+		if (sliceHeight <= 0) {
+			break;
+		}
+
+		if (bitmap == NULL || bitmap->Bounds().Height() + 1 < sliceHeight || bitmap->Bounds().Width() + 1 < width) {
+			delete bitmap;
+			bitmap = new BBitmap(BRect(0, 0, width - 1, sliceHeight - 1), B_RGB32);
+		}
+
+		// the slice starts at sliceY
+		fz_matrix sliceMatrix = fz_concat(matrix, fz_translate(0, -sliceY));
+		fz_cookie cookie;
+		memset(&cookie, 0, sizeof(cookie));
+		PageRenderer::RenderToBitmap(document, page, sliceMatrix, bitmap, width, sliceHeight, &cookie);
+		view->DrawBitmap(bitmap, BRect(0, 0, width - 1, sliceHeight - 1),
+			BRect(0, sliceY, width - 1, sliceY + sliceHeight - 1));
+		view->Sync();
+	}
+	delete bitmap;
+	return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////
 void
 PrintView::Draw(BRect updateRect)
 {
 	if (Window()->Lock()) {
 		int32 zoomDPI = mZoom * 72 / 100;
-		double dpi = mScale * zoomDPI;
-
-		fz_matrix matrix;
-		int width, height;
-		if (!mDoc->PageMatrix(mCurrentPage, dpi, mRotation, &matrix, &width, &height)) {
-			Window()->Unlock();
-			return;
-		}
-
-		// The page is rendered in slices of about 4 MB (4 bytes per pixel), to keep the memory needed
-		// within bounds when it is printed with a high resolution.
-		const int64 maxSize = 1024 * 1024;
-		int64 slices = (int64)width * height / maxSize;
-		if (slices <= 0) {
-			slices = 1;
-		}
-		int sliceHeight = height / slices;
-		if (sliceHeight <= 0) {
-			sliceHeight = 1;
-		}
-
-		BBitmap* bitmap = NULL;
-		for (int sliceY = 0; sliceY < height; sliceY += sliceHeight) {
-			if (mProgressWindow != NULL && (mProgressWindow->Stopped() || mProgressWindow->Aborted()))
-				break;
-			if (sliceY + sliceHeight > height) {
-				sliceHeight = height - sliceY;
-			}
-			if (sliceHeight <= 0) {
-				break;
-			}
-
-			if (bitmap == NULL || bitmap->Bounds().Height() + 1 < sliceHeight || bitmap->Bounds().Width() + 1 < width) {
-				delete bitmap;
-				bitmap = new BBitmap(BRect(0, 0, width - 1, sliceHeight - 1), B_RGB32);
-			}
-
-			// the slice starts at sliceY
-			fz_matrix sliceMatrix = fz_concat(matrix, fz_translate(0, -sliceY));
-			fz_cookie cookie;
-			memset(&cookie, 0, sizeof(cookie));
-			PageRenderer::RenderToBitmap(mDoc, mCurrentPage, sliceMatrix, bitmap, width, sliceHeight, &cookie);
-			DrawBitmap(bitmap, BRect(0, 0, width - 1, sliceHeight - 1),
-				BRect(0, sliceY, width - 1, sliceY + sliceHeight - 1));
-			Sync();
-		}
-		delete bitmap;
-
+		DrawPageInSlices(mDoc, mCurrentPage, mScale * zoomDPI, mRotation, this, mProgressWindow);
 		Flush();
 		Window()->Unlock();
 	}
