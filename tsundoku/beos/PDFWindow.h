@@ -231,6 +231,8 @@ public:
 	void SetZoom(int16 zoom);
 	void SetRotation(float rotation);
 	void SetPage(int32 page);
+	// keeps the window on the screen
+	void FitToScreen();
 
 	static void OpenPDF(const char* file);
 	static bool OpenPDFHelp(const char* name);

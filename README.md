@@ -27,10 +27,11 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
 
 ### What is different so far
 
-- It renders with MuPDF, and the text can be selected like in any modern reader: drag with the secondary mouse
-  button (or Ctrl + primary button) and the selection follows the text, double click selects a word, triple click a
-  line. The selected text is copied right away. With the command key held the selection is a rectangle, which also
-  copies the picture of that area.
+- It renders with MuPDF, and the text can be selected like in other readers, without a mode to switch: hold Option
+  (or Alt) and drag, and the selection follows the text. Double click selects a word, triple click a line. The
+  selected text is copied right away. With Shift as well the selection is a rectangle, which also copies the picture
+  of that area. Dragging without a key still moves the page, and the secondary button opens a menu (copy, select
+  all, and the link actions).
 - Searching finds the text in the order of reading and continues after the previous hit.
 - The outline follows the current page: the chapter a page belongs to is selected and scrolled into view, also after a
   jump from another application.

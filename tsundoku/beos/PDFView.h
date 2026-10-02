@@ -179,6 +179,7 @@ public:
 	void SetAction(mouse_action action);
 
 	uint32 GetButtons();
+	void BeginSelection(BPoint point, bool rectangle);
 	virtual void MouseDown (BPoint point);
 	void ScrollIfOutside (BPoint point);
 	void ResizeSelection (BPoint point);

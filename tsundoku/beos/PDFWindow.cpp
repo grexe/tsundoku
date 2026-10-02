@@ -167,6 +167,46 @@ PDFWindow::PDFWindow(entry_ref* ref, BRect frame, const char *ownerPassword,
 	}
 
 	SetSizeLimits(938, 10000, 131, 10000);
+	FitToScreen();
+}
+
+
+///////////////////////////////////////////////////////////
+// Makes sure that the window, with its border and title tab, is not larger than the screen and lies on it, for
+// the default frame as well as for a frame stored for another screen.
+void PDFWindow::FitToScreen()
+{
+	BScreen screen(this);
+	if (!screen.IsValid())
+		return;
+
+	const float margin = 10;
+	BRect screenFrame = screen.Frame();
+	BRect frame = Frame();
+	BRect decorator = DecoratorFrame();
+	float borderLeft = frame.left - decorator.left, borderTop = frame.top - decorator.top;
+	float borderRight = decorator.right - frame.right, borderBottom = decorator.bottom - frame.bottom;
+
+	float maxWidth = screenFrame.Width() - 2 * margin - borderLeft - borderRight;
+	float maxHeight = screenFrame.Height() - 2 * margin - borderTop - borderBottom;
+
+	// the minimum size must not stop the window from fitting
+	float minWidth, maxWidthLimit, minHeight, maxHeightLimit;
+	GetSizeLimits(&minWidth, &maxWidthLimit, &minHeight, &maxHeightLimit);
+	SetSizeLimits(min_c(minWidth, maxWidth), maxWidthLimit, min_c(minHeight, maxHeight), maxHeightLimit);
+
+	float width = min_c(frame.Width(), maxWidth);
+	float height = min_c(frame.Height(), maxHeight);
+	if (width != frame.Width() || height != frame.Height())
+		ResizeTo(width, height);
+
+	float left = frame.left, top = frame.top;
+	left = max_c(left, screenFrame.left + margin + borderLeft);
+	left = min_c(left, screenFrame.right - margin - borderRight - width);
+	top = max_c(top, screenFrame.top + margin + borderTop);
+	top = min_c(top, screenFrame.bottom - margin - borderBottom - height);
+	if (left != frame.left || top != frame.top)
+		MoveTo(left, top);
 }
 
 
@@ -1338,7 +1378,21 @@ PDFWindow::MessageReceived(BMessage* message)
 					fclose(out);
 				}
 			}
-			if (cmd == "find") {
+			if (cmd == "bigwindow") {
+				// a frame that does not fit the screen, to see that FitToScreen() makes it fit
+				SetSizeLimits(100, 10000, 100, 10000);
+				ResizeTo(3000, 2000);
+				MoveTo(1500, 900);
+				FitToScreen();
+				BRect frame = Frame(), decorator = DecoratorFrame(), screen = BScreen(this).Frame();
+				FILE* out = fopen("/tmp/ts_test.out", "a");
+				if (out != NULL) {
+					fprintf(out, "bigwindow: frame %g,%g-%g,%g decorator %g,%g-%g,%g screen %g,%g-%g,%g\n", frame.left,
+						frame.top, frame.right, frame.bottom, decorator.left, decorator.top, decorator.right,
+						decorator.bottom, screen.left, screen.top, screen.right, screen.bottom);
+					fclose(out);
+				}
+			} else if (cmd == "find") {
 				// as the find window does it
 				if (mFindWindow == NULL)
 					mFindWindow = new FindTextWindow(gApp->GetSettings(), "", this);

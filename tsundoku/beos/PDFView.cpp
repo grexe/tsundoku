@@ -80,6 +80,8 @@ static const int kZoomDPI[MAX_ZOOM - MIN_ZOOM + 1] = {
 
 #define OPEN_FILE_MSG                  'open'
 #define COPY_LINK_MSG                  'cplk'
+#define COPY_SELECTION_MSG             'cpsl'
+#define SELECT_ALL_MSG                 'slal'
 
 // more quads than a page can have lines of text
 static const int kMaxQuads = 8192;
@@ -292,6 +294,7 @@ PDFView::LoadFile(entry_ref *ref, FileAttributes *fileAttributes, const char *ow
 	PDFWindow *w = GetPDFWindow();
 	if (w && !init && w->Lock()) {
 		RestoreWindowFrame(w);
+		w->FitToScreen();
 		w->NewDoc(mDoc);
 		w->SetTitle (mTitle->String());
 		Redraw();
@@ -335,6 +338,12 @@ void PDFView::MessageReceived(BMessage *msg) {
 		if (B_OK == msg->FindString("link", &string)) {
 			CopyText(&string);
 		}
+		break;
+	case COPY_SELECTION_MSG:
+		CopySelection();
+		break;
+	case SELECT_ALL_MSG:
+		SelectAll();
 		break;
 	case OPEN_FILE_MSG:
 		if (B_OK == msg->FindString("file", &string)) {
@@ -632,12 +641,19 @@ PDFView::CorrectMousePos(const BPoint point) {
 }
 
 ///////////////////////////////////////////////////////////////////////////
+// Option (and Alt) with the primary button selects text, like in other readers: no mode to switch.
+static bool
+SelectModifierDown()
+{
+	return (modifiers() & (B_OPTION_KEY | B_COMMAND_KEY)) != 0;
+}
+
 uint32
 PDFView::GetButtons() {
 	BPoint point;
 	uint32 buttons;
 	GetMouse(&point, &buttons, false);
-	if (buttons == B_PRIMARY_MOUSE_BUTTON) {
+	if (buttons == B_PRIMARY_MOUSE_BUTTON && !SelectModifierDown()) {
 		if ((modifiers() & B_CONTROL_KEY)) {
 			buttons = B_SECONDARY_MOUSE_BUTTON; // simulate secondary button
 		} else if ((modifiers() & B_SHIFT_KEY)) {
@@ -645,6 +661,32 @@ PDFView::GetButtons() {
 		}
 	}
 	return buttons;
+}
+
+///////////////////////////////////////////////////////////////////////////
+// Starts a selection at the position: of the text that follows the flow of the text, or a rectangle.
+void
+PDFView::BeginSelection(BPoint point, bool rectangle) {
+	if (mSelected != NOT_SELECTED) {
+		BRect old = SelectionBounds();
+		mSelected = NOT_SELECTED;
+		mQuads.clear();
+		if (old.IsValid())
+			Invalidate(old.InsetByCopy(-2, -2).OffsetByCopy(mLeft, mTop));
+	}
+
+	SetAction(SELECT_ACTION);
+	mSelected = DO_SELECTION;
+	mMousePosition = ConvertToScreen(point);
+	point = LimitToPage(CorrectMousePos(point));
+	SetViewCursor(gApp->textSelectionCursor);
+	mSelectionKind = rectangle ? kSelectArea : kSelectText;
+	mSelectionStart = point;
+	mSelection.SetLeftTop(point);
+	mSelection.SetRightBottom(point);
+	if (mSelectionKind == kSelectText)
+		StartTextSelection(point);
+	SetMouseEventMask(B_POINTER_EVENTS);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -663,6 +705,12 @@ PDFView::MouseDown (BPoint point) {
 
 	switch (buttons) {
 		case B_PRIMARY_MOUSE_BUTTON:
+			// Option: select text, with Shift a rectangle (which also copies the picture of it)
+			if (SelectModifierDown()) {
+				if (mDoc->CanCopy())
+					BeginSelection(point, (modifiers() & B_SHIFT_KEY) != 0);
+				break;
+			}
 			if ((mSelected == SELECTED) && InSelection(point)) {
 				SendDragMessage(B_MIME_DATA); // start text drag and drop
 				break;
@@ -690,14 +738,8 @@ PDFView::MouseDown (BPoint point) {
 				SendDragMessage(B_SIMPLE_DATA); // start negotiated drag and drop
 				return;
 			}
-			if (mSelected == NOT_SELECTED) {
-				const DocLink* link;
-				if ((link = OnLink(point)) != NULL) {
-					ShowPopUpMenu(screen, link);
-					return;
-				}
-			}
-			// text selection: fall through
+			ShowPopUpMenu(screen, OnLink(point));
+			return;
 		case B_TERTIARY_MOUSE_BUTTON: // zoom to selection
 			if (mSelected != NOT_SELECTED) {
 				BRect old = SelectionBounds();
@@ -707,37 +749,19 @@ PDFView::MouseDown (BPoint point) {
 					Invalidate(old.InsetByCopy(-2, -2).OffsetByCopy(mLeft, mTop));
 			}
 
-			// is copying allowed?
-			if (buttons == B_SECONDARY_MOUSE_BUTTON && !mDoc->CanCopy()) {
-				return;
-			}
-
-			SetAction(buttons == B_TERTIARY_MOUSE_BUTTON ? ZOOM_ACTION : SELECT_ACTION);
-
+			SetAction(ZOOM_ACTION);
 			mSelected = DO_SELECTION;
 			mMousePosition = screen;
 			point = CorrectMousePos(point);
-
-			if (buttons == B_SECONDARY_MOUSE_BUTTON) {
-			  	SetViewCursor(gApp->textSelectionCursor);
-			  	point = LimitToPage(point);
-			  	// the text follows the flow of the text, with the command key it is a rectangle
-			  	mSelectionKind = (modifiers() & B_COMMAND_KEY) != 0 ? kSelectArea : kSelectText;
-			} else {
-			  	SetViewCursor(gApp->zoomCursor);
-			  	mSelectionKind = kSelectArea;
-			}
+		  	SetViewCursor(gApp->zoomCursor);
+		  	mSelectionKind = kSelectArea;
 			mSelectionStart = point;
 			mSelection.SetLeftTop(point);
 			mSelection.SetRightBottom(point);
-			if (mSelectionKind == kSelectText)
-				StartTextSelection(point);
 			SetMouseEventMask(B_POINTER_EVENTS);
-
 			break;
 	}
 }
-
 
 
 void
@@ -1069,22 +1093,36 @@ PDFView::ShowPopUpMenu(BPoint point, const DocLink* link) {
 	BMenuItem* i;
 	BString s;
 
-	// Open document in new window
-	if (IsLinkToDocument(link, &s)) {
-		msg = new BMessage(OPEN_FILE_MSG);
-		msg->AddString("file", s);
-		i = new BMenuItem(B_TRANSLATE("Open in new window"), msg);
+	bool canCopy = mDoc->CanCopy();
+	i = new BMenuItem(B_TRANSLATE("Copy"), new BMessage(COPY_SELECTION_MSG));
+	i->SetTarget(this);
+	i->SetEnabled(canCopy && mSelected == SELECTED);
+	menu->AddItem(i);
+	i = new BMenuItem(B_TRANSLATE("Select all"), new BMessage(SELECT_ALL_MSG));
+	i->SetTarget(this);
+	i->SetEnabled(canCopy);
+	menu->AddItem(i);
+
+	if (link != NULL) {
+		menu->AddSeparatorItem();
+
+		// Open document in new window
+		if (IsLinkToDocument(link, &s)) {
+			msg = new BMessage(OPEN_FILE_MSG);
+			msg->AddString("file", s);
+			i = new BMenuItem(B_TRANSLATE("Open in new window"), msg);
+			i->SetTarget(this);
+			menu->AddItem(i);
+		}
+
+		// Copy link location
+		msg = new BMessage(COPY_LINK_MSG);
+		LinkToString(link, &s);
+		msg->AddString("link", s);
+		i = new BMenuItem(B_TRANSLATE("Copy link"), msg);
 		i->SetTarget(this);
 		menu->AddItem(i);
 	}
-
-	// Copy link location
-	msg = new BMessage(COPY_LINK_MSG);
-	LinkToString(link, &s);
-	msg->AddString("link", s);
-	i = new BMenuItem(B_TRANSLATE("Copy link"), msg);
-	i->SetTarget(this);
-	menu->AddItem(i);
 
 	point -= BPoint(10, 10);
 	menu->Go(point, true, false, false);
@@ -1124,6 +1162,12 @@ PDFView::DisplayLink(BPoint point)
 	if (((mSelected == SELECTED) && InSelection(point)) ||
 		p.x < 0 || p.y < 0 || p.x >= mWidth || p.y >= mHeight) {
 		SetViewCursor((BCursor*)B_CURSOR_SYSTEM_DEFAULT);
+		return;
+	}
+
+	// selecting?
+	if (SelectModifierDown()) {
+		SetViewCursor(gApp->textSelectionCursor);
 		return;
 	}
 
