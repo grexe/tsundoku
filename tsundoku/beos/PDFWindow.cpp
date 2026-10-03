@@ -680,6 +680,16 @@ void PDFWindow::UpdateWindowsMenu() {
 }
 
 
+// the message of an item of the Add menu: the tool the next click or drag works with
+static BMessage*
+AddToolMessage(PDFView::PlacementTool tool)
+{
+	BMessage* message = new BMessage(PDFWindow::ADD_ANNOTATION_CMD);
+	message->AddInt32("tool", tool);
+	return message;
+}
+
+
 BMenuBar* PDFWindow::BuildMenu()
 {
 	BString label;
@@ -720,6 +730,15 @@ BMenuBar* PDFWindow::BuildMenu()
 			.AddItem(B_TRANSLATE("Highlight selection"), ANNOTATE_HIGHLIGHT_CMD, 'H', B_SHIFT_KEY)
 			.AddItem(B_TRANSLATE("Underline selection"), ANNOTATE_UNDERLINE_CMD, 'U', B_SHIFT_KEY)
 			.AddItem(B_TRANSLATE("Strike out selection"), ANNOTATE_STRIKEOUT_CMD, 'K', B_SHIFT_KEY)
+			.AddMenu(B_TRANSLATE("Add"))
+				.AddItem(B_TRANSLATE("Note"), AddToolMessage(PDFView::kToolNote))
+				.AddItem(B_TRANSLATE("Text"), AddToolMessage(PDFView::kToolFreeText))
+				.AddItem(B_TRANSLATE("Rectangle"), AddToolMessage(PDFView::kToolRectangle))
+				.AddItem(B_TRANSLATE("Ellipse"), AddToolMessage(PDFView::kToolEllipse))
+				.AddItem(B_TRANSLATE("Line"), AddToolMessage(PDFView::kToolLine))
+				.AddItem(B_TRANSLATE("Arrow"), AddToolMessage(PDFView::kToolArrow))
+				.AddItem(B_TRANSLATE("Drawing"), AddToolMessage(PDFView::kToolInk))
+			.End()
 			.AddSeparator()
 			.AddItem(mPreferencesItem = new BMenuItem(B_TRANSLATE("Settings" B_UTF8_ELLIPSIS),
 										new BMessage(PREFERENCES_FILE_CMD), ','))
@@ -1172,6 +1191,12 @@ PDFWindow::MessageReceived(BMessage* message)
 	case SAVE_FILE_CMD:
 		SaveDocument();
 		break;
+	case ADD_ANNOTATION_CMD: {
+		int32 tool = PDFView::kToolNone;
+		message->FindInt32("tool", &tool);
+		mMainView->SetTool((PDFView::PlacementTool)tool);
+		break;
+	}
 	case UNDO_CMD:
 		mMainView->Undo();
 		break;

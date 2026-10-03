@@ -37,6 +37,10 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
 - Selected text can be highlighted, underlined or struck out (Edit menu or the menu of the secondary button, with a
   choice of colors, each shown with a sample). The marks are real PDF annotations, other readers show them. From the
   menu of an existing mark its color and its note can be changed, or the mark deleted; the note shows as a tooltip when the mouse rests on the mark.
+  More than text can be marked: Edit > Add (and the same entry in the menu of the secondary button) creates a note, text
+  on the page, a rectangle, an ellipse, a line, an arrow or a freehand drawing. Choose one, then click (note, text) or
+  drag (the others) on the page; the cursor is a cross until then, and Escape cancels. A note or text from the
+  menu of the secondary button goes where that menu was opened. Their color can be changed there too.
   Edit > Undo and Redo (Cmd+Z, Cmd+Shift+Z) take back and repeat these changes one by one and go to the page they
   were made on; the history ends when the document is saved.
   File > Save (Cmd+S) adds the changes to the end of the file, so its attributes stay as they are. For a file that
@@ -54,8 +58,8 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
 - Settings are stored in `~/config/settings/Tsundoku`, separate from BePDF. Everything else BePDF stores (bookmarks and
   the position per file in BFS attributes) is unchanged and compatible.
 
-Not there yet, and planned: more kinds of annotations (notes on the page, free text, shapes, ink; BePDF could,
-Tsundoku shows the ones that are in the file), the fonts of a document in the file info. See [PLAN-mupdf.md](PLAN-mupdf.md).
+Not there yet, and planned: moving and resizing annotations, line widths and fill colors, the fonts of a document in
+the file info. See [PLAN-mupdf.md](PLAN-mupdf.md).
 
 ### Features
 

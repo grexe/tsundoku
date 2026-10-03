@@ -93,10 +93,31 @@ private:
 		SELECT_ACTION,
 		DND_ACTION,
 		ZOOM_ACTION,
-		SECONDARY_ACTION  // a click opens the menu, moving starts to drag the selection
+		SECONDARY_ACTION, // a click opens the menu, moving starts to drag the selection
+		TOOL_ACTION       // drawing a shape (see PlacementTool)
 	} mMouseAction;
 	BPoint mMousePosition;
 	BPoint mSecondaryStart;
+
+public:
+	// What the next click or drag on the page creates; after that the tool is gone, so there is no mode to
+	// leave. Escape cancels it.
+	enum PlacementTool {
+		kToolNone,
+		kToolNote,
+		kToolFreeText,
+		kToolRectangle,
+		kToolEllipse,
+		kToolLine,
+		kToolArrow,
+		kToolInk
+	};
+
+private:
+	PlacementTool mTool;
+	BPoint mToolStart, mToolEnd;       // in the bitmap
+	std::vector<BPoint> mToolPoints;   // the path of a drawing
+	BCursor* mToolCursor;
 	bool mDragStarted;
 
 	float mMouseWheelDY;
@@ -209,6 +230,12 @@ public:
 	void ShowPopUpMenu(BPoint point, const DocLink* link, const DocAnnotation* annotation);
 	// shows the changed annotations, on another page if the change was there
 	void AnnotationsChanged(int page = 0);
+	void BeginTool(BPoint point);
+	void FinishTool(BPoint point);
+	void CancelTool();
+	void AskForText(PlacementTool tool, fz_point position);
+	void DrawToolPreview();
+	BRect ToolBounds() const;
 	// before the first change of a read-only file: tells the user, false if the user does not want to go on
 	bool ConfirmEditable();
 	void CopyText(BString *str);
@@ -278,6 +305,10 @@ public:
 	bool AnnotateSelection(MarkupType type, uint32 rgb);
 	void Undo();
 	void Redo();
+	// Prepares to create an annotation. A note or text goes to the position if there is one (page space), a
+	// shape is drawn with the next drag.
+	void SetTool(PlacementTool tool, const fz_point* position = NULL);
+	bool HasTool() const { return mTool != kToolNone; }
 	// finds a quoted passage, selects it and shows it (see PDFSearch.cpp)
 	bool ShowQuote(const char* quote, int page, bool annotate);
 	void SetFilledSelection(bool filled);

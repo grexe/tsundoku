@@ -65,6 +65,14 @@ enum MarkupType {
 	kMarkupSquiggly
 };
 
+// The shapes that can be drawn on a page.
+enum ShapeType {
+	kShapeRectangle,
+	kShapeEllipse,
+	kShapeLine,
+	kShapeArrow       // a line with an arrow at its end
+};
+
 // An annotation of a PDF page (not links, popups and form fields). Rectangle and quads are in page space.
 struct DocAnnotation {
 	int     type;         // pdf_annot_type
@@ -74,6 +82,7 @@ struct DocAnnotation {
 	BString contents;
 	BString author;
 	bool    isMarkup;
+	bool    isFreeText;   // the contents are text on the page, not a note
 	bool    hasColor;
 	uint32  color;        // 0xRRGGBB, if hasColor
 };
@@ -137,6 +146,12 @@ public:
 	bool         DeleteAnnotation(int page, int index);
 	bool         SetAnnotationContents(int page, int index, const char* text);
 	bool         SetAnnotationColor(int page, int index, uint32 rgb);
+
+	// New annotations that are not tied to text. Positions are in page space, colors 0xRRGGBB.
+	bool         AddNote(int page, fz_point where, const char* text);
+	bool         AddFreeText(int page, fz_point where, const char* text);
+	bool         AddShape(int page, ShapeType type, fz_point from, fz_point to, uint32 rgb);
+	bool         AddInk(int page, const fz_point* points, int count, uint32 rgb);
 
 	// Saving adds the changes to the end of the file (so that its attributes and the rest stay as they are).
 	// Undo and redo of the edits above. They return the page (1-based) that changed, 0 if there was nothing to do.

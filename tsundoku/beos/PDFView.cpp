@@ -90,6 +90,8 @@ static const int kZoomDPI[MAX_ZOOM - MIN_ZOOM + 1] = {
 #define EDIT_NOTE_MSG                  'ednt'
 #define NOTE_ENTERED_MSG               'ntnt'
 #define CHANGE_COLOR_MSG               'chcl'
+#define ADD_TOOL_MSG                   'adtl'
+#define CREATE_TEXT_MSG                'crtx'
 #define MODIFIERS_POLL_MSG             'mdfy'
 
 static bool SelectModifierDown();
@@ -221,6 +223,8 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 	mNoteTip = 0;
 	mSelectKeyDown = false;
 	mReadOnlyWarned = false;
+	mTool = kToolNone;
+	mToolCursor = new BCursor(B_CURSOR_ID_CROSS_HAIR);
 	mModifierRunner = NULL;
 	mNavigationState = kNotInHistory;
 
@@ -426,6 +430,7 @@ PDFView::~PDFView()
 	delete mPage;	// refers to the document
 	delete mDoc;
 	delete mModifierRunner;
+	delete mToolCursor;
 	delete mTitle;
 	delete mOwnerPassword;
 	delete mUserPassword;
@@ -478,6 +483,31 @@ void PDFView::MessageReceived(BMessage *msg) {
 		msg->FindInt32("type", &type);
 		msg->FindInt32("color", &rgb);
 		AnnotateSelection((MarkupType)type, (uint32)rgb);
+		break;
+	}
+	case ADD_TOOL_MSG: {
+		int32 tool = kToolNone;
+		msg->FindInt32("tool", &tool);
+		fz_point position;
+		bool hasPosition = msg->FindFloat("x", &position.x) == B_OK && msg->FindFloat("y", &position.y) == B_OK;
+		SetTool((PlacementTool)tool, hasPosition ? &position : NULL);
+		break;
+	}
+	case CREATE_TEXT_MSG: {
+		int32 tool = kToolNote, page = 0;
+		fz_point position = fz_make_point(0, 0);
+		const char* text = "";
+		msg->FindInt32("tool", &tool);
+		msg->FindInt32("page", &page);
+		msg->FindFloat("x", &position.x);
+		msg->FindFloat("y", &position.y);
+		msg->FindString("text", &text);
+		if (text[0] != '\0' && ConfirmEditable()) {
+			bool ok = tool == kToolFreeText ? mDoc->AddFreeText(page, position, text)
+				: mDoc->AddNote(page, position, text);
+			if (ok)
+				AnnotationsChanged(page);
+		}
 		break;
 	}
 	case CHANGE_COLOR_MSG: {
@@ -737,6 +767,7 @@ PDFView::Draw(BRect updateRect)
 		}
 		DrawFindHits(updateRect);
 		DrawSelection(updateRect);
+		DrawToolPreview();
 	}
 }
 
@@ -835,6 +866,12 @@ void
 PDFView::KeyDown (const char * bytes, int32 numBytes)
 {
 	switch (*bytes) {
+	case B_ESCAPE:
+		if (mTool != kToolNone)
+			CancelTool();
+		else
+			BView::KeyDown(bytes, numBytes);
+		break;
 	case B_PAGE_UP:
 		MoveToPage (mCurrentPage - 1);
 		break;
@@ -951,6 +988,14 @@ PDFView::MouseDown (BPoint point) {
 	BMessage* current = Window()->CurrentMessage();
 	if (current != NULL)
 		current->FindInt32("clicks", &clicks);
+
+	if (mTool != kToolNone) {
+		if (buttons == B_PRIMARY_MOUSE_BUTTON) {
+			BeginTool(point);
+			return;
+		}
+		CancelTool();	// another button gets its usual meaning
+	}
 
 	switch (buttons) {
 		case B_PRIMARY_MOUSE_BUTTON:
@@ -1115,6 +1160,22 @@ PDFView::MouseMoved (BPoint point, uint32 transit, const BMessage *msg) {
 			}
 			break;
 		}
+		case TOOL_ACTION:
+		{
+			SkipMouseMoveMsgs();
+			BRect old = ToolBounds();
+			BPoint p = LimitToPage(CorrectMousePos(point));
+			mToolEnd = p;
+			if (mTool == kToolInk) {
+				BPoint last = mToolPoints.back();
+				if (fabsf(p.x - last.x) >= 2 || fabsf(p.y - last.y) >= 2)
+					mToolPoints.push_back(p);
+			}
+			Invalidate((old | ToolBounds()).InsetByCopy(-4, -4).OffsetByCopy(mLeft, mTop));
+			if ((GetButtons() & B_PRIMARY_MOUSE_BUTTON) == 0)
+				MouseUp(point);
+			break;
+		}
 		case SECONDARY_ACTION:
 		{
 			uint32 buttons = GetButtons();
@@ -1194,6 +1255,11 @@ PDFView::ResizeSelection(BPoint point) {
 ///////////////////////////////////////////////////////////////////////////
 void
 PDFView::MouseUp (BPoint point) {
+	if (mMouseAction == TOOL_ACTION) {
+		SetAction(NO_ACTION);
+		FinishTool(point);
+		return;
+	}
 	if (mMouseAction == SECONDARY_ACTION) {
 		SetAction(NO_ACTION);
 		ShowPopUpMenu(ConvertToScreen(point), OnLink(point), OnAnnotation(point));
@@ -1380,7 +1446,7 @@ PDFView::ShowPopUpMenu(BPoint point, const DocLink* link, const DocAnnotation* a
 	i->SetEnabled(canCopy);
 	menu->AddItem(i);
 
-	if (mDoc->CanEditAnnotations() && (HasTextSelection() || annotation != NULL)) {
+	if (mDoc->CanEditAnnotations()) {
 		menu->AddSeparatorItem();
 
 		if (HasTextSelection()) {
@@ -1403,8 +1469,32 @@ PDFView::ShowPopUpMenu(BPoint point, const DocLink* link, const DocAnnotation* a
 			menu->AddItem(i);
 		}
 
+		// a note or text goes where the menu was opened
+		BPoint clicked = CorrectMousePos(ConvertFromScreen(point));
+		fz_point where = mPage->DevToPage(clicked);
+		bool onPage = clicked.x >= 0 && clicked.y >= 0 && clicked.x < mWidth && clicked.y < mHeight;
+		static const struct { const char* label; PlacementTool tool; } kTools[] = {
+			{ B_TRANSLATE_MARK("Note"), kToolNote }, { B_TRANSLATE_MARK("Text"), kToolFreeText },
+			{ B_TRANSLATE_MARK("Rectangle"), kToolRectangle }, { B_TRANSLATE_MARK("Ellipse"), kToolEllipse },
+			{ B_TRANSLATE_MARK("Line"), kToolLine }, { B_TRANSLATE_MARK("Arrow"), kToolArrow },
+			{ B_TRANSLATE_MARK("Drawing"), kToolInk }
+		};
+		BMenu* add = new BMenu(B_TRANSLATE("Add"));
+		for (size_t t = 0; t < sizeof(kTools) / sizeof(kTools[0]); t++) {
+			msg = new BMessage(ADD_TOOL_MSG);
+			msg->AddInt32("tool", kTools[t].tool);
+			if (onPage && (kTools[t].tool == kToolNote || kTools[t].tool == kToolFreeText)) {
+				msg->AddFloat("x", where.x);
+				msg->AddFloat("y", where.y);
+			}
+			i = new BMenuItem(B_TRANSLATE_NOCOLLECT(kTools[t].label), msg);
+			i->SetTarget(this);
+			add->AddItem(i);
+		}
+		menu->AddItem(add);
+
 		if (annotation != NULL) {
-			if (annotation->isMarkup) {
+			if (annotation->hasColor && !annotation->isFreeText) {
 				BMessage change(CHANGE_COLOR_MSG);
 				change.AddInt32("page", mCurrentPage);
 				change.AddInt32("index", annotation->index);
@@ -1416,7 +1506,8 @@ PDFView::ShowPopUpMenu(BPoint point, const DocLink* link, const DocAnnotation* a
 			msg->AddInt32("page", mCurrentPage);
 			msg->AddInt32("index", annotation->index);
 			msg->AddString("text", annotation->contents);
-			i = new BMenuItem(B_TRANSLATE("Edit note" B_UTF8_ELLIPSIS), msg);
+			i = new BMenuItem(annotation->isFreeText ? B_TRANSLATE("Edit text" B_UTF8_ELLIPSIS)
+				: B_TRANSLATE("Edit note" B_UTF8_ELLIPSIS), msg);
 			i->SetTarget(this);
 			menu->AddItem(i);
 
@@ -1528,6 +1619,11 @@ PDFView::DisplayLink(BPoint point)
 	BString str;
 	if (mRendering || mDragStarted || (mDoc == NULL) || (mDoc->PageCount() == 0))
 		return;
+
+	if (mTool != kToolNone) {
+		SetViewCursor(mToolCursor);
+		return;
+	}
 
 	BPoint p = CorrectMousePos(point);
 	// over selection?
@@ -2347,6 +2443,200 @@ PDFView::Undo()
 }
 
 
+// the color of what is drawn, for marks of the same kind as the red underline
+static const uint32 kDrawingColor = 0xe53935;
+
+
+void
+PDFView::SetTool(PlacementTool tool, const fz_point* position)
+{
+	if (tool == kToolNone || !mDoc->CanEditAnnotations()) {
+		beep();
+		return;
+	}
+
+	if ((tool == kToolNote || tool == kToolFreeText) && position != NULL) {
+		// where the menu was opened
+		AskForText(tool, *position);
+		return;
+	}
+
+	mTool = tool;
+	SetViewCursor(mToolCursor);
+}
+
+
+void
+PDFView::CancelTool()
+{
+	BRect old = ToolBounds();
+	mTool = kToolNone;
+	mToolPoints.clear();
+	if (mMouseAction == TOOL_ACTION)
+		SetAction(NO_ACTION);
+	if (old.IsValid())
+		Invalidate(old.InsetByCopy(-4, -4).OffsetByCopy(mLeft, mTop));
+	SetViewCursor(gApp->handCursor);
+}
+
+
+void
+PDFView::BeginTool(BPoint point)
+{
+	BPoint p = CorrectMousePos(point);
+	if (p.x < 0 || p.y < 0 || p.x >= mWidth || p.y >= mHeight)
+		return;
+
+	if (mTool == kToolNote || mTool == kToolFreeText) {
+		// a click is all it takes, the text is asked for
+		PlacementTool tool = mTool;
+		CancelTool();
+		AskForText(tool, mPage->DevToPage(p));
+		return;
+	}
+
+	mToolStart = mToolEnd = p;
+	mToolPoints.clear();
+	mToolPoints.push_back(p);
+	SetAction(TOOL_ACTION);
+	SetMouseEventMask(B_POINTER_EVENTS);
+}
+
+
+// The drag is over: creates what was drawn, if it is big enough to be meant. Otherwise the tool stays.
+void
+PDFView::FinishTool(BPoint)
+{
+	BRect bounds = ToolBounds();
+	float dx = mToolEnd.x - mToolStart.x, dy = mToolEnd.y - mToolStart.y;
+	float length = sqrtf(dx * dx + dy * dy);
+	bool big = false;
+	switch (mTool) {
+		case kToolRectangle:
+		case kToolEllipse:
+			big = fabsf(dx) >= 4 && fabsf(dy) >= 4;
+			break;
+		case kToolLine:
+		case kToolArrow:
+			big = length >= 6;
+			break;
+		case kToolInk:
+			big = mToolPoints.size() >= 3 || (mToolPoints.size() == 2 && length >= 6);
+			break;
+		default:
+			break;
+	}
+
+	if (!big) {
+		mToolPoints.clear();
+		if (bounds.IsValid())
+			Invalidate(bounds.InsetByCopy(-4, -4).OffsetByCopy(mLeft, mTop));
+		return;
+	}
+
+	PlacementTool tool = mTool;
+	fz_point from = mPage->DevToPage(mToolStart), to = mPage->DevToPage(mToolEnd);
+	std::vector<fz_point> path;
+	for (size_t i = 0; i < mToolPoints.size(); i++)
+		path.push_back(mPage->DevToPage(mToolPoints[i]));
+	CancelTool();
+
+	if (!ConfirmEditable())
+		return;
+
+	WaitForPage(true);
+	bool ok = false;
+	switch (tool) {
+		case kToolRectangle:
+			ok = mDoc->AddShape(mCurrentPage, kShapeRectangle, from, to, kDrawingColor);
+			break;
+		case kToolEllipse:
+			ok = mDoc->AddShape(mCurrentPage, kShapeEllipse, from, to, kDrawingColor);
+			break;
+		case kToolLine:
+			ok = mDoc->AddShape(mCurrentPage, kShapeLine, from, to, kDrawingColor);
+			break;
+		case kToolArrow:
+			ok = mDoc->AddShape(mCurrentPage, kShapeArrow, from, to, kDrawingColor);
+			break;
+		case kToolInk:
+			ok = mDoc->AddInk(mCurrentPage, &path[0], (int)path.size(), kDrawingColor);
+			break;
+		default:
+			break;
+	}
+	if (ok)
+		AnnotationsChanged(mCurrentPage);
+	else
+		Redraw();
+}
+
+
+// Asks for the text of a note or of text on the page; the annotation is made when it comes back.
+void
+PDFView::AskForText(PlacementTool tool, fz_point position)
+{
+	if (!ConfirmEditable())
+		return;
+
+	BMessage message(CREATE_TEXT_MSG);
+	message.AddInt32("tool", tool);
+	message.AddInt32("page", mCurrentPage);
+	message.AddFloat("x", position.x);
+	message.AddFloat("y", position.y);
+	new NoteWindow(Window(), BMessenger(this), message, "");
+}
+
+
+// the area in the bitmap that the drawing in progress covers
+BRect
+PDFView::ToolBounds() const
+{
+	if (mTool == kToolNone || mMouseAction != TOOL_ACTION)
+		return BRect();
+
+	BRect bounds(mToolStart, mToolStart);
+	bounds = bounds | BRect(mToolEnd, mToolEnd);
+	for (size_t i = 0; i < mToolPoints.size(); i++)
+		bounds = bounds | BRect(mToolPoints[i], mToolPoints[i]);
+	return bounds;
+}
+
+
+void
+PDFView::DrawToolPreview()
+{
+	if (mTool == kToolNone || mMouseAction != TOOL_ACTION)
+		return;
+
+	rgb_color color = { (uint8)(kDrawingColor >> 16), (uint8)(kDrawingColor >> 8), (uint8)kDrawingColor, 255 };
+	SetHighColor(color);
+	SetPenSize(2);
+	BPoint offset(mLeft, mTop);
+	BPoint a = mToolStart + offset, b = mToolEnd + offset;
+	BRect box(min_c(a.x, b.x), min_c(a.y, b.y), max_c(a.x, b.x), max_c(a.y, b.y));
+	switch (mTool) {
+		case kToolRectangle:
+			StrokeRect(box);
+			break;
+		case kToolEllipse:
+			StrokeEllipse(box);
+			break;
+		case kToolLine:
+		case kToolArrow:
+			StrokeLine(a, b);
+			break;
+		case kToolInk:
+			for (size_t i = 1; i < mToolPoints.size(); i++)
+				StrokeLine(mToolPoints[i - 1] + offset, mToolPoints[i] + offset);
+			break;
+		default:
+			break;
+	}
+	SetPenSize(1);
+}
+
+
 void
 PDFView::Redo()
 {
@@ -2607,6 +2897,48 @@ PDFView::TestCommand(BMessage* message)
 		bool ok = AnnotateSelection(type, kind == "highlight" ? 0xffeb3b : 0xe53935);
 		TestLog("annotate %s: %s, unsaved changes: %d", kind.String(), ok ? "ok" : "failed",
 			(int)mDoc->HasUnsavedChanges());
+	} else if (cmd == "tool") {
+		// kind: note, text, rectangle, ellipse, line, arrow, drawing
+		BString kind;
+		message->FindString("kind", &kind);
+		PlacementTool tool = kind == "note" ? kToolNote : kind == "text" ? kToolFreeText
+			: kind == "rectangle" ? kToolRectangle : kind == "ellipse" ? kToolEllipse
+			: kind == "line" ? kToolLine : kind == "arrow" ? kToolArrow : kToolInk;
+		SetTool(tool);
+		TestLog("tool %s: active %d", kind.String(), (int)HasTool());
+	} else if (cmd == "drag") {
+		// a drag from (x1, y1) to (x2, y2) with the tool, as MouseDown, MouseMoved and MouseUp do it
+		BeginTool(BPoint(x1, y1));
+		if (mMouseAction == TOOL_ACTION) {
+			for (int step = 1; step <= 10; step++) {
+				BPoint p(x1 + (x2 - x1) * step / 10, y1 + (y2 - y1) * step / 10);
+				// a drawing wiggles
+				if (mTool == kToolInk)
+					p.y += (step % 2) * 6;
+				mToolEnd = LimitToPage(CorrectMousePos(p));
+				if (mTool == kToolInk)
+					mToolPoints.push_back(mToolEnd);
+			}
+			SetAction(NO_ACTION);
+			// FinishTool needs the tool set, it is cleared by CancelTool there
+			FinishTool(BPoint(x2, y2));
+		}
+		TestLog("drag: tool now %d", (int)mTool);
+	} else if (cmd == "addtext") {
+		// what the text window sends: kind note or text, at a place in the view
+		BString kind, text;
+		message->FindString("kind", &kind);
+		message->FindString("text", &text);
+		BPoint p = CorrectMousePos(BPoint(x1, y1));
+		fz_point where = mPage->DevToPage(p);
+		BMessage create(CREATE_TEXT_MSG);
+		create.AddInt32("tool", kind == "text" ? kToolFreeText : kToolNote);
+		create.AddInt32("page", mCurrentPage);
+		create.AddFloat("x", where.x);
+		create.AddFloat("y", where.y);
+		create.AddString("text", text);
+		MessageReceived(&create);
+		TestLog("addtext %s at page %g,%g", kind.String(), where.x, where.y);
 	} else if (cmd == "history") {
 		TestLog("history: undo %d [%s], redo %d [%s], unsaved %d, page %d", (int)mDoc->CanUndo(),
 			mDoc->UndoLabel().String(), (int)mDoc->CanRedo(), mDoc->RedoLabel().String(),

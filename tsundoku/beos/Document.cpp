@@ -653,6 +653,7 @@ Document::LoadAnnotations(fz_page* page, std::vector<DocAnnotation>& annotations
 			entry.author = author;
 			entry.isMarkup = type == PDF_ANNOT_HIGHLIGHT || type == PDF_ANNOT_UNDERLINE
 				|| type == PDF_ANNOT_STRIKE_OUT || type == PDF_ANNOT_SQUIGGLY;
+			entry.isFreeText = type == PDF_ANNOT_FREE_TEXT;
 			entry.hasColor = colorCount == 1 || colorCount == 3 || colorCount == 4;
 			entry.color = 0;
 			if (entry.hasColor) {
@@ -875,6 +876,237 @@ Document::SetAnnotationColor(int pageNo, int index, uint32 rgb)
 	}
 	fz_catch(fContext) {
 		LogError(fContext, "cannot change the color of an annotation");
+		ABANDON_EDIT()
+		ok = 0;
+	}
+	if (ok)
+		RecordOperation(pageNo, operation.String());
+	return ok != 0;
+}
+
+
+static void
+ColorFloats(uint32 rgb, float color[3])
+{
+	color[0] = ((rgb >> 16) & 0xff) / 255.0f;
+	color[1] = ((rgb >> 8) & 0xff) / 255.0f;
+	color[2] = (rgb & 0xff) / 255.0f;
+}
+
+
+// the rectangle at a position, as far as it fits on the page
+static fz_rect
+RectAt(Document* document, int page, fz_point where, float width, float height)
+{
+	fz_rect bounds = fz_make_rect(0, 0, 612, 792);
+	document->PageBounds(page, &bounds);
+	float x = fminf(where.x, bounds.x1 - width);
+	float y = fminf(where.y, bounds.y1 - height);
+	x = fmaxf(x, bounds.x0);
+	y = fmaxf(y, bounds.y0);
+	return fz_make_rect(x, y, x + width, y + height);
+}
+
+
+static const float kShapeLineWidth = 2;
+
+
+bool
+Document::AddNote(int pageNo, fz_point where, const char* text)
+{
+	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
+		return false;
+
+	BString operation(B_TRANSLATE("Add note"));
+	fz_rect rect = RectAt(this, pageNo, where, 20, 20);
+	float color[3];
+	ColorFloats(0xffeb3b, color);
+	const char* author = getenv("USER");
+	DocumentLocker locker(this);
+	fz_page* page = NULL;
+	int ok = 0;
+	int began = 0;
+
+	fz_var(page);
+	fz_try(fContext) {
+		page = fz_load_page(fContext, fDocument, pageNo - 1);
+		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
+		BEGIN_EDIT(operation.String())
+		pdf_annot* annot = pdf_create_annot(fContext, pdfPage, PDF_ANNOT_TEXT);
+		pdf_set_annot_rect(fContext, annot, rect);
+		pdf_set_annot_color(fContext, annot, 3, color);
+		pdf_set_annot_contents(fContext, annot, text);
+		if (author != NULL && author[0] != '\0')
+			pdf_set_annot_author(fContext, annot, author);
+		pdf_set_annot_creation_date(fContext, annot, (int64_t)time(NULL));
+		pdf_set_annot_modification_date(fContext, annot, (int64_t)time(NULL));
+		pdf_update_annot(fContext, annot);
+		END_EDIT()
+		ok = 1;
+	}
+	fz_always(fContext) {
+		fz_drop_page(fContext, page);
+	}
+	fz_catch(fContext) {
+		LogError(fContext, "cannot add a note");
+		ABANDON_EDIT()
+		ok = 0;
+	}
+	if (ok)
+		RecordOperation(pageNo, operation.String());
+	return ok != 0;
+}
+
+
+bool
+Document::AddFreeText(int pageNo, fz_point where, const char* text)
+{
+	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
+		return false;
+
+	BString operation(B_TRANSLATE("Add text"));
+	// the box is as wide as a paragraph and as high as its lines, a line is about 34 characters
+	const float kFontSize = 12;
+	int lines = 1, column = 0;
+	for (const char* p = text; *p != '\0'; p++) {
+		if (*p == '\n' || ++column > 34) {
+			lines++;
+			column = 0;
+		}
+	}
+	fz_rect rect = RectAt(this, pageNo, where, 220, lines * (kFontSize + 3) + 8);
+	float black[3] = { 0, 0, 0 };
+	const char* author = getenv("USER");
+	DocumentLocker locker(this);
+	fz_page* page = NULL;
+	int ok = 0;
+	int began = 0;
+
+	fz_var(page);
+	fz_try(fContext) {
+		page = fz_load_page(fContext, fDocument, pageNo - 1);
+		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
+		BEGIN_EDIT(operation.String())
+		pdf_annot* annot = pdf_create_annot(fContext, pdfPage, PDF_ANNOT_FREE_TEXT);
+		pdf_set_annot_rect(fContext, annot, rect);
+		pdf_set_annot_default_appearance(fContext, annot, "Helv", kFontSize, 3, black);
+		pdf_set_annot_contents(fContext, annot, text);
+		if (author != NULL && author[0] != '\0')
+			pdf_set_annot_author(fContext, annot, author);
+		pdf_set_annot_creation_date(fContext, annot, (int64_t)time(NULL));
+		pdf_set_annot_modification_date(fContext, annot, (int64_t)time(NULL));
+		pdf_update_annot(fContext, annot);
+		END_EDIT()
+		ok = 1;
+	}
+	fz_always(fContext) {
+		fz_drop_page(fContext, page);
+	}
+	fz_catch(fContext) {
+		LogError(fContext, "cannot add text");
+		ABANDON_EDIT()
+		ok = 0;
+	}
+	if (ok)
+		RecordOperation(pageNo, operation.String());
+	return ok != 0;
+}
+
+
+bool
+Document::AddShape(int pageNo, ShapeType type, fz_point from, fz_point to, uint32 rgb)
+{
+	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
+		return false;
+
+	const char* names[] = { B_TRANSLATE("Add rectangle"), B_TRANSLATE("Add ellipse"), B_TRANSLATE("Add line"),
+		B_TRANSLATE("Add arrow") };
+	BString operation(names[type]);
+	static const int types[] = { PDF_ANNOT_SQUARE, PDF_ANNOT_CIRCLE, PDF_ANNOT_LINE, PDF_ANNOT_LINE };
+	fz_rect rect = fz_make_rect(fminf(from.x, to.x), fminf(from.y, to.y), fmaxf(from.x, to.x),
+		fmaxf(from.y, to.y));
+	float color[3];
+	ColorFloats(rgb, color);
+	const char* author = getenv("USER");
+	DocumentLocker locker(this);
+	fz_page* page = NULL;
+	int ok = 0;
+	int began = 0;
+
+	fz_var(page);
+	fz_try(fContext) {
+		page = fz_load_page(fContext, fDocument, pageNo - 1);
+		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
+		BEGIN_EDIT(operation.String())
+		pdf_annot* annot = pdf_create_annot(fContext, pdfPage, (enum pdf_annot_type)types[type]);
+		if (type == kShapeLine || type == kShapeArrow) {
+			pdf_set_annot_line(fContext, annot, from, to);
+			if (type == kShapeArrow)
+				pdf_set_annot_line_ending_styles(fContext, annot, PDF_ANNOT_LE_NONE, PDF_ANNOT_LE_OPEN_ARROW);
+		} else
+			pdf_set_annot_rect(fContext, annot, rect);
+		pdf_set_annot_color(fContext, annot, 3, color);
+		pdf_set_annot_border_width(fContext, annot, kShapeLineWidth);
+		if (author != NULL && author[0] != '\0')
+			pdf_set_annot_author(fContext, annot, author);
+		pdf_set_annot_creation_date(fContext, annot, (int64_t)time(NULL));
+		pdf_set_annot_modification_date(fContext, annot, (int64_t)time(NULL));
+		pdf_update_annot(fContext, annot);
+		END_EDIT()
+		ok = 1;
+	}
+	fz_always(fContext) {
+		fz_drop_page(fContext, page);
+	}
+	fz_catch(fContext) {
+		LogError(fContext, "cannot add a shape");
+		ABANDON_EDIT()
+		ok = 0;
+	}
+	if (ok)
+		RecordOperation(pageNo, operation.String());
+	return ok != 0;
+}
+
+
+bool
+Document::AddInk(int pageNo, const fz_point* points, int count, uint32 rgb)
+{
+	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount || count < 2)
+		return false;
+
+	BString operation(B_TRANSLATE("Add drawing"));
+	std::vector<fz_point> stroke(points, points + count);
+	float color[3];
+	ColorFloats(rgb, color);
+	const char* author = getenv("USER");
+	DocumentLocker locker(this);
+	fz_page* page = NULL;
+	int ok = 0;
+	int began = 0;
+
+	fz_var(page);
+	fz_try(fContext) {
+		page = fz_load_page(fContext, fDocument, pageNo - 1);
+		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
+		BEGIN_EDIT(operation.String())
+		pdf_annot* annot = pdf_create_annot(fContext, pdfPage, PDF_ANNOT_INK);
+		pdf_add_annot_ink_list(fContext, annot, count, &stroke[0]);
+		pdf_set_annot_color(fContext, annot, 3, color);
+		pdf_set_annot_border_width(fContext, annot, kShapeLineWidth);
+		if (author != NULL && author[0] != '\0')
+			pdf_set_annot_author(fContext, annot, author);
+		pdf_set_annot_creation_date(fContext, annot, (int64_t)time(NULL));
+		pdf_set_annot_modification_date(fContext, annot, (int64_t)time(NULL));
+		pdf_update_annot(fContext, annot);
+		END_EDIT()
+		ok = 1;
+	}
+	fz_always(fContext) {
+		fz_drop_page(fContext, page);
+	}
+	fz_catch(fContext) {
+		LogError(fContext, "cannot add a drawing");
 		ABANDON_EDIT()
 		ok = 0;
 	}
