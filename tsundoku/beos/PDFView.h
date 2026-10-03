@@ -65,6 +65,8 @@ struct PageSlot {
 	thread_id     rendererId;   // -1 if it is not rendering
 	bool          rendering;
 	BPoint        origin;       // top left of the page in the coordinates of the view
+	int           dpi;          // what it was rendered for, to see if it can stay when the arrangement changes
+	float         rotation;
 };
 
 class PDFView
@@ -352,7 +354,9 @@ public:
 	void SetRotation ( float rot );
 	void RotateClockwise();
 	void RotateAntiClockwise();
-	void Redraw();
+	// Everything is shown anew. With keepRendered the pages that are shown already, at the same size, are not
+	// rendered again (for another arrangement of the same pages).
+	void Redraw(bool keepRendered = false);
 	void PostRedraw(thread_id id, BBitmap *bitmap);
 	void RedrawAborted(thread_id id, BBitmap *bitmap);
 	void WaitForPage(bool abort = false);

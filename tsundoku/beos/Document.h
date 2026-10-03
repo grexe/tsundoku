@@ -152,7 +152,8 @@ public:
 	};
 
 	// Opens the file. *document is only set if the result is kOpened.
-	static OpenResult Open(const char* path, const char* password, Document** document);
+	// A book is laid out once, for the text size (the number of pages needs every chapter to be laid out).
+	static OpenResult Open(const char* path, const char* password, Document** document, float textSize = 0);
 
 	~Document();
 
@@ -258,7 +259,7 @@ public:
 	bool         IsExternalLink(const char* uri);
 
 private:
-	Document(fz_context* context, fz_document* document, const char* path);
+	Document(fz_context* context, fz_document* document, const char* path, float textSize);
 	void ListPage(int pageNo, std::vector<DocAnnotationEntry>& entries);
 
 	// the marks of a reflowable document (see DocumentReflow.cpp)
@@ -280,6 +281,8 @@ private:
 		BString                       name;
 		int                           page;
 		std::vector<StoredAnnotation> annotations;
+		std::vector<std::vector<StoredPart> > resolved;
+		std::vector<char>             known;
 	};
 
 	struct HistoryEntry {
@@ -309,7 +312,7 @@ private:
 	int             fKeptPage;       // the page it led to, 0 if none
 	std::vector<StoredAnnotation>       fStore;
 	std::vector<std::vector<StoredPart> > fResolved;   // where the marks are now, same order as fStore
-	bool            fResolvedValid;
+	std::vector<char> fResolvedKnown;   // for each: is the place known for the pages as they are
 	std::vector<StoreState> fStoreUndo, fStoreRedo;
 	size_t          fStoreSavedDepth;
 	std::vector<fz_rect> fBounds;   // cache, empty rectangle if unknown

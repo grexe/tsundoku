@@ -17,6 +17,7 @@
  * License for more details.
  */
 #include "PageRenderer.h"
+#include "Globals.h"
 
 #include <stdio.h>
 
@@ -210,8 +211,10 @@ PageRenderer::Render()
 	DocumentLocker locker(document);
 	fz_context* context = document->Context();
 
+	TimingMark("render: starts");
 	bool ok = RenderToBitmap(document, mPageNo, mPage->Matrix(), mScratch != NULL ? mScratch : mBitmap,
 		(int)mWidth, (int)mHeight, &mCookie);
+	TimingMark("render: drawn");
 
 	if (mScratch != NULL) {
 		if (ok) {
@@ -238,7 +241,9 @@ PageRenderer::Render()
 			page = fz_load_page(context, document->Doc(), mPageNo - 1);
 			text = fz_new_stext_page_from_page(context, page, NULL);
 			links = fz_load_links(context, page);
+			TimingMark("render: text read");
 			document->LoadAnnotations(mPageNo, page, mPage->mAnnotations);
+			TimingMark("render: annotations read");
 		}
 		fz_always(context) {
 			fz_drop_page(context, page);

@@ -337,16 +337,16 @@ PDFView::OpenFile(entry_ref *ref, const char *ownerPassword, const char *userPas
 	const char* password = userPassword != NULL && userPassword[0] != '\0' ? userPassword : ownerPassword;
 
 	Document* newDoc = NULL;
-	Document::OpenResult result = Document::Open(path.Path(), password, &newDoc);
+	TimingStart();
+	Document::OpenResult result = Document::Open(path.Path(), password, &newDoc,
+		gApp->GetSettings()->GetTextSize());
+	TimingMark("open: document opened");
 	*encrypted = result == Document::kNeedsPassword;
 	if (result != Document::kOpened)
 		return false;
 
 	UpdatePanelDirectory(&path);
 
-	// a book is laid out with the text size of the settings
-	if (newDoc->IsReflowable())
-		newDoc->Layout(gApp->GetSettings()->GetTextSize());
 
 	// the page cache refers to the previous document
 	SetSlotsDocument(NULL);
@@ -1847,7 +1847,9 @@ PageSlot::PageSlot()
 	renderer(new PageRenderer()),
 	rendererId(-1),
 	rendering(false),
-	origin(0, 0)
+	origin(0, 0),
+	dpi(-1),
+	rotation(0)
 {
 }
 
@@ -2005,6 +2007,8 @@ void
 PDFView::StartRender(PageSlot* slot, bool keepImage)
 {
 	slot->rendering = true;
+	slot->dpi = GetZoomDPI();
+	slot->rotation = mRotation;
 	slot->renderer->Start(slot->page, slot->number, GetZoomDPI(), mRotation, &slot->rendererId, keepImage);
 }
 
@@ -2091,7 +2095,7 @@ PDFView::SyncSlots()
 ///////////////////////////////////////////////////////////////////////////
 // Shows everything anew: new sizes, canvas and places, and all pages that are shown are rendered again.
 void
-PDFView::Redraw()
+PDFView::Redraw(bool keepRendered)
 {
 	PDFWindow* parentWin = GetPDFWindow();
 
@@ -2136,8 +2140,13 @@ PDFView::Redraw()
 	mRenderedPage = mCurrentPage;
 
 	// every page is rendered again, the slots keep their bitmaps
-	while (!mSlots.empty())
-		ReleaseSlot(mSlots.back());
+	for (int i = (int)mSlots.size() - 1; i >= 0; i--) {
+		PageSlot* slot = mSlots[i];
+		bool stays = keepRendered && slot->page->GetState() == CachedPage::READY && slot->dpi == GetZoomDPI()
+			&& slot->rotation == mRotation;
+		if (!stays)
+			ReleaseSlot(slot);
+	}
 	mLink = NULL;
 	SyncSlots();
 	if (keepArea) {
@@ -2402,7 +2411,7 @@ PDFView::SetTitlePageAlone(bool alone)
 	mLayout.SetFirstPageAlone(alone);
 	gApp->GetSettings()->SetTitlePageAlone(alone);
 	mRenderedPage = 0;
-	Redraw();
+	Redraw(true);
 	PDFWindow* w = GetPDFWindow();
 	if (w)
 		w->UpdateInputEnabler();
@@ -2416,18 +2425,22 @@ PDFView::SetFlow(PageFlow flow)
 	if (flow == mLayout.Flow() || mDoc == NULL)
 		return;
 
+	TimingStart();
 	WaitForPage(true);
+	TimingMark("flow: render aborted");
 	mLayout.SetFlow(flow);
 	gApp->GetSettings()->SetPageFlow((int)flow);
 	// the scroll position belonged to the other arrangement, which is not arranged for this one yet
 	BView::ScrollTo(BPoint(0, 0));
 	mRenderedPage = 0;
-	Redraw();
+	Redraw(true);
+	TimingMark("flow: redrawn (renders started)");
 	if (mLayout.IsContinuous())
 		ScrollToPage(mCurrentPage, true);
 	PDFWindow* w = GetPDFWindow();
 	if (w)
 		w->UpdateInputEnabler();
+	TimingMark("flow: done");
 }
 
 //////////////////////////////////////////////////////////////////
@@ -3052,10 +3065,12 @@ PDFView::ChangeTextSize(bool larger)
 	if (size == current)
 		return;
 
+	TimingStart();
 	WaitForPage(true);
 	SelectNone();
 	mAnnotationIndex = -1;
 	int page = mDoc->ChangeTextSize(size, mCurrentPage);
+	TimingMark("text size: laid out");
 	gApp->GetSettings()->SetTextSize(mDoc->TextSize());
 	mCurrentPage = page;
 	mInteractionPage = page;

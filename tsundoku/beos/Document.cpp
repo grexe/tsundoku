@@ -18,6 +18,7 @@
  */
 
 #include "Document.h"
+#include "Globals.h"
 
 #include "EpubInfo.h"
 
@@ -81,7 +82,7 @@ LogError(fz_context* context, const char* what)
 
 
 Document::OpenResult
-Document::Open(const char* path, const char* password, Document** _document)
+Document::Open(const char* path, const char* password, Document** _document, float textSize)
 {
 	pthread_once(&sMutexesInitialized, InitMutexes);
 
@@ -115,7 +116,7 @@ Document::Open(const char* path, const char* password, Document** _document)
 		return failed ? kFailed : kNeedsPassword;
 	}
 
-	Document* result = new Document(context, document, path);
+	Document* result = new Document(context, document, path, textSize);
 	if (result->fPageCount <= 0) {
 		delete result;
 		return kFailed;
@@ -125,7 +126,7 @@ Document::Open(const char* path, const char* password, Document** _document)
 }
 
 
-Document::Document(fz_context* context, fz_document* document, const char* path)
+Document::Document(fz_context* context, fz_document* document, const char* path, float textSize)
 	:
 	fContext(context),
 	fDocument(document),
@@ -144,7 +145,6 @@ Document::Document(fz_context* context, fz_document* document, const char* path)
 	fEpub(NULL),
 	fKeptBookmark(0),
 	fKeptPage(0),
-	fResolvedValid(false),
 	fStoreSavedDepth(0)
 {
 	int pages = 0;
@@ -154,8 +154,14 @@ Document::Document(fz_context* context, fz_document* document, const char* path)
 	int reflowable = 0;
 
 	fz_try(fContext) {
-		pages = fz_count_pages(fContext, fDocument);
 		reflowable = fz_is_document_reflowable(fContext, fDocument);
+		if (reflowable && pdf_specifics(fContext, fDocument) == NULL) {
+			// laid out for the page and text size before the pages are counted, which lays out the chapters
+			float size = textSize >= kMinTextSize && textSize <= kMaxTextSize ? textSize : kDefaultTextSize;
+			fz_layout_document(fContext, fDocument, kReflowWidth, kReflowHeight, size);
+			fTextSize = size;
+		}
+		pages = fz_count_pages(fContext, fDocument);
 		isPDF = pdf_specifics(fContext, fDocument) != NULL;
 		if (isPDF) {
 			canSave = pdf_can_be_saved_incrementally(fContext, pdf_specifics(fContext, fDocument));
@@ -244,6 +250,12 @@ Document::PageBounds(int page, fz_rect* bounds)
 	if (page < 1 || page > fPageCount)
 		return false;
 
+	// all pages of a book are as large as it is laid out; to load a page would lay out its chapter
+	if (fReflowable) {
+		*bounds = fz_make_rect(0, 0, kReflowWidth, kReflowHeight);
+		return true;
+	}
+
 	DocumentLocker locker(this);
 	int index = page - 1;
 	if (!fBoundsKnown[index]) {
@@ -253,8 +265,10 @@ Document::PageBounds(int page, fz_rect* bounds)
 
 		fz_var(fzPage);
 		fz_var(rect);
+		TimingMark("page bounds: load starts");
 		fz_try(fContext) {
 			fzPage = fz_load_page(fContext, fDocument, index);
+			TimingMark("page bounds: loaded");
 			rect = fz_bound_page(fContext, fzPage);
 		}
 		fz_always(fContext) {
@@ -352,7 +366,8 @@ Document::PageLabel(int page)
 	char buffer[64];
 	buffer[0] = '\0';
 
-	if (page >= 1 && page <= fPageCount) {
+	// only PDF files have page labels (and loading the page of a book lays out the chapter)
+	if (!fReflowable && page >= 1 && page <= fPageCount) {
 		DocumentLocker locker(this);
 		fz_page* fzPage = NULL;
 
@@ -1508,6 +1523,19 @@ Document::ListPage(int pageNo, std::vector<DocAnnotationEntry>& entries)
 	if (UsesStore()) {
 		if (!StorePageHasParts(pageNo))
 			return;
+		// the marks of a book are known with the words, no page is needed
+		std::vector<DocAnnotation> marks;
+		StoreAnnotationsOnPage(pageNo, marks);
+		for (size_t i = 0; i < marks.size(); i++) {
+			if (marks[i].continued)
+				continue;
+			DocAnnotationEntry entry;
+			entry.page = pageNo;
+			entry.annotation = marks[i];
+			entry.excerpt = Excerpt(marks[i], marks[i].quote.String());
+			entries.push_back(entry);
+		}
+		return;
 	} else if (!fIsPDF || !PageHasListedAnnotation(fContext, pdf_specifics(fContext, fDocument), pageNo - 1))
 		return;
 

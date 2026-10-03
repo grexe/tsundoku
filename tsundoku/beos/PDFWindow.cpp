@@ -243,14 +243,19 @@ void PDFWindow::AnnotationsChanged(int page) {
 
 void PDFWindow::TextSizeChanged() {
 	Document* doc = mMainView->GetDocument();
+	TimingMark("text size: window updates");
 	SetTotalPageNumber(mMainView->GetNumPages());
 	FillPageList();
+	TimingMark("text size: page list filled");
 	UpdatePageList();
+	TimingMark("text size: page list updated");
 	// the entries of the outline point to other pages now
 	mOutlinesView->SetDocument(doc, mFileAttributes.GetBookmarks());
+	TimingMark("text size: outline loaded");
 	mAnnotationsView->Refresh();
 	SetPage(mMainView->Page());
 	UpdateInputEnabler();
+	TimingMark("text size: done");
 }
 
 void PDFWindow::SetTotalPageNumber(int pages) {
@@ -292,6 +297,7 @@ void PDFWindow::InitAfterOpen() {
 		}
 		Unlock();
 	}
+	TimingMark("open: window initialised");
 }
 
 
@@ -1262,7 +1268,9 @@ int16 i;
 }
 
 void PDFWindow::NewDoc(Document *doc) {
+	TimingMark("open: new document in window");
 	mOutlinesView->SetDocument(doc, mFileAttributes.GetBookmarks());
+	TimingMark("open: outline loaded");
 	mAttachmentsView->SetDocument(doc);
 	mAnnotationsView->SetDocument(doc);
 	if (mAttachmentsView->Count() == 0 && mLayerView->Selection() == ATTACHMENTS_PANEL)

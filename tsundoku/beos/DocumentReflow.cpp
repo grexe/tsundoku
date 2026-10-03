@@ -24,6 +24,7 @@
 // of a fz_try() block.
 
 #include "Document.h"
+#include "Globals.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -99,7 +100,8 @@ Document::Layout(float textSize)
 	fz_rect empty = fz_empty_rect;
 	fBounds.assign(pages, empty);
 	fBoundsKnown.assign(pages, false);
-	fResolvedValid = false;
+	// the marks are somewhere else on the new pages
+	fResolvedKnown.assign(fStore.size(), 0);
 }
 
 
@@ -162,7 +164,8 @@ Document::LoadStore()
 	fStoreUndo.clear();
 	fStoreRedo.clear();
 	fStoreSavedDepth = 0;
-	fResolvedValid = false;
+	fResolved.clear();
+	fResolvedKnown.clear();
 
 	BNode node(fPath.String());
 	attr_info info;
@@ -521,23 +524,39 @@ ResolveAnnotation(Document* document, std::map<int, fz_stext_page*>& cache, cons
 }
 
 
+// Finds the places of the marks that are not known yet (all of them after a new layout, none after most edits).
 void
 Document::ResolveStore()
 {
-	if (fResolvedValid && fResolved.size() == fStore.size())
+	DocumentLocker locker(this);
+	fResolved.resize(fStore.size());
+	fResolvedKnown.resize(fStore.size(), 0);
+
+	bool any = false;
+	for (size_t i = 0; i < fStore.size(); i++) {
+		if (!fResolvedKnown[i]) {
+			any = true;
+			break;
+		}
+	}
+	if (!any)
 		return;
 
-	DocumentLocker locker(this);
-	fResolved.assign(fStore.size(), std::vector<StoredPart>());
+	TimingMark("resolve: starts");
 	std::map<int, fz_stext_page*> cache;
-	for (size_t i = 0; i < fStore.size(); i++)
+	for (size_t i = 0; i < fStore.size(); i++) {
+		if (fResolvedKnown[i])
+			continue;
+		fResolved[i].clear();
 		ResolveAnnotation(this, cache, fStore[i], &fResolved[i]);
+		fResolvedKnown[i] = 1;
+	}
 
 	for (std::map<int, fz_stext_page*>::iterator it = cache.begin(); it != cache.end(); ++it) {
 		if (it->second != NULL)
 			fz_drop_stext_page(fContext, it->second);
 	}
-	fResolvedValid = true;
+	TimingMark("resolve: done");
 }
 
 
@@ -634,10 +653,14 @@ Document::StoreIndexFor(int pageNo, int index, int* storeIndex)
 void
 Document::PushStoreUndo(const char* name, int page)
 {
+	fResolved.resize(fStore.size());
+	fResolvedKnown.resize(fStore.size(), 0);
 	StoreState state;
 	state.name = name;
 	state.page = page;
 	state.annotations = fStore;
+	state.resolved = fResolved;
+	state.known = fResolvedKnown;
 	fStoreUndo.push_back(state);
 	if ((int)fStoreUndo.size() > kMaxUndo) {
 		fStoreUndo.erase(fStoreUndo.begin());
@@ -645,7 +668,6 @@ Document::PushStoreUndo(const char* name, int page)
 			fStoreSavedDepth--;
 	}
 	fStoreRedo.clear();
-	fResolvedValid = false;
 	fModified = true;
 }
 
@@ -723,6 +745,12 @@ Document::StoreAddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int 
 		B_TRANSLATE("Add strike out"), B_TRANSLATE("Add squiggly line") };
 	PushStoreUndo(names[type], pageNo);
 	fStore.push_back(a);
+	// where it is, is known: the quads that were given
+	StoredPart part;
+	part.page = pageNo;
+	part.quads.assign(quads, quads + count);
+	fResolved.push_back(std::vector<StoredPart>(1, part));
+	fResolvedKnown.push_back(1);
 	return true;
 }
 
@@ -736,6 +764,8 @@ Document::StoreDelete(int pageNo, int index)
 		return false;
 	PushStoreUndo(B_TRANSLATE("Delete annotation"), pageNo);
 	fStore.erase(fStore.begin() + at);
+	fResolved.erase(fResolved.begin() + at);
+	fResolvedKnown.erase(fResolvedKnown.begin() + at);
 	return true;
 }
 
@@ -781,10 +811,13 @@ Document::StoreUndoRedo(bool undo)
 	current.name = state.name;
 	current.page = state.page;
 	current.annotations = fStore;
+	current.resolved = fResolved;
+	current.known = fResolvedKnown;
 	to.push_back(current);
 
 	fStore = state.annotations;
-	fResolvedValid = false;
+	fResolved = state.resolved;
+	fResolvedKnown = state.known;
 	fModified = fStoreUndo.size() != fStoreSavedDepth;
 	return state.page;
 }
