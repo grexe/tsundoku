@@ -60,9 +60,10 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   next to the fit buttons and the View menu switch between them; next and previous page go by a spread. In the code
   the arrangements are presets of a grid of columns and rows (`PageLayout`), so more of them (four pages at a time,
   two columns of scrolling pages) are a line in a table; the four-fold one is in the table already, without a button.
-- The sidebar is switched with icon tabs (bookmarks, page list, attachments, annotations; the tooltip names them), which
-  frees the toolbar. The annotations tab lists all annotations of the document in columns for page, type and the
-  text they mark or hold; choosing one goes there and selects it. View > Hide sidebar (it reads Show sidebar when the sidebar is hidden)
+- The sidebar is switched with icon tabs (bookmarks, page list, attachments, annotations; the tooltip names them) or
+  with Cmd+1 to Cmd+4, and shown or hidden with the button next to the fullscreen button (Cmd+H). The annotations tab
+  lists all annotations of the document in columns for page, type and the text they mark or hold, sorted by clicking a
+  title; choosing one goes there and selects it. View > Hide sidebar (it reads Show sidebar when the sidebar is hidden)
   sits with Fullscreen.
 - The files embedded in a PDF are listed in View > Show attachments and can be saved.
 - The outline follows the current page: the chapter a page belongs to is selected and scrolled into view, also after a
@@ -70,6 +71,8 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
 - The side bar is wider by default, and it collapses on its own if the document has neither an outline nor bookmarks.
 - Settings are stored in `~/config/settings/Tsundoku`, separate from BePDF. Everything else BePDF stores (bookmarks and
   the position per file in BFS attributes) is unchanged and compatible.
+
+Known limits: in the continuous flow a text selection stops at the end of the page it was started on.
 
 Not there yet, and planned: line widths and fill colors, scripting of annotations from other programs, the fonts of a document in
 the file info. See [PLAN-mupdf.md](PLAN-mupdf.md).

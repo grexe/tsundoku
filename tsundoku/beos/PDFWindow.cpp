@@ -631,6 +631,7 @@ void PDFWindow::UpdateInputEnabler()
 		fMenuBar->FindItem(SHOW_ANNOTATIONS_CMD)->SetEnabled(doc->IsPDF());
 		fMenuBar->FindItem(SHOW_ANNOTATIONS_CMD)
 			->SetMarked(mShowLeftPanel && active == ANNOTATIONS_PANEL);
+		mToolBar->SetActionPressed(HIDE_LEFT_PANEL_CMD, mShowLeftPanel);
 		fMenuBar->FindItem(HIDE_LEFT_PANEL_CMD)
 			->SetLabel(mShowLeftPanel ? B_TRANSLATE("Hide sidebar") : B_TRANSLATE("Show sidebar"));
 
@@ -699,6 +700,47 @@ void PDFWindow::UpdateWindowsMenu() {
 		mWindowsMenu->AddItem(new BMenuItem(s, NULL));
 	}
 */
+}
+
+
+// The icon of the sidebar button: a window with the side bar on the left.
+static BBitmap*
+MakeSidebarIcon(int size)
+{
+	BBitmap* bitmap = new BBitmap(BRect(0, 0, size - 1, size - 1), B_RGBA32, true);
+	BView* view = new BView(bitmap->Bounds(), "sidebar icon", B_FOLLOW_NONE, B_WILL_DRAW);
+	bitmap->AddChild(view);
+	bitmap->Lock();
+
+	view->SetDrawingMode(B_OP_COPY);
+	view->SetHighColor(0, 0, 0, 0);
+	view->FillRect(bitmap->Bounds());
+	view->SetDrawingMode(B_OP_ALPHA);
+
+	rgb_color paper = { 250, 250, 250, 255 };
+	rgb_color ink = tint_color(ui_color(B_PANEL_TEXT_COLOR), B_LIGHTEN_1_TINT);
+	rgb_color side = tint_color(ui_color(B_CONTROL_HIGHLIGHT_COLOR), B_LIGHTEN_1_TINT);
+	float s = size - 1;
+	BRect window(s * 0.08f, s * 0.16f, s * 0.92f, s * 0.84f);
+	BRect bar(window.left + 1, window.top + 1, window.left + (window.Width()) * 0.34f, window.bottom - 1);
+	view->SetHighColor(paper);
+	view->FillRect(window);
+	view->SetHighColor(side);
+	view->FillRect(bar);
+	view->SetHighColor(ink);
+	view->StrokeRect(window);
+	view->StrokeLine(BPoint(bar.right + 1, window.top), BPoint(bar.right + 1, window.bottom));
+	// a few lines in the sidebar and in the page
+	for (float y = window.top + 4; y < window.bottom - 2; y += 3) {
+		view->StrokeLine(BPoint(bar.left + 2, y), BPoint(bar.right - 2, y));
+		view->StrokeLine(BPoint(bar.right + 4, y), BPoint(window.right - 3, y));
+	}
+
+	view->Sync();
+	bitmap->Unlock();
+	bitmap->RemoveChild(view);
+	delete view;
+	return bitmap;
 }
 
 
@@ -828,10 +870,11 @@ BMenuBar* PDFWindow::BuildMenu()
 		.End()
 
 		.AddMenu(B_TRANSLATE("View"))
-			.AddItem(B_TRANSLATE("Show bookmarks"), SHOW_BOOKMARKS_CMD, 'B')
-			.AddItem(B_TRANSLATE("Show page list"), SHOW_PAGE_LIST_CMD, 'L')
-			.AddItem(B_TRANSLATE("Show attachments"), SHOW_ATTACHMENTS_CMD)
-			.AddItem(B_TRANSLATE("Show annotations"), SHOW_ANNOTATIONS_CMD)
+			// the tabs of the sidebar, one key each
+			.AddItem(B_TRANSLATE("Show bookmarks"), SHOW_BOOKMARKS_CMD, '1')
+			.AddItem(B_TRANSLATE("Show page list"), SHOW_PAGE_LIST_CMD, '2')
+			.AddItem(B_TRANSLATE("Show attachments"), SHOW_ATTACHMENTS_CMD, '3')
+			.AddItem(B_TRANSLATE("Show annotations"), SHOW_ANNOTATIONS_CMD, '4')
 			.AddSeparator()
 			// the window and what is around the page, the label says what the item does now
 			.AddItem(B_TRANSLATE("Hide sidebar"), HIDE_LEFT_PANEL_CMD, 'H')
@@ -946,6 +989,8 @@ BToolBar* PDFWindow::BuildToolBar()
 
 	mToolBar->AddSeparator();
 
+	mToolBar->AddAction(HIDE_LEFT_PANEL_CMD, this, MakeSidebarIcon(21), B_TRANSLATE("Show or hide the sidebar"),
+		NULL, true);
 	mToolBar->AddAction(FULL_SCREEN_CMD, this,
 		LoadVectorIcon("FULL_SCREEN"), B_TRANSLATE("Fullscreen mode"),
 		NULL, true);
@@ -1806,6 +1851,9 @@ PDFWindow::MessageReceived(BMessage* message)
 					fprintf(out, "saveattachment %d -> %s: %s\n", (int)index, path.String(), ok ? "ok" : "failed");
 					fclose(out);
 				}
+			} else if (cmd == "chooseannot") {
+				// a line of the list of annotations as it is shown (sorted), counted from 0
+				mAnnotationsView->TestChoose((int)TestInt(message, "which", 0));
 			} else if (cmd == "savecopy") {
 				// as the file panel does, with the path in "text"
 				BString text;

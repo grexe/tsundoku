@@ -22,12 +22,9 @@
 #include <stdio.h>
 
 #include <Catalog.h>
-#include <Font.h>
-#include <ListItem.h>
+#include <ColumnListView.h>
+#include <ColumnTypes.h>
 #include <LayoutBuilder.h>
-#include <ListView.h>
-#include <ScrollView.h>
-#include <StringItem.h>
 #include <StringView.h>
 #include <Window.h>
 
@@ -38,122 +35,22 @@ static const uint32 kScanDone = 'anSD';
 static const uint32 kChosen = 'anCh';
 
 
-// the widths of the first two columns, shared by the header and the items; the last column gets what is left
-struct AnnotationColumns {
-	float page;
-	float type;
-};
-
-static const float kCellPadding = 6;
-
-
-// a line of the list: page, type and excerpt, the excerpt is shortened in the middle to what fits
-class AnnotationItem : public BListItem {
+// a line of the list that knows which annotation it stands for (the order of the lines changes with the sorting)
+class AnnotationRow : public BRow {
 public:
-	AnnotationItem(int page, const BString& type, const BString& excerpt, const AnnotationColumns* columns)
+	AnnotationRow(int page, int index)
 		:
-		BListItem(),
-		fPage(),
-		fType(type),
-		fExcerpt(excerpt),
-		fColumns(columns)
+		BRow(),
+		fPage(page),
+		fIndex(index)
 	{
-		fPage << page;
 	}
 
-	virtual void Update(BView* owner, const BFont* font)
-	{
-		font_height height;
-		font->GetHeight(&height);
-		SetHeight(ceilf(height.ascent + height.descent + height.leading) + 4);
-	}
-
-	virtual void DrawItem(BView* owner, BRect frame, bool complete = false)
-	{
-		rgb_color background = IsSelected() ? ui_color(B_LIST_SELECTED_BACKGROUND_COLOR)
-			: ui_color(B_LIST_BACKGROUND_COLOR);
-		rgb_color text = IsSelected() ? ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR)
-			: ui_color(B_LIST_ITEM_TEXT_COLOR);
-		owner->SetHighColor(background);
-		owner->FillRect(frame);
-		owner->SetHighColor(text);
-		owner->SetLowColor(background);
-
-		BFont font;
-		owner->GetFont(&font);
-		font_height height;
-		font.GetHeight(&height);
-		float baseline = frame.top + (frame.Height() - (height.ascent + height.descent)) / 2 + height.ascent;
-
-		float x = frame.left + kCellPadding;
-		owner->DrawString(fPage.String(), BPoint(x, baseline));
-		x = frame.left + fColumns->page;
-		BString type(fType);
-		font.TruncateString(&type, B_TRUNCATE_END, fColumns->type - kCellPadding);
-		owner->DrawString(type.String(), BPoint(x, baseline));
-		x = frame.left + fColumns->page + fColumns->type;
-		BString excerpt(fExcerpt);
-		font.TruncateString(&excerpt, B_TRUNCATE_MIDDLE, frame.right - x - kCellPadding);
-		owner->DrawString(excerpt.String(), BPoint(x, baseline));
-	}
+	int Page() const { return fPage; }
+	int Index() const { return fIndex; }
 
 private:
-	BString fPage, fType, fExcerpt;
-	const AnnotationColumns* fColumns;
-};
-
-
-// the titles of the columns
-class AnnotationHeader : public BView {
-public:
-	AnnotationHeader(const AnnotationColumns* columns)
-		:
-		BView("annotationsHeader", B_WILL_DRAW | B_FRAME_EVENTS),
-		fColumns(columns)
-	{
-		SetViewUIColor(B_PANEL_BACKGROUND_COLOR);
-	}
-
-	virtual void GetPreferredSize(float* width, float* height)
-	{
-		font_height fontHeight;
-		GetFontHeight(&fontHeight);
-		*width = 100;
-		*height = ceilf(fontHeight.ascent + fontHeight.descent) + 6;
-	}
-
-	virtual BSize MinSize()
-	{
-		float width, height;
-		GetPreferredSize(&width, &height);
-		return BSize(0, height);
-	}
-
-	virtual BSize MaxSize()
-	{
-		float width, height;
-		GetPreferredSize(&width, &height);
-		return BSize(B_SIZE_UNLIMITED, height);
-	}
-
-	virtual void Draw(BRect updateRect)
-	{
-		BRect bounds(Bounds());
-		SetHighColor(ui_color(B_PANEL_TEXT_COLOR));
-		font_height fontHeight;
-		GetFontHeight(&fontHeight);
-		float baseline = (bounds.Height() - (fontHeight.ascent + fontHeight.descent)) / 2 + fontHeight.ascent;
-		// the list has a border of 2 pixels
-		float left = 2;
-		DrawString(B_TRANSLATE("Page"), BPoint(left + kCellPadding, baseline));
-		DrawString(B_TRANSLATE("Type"), BPoint(left + fColumns->page, baseline));
-		DrawString(B_TRANSLATE("Excerpt"), BPoint(left + fColumns->page + fColumns->type, baseline));
-		SetHighColor(tint_color(ui_color(B_PANEL_BACKGROUND_COLOR), B_DARKEN_2_TINT));
-		StrokeLine(BPoint(bounds.left, bounds.bottom), BPoint(bounds.right, bounds.bottom));
-	}
-
-private:
-	const AnnotationColumns* fColumns;
+	int fPage, fIndex;
 };
 
 
@@ -167,18 +64,27 @@ AnnotationsView::AnnotationsView(Document* document, uint32 chosenMessage)
 	fLock("annotations"),
 	fCount(0)
 {
-	fColumns = new AnnotationColumns();
-	fColumns->page = 40;
-	fColumns->type = 90;
-	fList = new BListView("annotationsList", B_SINGLE_SELECTION_LIST);
+	// the standard list with columns that can be sorted and resized, but not moved or taken away
+	fList = new BColumnListView("annotationsList", B_NAVIGABLE, B_FANCY_BORDER, true);
+	fList->SetColumnFlags(B_ALLOW_COLUMN_RESIZE);
+	fList->SetSortingEnabled(true);
+	fList->SetSelectionMode(B_SINGLE_SELECTION_LIST);
 	fList->SetSelectionMessage(new BMessage(kChosen));
+
+	fPageColumn = new BIntegerColumn(B_TRANSLATE("Page"), 76, 64, 140, B_ALIGN_RIGHT);
+	fTypeColumn = new BStringColumn(B_TRANSLATE("Type"), 90, 40, 300, B_TRUNCATE_END);
+	fExcerptColumn = new BStringColumn(B_TRANSLATE("Excerpt"), 320, 60, 4000, B_TRUNCATE_MIDDLE);
+	fList->AddColumn(fPageColumn, 0);
+	fList->AddColumn(fTypeColumn, 1);
+	fList->AddColumn(fExcerptColumn, 2);
+	fList->SetSortColumn(fPageColumn, false, true);
+
 	fStatus = new BStringView("annotationsStatus", "");
 	fStatus->SetAlignment(B_ALIGN_CENTER);
 
 	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_SMALL_SPACING)
 		.SetInsets(0, 0, 0, B_USE_SMALL_SPACING)
-		.Add(new AnnotationHeader(fColumns))
-		.Add(new BScrollView("annotationsScroll", fList, B_FRAME_EVENTS, false, true, B_FANCY_BORDER))
+		.Add(fList)
 		.Add(fStatus)
 	.End();
 }
@@ -187,10 +93,6 @@ AnnotationsView::AnnotationsView(Document* document, uint32 chosenMessage)
 AnnotationsView::~AnnotationsView()
 {
 	Stop();
-	// the items point to the columns
-	for (int32 i = fList->CountItems() - 1; i >= 0; i--)
-		delete fList->RemoveItem(i);
-	delete fColumns;
 }
 
 
@@ -263,38 +165,22 @@ AnnotationsView::Scan()
 void
 AnnotationsView::Fill()
 {
+	std::vector<DocAnnotationEntry> entries;
 	fLock.Lock();
-	fEntries.swap(fPending);
+	entries.swap(fPending);
 	fLock.Unlock();
 
-	// what was chosen stays chosen
-	for (int32 i = fList->CountItems() - 1; i >= 0; i--)
-		delete fList->RemoveItem(i);
-
-	// the first columns are as wide as their widest cell
-	BFont font;
-	fList->GetFont(&font);
-	float widestPage = font.StringWidth(B_TRANSLATE("Page")), widestType = font.StringWidth(B_TRANSLATE("Type"));
-	for (size_t i = 0; i < fEntries.size(); i++) {
-		BString page;
-		page << fEntries[i].page;
-		widestPage = max_c(widestPage, font.StringWidth(page.String()));
-		widestType = max_c(widestType, font.StringWidth(fEntries[i].annotation.label.String()));
+	fList->Clear();
+	for (size_t i = 0; i < entries.size(); i++) {
+		const DocAnnotationEntry& entry = entries[i];
+		AnnotationRow* row = new AnnotationRow(entry.page, entry.annotation.index);
+		row->SetField(new BIntegerField(entry.page), 0);
+		row->SetField(new BStringField(entry.annotation.label.String()), 1);
+		row->SetField(new BStringField(entry.excerpt.String()), 2);
+		fList->AddRow(row);
 	}
-	fColumns->page = ceilf(widestPage) + 2 * kCellPadding;
-	fColumns->type = ceilf(widestType) + 2 * kCellPadding;
+	fCount = (int)entries.size();
 
-	for (size_t i = 0; i < fEntries.size(); i++) {
-		const DocAnnotationEntry& entry = fEntries[i];
-		fList->AddItem(new AnnotationItem(entry.page, entry.annotation.label, entry.excerpt, fColumns));
-	}
-	if (Window() != NULL && Window()->LockLooper()) {
-		// the header uses the widths too
-		Invalidate();
-		Window()->UnlockLooper();
-	}
-
-	fCount = (int)fEntries.size();
 	BString status;
 	if (fCount == 0)
 		status = B_TRANSLATE("No annotations");
@@ -314,11 +200,11 @@ AnnotationsView::MessageReceived(BMessage* message)
 			Fill();
 			break;
 		case kChosen: {
-			int32 index = fList->CurrentSelection();
-			if (index >= 0 && index < (int32)fEntries.size() && Window() != NULL) {
+			AnnotationRow* row = dynamic_cast<AnnotationRow*>(fList->CurrentSelection());
+			if (row != NULL && Window() != NULL) {
 				BMessage chosen(fChosenMessage);
-				chosen.AddInt32("page", fEntries[index].page);
-				chosen.AddInt32("index", fEntries[index].annotation.index);
+				chosen.AddInt32("page", row->Page());
+				chosen.AddInt32("index", row->Index());
 				Window()->PostMessage(&chosen);
 			}
 			break;
@@ -327,3 +213,13 @@ AnnotationsView::MessageReceived(BMessage* message)
 			BView::MessageReceived(message);
 	}
 }
+
+
+#ifdef TSUNDOKU_TESTING
+void
+AnnotationsView::TestChoose(int index)
+{
+	fList->DeselectAll();
+	fList->SetFocusRow(index, true);
+}
+#endif

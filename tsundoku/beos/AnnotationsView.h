@@ -29,12 +29,12 @@
 
 #include "Document.h"
 
-struct AnnotationColumns;
-class BListView;
+class BColumn;
+class BColumnListView;
 class BStringView;
 
-// A list of all annotations of the document: the page, what it is and the text it covers or holds. Choosing
-// one sends a message with "page" and "index" to the window.
+// A list of all annotations of the document in columns for the page, the type and the text it covers or holds. The
+// columns can be sorted by clicking their titles. Choosing one sends a message with "page" and "index" to the window.
 class AnnotationsView : public BView {
 public:
 	// what is the message that is sent to the window when an annotation is chosen
@@ -47,6 +47,10 @@ public:
 	// stops reading, to be called before the document goes away
 	void Stop();
 	int  Count() const { return fCount; }
+#ifdef TSUNDOKU_TESTING
+	// selects a line as a click does, to try what follows
+	void TestChoose(int index);
+#endif
 
 	virtual void AttachedToWindow();
 	virtual void MessageReceived(BMessage* message);
@@ -58,15 +62,16 @@ private:
 
 	Document*      fDocument;
 	uint32         fChosenMessage;
-	BListView*     fList;
-	AnnotationColumns* fColumns;
+	BColumnListView* fList;
+	BColumn*       fPageColumn;
+	BColumn*       fTypeColumn;
+	BColumn*       fExcerptColumn;
 	BStringView*   fStatus;
 	BMessenger     fMessenger;
 	thread_id      fThread;
 	volatile bool  fCancel;
 	BLocker        fLock;
 	std::vector<DocAnnotationEntry> fPending;   // what the thread found
-	std::vector<DocAnnotationEntry> fEntries;   // what the list shows
 	int            fCount;
 };
 
