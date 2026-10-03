@@ -71,9 +71,22 @@ Tsundoku shows the ones that are in the file), the fonts of a document in the fi
   -  Session management for documents on BFS (open file with the settings when it was last closed).
   -  Information (about the file, security).
 
+## Installing
+
+Tsundoku and the MuPDF library it needs are in the package repository of SEN Labs:
+
+```
+pkgman add-repo https://kiri.sen-labs.org/x86_64
+pkgman install tsundoku
+```
+
+Each release on GitHub also has the package as a file.
+
 ## Building
 
-On Haiku, with the development packages of the libraries MuPDF uses (they are not built, but taken from the system):
+With the repository above added, `pkgman install mupdf1.28_devel freetype_devel` is all that is needed, and
+`./build.sh` uses it. Without it, the build gets MuPDF itself, and the development packages of the libraries MuPDF
+uses are taken from the system:
 
 ```
 pkgman install freetype_devel harfbuzz_devel openjpeg_devel jbig2dec_devel brotli_devel libjpeg_turbo_devel

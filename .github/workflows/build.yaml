@@ -22,17 +22,12 @@ jobs:
 
       # the steps below run inside the VM, files are synced both ways
       # MuPDF is not in HaikuPorts in a version we can use, it comes from our own package repository (see
-      # MUPDF-NOTES.md). pkgman installs the downloaded files and gets what they need from HaikuPorts; this can
-      # become "pkgman add-repo https://kiri.sen-labs.org/x86_64" once that repository serves repo.sha256.
+      # MUPDF-NOTES.md)
       - name: Install build dependencies
         shell: cpa.sh {0}
         run: |
-          pkgman install -y freetype_devel cmd:gcc gcc_syslibs_devel cmd:make cmd:pkg_config cmd:wget
-          for package in mupdf1.28-1.28.5-1-x86_64.hpkg mupdf1.28_devel-1.28.5-1-x86_64.hpkg; do
-            wget -q "https://kiri.sen-labs.org/x86_64/packages/$package" -O "/tmp/$package"
-          done
-          pkgman install -y /tmp/mupdf1.28-1.28.5-1-x86_64.hpkg /tmp/mupdf1.28_devel-1.28.5-1-x86_64.hpkg
-          ls /system/develop/headers/mupdf1.28/mupdf/fitz.h
+          pkgman add-repo https://kiri.sen-labs.org/x86_64
+          pkgman install -y mupdf1.28_devel freetype_devel cmd:gcc gcc_syslibs_devel cmd:make cmd:pkg_config
 
       - name: Build and package
         shell: cpa.sh {0}
