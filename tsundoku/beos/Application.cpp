@@ -70,6 +70,9 @@ static const char * licenseCopyright =
     "This program is free software under the GNU AGPL v3, or any later version.\n";
 
 static const char *PAGE_NUM_MSG_KEY = "bepdf:page_num";
+// a passage to show, found by its text; with SEN:highlight it is also marked in the document (not saved)
+static const char *QUOTE_MSG_KEY = "SEN:quote";
+static const char *HIGHLIGHT_MSG_KEY = "SEN:highlight";
 
 static const char *settingsFilename = "Tsundoku";
 
@@ -518,6 +521,8 @@ void BepdfApplication::RefsReceived(BMessage *msg)
 	const char *owner = NULL;
 	const char *user  = NULL;
     int32 pageNum = 0;
+	BString quote;
+	bool highlight = false;
 	entry_ref ref;
 
 	if (B_OK == msg->FindString("ownerPassword", &ownerPassword)) {
@@ -533,6 +538,9 @@ void BepdfApplication::RefsReceived(BMessage *msg)
             error->Go();
         }
 	}
+
+	msg->FindString(QUOTE_MSG_KEY, &quote);
+	msg->FindBool(HIGHLIGHT_MSG_KEY, &highlight);
 
 	Initialize();
 
@@ -579,6 +587,13 @@ void BepdfApplication::RefsReceived(BMessage *msg)
                 BMessage goToPageMsg(PDFWindow::GOTO_PAGE_CMD);
                 goToPageMsg.AddInt32("page", pageNum);
                 mWindow->MessageReceived(&goToPageMsg);
+            }
+            if (quote.Length() > 0 && mWindow != NULL) {
+                BMessage quoteMsg(PDFWindow::SHOW_QUOTE_CMD);
+                quoteMsg.AddString("quote", quote);
+                quoteMsg.AddInt32("page", pageNum);
+                quoteMsg.AddBool("annotate", highlight);
+                mWindow->PostMessage(&quoteMsg);
             }
 			// stop after first document
 			mGotSomething = true;

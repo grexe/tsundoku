@@ -269,6 +269,8 @@ public:
 	bool HasTextSelection() const { return mSelected == SELECTED && mSelectionKind == kSelectText; }
 	// marks the selected text in the document, rgb is 0xRRGGBB
 	bool AnnotateSelection(MarkupType type, uint32 rgb);
+	// finds a quoted passage, selects it and shows it (see PDFSearch.cpp)
+	bool ShowQuote(const char* quote, int page, bool annotate);
 	void SetFilledSelection(bool filled);
 
 	// caller must delete returned string object

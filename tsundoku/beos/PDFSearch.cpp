@@ -196,6 +196,43 @@ FindThread::Run() {
 }
 
 ///////////////////////////////////////////////////////////
+// Shows a passage that was quoted by another application: looks for the text from the page on (the given page
+// is where it should be, it is not trusted), selects it and makes it visible. With annotate the passage is also
+// marked with a highlight annotation, which is not saved. Runs in the thread of the window.
+bool PDFView::ShowQuote(const char* quote, int page, bool annotate) {
+	if (quote == NULL || quote[0] == '\0' || mDoc == NULL)
+		return false;
+
+	int pages = mDoc->PageCount();
+	int start = (page >= 1 && page <= pages) ? page : mCurrentPage;
+
+	bool found = false;
+	int foundPage = 0;
+	FindHit hit;
+	for (int step = 0; step < pages && !found; step++) {
+		int p = (start - 1 + step) % pages + 1;
+		std::vector<FindHit> hits;
+		if (FindOnPage(mDoc, p, quote, true, &hits) && !hits.empty()) {
+			found = true;
+			foundPage = p;
+			hit = hits[0];
+		}
+	}
+	if (!found)
+		return false;
+
+	if (foundPage != mCurrentPage) {
+		SetPage(foundPage);
+		WaitForPage();
+	}
+	mFindHighlight = false;
+	mFindQuads.clear();
+	SelectFound(hit.start, hit.end);
+	if (annotate)
+		AnnotateSelection(kMarkupHighlight, 0xffeb3b);
+	return true;
+}
+
 void PDFView::Find(const char *s, bool ignoreCase, bool backward, FindTextWindow *findWindow) {
 	mStopFindThread = false;
 	FindThread* thread = new FindThread(s, ignoreCase, backward, this, findWindow, &mStopFindThread);

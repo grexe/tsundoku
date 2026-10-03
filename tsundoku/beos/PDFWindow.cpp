@@ -1134,6 +1134,18 @@ PDFWindow::MessageReceived(BMessage* message)
 	case LAST_PAGE_CMD:
 		mMainView->MoveToPage (mMainView->GetNumPages());
 		break;
+	case SHOW_QUOTE_CMD: {
+		// from another application, see BepdfApplication::RefsReceived()
+		BString quote;
+		int32 quotePage = 0;
+		bool annotate = false;
+		message->FindString("quote", &quote);
+		message->FindInt32("page", &quotePage);
+		message->FindBool("annotate", &annotate);
+		if (!mMainView->ShowQuote(quote.String(), quotePage, annotate))
+			beep();
+		break;
+	}
 	case GOTO_PAGE_CMD: {
         status_t result;
         BTextControl * control;
@@ -1513,6 +1525,14 @@ PDFWindow::MessageReceived(BMessage* message)
 					fprintf(out, "saveattachment %d -> %s: %s\n", (int)index, path.String(), ok ? "ok" : "failed");
 					fclose(out);
 				}
+			} else if (cmd == "quote") {
+				BString text;
+				message->FindString("text", &text);
+				BMessage quote(SHOW_QUOTE_CMD);
+				quote.AddString("quote", text);
+				quote.AddInt32("page", TestInt(message, "page", 0));
+				quote.AddBool("annotate", TestInt(message, "annotate", 0) != 0);
+				MessageReceived(&quote);
 			} else if (cmd == "find") {
 				// as the find window does it
 				if (mFindWindow == NULL)

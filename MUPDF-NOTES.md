@@ -108,6 +108,17 @@ make build=release HAVE_X11=no HAVE_GLUT=no HAVE_CURL=no \
   pass `pdf_is_embedded_file` are the attachments, `pdf_get_filespec_params` gives name, MIME type, size and date,
   `pdf_load_embedded_file_contents` the bytes. File attachment annotations on pages are not listed.
 
+- Annotations: `pdf_create_annot` on the `pdf_page` of a loaded `fz_page` (`pdf_page_from_fz_page`),
+  `pdf_set_annot_quad_points` with the quads of the selection (page space as `fz_highlight_selection` gives them),
+  `pdf_set_annot_color`, `pdf_update_annot` creates the appearance stream. Pages are loaded again for each render, so
+  the changes show without any further step. `pdf_save_document` with `do_incremental` appends to the file in place
+  (the BFS attributes with bookmarks and position stay); `pdf_can_be_saved_incrementally` is false for documents
+  that had to be repaired. The index of an annotation is its position in the list without links, popups and form
+  fields (`Document::LoadAnnotations`), which both listing and changing use.
+- `hey Tsundoku "TSTX" ... cmd=quote and text=...`, `cmd=annotate and kind=highlight|underline|strikeout`,
+  `cmd=annots`, `cmd=delannot and which=N`, `cmd=setnote and which=N and text=...`, `cmd=do_save` exercise M4.
+  A real `B_REFS_RECEIVED` with `SEN:quote` was sent with a few lines of C++ (`send_refs`, see the session notes).
+
 ## Testing without a mouse
 
 `make DEFINES=TSUNDOKU_TESTING` compiles hooks that let `hey` drive the view and write what happened to

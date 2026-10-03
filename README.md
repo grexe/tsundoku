@@ -38,6 +38,10 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   choice of colors). The marks are real PDF annotations, other readers show them. A note can be added to a mark or
   changed, and a mark can be deleted from the same menu. File > Save (Cmd+S) adds the changes to the end of the file,
   so its attributes stay as they are; this does not work for files that MuPDF had to repair.
+- Other applications (SEN) can open a document at a quoted passage: send `B_REFS_RECEIVED` with the file and
+  `SEN:quote` (the text; `bepdf:page_num` is a hint where to start looking and may be wrong). Tsundoku finds the
+  text, selects it and scrolls to it. With `SEN:highlight` (bool) the passage is also marked with a highlight
+  annotation, which is only saved when the user saves.
 - The files embedded in a PDF are listed in View > Show attachments and can be saved.
 - The outline follows the current page: the chapter a page belongs to is selected and scrolled into view, also after a
   jump from another application.
