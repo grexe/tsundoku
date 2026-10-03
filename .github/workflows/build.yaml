@@ -21,9 +21,12 @@ jobs:
           version: 'r1beta6'
 
       # the steps below run inside the VM, files are synced both ways
+      # MuPDF is not in HaikuPorts in a version we can use, it comes from our own repository (see MUPDF-NOTES.md)
       - name: Install build dependencies
         shell: cpa.sh {0}
-        run: pkgman install -y freetype_devel harfbuzz_devel openjpeg_devel jbig2dec_devel brotli_devel libjpeg_turbo_devel zlib_devel cmd:gcc gcc_syslibs_devel cmd:make cmd:pkg_config cmd:wget
+        run: |
+          pkgman add-repo https://kiri.sen-labs.org/x86_64
+          pkgman install -y mupdf1.28_devel freetype_devel cmd:gcc gcc_syslibs_devel cmd:make cmd:pkg_config
 
       - name: Build and package
         shell: cpa.sh {0}

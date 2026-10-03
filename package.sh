@@ -8,6 +8,13 @@ APP=dist/Tsundoku
 RDEF=tsundoku/beos/Tsundoku.rdef
 [ -f "$APP" ] || { echo "$APP not found, run ./build.sh first" >&2; exit 1; }
 
+# The package requires the mupdf1.28 package. A binary that has MuPDF built in (./build.sh without the
+# mupdf1.28_devel package installed) would also need the libraries MuPDF uses, which the package does not list.
+grep -q 'libmupdf1.28.so' $APP || {
+	echo "$APP does not use the shared MuPDF; install mupdf1.28_devel (https://kiri.sen-labs.org/x86_64) and rebuild" >&2
+	exit 1
+}
+
 # version from the app_version resource, a development build becomes a pre-release
 major=$(sed -n 's/^[[:space:]]*major[[:space:]]*=[[:space:]]*\([0-9]*\).*/\1/p' $RDEF | head -n1)
 middle=$(sed -n 's/^[[:space:]]*middle[[:space:]]*=[[:space:]]*\([0-9]*\).*/\1/p' $RDEF | head -n1)
