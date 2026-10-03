@@ -77,6 +77,10 @@ private:
 	float mLeft, mTop;	// position of page inside the view
 	float mWidth, mHeight;		//document width and height
 	const DocLink *mLink;      // link under the mouse
+	int mNoteTip;              // the annotation (index + 1) whose note is shown as a tooltip, 0 for none
+	bool mSelectKeyDown;       // the key for selecting was down when the cursor was set last
+	bool mReadOnlyWarned;      // the user knows that changes cannot be saved to the file itself
+	BMessageRunner* mModifierRunner;  // watches the keys for the cursor
 	History mHistory;
 	enum {
 		kNotInHistory, kInHistory
@@ -204,6 +208,8 @@ public:
 	void LinkToString(const DocLink* link, BString* string);
 	void ShowPopUpMenu(BPoint point, const DocLink* link, const DocAnnotation* annotation);
 	void AnnotationsChanged();
+	// before the first change of a read-only file: tells the user, false if the user does not want to go on
+	bool ConfirmEditable();
 	void CopyText(BString *str);
 	bool IsOk() { return mOk; }
 

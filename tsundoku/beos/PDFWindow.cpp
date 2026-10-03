@@ -40,6 +40,8 @@
 #include <be/interface/StringView.h>
 #include <be/interface/TabView.h>
 #include <be/interface/View.h>
+#include <be/storage/FilePanel.h>
+#include <be/storage/FindDirectory.h>
 #include <be/storage/Path.h>
 #include <be/storage/Directory.h>
 #include <be/storage/Entry.h>
@@ -137,6 +139,7 @@ PDFWindow::PDFWindow(entry_ref* ref, BRect frame, const char *ownerPassword,
 	mZoomMenu = mRotationMenu = NULL;
 	mLayerView = NULL;
 	mAttachmentsView = NULL;
+	mSavePanel = NULL;
 
 	mOWMessenger = NULL;
 	mFIWMessenger = NULL;
@@ -216,6 +219,7 @@ void PDFWindow::FitToScreen()
 ///////////////////////////////////////////////////////////
 PDFWindow::~PDFWindow()
 {
+	delete mSavePanel;
 	RemoveHandler(&mEntryChangedMonitor);
 
 	if (mPagesView) {
@@ -367,12 +371,79 @@ void PDFWindow::SaveDocument() {
 	Document* doc = mMainView->GetDocument();
 	if (!doc->HasUnsavedChanges())
 		return;
+	if (!doc->CanSaveInPlace()) {
+		// read-only file, or one that has to be rewritten as a whole: only a copy can be written
+		SaveDocumentAs();
+		return;
+	}
 	if (!doc->Save()) {
 		BAlert* alert = new BAlert("Error", B_TRANSLATE("The document could not be saved."),
 			B_TRANSLATE("OK"), NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT);
 		alert->Go();
 	}
 	UpdateInputEnabler();
+}
+
+
+// Asks where to write a copy of the document with its changes.
+void PDFWindow::SaveDocumentAs() {
+	Document* doc = mMainView->GetDocument();
+	if (!doc->IsPDF())
+		return;
+
+	if (mSavePanel == NULL) {
+		BMessenger target(this);
+		mSavePanel = new BFilePanel(B_SAVE_PANEL, &target, NULL, B_FILE_NODE, false);
+	}
+
+	BPath path(doc->Path());
+	BString name = path.Leaf();
+	BPath directory;
+	if (doc->IsWritable()) {
+		// next to the original, under another name
+		path.GetParent(&directory);
+		int32 dot = name.FindLast('.');
+		BString suffix(B_TRANSLATE(" (annotated)"));
+		if (dot > 0)
+			name.Insert(suffix, dot);
+		else
+			name << suffix;
+	} else
+		find_directory(B_USER_DIRECTORY, &directory);
+
+	entry_ref ref;
+	if (get_ref_for_path(directory.Path(), &ref) == B_OK)
+		mSavePanel->SetPanelDirectory(&ref);
+	mSavePanel->SetSaveText(name.String());
+	mSavePanel->Show();
+}
+
+
+// Writes the copy and goes on with it in this window.
+void PDFWindow::SaveCopyTo(const char* path) {
+	Document* doc = mMainView->GetDocument();
+	if (BString(path) == doc->Path()) {
+		// the file itself
+		SaveDocument();
+		return;
+	}
+
+	mMainView->WaitForPage(true);
+	if (!doc->SaveCopy(path)) {
+		BAlert* alert = new BAlert("Error", B_TRANSLATE("The copy could not be saved."),
+			B_TRANSLATE("OK"), NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT);
+		alert->Go();
+		mMainView->Redraw();
+		return;
+	}
+
+	// show the copy, the original stays as it was
+	entry_ref ref;
+	if (get_ref_for_path(path, &ref) == B_OK) {
+		BMessage open(B_REFS_RECEIVED);
+		open.AddRef("refs", &ref);
+		be_app->PostMessage(&open);
+	}
 }
 
 
@@ -383,17 +454,25 @@ bool PDFWindow::ConfirmDiscardChanges() {
 	if (doc == NULL || !doc->HasUnsavedChanges())
 		return true;
 
+	bool inPlace = doc->CanSaveInPlace();
 	BString text(B_TRANSLATE("The document has unsaved changes (annotations)."));
-	if (!doc->CanSave())
-		text << "\n" << B_TRANSLATE("They cannot be saved in this file.");
+	if (!inPlace)
+		text << "\n" << B_TRANSLATE("They can only be kept in a copy of the file.");
 	BAlert* alert = new BAlert("Unsaved", text.String(), B_TRANSLATE("Cancel"), B_TRANSLATE("Discard"),
-		doc->CanSave() ? B_TRANSLATE("Save") : NULL, B_WIDTH_AS_USUAL, B_WARNING_ALERT);
+		inPlace ? B_TRANSLATE("Save") : B_TRANSLATE("Save as" B_UTF8_ELLIPSIS), B_WIDTH_AS_USUAL,
+		B_WARNING_ALERT);
 	alert->SetShortcut(0, B_ESCAPE);
 	int32 choice = alert->Go();
 	if (choice == 0)
 		return false;
-	if (choice == 2 && !doc->Save())
-		return false;
+	if (choice == 2) {
+		if (!inPlace) {
+			// the copy is written after the user has chosen a name, then the document is shown again
+			SaveDocumentAs();
+			return false;
+		}
+		return doc->Save();
+	}
 	return true;
 }
 
@@ -552,7 +631,8 @@ void PDFWindow::UpdateInputEnabler()
 		fMenuBar->FindItem(ANNOTATE_HIGHLIGHT_CMD)->SetEnabled(canMark);
 		fMenuBar->FindItem(ANNOTATE_UNDERLINE_CMD)->SetEnabled(canMark);
 		fMenuBar->FindItem(ANNOTATE_STRIKEOUT_CMD)->SetEnabled(canMark);
-		fMenuBar->FindItem(SAVE_FILE_CMD)->SetEnabled(doc->HasUnsavedChanges() && doc->CanSave());
+		fMenuBar->FindItem(SAVE_FILE_CMD)->SetEnabled(doc->HasUnsavedChanges());
+		fMenuBar->FindItem(SAVE_AS_FILE_CMD)->SetEnabled(doc->IsPDF());
 
 		bool hasUserBookmark = mOutlinesView->HasUserBookmark(page);
 		bool selected    = hasUserBookmark && mOutlinesView->IsUserBMSelected();
@@ -605,6 +685,7 @@ BMenuBar* PDFWindow::BuildMenu()
 				B_TRANSLATE("Open in new window" B_UTF8_ELLIPSIS),
 				OPEN_IN_NEW_WINDOW_CMD))
 			.AddItem(B_TRANSLATE("Save"), SAVE_FILE_CMD, 'S')
+			.AddItem(B_TRANSLATE("Save as" B_UTF8_ELLIPSIS), SAVE_AS_FILE_CMD)
 			.AddItem(B_TRANSLATE("Reload"), RELOAD_FILE_CMD, 'R')
 			.AddItem(mFileInfoItem = new BMenuItem(B_TRANSLATE("File info" B_UTF8_ELLIPSIS),
 				new BMessage(FILE_INFO_CMD), 'I'))
@@ -1077,6 +1158,19 @@ PDFWindow::MessageReceived(BMessage* message)
 	case SAVE_FILE_CMD:
 		SaveDocument();
 		break;
+	case SAVE_AS_FILE_CMD:
+		SaveDocumentAs();
+		break;
+	case B_SAVE_REQUESTED: {
+		entry_ref directory;
+		const char* name;
+		if (message->FindRef("directory", &directory) == B_OK && message->FindString("name", &name) == B_OK) {
+			BPath path(&directory);
+			path.Append(name);
+			SaveCopyTo(path.Path());
+		}
+		break;
+	}
 	case ANNOTATE_HIGHLIGHT_CMD:
 		mMainView->AnnotateSelection(kMarkupHighlight, 0xffeb3b);
 		break;
@@ -1525,6 +1619,11 @@ PDFWindow::MessageReceived(BMessage* message)
 					fprintf(out, "saveattachment %d -> %s: %s\n", (int)index, path.String(), ok ? "ok" : "failed");
 					fclose(out);
 				}
+			} else if (cmd == "savecopy") {
+				// as the file panel does, with the path in "text"
+				BString text;
+				message->FindString("text", &text);
+				SaveCopyTo(text.String());
 			} else if (cmd == "quote") {
 				BString text;
 				message->FindString("text", &text);

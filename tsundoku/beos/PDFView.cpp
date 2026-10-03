@@ -31,6 +31,7 @@
 #include <be/app/Application.h>
 #include <be/app/Clipboard.h>
 #include <be/app/Looper.h>
+#include <be/app/MessageRunner.h>
 #include <be/app/MessageQueue.h>
 #include <be/app/Roster.h>
 
@@ -88,6 +89,9 @@ static const int kZoomDPI[MAX_ZOOM - MIN_ZOOM + 1] = {
 #define DELETE_ANNOTATION_MSG          'dlan'
 #define EDIT_NOTE_MSG                  'ednt'
 #define NOTE_ENTERED_MSG               'ntnt'
+#define MODIFIERS_POLL_MSG             'mdfy'
+
+static bool SelectModifierDown();
 
 // the colors offered for marking text
 static const struct { const char* name; uint32 rgb; } kMarkerColors[] = {
@@ -126,6 +130,10 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 	mLeft = mTop = 0;
 	mWidth = 100; mHeight = 100;
 	mLink = NULL;
+	mNoteTip = 0;
+	mSelectKeyDown = false;
+	mReadOnlyWarned = false;
+	mModifierRunner = NULL;
 	mNavigationState = kNotInHistory;
 
 	mViewCursor = NULL;
@@ -197,6 +205,8 @@ PDFView::MakeTitleString(BPath* path) {
 		*mTitle << title << " (" << path->Leaf() << ")";
 	else
 		*mTitle << path->Leaf();
+	if (!mDoc->IsWritable())
+		*mTitle << " " << B_TRANSLATE("(read-only)");
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -327,6 +337,7 @@ PDFView::~PDFView()
 	mPageRenderer.SetDocument(NULL);
 	delete mPage;	// refers to the document
 	delete mDoc;
+	delete mModifierRunner;
 	delete mTitle;
 	delete mOwnerPassword;
 	delete mUserPassword;
@@ -361,6 +372,19 @@ void PDFView::MessageReceived(BMessage *msg) {
 	case SELECT_ALL_MSG:
 		SelectAll();
 		break;
+	case MODIFIERS_POLL_MSG: {
+		// the cursor shows the selecting mode as soon as the key is down
+		bool down = SelectModifierDown();
+		if (down != mSelectKeyDown && Window() != NULL && Window()->IsActive()) {
+			BPoint point;
+			uint32 buttons;
+			GetMouse(&point, &buttons, false);
+			if (buttons == 0 && Bounds().Contains(point))
+				DisplayLink(point);
+			mSelectKeyDown = down;
+		}
+		break;
+	}
 	case ANNOTATE_MSG: {
 		int32 type = kMarkupHighlight, rgb = 0xffeb3b;
 		msg->FindInt32("type", &type);
@@ -372,7 +396,7 @@ void PDFView::MessageReceived(BMessage *msg) {
 		int32 page = 0, index = -1;
 		msg->FindInt32("page", &page);
 		msg->FindInt32("index", &index);
-		if (mDoc->DeleteAnnotation(page, index))
+		if (ConfirmEditable() && mDoc->DeleteAnnotation(page, index))
 			AnnotationsChanged();
 		break;
 	}
@@ -385,7 +409,8 @@ void PDFView::MessageReceived(BMessage *msg) {
 		entered.AddInt32("index", index);
 		const char* text = "";
 		msg->FindString("text", &text);
-		new NoteWindow(Window(), BMessenger(this), entered, text);
+		if (ConfirmEditable())
+			new NoteWindow(Window(), BMessenger(this), entered, text);
 		break;
 	}
 	case NOTE_ENTERED_MSG: {
@@ -657,6 +682,12 @@ PDFView::AttachedToWindow ()
 	Window()->SetTitle (mTitle->String());
 	SetViewCursor(gApp->handCursor);
 	mPageRenderer.SetListener(Window(), this);
+
+	// there is no message when a key like Option is pressed while the mouse rests, so look from time to time
+	if (mModifierRunner == NULL) {
+		BMessage poll(MODIFIERS_POLL_MSG);
+		mModifierRunner = new BMessageRunner(BMessenger(this), &poll, 100000);
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -1343,6 +1374,52 @@ PDFView::LinkToString(const DocLink* link, BString* string) {
 }
 
 
+// the text of a note for a tooltip: broken into lines, shortened if it is very long, with the author
+static BString
+NoteTipText(const DocAnnotation* annotation)
+{
+	const int kColumns = 60, kMaxLength = 800;
+	BString text = annotation->contents;
+	text.ReplaceAll("\r\n", "\n");
+	text.ReplaceAll("\r", "\n");
+	if (text.CountChars() > kMaxLength) {
+		text.TruncateChars(kMaxLength);
+		text << B_UTF8_ELLIPSIS;
+	}
+
+	BString result;
+	int column = 0;
+	const char* p = text.String();
+	while (*p != '\0') {
+		// the next word
+		const char* end = p;
+		while (*end != '\0' && *end != ' ' && *end != '\n')
+			end++;
+		BString word(p, end - p);
+		int length = word.CountChars();
+		if (column > 0 && column + 1 + length > kColumns) {
+			result << '\n';
+			column = 0;
+		}
+		if (column > 0 && *(p - 1) == ' ') {
+			result << ' ';
+			column++;
+		}
+		result << word;
+		column += length;
+		if (*end == '\n') {
+			result << '\n';
+			column = 0;
+		}
+		p = *end == '\0' ? end : end + 1;
+	}
+
+	if (annotation->author.Length() > 0)
+		result << "\n\xe2\x80\x94 " << annotation->author;
+	return result;
+}
+
+
 void
 PDFView::DisplayLink(BPoint point)
 {
@@ -1361,7 +1438,30 @@ PDFView::DisplayLink(BPoint point)
 	// selecting?
 	if (SelectModifierDown()) {
 		SetViewCursor(gApp->textSelectionCursor);
+		if (mNoteTip != 0) {
+			mNoteTip = 0;
+			SetToolTip("");
+			HideToolTip();
+		}
 		return;
+	}
+
+	// a note of an annotation is shown as a tooltip, to read it while scrolling through the document
+	const DocAnnotation* note = OnAnnotation(point);
+	if (note != NULL && note->contents.Length() > 0) {
+		if (mNoteTip != note->index + 1) {
+			mNoteTip = note->index + 1;
+			mLink = NULL;
+			SetToolTip(NoteTipText(note).String());
+			ShowToolTip();
+		}
+		SetViewCursor(gApp->handCursor);
+		return;
+	}
+	if (mNoteTip != 0) {
+		mNoteTip = 0;
+		SetToolTip("");
+		HideToolTip();
 	}
 
 	// over link?
@@ -2083,6 +2183,9 @@ PDFView::AnnotateSelection(MarkupType type, uint32 rgb)
 		return false;
 	}
 
+	if (!ConfirmEditable())
+		return false;
+
 	float color[3] = { ((rgb >> 16) & 0xff) / 255.0f, ((rgb >> 8) & 0xff) / 255.0f, (rgb & 0xff) / 255.0f };
 	std::vector<fz_quad> quads = mQuads;
 	WaitForPage(true);
@@ -2095,11 +2198,35 @@ PDFView::AnnotateSelection(MarkupType type, uint32 rgb)
 }
 
 
+// A file that cannot be written (system directory, read-only volume) can still be annotated, but the changes can
+// only be kept in a copy. Says so before the first change.
+bool
+PDFView::ConfirmEditable()
+{
+	if (mDoc->IsWritable() || mReadOnlyWarned)
+		return true;
+#ifdef TSUNDOKU_TESTING
+	if (getenv("TSUNDOKU_AUTOCONFIRM") != NULL)
+		return true;
+#endif
+
+	BAlert* alert = new BAlert("Read-only", B_TRANSLATE("This file is read-only. You can add annotations, "
+		"but to keep them you have to save a copy with “Save as…”."), B_TRANSLATE("Cancel"),
+		B_TRANSLATE("Continue"), NULL, B_WIDTH_AS_USUAL, B_WARNING_ALERT);
+	alert->SetShortcut(0, B_ESCAPE);
+	if (alert->Go() != 1)
+		return false;
+	mReadOnlyWarned = true;
+	return true;
+}
+
+
 // Shows the changed annotations of the page.
 void
 PDFView::AnnotationsChanged()
 {
 	mRenderedPage = 0;	// the page is new, nothing of the old one stays
+	mNoteTip = 0;
 	Redraw();
 	SelectionChanged();
 }
@@ -2355,6 +2482,11 @@ PDFView::TestCommand(BMessage* message)
 		bool ok = AnnotateSelection(type, kind == "highlight" ? 0xffeb3b : 0xe53935);
 		TestLog("annotate %s: %s, unsaved changes: %d", kind.String(), ok ? "ok" : "failed",
 			(int)mDoc->HasUnsavedChanges());
+	} else if (cmd == "hover") {
+		// as if the mouse was at (x1, y1): cursor and tooltip
+		DisplayLink(BPoint(x1, y1));
+		ShowToolTip(ToolTip());	// a real mouse shows it when it rests
+		TestLog("hover (%g,%g): note tip %d", x1, y1, mNoteTip);
 	} else if (cmd == "annots") {
 		// what the page has, and what is under a point (x1, y1)
 		WaitForPage();

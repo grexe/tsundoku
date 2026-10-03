@@ -23,9 +23,12 @@
 #include <time.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <File.h>
+#include <Node.h>
+#include <fs_attr.h>
 
 extern "C" {
 #include <mupdf/pdf.h>
@@ -114,6 +117,7 @@ Document::Document(fz_context* context, fz_document* document, const char* path)
 	fIsPDF(false),
 	fEncrypted(false),
 	fCanSave(false),
+	fWritable(false),
 	fModified(false)
 {
 	int pages = 0;
@@ -140,6 +144,11 @@ Document::Document(fz_context* context, fz_document* document, const char* path)
 	fIsPDF = isPDF != 0;
 	fEncrypted = encrypted != 0;
 	fCanSave = canSave != 0;
+	{
+		// opening it for writing fails on read-only volumes (system directory) and without permission
+		BFile file(path, B_READ_WRITE);
+		fWritable = file.InitCheck() == B_OK;
+	}
 
 	fz_rect empty = fz_empty_rect;
 	fBounds.assign(pages > 0 ? pages : 0, empty);
@@ -649,6 +658,7 @@ Document::AddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int count
 	static const int types[] = { PDF_ANNOT_HIGHLIGHT, PDF_ANNOT_UNDERLINE, PDF_ANNOT_STRIKE_OUT,
 		PDF_ANNOT_SQUIGGLY };
 
+	const char* author = getenv("USER");
 	DocumentLocker locker(this);
 	fz_page* page = NULL;
 	int ok = 0;
@@ -660,6 +670,8 @@ Document::AddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int count
 		pdf_annot* annot = pdf_create_annot(fContext, pdfPage, (enum pdf_annot_type)types[type]);
 		pdf_set_annot_quad_points(fContext, annot, count, quads);
 		pdf_set_annot_color(fContext, annot, 3, color);
+		if (author != NULL && author[0] != '\0')
+			pdf_set_annot_author(fContext, annot, author);
 		pdf_set_annot_creation_date(fContext, annot, (int64_t)time(NULL));
 		pdf_set_annot_modification_date(fContext, annot, (int64_t)time(NULL));
 		pdf_update_annot(fContext, annot);
@@ -797,5 +809,56 @@ Document::Save()
 	}
 	if (ok)
 		fModified = false;
+	return ok != 0;
+}
+
+
+// copies all attributes (bookmarks and position of Tsundoku, the type, ...) from one file to the other
+static void
+CopyAttributes(const char* from, const char* to)
+{
+	BNode source(from), target(to);
+	if (source.InitCheck() != B_OK || target.InitCheck() != B_OK)
+		return;
+
+	char name[B_ATTR_NAME_LENGTH];
+	source.RewindAttrs();
+	while (source.GetNextAttrName(name) == B_OK) {
+		attr_info info;
+		// SYS:PACKAGE says which package the original belongs to, the copy does not
+		if (strncmp(name, "SYS:PACKAGE", 11) == 0)
+			continue;
+		if (source.GetAttrInfo(name, &info) != B_OK || info.size > 1024 * 1024)
+			continue;
+		char* buffer = new char[info.size > 0 ? info.size : 1];
+		ssize_t size = source.ReadAttr(name, info.type, 0, buffer, info.size);
+		if (size >= 0)
+			target.WriteAttr(name, info.type, 0, buffer, size);
+		delete[] buffer;
+	}
+}
+
+
+bool
+Document::SaveCopy(const char* path)
+{
+	if (!fIsPDF || fPath == path)
+		return false;
+
+	DocumentLocker locker(this);
+	int ok = 0;
+	fz_try(fContext) {
+		pdf_write_options options = pdf_default_write_options;
+		pdf_save_document(fContext, pdf_specifics(fContext, fDocument), path, &options);
+		ok = 1;
+	}
+	fz_catch(fContext) {
+		LogError(fContext, "cannot save a copy");
+		ok = 0;
+	}
+	if (ok) {
+		CopyAttributes(fPath.String(), path);
+		fModified = false;
+	}
 	return ok != 0;
 }

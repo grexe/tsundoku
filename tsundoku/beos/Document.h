@@ -138,7 +138,14 @@ public:
 	// Saving adds the changes to the end of the file (so that its attributes and the rest stay as they are).
 	bool         HasUnsavedChanges();
 	bool         CanSave();
+	// false if the file is on a read-only volume or not writable for the user
+	bool         IsWritable() const { return fWritable; }
+	// the changes can be added to the file itself: it is writable and MuPDF can do it incrementally
+	bool         CanSaveInPlace() const { return fCanSave && fWritable; }
 	bool         Save();
+	// Writes the whole document, with the changes, to another file (copies the attributes of the original).
+	// Marks the document as saved.
+	bool         SaveCopy(const char* path);
 
 	// For internal links: the page (1-based) and the position (page space, may be NaN) the link goes to.
 	bool         ResolveLink(const char* uri, int* page, float* x, float* y);
@@ -155,6 +162,7 @@ private:
 	bool            fIsPDF;
 	bool            fEncrypted;
 	bool            fCanSave;      // changes can be added to the file
+	bool            fWritable;     // the file can be written
 	volatile bool   fModified;     // changed since opened or saved
 	std::vector<fz_rect> fBounds;   // cache, empty rectangle if unknown
 	std::vector<bool>    fBoundsKnown;

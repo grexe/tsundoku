@@ -40,6 +40,7 @@
 #include "ToolTip.h"
 
 class AttachmentsView;
+class BFilePanel;
 class OutlinesView;
 
 class RecentDocumentsMenu : public BMenu
@@ -67,6 +68,7 @@ public:
 		CLOSE_FILE_CMD,
 		RELOAD_FILE_CMD,
 		SAVE_FILE_CMD,
+		SAVE_AS_FILE_CMD,
 		ANNOTATE_HIGHLIGHT_CMD,
 		ANNOTATE_UNDERLINE_CMD,
 		ANNOTATE_STRIKEOUT_CMD,
@@ -185,6 +187,7 @@ private:
 	BListView      *mPagesView;
 	OutlinesView   *mOutlinesView;
 	AttachmentsView *mAttachmentsView;
+	BFilePanel     *mSavePanel;
 
 	BMessage       *mPrintSettings;
 	FindTextWindow *mFindWindow;
@@ -280,6 +283,8 @@ public:
 	// asks what to do with unsaved changes; false if the user wants to keep working on the document
 	bool ConfirmDiscardChanges();
 	void SaveDocument();
+	void SaveDocumentAs();
+	void SaveCopyTo(const char* path);
 	void HandlePendingActions(bool ok);
 
 
