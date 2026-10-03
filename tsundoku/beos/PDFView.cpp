@@ -225,6 +225,16 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 	mReadOnlyWarned = false;
 	mTool = kToolNone;
 	mToolCursor = new BCursor(B_CURSOR_ID_CROSS_HAIR);
+	mAnnotationIndex = -1;
+	mAnnotationHandle = kHandleNone;
+	static const BCursorID kHandleCursorIds[kHandleCount] = {
+		B_CURSOR_ID_MOVE, B_CURSOR_ID_RESIZE_NORTH_WEST_SOUTH_EAST, B_CURSOR_ID_RESIZE_NORTH_SOUTH,
+		B_CURSOR_ID_RESIZE_NORTH_EAST_SOUTH_WEST, B_CURSOR_ID_RESIZE_EAST_WEST,
+		B_CURSOR_ID_RESIZE_NORTH_WEST_SOUTH_EAST, B_CURSOR_ID_RESIZE_NORTH_SOUTH,
+		B_CURSOR_ID_RESIZE_NORTH_EAST_SOUTH_WEST, B_CURSOR_ID_RESIZE_EAST_WEST
+	};
+	for (int h = 0; h < kHandleCount; h++)
+		mHandleCursors[h] = new BCursor(kHandleCursorIds[h]);
 	mModifierRunner = NULL;
 	mNavigationState = kNotInHistory;
 
@@ -431,6 +441,8 @@ PDFView::~PDFView()
 	delete mDoc;
 	delete mModifierRunner;
 	delete mToolCursor;
+	for (int h = 0; h < kHandleCount; h++)
+		delete mHandleCursors[h];
 	delete mTitle;
 	delete mOwnerPassword;
 	delete mUserPassword;
@@ -523,8 +535,10 @@ void PDFView::MessageReceived(BMessage *msg) {
 		int32 page = 0, index = -1;
 		msg->FindInt32("page", &page);
 		msg->FindInt32("index", &index);
-		if (ConfirmEditable() && mDoc->DeleteAnnotation(page, index))
+		if (ConfirmEditable() && mDoc->DeleteAnnotation(page, index)) {
+			mAnnotationIndex = -1;
 			AnnotationsChanged();
+		}
 		break;
 	}
 	case EDIT_NOTE_MSG: {
@@ -768,6 +782,7 @@ PDFView::Draw(BRect updateRect)
 		DrawFindHits(updateRect);
 		DrawSelection(updateRect);
 		DrawToolPreview();
+		DrawAnnotationSelection();
 	}
 }
 
@@ -869,6 +884,14 @@ PDFView::KeyDown (const char * bytes, int32 numBytes)
 	case B_ESCAPE:
 		if (mTool != kToolNone)
 			CancelTool();
+		else if (mAnnotationIndex >= 0)
+			SelectAnnotation(-1);
+		else
+			BView::KeyDown(bytes, numBytes);
+		break;
+	case B_DELETE:
+		if (mAnnotationIndex >= 0)
+			DeleteSelectedAnnotation();
 		else
 			BView::KeyDown(bytes, numBytes);
 		break;
@@ -995,6 +1018,16 @@ PDFView::MouseDown (BPoint point) {
 			return;
 		}
 		CancelTool();	// another button gets its usual meaning
+	}
+
+	// a click on an annotation that can be moved selects it, and a drag from there moves it; elsewhere the click
+	// has its usual meaning
+	if (buttons == B_PRIMARY_MOUSE_BUTTON && !SelectModifierDown() && BeginAnnotationDrag(point))
+		return;
+	if (buttons == B_SECONDARY_MOUSE_BUTTON) {
+		const DocAnnotation* clicked = OnAnnotation(point);
+		if (clicked != NULL && clicked->kind != kAnnotMarkup && clicked->kind != kAnnotOther)
+			SelectAnnotation(clicked->index);
 	}
 
 	switch (buttons) {
@@ -1160,6 +1193,62 @@ PDFView::MouseMoved (BPoint point, uint32 transit, const BMessage *msg) {
 			}
 			break;
 		}
+		case ANNOT_ACTION:
+		{
+			SkipMouseMoveMsgs();
+			BRect old = mAnnotationPreview;
+			BPoint p = CorrectMousePos(point);
+			float dx = p.x - mAnnotationDragStart.x, dy = p.y - mAnnotationDragStart.y;
+			BRect r = mAnnotationOriginal;
+			const float kMinimum = 8;
+			switch (mAnnotationHandle) {
+				case kHandleMove:
+					r.OffsetBy(dx, dy);
+					// not out of the page
+					if (r.left < 0)
+						r.OffsetBy(-r.left, 0);
+					if (r.top < 0)
+						r.OffsetBy(0, -r.top);
+					if (r.right > mWidth)
+						r.OffsetBy(mWidth - r.right, 0);
+					if (r.bottom > mHeight)
+						r.OffsetBy(0, mHeight - r.bottom);
+					break;
+				case kHandleNorthWest:
+					r.left = min_c(r.left + dx, r.right - kMinimum);
+					r.top = min_c(r.top + dy, r.bottom - kMinimum);
+					break;
+				case kHandleNorth:
+					r.top = min_c(r.top + dy, r.bottom - kMinimum);
+					break;
+				case kHandleNorthEast:
+					r.right = max_c(r.right + dx, r.left + kMinimum);
+					r.top = min_c(r.top + dy, r.bottom - kMinimum);
+					break;
+				case kHandleEast:
+					r.right = max_c(r.right + dx, r.left + kMinimum);
+					break;
+				case kHandleSouthEast:
+					r.right = max_c(r.right + dx, r.left + kMinimum);
+					r.bottom = max_c(r.bottom + dy, r.top + kMinimum);
+					break;
+				case kHandleSouth:
+					r.bottom = max_c(r.bottom + dy, r.top + kMinimum);
+					break;
+				case kHandleSouthWest:
+					r.left = min_c(r.left + dx, r.right - kMinimum);
+					r.bottom = max_c(r.bottom + dy, r.top + kMinimum);
+					break;
+				case kHandleWest:
+					r.left = min_c(r.left + dx, r.right - kMinimum);
+					break;
+			}
+			mAnnotationPreview = r;
+			Invalidate((old | r).InsetByCopy(-8, -8).OffsetByCopy(mLeft, mTop));
+			if ((GetButtons() & B_PRIMARY_MOUSE_BUTTON) == 0)
+				MouseUp(point);
+			break;
+		}
 		case TOOL_ACTION:
 		{
 			SkipMouseMoveMsgs();
@@ -1255,6 +1344,11 @@ PDFView::ResizeSelection(BPoint point) {
 ///////////////////////////////////////////////////////////////////////////
 void
 PDFView::MouseUp (BPoint point) {
+	if (mMouseAction == ANNOT_ACTION) {
+		SetAction(NO_ACTION);
+		FinishAnnotationDrag();
+		return;
+	}
 	if (mMouseAction == TOOL_ACTION) {
 		SetAction(NO_ACTION);
 		FinishTool(point);
@@ -1339,7 +1433,7 @@ PDFView::OnAnnotation(BPoint point) {
 	if (mRendering || (mDoc == NULL) || (mDoc->PageCount() == 0)) return NULL;
 
 	point = CorrectMousePos(point);
-	return mPage->FindAnnotation(mPage->DevToPage(point));
+	return mPage->FindAnnotation(mPage->DevToPage(point), 5.0f / mPage->Scale());
 }
 
 const DocLink*
@@ -1625,6 +1719,14 @@ PDFView::DisplayLink(BPoint point)
 		return;
 	}
 
+	if (const DocAnnotation* selected = SelectedAnnotation()) {
+		int handle = HandleAt(selected, CorrectMousePos(point));
+		if (handle != kHandleNone) {
+			SetViewCursor(mHandleCursors[handle]);
+			return;
+		}
+	}
+
 	BPoint p = CorrectMousePos(point);
 	// over selection?
 	if (((mSelected == SELECTED) && InSelection(point)) ||
@@ -1713,8 +1815,10 @@ PDFView::Redraw()
 		mSelected = NOT_SELECTED;
 		mQuads.clear();
 	}
-	if (!samePage)
+	if (!samePage) {
 		mFindQuads.clear();
+		mAnnotationIndex = -1;
+	}
 	mRenderedPage = mCurrentPage;
 
 	mPageRenderer.Start(mPage, mCurrentPage, GetZoomDPI(), mRotation, &mRendererID);
@@ -2423,12 +2527,16 @@ PDFView::ConfirmEditable()
 void
 PDFView::AnnotationsChanged(int page)
 {
-	mRenderedPage = 0;	// the page is new, nothing of the old one stays
+	// the page is new, nothing of the old one stays; but a selected annotation is still the one (callers that
+	// remove it have cleared the selection)
+	int selected = mAnnotationIndex;
+	mRenderedPage = 0;
 	mNoteTip = 0;
 	if (page > 0 && page != mCurrentPage)
 		SetPage(page);	// draws it
 	else
 		Redraw();
+	mAnnotationIndex = selected;
 	SelectionChanged();
 }
 
@@ -2437,6 +2545,7 @@ void
 PDFView::Undo()
 {
 	WaitForPage(true);
+	mAnnotationIndex = -1;
 	int page = mDoc->Undo();
 	if (page > 0)
 		AnnotationsChanged(page);
@@ -2637,10 +2746,218 @@ PDFView::DrawToolPreview()
 }
 
 
+// The annotation that is selected, if the page has it (while the page is rendered anew it has not).
+const DocAnnotation*
+PDFView::SelectedAnnotation() const
+{
+	if (mAnnotationIndex < 0 || mDoc == NULL || !mDoc->CanEditAnnotations())
+		return NULL;
+	const DocAnnotation* annotation = mPage->AnnotationAt(mAnnotationIndex);
+	if (annotation != NULL && (annotation->kind == kAnnotMarkup || annotation->kind == kAnnotOther))
+		return NULL;
+	return annotation;
+}
+
+
+// where the annotation is in the bitmap, in pixels with fractions
+BRect
+PDFView::AnnotationDeviceRect(const DocAnnotation* annotation) const
+{
+	BPoint a = mPage->PageToDev(fz_make_point(annotation->rect.x0, annotation->rect.y0));
+	BPoint b = mPage->PageToDev(fz_make_point(annotation->rect.x1, annotation->rect.y1));
+	return BRect(min_c(a.x, b.x), min_c(a.y, b.y), max_c(a.x, b.x), max_c(a.y, b.y));
+}
+
+
+static BPoint
+HandlePosition(const BRect& r, int handle)
+{
+	float centerX = (r.left + r.right) / 2, centerY = (r.top + r.bottom) / 2;
+	switch (handle) {
+		case 1: return BPoint(r.left, r.top);          // north west
+		case 2: return BPoint(centerX, r.top);         // north
+		case 3: return BPoint(r.right, r.top);         // north east
+		case 4: return BPoint(r.right, centerY);       // east
+		case 5: return BPoint(r.right, r.bottom);      // south east
+		case 6: return BPoint(centerX, r.bottom);      // south
+		case 7: return BPoint(r.left, r.bottom);       // south west
+		default: return BPoint(r.left, centerY);       // west
+	}
+}
+
+
+// the handle at the point (in the bitmap), the inside for moving, none outside; a note has no handles to
+// resize it, and an annotation that is flat has only those along it
+int
+PDFView::HandleAt(const DocAnnotation* annotation, BPoint point) const
+{
+	BRect r = AnnotationDeviceRect(annotation);
+	if (annotation->kind != kAnnotNote) {
+		bool flatHorizontally = r.Width() < 6, flatVertically = r.Height() < 6;
+		for (int handle = kHandleNorthWest; handle < kHandleCount; handle++) {
+			bool vertical = handle == kHandleNorth || handle == kHandleSouth;
+			bool horizontal = handle == kHandleEast || handle == kHandleWest;
+			if ((flatVertically && !horizontal) || (flatHorizontally && !vertical))
+				continue;
+			BPoint at = HandlePosition(r, handle);
+			if (fabsf(point.x - at.x) <= 5 && fabsf(point.y - at.y) <= 5)
+				return handle;
+		}
+	}
+	// on the thing itself, which may be a thin line
+	if (r.InsetByCopy(-4, -4).Contains(point))
+		return kHandleMove;
+	return kHandleNone;
+}
+
+
+void
+PDFView::SelectAnnotation(int index)
+{
+	if (index == mAnnotationIndex)
+		return;
+
+	if (const DocAnnotation* old = SelectedAnnotation())
+		Invalidate(AnnotationDeviceRect(old).InsetByCopy(-10, -10).OffsetByCopy(mLeft, mTop));
+	mAnnotationIndex = index;
+	if (index >= 0) {
+		SelectNone();	// text and an annotation are not selected at the same time
+		if (const DocAnnotation* annotation = SelectedAnnotation())
+			Invalidate(AnnotationDeviceRect(annotation).InsetByCopy(-10, -10).OffsetByCopy(mLeft, mTop));
+	}
+	SelectionChanged();
+}
+
+
+// The mouse went down on an annotation that can be moved or on one of the handles of the selected one: starts
+// to drag. Elsewhere the selection ends and the click is for something else.
+bool
+PDFView::BeginAnnotationDrag(BPoint point)
+{
+	if (mRendering || mDoc == NULL || !mDoc->CanEditAnnotations())
+		return false;
+
+	BPoint p = CorrectMousePos(point);
+	const DocAnnotation* annotation = SelectedAnnotation();
+	int handle = annotation != NULL ? HandleAt(annotation, p) : kHandleNone;
+	if (handle == kHandleNone) {
+		float tolerance = 5.0f / mPage->Scale();
+		annotation = mPage->FindAnnotation(mPage->DevToPage(p), tolerance, true);
+		if (annotation == NULL) {
+			if (mAnnotationIndex >= 0)
+				SelectAnnotation(-1);
+			return false;
+		}
+		SelectAnnotation(annotation->index);
+		handle = kHandleMove;
+	}
+
+	mAnnotationHandle = handle;
+	mAnnotationDragStart = p;
+	mAnnotationOriginal = mAnnotationPreview = AnnotationDeviceRect(annotation);
+	SetAction(ANNOT_ACTION);
+	SetMouseEventMask(B_POINTER_EVENTS);
+	return true;
+}
+
+
+// The drag ended: the annotation goes where its outline is, if it was moved at all.
+void
+PDFView::FinishAnnotationDrag()
+{
+	BRect preview = mAnnotationPreview;
+	BRect original = mAnnotationOriginal;
+	int handle = mAnnotationHandle;
+	mAnnotationHandle = kHandleNone;
+	Invalidate((preview | original).InsetByCopy(-10, -10).OffsetByCopy(mLeft, mTop));
+
+	const DocAnnotation* annotation = SelectedAnnotation();
+	if (annotation == NULL
+		|| (fabsf(preview.left - original.left) < 1.5f && fabsf(preview.top - original.top) < 1.5f
+			&& fabsf(preview.right - original.right) < 1.5f && fabsf(preview.bottom - original.bottom) < 1.5f))
+		return;
+	if (!ConfirmEditable())
+		return;
+
+	// the new bounds in page space; a move keeps the size exact
+	fz_rect bounds;
+	if (handle == kHandleMove) {
+		fz_point from = mPage->DevToPage(original.LeftTop()), to = mPage->DevToPage(preview.LeftTop());
+		bounds = annotation->rect;
+		float dx = to.x - from.x, dy = to.y - from.y;
+		bounds = fz_make_rect(bounds.x0 + dx, bounds.y0 + dy, bounds.x1 + dx, bounds.y1 + dy);
+	} else {
+		fz_point a = mPage->DevToPage(preview.LeftTop()), b = mPage->DevToPage(preview.RightBottom());
+		bounds = fz_make_rect(fminf(a.x, b.x), fminf(a.y, b.y), fmaxf(a.x, b.x), fmaxf(a.y, b.y));
+	}
+
+	int index = annotation->index;
+	WaitForPage(true);
+	if (mDoc->SetAnnotationBounds(mCurrentPage, index, bounds, handle != kHandleMove))
+		AnnotationsChanged(mCurrentPage);	// the selection stays
+}
+
+
+void
+PDFView::DeleteSelectedAnnotation()
+{
+	const DocAnnotation* annotation = SelectedAnnotation();
+	if (annotation == NULL || !ConfirmEditable())
+		return;
+	int index = annotation->index;
+	WaitForPage(true);
+	mAnnotationIndex = -1;
+	if (mDoc->DeleteAnnotation(mCurrentPage, index))
+		AnnotationsChanged(mCurrentPage);
+	else
+		Redraw();
+}
+
+
+void
+PDFView::DrawAnnotationSelection()
+{
+	rgb_color highlight = ui_color(B_CONTROL_HIGHLIGHT_COLOR);
+	BPoint offset(mLeft, mTop);
+
+	if (mMouseAction == ANNOT_ACTION) {
+		// the outline of where it goes
+		SetHighColor(highlight);
+		StrokeRect(mAnnotationPreview.InsetByCopy(-2, -2).OffsetByCopy(offset));
+		return;
+	}
+
+	const DocAnnotation* annotation = SelectedAnnotation();
+	if (annotation == NULL)
+		return;
+
+	BRect r = AnnotationDeviceRect(annotation);
+	SetHighColor(highlight);
+	StrokeRect(r.InsetByCopy(-2, -2).OffsetByCopy(offset));
+	if (annotation->kind == kAnnotNote)
+		return;
+
+	bool flatHorizontally = r.Width() < 6, flatVertically = r.Height() < 6;
+	for (int handle = kHandleNorthWest; handle < kHandleCount; handle++) {
+		bool vertical = handle == kHandleNorth || handle == kHandleSouth;
+		bool horizontal = handle == kHandleEast || handle == kHandleWest;
+		if ((flatVertically && !horizontal) || (flatHorizontally && !vertical))
+			continue;
+		BPoint at = HandlePosition(r, handle) + offset;
+		BRect box(at.x - 3, at.y - 3, at.x + 3, at.y + 3);
+		SetHighColor(255, 255, 255);
+		FillRect(box);
+		SetHighColor(highlight);
+		StrokeRect(box);
+	}
+}
+
+
 void
 PDFView::Redo()
 {
 	WaitForPage(true);
+	mAnnotationIndex = -1;
 	int page = mDoc->Redo();
 	if (page > 0)
 		AnnotationsChanged(page);
@@ -2897,6 +3214,47 @@ PDFView::TestCommand(BMessage* message)
 		bool ok = AnnotateSelection(type, kind == "highlight" ? 0xffeb3b : 0xe53935);
 		TestLog("annotate %s: %s, unsaved changes: %d", kind.String(), ok ? "ok" : "failed",
 			(int)mDoc->HasUnsavedChanges());
+	} else if (cmd == "findannot") {
+		BString id;
+		message->FindString("text", &id);
+		int foundPage = 0, foundIndex = -1;
+		bool ok = mDoc->FindAnnotationById(id.String(), &foundPage, &foundIndex);
+		TestLog("findannot [%s]: %s page %d index %d", id.String(), ok ? "found" : "not found", foundPage, foundIndex);
+	} else if (cmd == "selectannot") {
+		// as a click at (x1, y1) does it
+		const DocAnnotation* hit = mPage->FindAnnotation(mPage->DevToPage(CorrectMousePos(BPoint(x1, y1))),
+			5.0f / mPage->Scale(), true);
+		SelectAnnotation(hit != NULL ? hit->index : -1);
+		const DocAnnotation* selected = SelectedAnnotation();
+		TestLog("selectannot at (%g,%g): %s, selected %d", x1, y1, hit != NULL ? "hit" : "nothing",
+			selected != NULL ? selected->index : -1);
+	} else if (cmd == "moveannot") {
+		// a drag of the selected annotation: from (x1, y1) to (x2, y2), the start decides move or handle
+		bool began = BeginAnnotationDrag(BPoint(x1, y1));
+		if (began) {
+			// the same arithmetic as MouseMoved does it, through its message
+			BPoint p = CorrectMousePos(BPoint(x2, y2));
+			BRect r = mAnnotationOriginal;
+			float dx = p.x - mAnnotationDragStart.x, dy = p.y - mAnnotationDragStart.y;
+			switch (mAnnotationHandle) {
+				case kHandleMove: r.OffsetBy(dx, dy); break;
+				case kHandleSouthEast: r.right += dx; r.bottom += dy; break;
+				case kHandleNorthWest: r.left += dx; r.top += dy; break;
+				case kHandleEast: r.right += dx; break;
+				case kHandleSouth: r.bottom += dy; break;
+				case kHandleWest: r.left += dx; break;
+				case kHandleNorth: r.top += dy; break;
+				default: break;
+			}
+			mAnnotationPreview = r;
+			SetAction(NO_ACTION);
+			TestLog("moveannot: handle %d, to %g,%g-%g,%g", mAnnotationHandle, r.left, r.top, r.right, r.bottom);
+			FinishAnnotationDrag();
+		} else
+			TestLog("moveannot: nothing to drag at (%g,%g)", x1, y1);
+	} else if (cmd == "deleteannot") {
+		DeleteSelectedAnnotation();
+		TestLog("deleteannot: selected now %d", mAnnotationIndex);
 	} else if (cmd == "tool") {
 		// kind: note, text, rectangle, ellipse, line, arrow, drawing
 		BString kind;
@@ -2974,7 +3332,8 @@ PDFView::TestCommand(BMessage* message)
 		const std::vector<DocAnnotation>& list = mPage->mAnnotations;
 		TestLog("annots on page %d: %d", mCurrentPage, (int)list.size());
 		for (size_t i = 0; i < list.size(); i++) {
-			TestLog("  #%d type %d markup %d quads %d color %s%06x rect %g,%g-%g,%g author [%s] note [%s]", list[i].index,
+			TestLog("  #%d id [%s] type %d markup %d quads %d color %s%06x rect %g,%g-%g,%g author [%s] note [%s]", list[i].index,
+				list[i].id.String(),
 				list[i].type, (int)list[i].isMarkup, (int)list[i].quads.size(), list[i].hasColor ? "#" : "none ",
 				(unsigned)list[i].color, list[i].rect.x0, list[i].rect.y0,
 				list[i].rect.x1, list[i].rect.y1, list[i].author.String(), list[i].contents.String());

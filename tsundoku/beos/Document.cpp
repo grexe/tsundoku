@@ -559,7 +559,34 @@ Document::SaveAttachment(int index, const char* path)
 ///////////////////////////////////////////////////////////////////////////
 // Annotations
 
+// A new name for an annotation that nobody else has: 128 random bits in the form of a UUID. Other programs and
+// SEN refer to the annotation with it, so it has to stay with the annotation in the file.
+static void
+NewAnnotationId(char* id, size_t size)
+{
+	unsigned char bytes[16];
+	bool random = false;
+	FILE* file = fopen("/dev/urandom", "rb");
+	if (file != NULL) {
+		random = fread(bytes, 1, sizeof(bytes), file) == sizeof(bytes);
+		fclose(file);
+	}
+	if (!random) {
+		srand((unsigned)time(NULL) ^ (unsigned)(uintptr_t)id);
+		for (size_t i = 0; i < sizeof(bytes); i++)
+			bytes[i] = (unsigned char)rand();
+	}
+	bytes[6] = (bytes[6] & 0x0f) | 0x40;	// version 4
+	bytes[8] = (bytes[8] & 0x3f) | 0x80;
+	snprintf(id, size, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", bytes[0],
+		bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7], bytes[8], bytes[9], bytes[10],
+		bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]);
+}
+
+
 static const int kMaxAnnotationQuads = 512;
+static const int kMaxInkPoints = 20000;
+static const int kMaxInkStrokes = 2000;
 
 
 // the annotations that are shown in the list: all but links, popups (belong to a note) and form fields
@@ -595,6 +622,8 @@ Document::LoadAnnotations(fz_page* page, std::vector<DocAnnotation>& annotations
 		return false;
 
 	std::vector<fz_quad> quads(kMaxAnnotationQuads);
+	std::vector<fz_point> inkPoints(kMaxInkPoints);
+	std::vector<int> inkStrokes(kMaxInkStrokes);
 	int index = 0;
 	pdf_annot* annot = NULL;
 
@@ -610,12 +639,14 @@ Document::LoadAnnotations(fz_page* page, std::vector<DocAnnotation>& annotations
 		int type = PDF_ANNOT_UNKNOWN;
 		fz_rect rect = fz_empty_rect;
 		int quadCount = 0;
-		char contents[1024], author[128];
-		contents[0] = author[0] = '\0';
+		char contents[1024], author[128], name[128];
+		contents[0] = author[0] = name[0] = '\0';
 		int ok = 0;
 		pdf_annot* next = NULL;
 		int colorCount = 0;
 		float colorValue[4] = { 0, 0, 0, 0 };
+		fz_point lineA = fz_make_point(0, 0), lineB = lineA;
+		int strokeCount = 0, pointCount = 0;
 
 		fz_var(ok);
 		fz_try(fContext) {
@@ -634,6 +665,21 @@ Document::LoadAnnotations(fz_page* page, std::vector<DocAnnotation>& annotations
 				const char* by = pdf_annot_author(fContext, annot);
 				strlcpy(author, by != NULL ? by : "", sizeof(author));
 				pdf_annot_color(fContext, annot, &colorCount, colorValue);
+				const char* nm = pdf_annot_name(fContext, annot);
+				strlcpy(name, nm != NULL ? nm : "", sizeof(name));
+				if (type == PDF_ANNOT_LINE)
+					pdf_annot_line(fContext, annot, &lineA, &lineB);
+				else if (type == PDF_ANNOT_INK) {
+					int strokes = pdf_annot_ink_list_count(fContext, annot);
+					for (int i = 0; i < strokes && strokeCount < kMaxInkStrokes; i++) {
+						int n = pdf_annot_ink_list_stroke_count(fContext, annot, i);
+						if (pointCount + n > kMaxInkPoints)
+							break;
+						for (int k = 0; k < n; k++)
+							inkPoints[pointCount++] = pdf_annot_ink_list_stroke_vertex(fContext, annot, i, k);
+						inkStrokes[strokeCount++] = n;
+					}
+				}
 				ok = 1;
 			}
 			next = pdf_next_annot(fContext, annot);
@@ -647,6 +693,7 @@ Document::LoadAnnotations(fz_page* page, std::vector<DocAnnotation>& annotations
 			DocAnnotation entry;
 			entry.type = type;
 			entry.index = index++;
+			entry.id = name;
 			entry.rect = rect;
 			entry.quads.assign(quads.begin(), quads.begin() + quadCount);
 			entry.contents = contents;
@@ -654,6 +701,45 @@ Document::LoadAnnotations(fz_page* page, std::vector<DocAnnotation>& annotations
 			entry.isMarkup = type == PDF_ANNOT_HIGHLIGHT || type == PDF_ANNOT_UNDERLINE
 				|| type == PDF_ANNOT_STRIKE_OUT || type == PDF_ANNOT_SQUIGGLY;
 			entry.isFreeText = type == PDF_ANNOT_FREE_TEXT;
+			switch (type) {
+				case PDF_ANNOT_HIGHLIGHT:
+				case PDF_ANNOT_UNDERLINE:
+				case PDF_ANNOT_STRIKE_OUT:
+				case PDF_ANNOT_SQUIGGLY:
+					entry.kind = kAnnotMarkup;
+					break;
+				case PDF_ANNOT_TEXT:
+					entry.kind = kAnnotNote;
+					break;
+				case PDF_ANNOT_FREE_TEXT:
+					entry.kind = kAnnotText;
+					break;
+				case PDF_ANNOT_SQUARE:
+					entry.kind = kAnnotRectangle;
+					break;
+				case PDF_ANNOT_CIRCLE:
+					entry.kind = kAnnotEllipse;
+					break;
+				case PDF_ANNOT_LINE:
+					entry.kind = kAnnotLine;
+					entry.paths.resize(1);
+					entry.paths[0].push_back(lineA);
+					entry.paths[0].push_back(lineB);
+					break;
+				case PDF_ANNOT_INK: {
+					entry.kind = kAnnotInk;
+					int at = 0;
+					for (int i = 0; i < strokeCount; i++) {
+						entry.paths.push_back(std::vector<fz_point>(inkPoints.begin() + at,
+							inkPoints.begin() + at + inkStrokes[i]));
+						at += inkStrokes[i];
+					}
+					break;
+				}
+				default:
+					entry.kind = kAnnotOther;
+					break;
+			}
 			entry.hasColor = colorCount == 1 || colorCount == 3 || colorCount == 4;
 			entry.color = 0;
 			if (entry.hasColor) {
@@ -715,6 +801,8 @@ Document::AddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int count
 	BString operation(names[type]);
 
 	const char* author = getenv("USER");
+	char annotationId[48];
+	NewAnnotationId(annotationId, sizeof(annotationId));
 	DocumentLocker locker(this);
 	fz_page* page = NULL;
 	int ok = 0;
@@ -726,6 +814,7 @@ Document::AddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int count
 		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
 		BEGIN_EDIT(operation.String())
 		pdf_annot* annot = pdf_create_annot(fContext, pdfPage, (enum pdf_annot_type)types[type]);
+		pdf_set_annot_name(fContext, annot, annotationId);
 		pdf_set_annot_quad_points(fContext, annot, count, quads);
 		pdf_set_annot_color(fContext, annot, 3, color);
 		if (author != NULL && author[0] != '\0')
@@ -922,6 +1011,8 @@ Document::AddNote(int pageNo, fz_point where, const char* text)
 	float color[3];
 	ColorFloats(0xffeb3b, color);
 	const char* author = getenv("USER");
+	char annotationId[48];
+	NewAnnotationId(annotationId, sizeof(annotationId));
 	DocumentLocker locker(this);
 	fz_page* page = NULL;
 	int ok = 0;
@@ -933,6 +1024,7 @@ Document::AddNote(int pageNo, fz_point where, const char* text)
 		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
 		BEGIN_EDIT(operation.String())
 		pdf_annot* annot = pdf_create_annot(fContext, pdfPage, PDF_ANNOT_TEXT);
+		pdf_set_annot_name(fContext, annot, annotationId);
 		pdf_set_annot_rect(fContext, annot, rect);
 		pdf_set_annot_color(fContext, annot, 3, color);
 		pdf_set_annot_contents(fContext, annot, text);
@@ -977,6 +1069,8 @@ Document::AddFreeText(int pageNo, fz_point where, const char* text)
 	fz_rect rect = RectAt(this, pageNo, where, 220, lines * (kFontSize + 3) + 8);
 	float black[3] = { 0, 0, 0 };
 	const char* author = getenv("USER");
+	char annotationId[48];
+	NewAnnotationId(annotationId, sizeof(annotationId));
 	DocumentLocker locker(this);
 	fz_page* page = NULL;
 	int ok = 0;
@@ -988,6 +1082,7 @@ Document::AddFreeText(int pageNo, fz_point where, const char* text)
 		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
 		BEGIN_EDIT(operation.String())
 		pdf_annot* annot = pdf_create_annot(fContext, pdfPage, PDF_ANNOT_FREE_TEXT);
+		pdf_set_annot_name(fContext, annot, annotationId);
 		pdf_set_annot_rect(fContext, annot, rect);
 		pdf_set_annot_default_appearance(fContext, annot, "Helv", kFontSize, 3, black);
 		pdf_set_annot_contents(fContext, annot, text);
@@ -1028,6 +1123,8 @@ Document::AddShape(int pageNo, ShapeType type, fz_point from, fz_point to, uint3
 	float color[3];
 	ColorFloats(rgb, color);
 	const char* author = getenv("USER");
+	char annotationId[48];
+	NewAnnotationId(annotationId, sizeof(annotationId));
 	DocumentLocker locker(this);
 	fz_page* page = NULL;
 	int ok = 0;
@@ -1039,6 +1136,7 @@ Document::AddShape(int pageNo, ShapeType type, fz_point from, fz_point to, uint3
 		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
 		BEGIN_EDIT(operation.String())
 		pdf_annot* annot = pdf_create_annot(fContext, pdfPage, (enum pdf_annot_type)types[type]);
+		pdf_set_annot_name(fContext, annot, annotationId);
 		if (type == kShapeLine || type == kShapeArrow) {
 			pdf_set_annot_line(fContext, annot, from, to);
 			if (type == kShapeArrow)
@@ -1080,6 +1178,8 @@ Document::AddInk(int pageNo, const fz_point* points, int count, uint32 rgb)
 	float color[3];
 	ColorFloats(rgb, color);
 	const char* author = getenv("USER");
+	char annotationId[48];
+	NewAnnotationId(annotationId, sizeof(annotationId));
 	DocumentLocker locker(this);
 	fz_page* page = NULL;
 	int ok = 0;
@@ -1091,6 +1191,7 @@ Document::AddInk(int pageNo, const fz_point* points, int count, uint32 rgb)
 		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
 		BEGIN_EDIT(operation.String())
 		pdf_annot* annot = pdf_create_annot(fContext, pdfPage, PDF_ANNOT_INK);
+		pdf_set_annot_name(fContext, annot, annotationId);
 		pdf_add_annot_ink_list(fContext, annot, count, &stroke[0]);
 		pdf_set_annot_color(fContext, annot, 3, color);
 		pdf_set_annot_border_width(fContext, annot, kShapeLineWidth);
@@ -1113,6 +1214,141 @@ Document::AddInk(int pageNo, const fz_point* points, int count, uint32 rgb)
 	if (ok)
 		RecordOperation(pageNo, operation.String());
 	return ok != 0;
+}
+
+
+static fz_point
+MapPoint(fz_point p, fz_rect from, fz_rect to, float scaleX, float scaleY)
+{
+	return fz_make_point(to.x0 + (p.x - from.x0) * scaleX, to.y0 + (p.y - from.y0) * scaleY);
+}
+
+
+bool
+Document::SetAnnotationBounds(int pageNo, int index, fz_rect bounds, bool resize)
+{
+	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
+		return false;
+
+	BString operation(resize ? B_TRANSLATE("Resize annotation") : B_TRANSLATE("Move annotation"));
+	std::vector<fz_point> points(kMaxInkPoints);
+	std::vector<int> strokeSizes(kMaxInkStrokes);
+	DocumentLocker locker(this);
+	fz_page* page = NULL;
+	int ok = 0;
+	int began = 0;
+
+	fz_var(page);
+	fz_try(fContext) {
+		page = fz_load_page(fContext, fDocument, pageNo - 1);
+		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
+		pdf_annot* annot = FindAnnotation(fContext, pdfPage, index);
+		if (annot != NULL) {
+			fz_rect old = pdf_bound_annot(fContext, annot);
+			int type = pdf_annot_type(fContext, annot);
+			float oldWidth = old.x1 - old.x0, oldHeight = old.y1 - old.y0;
+			// a note keeps its size, and an extent of nothing (a straight line) cannot be scaled
+			float scaleX = 1, scaleY = 1;
+			if (type != PDF_ANNOT_TEXT) {
+				if (oldWidth > 0.01f)
+					scaleX = (bounds.x1 - bounds.x0) / oldWidth;
+				if (oldHeight > 0.01f)
+					scaleY = (bounds.y1 - bounds.y0) / oldHeight;
+			}
+
+			BEGIN_EDIT(operation.String())
+			if (type == PDF_ANNOT_LINE) {
+				fz_point a, b;
+				pdf_annot_line(fContext, annot, &a, &b);
+				pdf_set_annot_line(fContext, annot, MapPoint(a, old, bounds, scaleX, scaleY),
+					MapPoint(b, old, bounds, scaleX, scaleY));
+			} else if (type == PDF_ANNOT_INK) {
+				int strokes = pdf_annot_ink_list_count(fContext, annot);
+				int total = 0;
+				if (strokes > kMaxInkStrokes)
+					fz_throw(fContext, FZ_ERROR_ARGUMENT, "too many strokes");
+				for (int i = 0; i < strokes; i++) {
+					int n = pdf_annot_ink_list_stroke_count(fContext, annot, i);
+					if (total + n > kMaxInkPoints)
+						fz_throw(fContext, FZ_ERROR_ARGUMENT, "too many points");
+					strokeSizes[i] = n;
+					for (int k = 0; k < n; k++)
+						points[total++] = MapPoint(pdf_annot_ink_list_stroke_vertex(fContext, annot, i, k), old,
+							bounds, scaleX, scaleY);
+				}
+				pdf_clear_annot_ink_list(fContext, annot);
+				int at = 0;
+				for (int i = 0; i < strokes; i++) {
+					pdf_add_annot_ink_list_stroke(fContext, annot);
+					for (int k = 0; k < strokeSizes[i]; k++)
+						pdf_add_annot_ink_list_stroke_vertex(fContext, annot, points[at++]);
+				}
+			} else {
+				fz_rect rect = pdf_annot_rect(fContext, annot);
+				fz_point corner0 = MapPoint(fz_make_point(rect.x0, rect.y0), old, bounds, scaleX, scaleY);
+				fz_point corner1 = MapPoint(fz_make_point(rect.x1, rect.y1), old, bounds, scaleX, scaleY);
+				pdf_set_annot_rect(fContext, annot, fz_make_rect(corner0.x, corner0.y, corner1.x, corner1.y));
+			}
+			pdf_set_annot_modification_date(fContext, annot, (int64_t)time(NULL));
+			pdf_update_annot(fContext, annot);
+			END_EDIT()
+			ok = 1;
+		}
+	}
+	fz_always(fContext) {
+		fz_drop_page(fContext, page);
+	}
+	fz_catch(fContext) {
+		LogError(fContext, "cannot move or resize an annotation");
+		ABANDON_EDIT()
+		ok = 0;
+	}
+	if (ok)
+		RecordOperation(pageNo, operation.String());
+	return ok != 0;
+}
+
+
+bool
+Document::FindAnnotationById(const char* id, int* _page, int* _index)
+{
+	if (!fIsPDF || id == NULL || id[0] == '\0')
+		return false;
+
+	DocumentLocker locker(this);
+	for (int pageNo = 1; pageNo <= fPageCount; pageNo++) {
+		fz_page* page = NULL;
+		int found = -1;
+
+		fz_var(page);
+		fz_try(fContext) {
+			page = fz_load_page(fContext, fDocument, pageNo - 1);
+			pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
+			int n = 0;
+			for (pdf_annot* annot = pdf_first_annot(fContext, pdfPage); annot != NULL && found < 0;
+					annot = pdf_next_annot(fContext, annot)) {
+				if (!IsListedAnnotation(pdf_annot_type(fContext, annot)))
+					continue;
+				const char* name = pdf_annot_name(fContext, annot);
+				if (name != NULL && strcmp(name, id) == 0)
+					found = n;
+				n++;
+			}
+		}
+		fz_always(fContext) {
+			fz_drop_page(fContext, page);
+		}
+		fz_catch(fContext) {
+			found = -1;
+		}
+
+		if (found >= 0) {
+			*_page = pageNo;
+			*_index = found;
+			return true;
+		}
+	}
+	return false;
 }
 
 

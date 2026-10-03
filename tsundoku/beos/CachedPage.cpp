@@ -94,8 +94,73 @@ CachedPage::FindLink(fz_point point) const
 }
 
 
+static float
+DistanceToSegment(fz_point p, fz_point a, fz_point b)
+{
+	float dx = b.x - a.x, dy = b.y - a.y;
+	float length2 = dx * dx + dy * dy;
+	float t = length2 > 0 ? ((p.x - a.x) * dx + (p.y - a.y) * dy) / length2 : 0;
+	t = fmaxf(0, fminf(1, t));
+	float x = a.x + t * dx - p.x, y = a.y + t * dy - p.y;
+	return sqrtf(x * x + y * y);
+}
+
+
+static bool
+InRect(fz_point p, const fz_rect& r, float margin)
+{
+	return p.x >= r.x0 - margin && p.x < r.x1 + margin && p.y >= r.y0 - margin && p.y < r.y1 + margin;
+}
+
+
+// is the point on the annotation, with the tolerance around lines and borders
+static bool
+HitsAnnotation(const DocAnnotation& annotation, fz_point point, float tolerance)
+{
+	const fz_rect& rect = annotation.rect;
+	switch (annotation.kind) {
+		case kAnnotMarkup:
+			for (size_t i = 0; i < annotation.quads.size(); i++) {
+				if (fz_is_point_inside_quad(point, annotation.quads[i]))
+					return true;
+			}
+			return annotation.quads.empty() && InRect(point, rect, 0);
+
+		case kAnnotRectangle:
+			// only the border, so that what is inside can still be clicked
+			return InRect(point, rect, tolerance)
+				&& !(point.x > rect.x0 + tolerance && point.x < rect.x1 - tolerance
+					&& point.y > rect.y0 + tolerance && point.y < rect.y1 - tolerance);
+
+		case kAnnotEllipse: {
+			float a = (rect.x1 - rect.x0) / 2, b = (rect.y1 - rect.y0) / 2;
+			if (a < 1 || b < 1)
+				return InRect(point, rect, tolerance);
+			float x = (point.x - (rect.x0 + a)) / a, y = (point.y - (rect.y0 + b)) / b;
+			return fabsf(sqrtf(x * x + y * y) - 1) * fminf(a, b) <= tolerance;
+		}
+
+		case kAnnotLine:
+		case kAnnotInk:
+			for (size_t i = 0; i < annotation.paths.size(); i++) {
+				const std::vector<fz_point>& path = annotation.paths[i];
+				if (path.size() == 1 && DistanceToSegment(point, path[0], path[0]) <= tolerance)
+					return true;
+				for (size_t k = 1; k < path.size(); k++) {
+					if (DistanceToSegment(point, path[k - 1], path[k]) <= tolerance)
+						return true;
+				}
+			}
+			return false;
+
+		default:
+			return InRect(point, rect, 0);
+	}
+}
+
+
 const DocAnnotation*
-CachedPage::FindAnnotation(fz_point point) const
+CachedPage::FindAnnotation(fz_point point, float tolerance, bool movable) const
 {
 	if (mState != READY)
 		return NULL;
@@ -103,17 +168,33 @@ CachedPage::FindAnnotation(fz_point point) const
 	// the last one is on top
 	for (int i = (int)mAnnotations.size() - 1; i >= 0; i--) {
 		const DocAnnotation& annotation = mAnnotations[i];
-		if (annotation.isMarkup && !annotation.quads.empty()) {
-			for (size_t j = 0; j < annotation.quads.size(); j++) {
-				if (fz_is_point_inside_quad(point, annotation.quads[j]))
-					return &annotation;
-			}
-		} else if (point.x >= annotation.rect.x0 && point.x < annotation.rect.x1
-				&& point.y >= annotation.rect.y0 && point.y < annotation.rect.y1) {
+		if (movable && (annotation.kind == kAnnotMarkup || annotation.kind == kAnnotOther))
+			continue;
+		if (HitsAnnotation(annotation, point, tolerance))
 			return &annotation;
-		}
 	}
 	return NULL;
+}
+
+
+const DocAnnotation*
+CachedPage::AnnotationAt(int index) const
+{
+	if (mState != READY)
+		return NULL;
+	for (size_t i = 0; i < mAnnotations.size(); i++) {
+		if (mAnnotations[i].index == index)
+			return &mAnnotations[i];
+	}
+	return NULL;
+}
+
+
+float
+CachedPage::Scale() const
+{
+	float scale = sqrtf(fabsf(mMatrix.a * mMatrix.d - mMatrix.b * mMatrix.c));
+	return scale > 0 ? scale : 1;
 }
 
 

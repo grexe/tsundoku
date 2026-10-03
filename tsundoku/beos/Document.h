@@ -73,15 +73,30 @@ enum ShapeType {
 	kShapeArrow       // a line with an arrow at its end
 };
 
+// What kind of annotation it is, as far as editing it on the page is concerned.
+enum AnnotationKind {
+	kAnnotOther,
+	kAnnotMarkup,       // on text: highlight, underline, strike out, squiggly
+	kAnnotNote,         // an icon
+	kAnnotText,         // free text
+	kAnnotRectangle,
+	kAnnotEllipse,
+	kAnnotLine,         // also arrows
+	kAnnotInk
+};
+
 // An annotation of a PDF page (not links, popups and form fields). Rectangle and quads are in page space.
 struct DocAnnotation {
 	int     type;         // pdf_annot_type
 	int     index;        // among the annotations of the page that are listed, to change or delete it
+	BString id;           // the name that stays with the annotation (the /NM of the PDF), empty if it has none
 	fz_rect rect;
 	std::vector<fz_quad> quads;   // for markup, the lines it covers
 	BString contents;
 	BString author;
 	bool    isMarkup;
+	int     kind;         // AnnotationKind
+	std::vector<std::vector<fz_point> > paths;   // of a line (one path) and of a drawing (the strokes)
 	bool    isFreeText;   // the contents are text on the page, not a note
 	bool    hasColor;
 	uint32  color;        // 0xRRGGBB, if hasColor
@@ -146,6 +161,10 @@ public:
 	bool         DeleteAnnotation(int page, int index);
 	bool         SetAnnotationContents(int page, int index, const char* text);
 	bool         SetAnnotationColor(int page, int index, uint32 rgb);
+	// Where the annotation with this id is (page 1-based, index as in DocAnnotation); scans the document.
+	bool         FindAnnotationById(const char* id, int* page, int* index);
+	// Moves or resizes: the annotation is fitted into the new bounds (a note only follows the corner).
+	bool         SetAnnotationBounds(int page, int index, fz_rect bounds, bool resize);
 
 	// New annotations that are not tied to text. Positions are in page space, colors 0xRRGGBB.
 	bool         AddNote(int page, fz_point where, const char* text);

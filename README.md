@@ -41,6 +41,9 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   on the page, a rectangle, an ellipse, a line, an arrow or a freehand drawing. Choose one, then click (note, text) or
   drag (the others) on the page; the cursor is a cross until then, and Escape cancels. A note or text from the
   menu of the secondary button goes where that menu was opened. Their color can be changed there too.
+  Click a note, text, shape, line or drawing to select it: drag it to move it, drag a handle to resize it, press
+  Delete to remove it, Escape to let go. Every annotation gets a unique name (the `/NM` of the PDF) when it is
+  created, so that other programs, SEN in particular, can refer to it later.
   Edit > Undo and Redo (Cmd+Z, Cmd+Shift+Z) take back and repeat these changes one by one and go to the page they
   were made on; the history ends when the document is saved.
   File > Save (Cmd+S) adds the changes to the end of the file, so its attributes stay as they are. For a file that
@@ -58,7 +61,8 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
 - Settings are stored in `~/config/settings/Tsundoku`, separate from BePDF. Everything else BePDF stores (bookmarks and
   the position per file in BFS attributes) is unchanged and compatible.
 
-Not there yet, and planned: moving and resizing annotations, line widths and fill colors, the fonts of a document in
+Not there yet, and planned: line widths and fill colors, a list of all annotations, scripting of annotations from
+other programs, the fonts of a document in
 the file info. See [PLAN-mupdf.md](PLAN-mupdf.md).
 
 ### Features

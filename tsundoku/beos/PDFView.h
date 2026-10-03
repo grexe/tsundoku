@@ -94,7 +94,8 @@ private:
 		DND_ACTION,
 		ZOOM_ACTION,
 		SECONDARY_ACTION, // a click opens the menu, moving starts to drag the selection
-		TOOL_ACTION       // drawing a shape (see PlacementTool)
+		TOOL_ACTION,      // drawing a shape (see PlacementTool)
+		ANNOT_ACTION      // moving or resizing the selected annotation
 	} mMouseAction;
 	BPoint mMousePosition;
 	BPoint mSecondaryStart;
@@ -118,6 +119,22 @@ private:
 	BPoint mToolStart, mToolEnd;       // in the bitmap
 	std::vector<BPoint> mToolPoints;   // the path of a drawing
 	BCursor* mToolCursor;
+
+	// The annotation that is selected by a click: it has handles, can be moved and resized, and deleted with the
+	// Delete key. The index is that of DocAnnotation, -1 for none.
+	enum {
+		kHandleNone = -1,
+		kHandleMove = 0,
+		kHandleNorthWest, kHandleNorth, kHandleNorthEast, kHandleEast,
+		kHandleSouthEast, kHandleSouth, kHandleSouthWest, kHandleWest,
+		kHandleCount
+	};
+	int mAnnotationIndex;
+	int mAnnotationHandle;          // which one is being dragged
+	BPoint mAnnotationDragStart;    // in the bitmap
+	BRect mAnnotationOriginal;      // in the bitmap, as it was when the drag began
+	BRect mAnnotationPreview;       // where it will be
+	BCursor* mHandleCursors[kHandleCount];
 	bool mDragStarted;
 
 	float mMouseWheelDY;
@@ -234,6 +251,13 @@ public:
 	void FinishTool(BPoint point);
 	void CancelTool();
 	void AskForText(PlacementTool tool, fz_point position);
+	const DocAnnotation* SelectedAnnotation() const;
+	BRect AnnotationDeviceRect(const DocAnnotation* annotation) const;
+	int HandleAt(const DocAnnotation* annotation, BPoint point) const;
+	void SelectAnnotation(int index);
+	bool BeginAnnotationDrag(BPoint point);
+	void FinishAnnotationDrag();
+	void DrawAnnotationSelection();
 	void DrawToolPreview();
 	BRect ToolBounds() const;
 	// before the first change of a read-only file: tells the user, false if the user does not want to go on
@@ -309,6 +333,8 @@ public:
 	// shape is drawn with the next drag.
 	void SetTool(PlacementTool tool, const fz_point* position = NULL);
 	bool HasTool() const { return mTool != kToolNone; }
+	bool HasAnnotationSelected() const { return SelectedAnnotation() != NULL; }
+	void DeleteSelectedAnnotation();
 	// finds a quoted passage, selects it and shows it (see PDFSearch.cpp)
 	bool ShowQuote(const char* quote, int page, bool annotate);
 	void SetFilledSelection(bool filled);

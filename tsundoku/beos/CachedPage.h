@@ -65,7 +65,13 @@ public:
 	const DocLink* FindLink(fz_point point) const;
 
 	// The annotation at the position (page space), NULL if there is none. Valid until the page is rendered again.
-	const DocAnnotation* FindAnnotation(fz_point point) const;
+	// The tolerance (page space) is how far from a line or border a click still counts; with movable only the
+	// annotations that can be moved on the page are looked at, not the marks on text.
+	const DocAnnotation* FindAnnotation(fz_point point, float tolerance = 3, bool movable = false) const;
+	// the annotation with the index
+	const DocAnnotation* AnnotationAt(int index) const;
+	// pixels of the bitmap per unit of page space
+	float Scale() const;
 
 	// Structured text of the page for selecting and copying; NULL as long as the page is rendering.
 	// The caller holds the lock of the document while it uses it.
