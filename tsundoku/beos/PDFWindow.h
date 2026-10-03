@@ -201,6 +201,8 @@ private:
 	AttachmentsView *mAttachmentsView;
 	AnnotationsView *mAnnotationsView;
 	BFilePanel     *mSavePanel;
+	bool           mCloseAfterSave;	// the copy is written because the window is closed, then it closes
+	bool           mChangesKept;	// the changes are in a copy, closing needs no question
 
 	BMessage       *mPrintSettings;
 	FindTextWindow *mFindWindow;
@@ -297,7 +299,7 @@ public:
 	void FillPageList();
 	void UpdatePageList();
 	// asks what to do with unsaved changes; false if the user wants to keep working on the document
-	bool ConfirmDiscardChanges();
+	bool ConfirmDiscardChanges(bool closing = false);
 	void SaveDocument();
 	void SaveDocumentAs();
 	void SaveCopyTo(const char* path);

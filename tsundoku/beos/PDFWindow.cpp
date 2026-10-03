@@ -143,6 +143,8 @@ PDFWindow::PDFWindow(entry_ref* ref, BRect frame, const char *ownerPassword,
 	mAttachmentsView = NULL;
 	mAnnotationsView = NULL;
 	mSavePanel = NULL;
+	mCloseAfterSave = false;
+	mChangesKept = false;
 
 	mOWMessenger = NULL;
 	mFIWMessenger = NULL;
@@ -369,7 +371,7 @@ void PDFWindow::StoreFileAttributes() {
 
 ///////////////////////////////////////////////////////////
 bool PDFWindow::QuitRequested() {
-	if (!ConfirmDiscardChanges())
+	if (!mChangesKept && !ConfirmDiscardChanges(true))
 		return false;
 	gApp->WindowClosed();
 	mAnnotationsView->Stop();
@@ -441,12 +443,21 @@ void PDFWindow::SaveCopyTo(const char* path) {
 		return;
 	}
 
+	bool closing = mCloseAfterSave;
+	mCloseAfterSave = false;
 	mMainView->WaitForPage(true);
 	if (!doc->SaveCopy(path)) {
 		BAlert* alert = new BAlert("Error", B_TRANSLATE("The copy could not be saved."),
 			B_TRANSLATE("OK"), NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT);
 		alert->Go();
 		mMainView->Redraw();
+		return;
+	}
+
+	if (closing) {
+		// the window was to be closed, the changes are kept now
+		mChangesKept = true;
+		PostMessage(B_QUIT_REQUESTED);
 		return;
 	}
 
@@ -460,7 +471,7 @@ void PDFWindow::SaveCopyTo(const char* path) {
 }
 
 
-bool PDFWindow::ConfirmDiscardChanges() {
+bool PDFWindow::ConfirmDiscardChanges(bool closing) {
 	if (mMainView == NULL)
 		return true;
 	Document* doc = mMainView->GetDocument();
@@ -475,12 +486,20 @@ bool PDFWindow::ConfirmDiscardChanges() {
 		inPlace ? B_TRANSLATE("Save") : B_TRANSLATE("Save as" B_UTF8_ELLIPSIS), B_WIDTH_AS_USUAL,
 		B_WARNING_ALERT);
 	alert->SetShortcut(0, B_ESCAPE);
-	int32 choice = alert->Go();
+	int32 choice;
+#ifdef TSUNDOKU_TESTING
+	if (getenv("TSUNDOKU_AUTOCHOICE") != NULL) {
+		choice = atoi(getenv("TSUNDOKU_AUTOCHOICE"));
+		delete alert;
+	} else
+#endif
+		choice = alert->Go();
 	if (choice == 0)
 		return false;
 	if (choice == 2) {
 		if (!inPlace) {
-			// the copy is written after the user has chosen a name, then the document is shown again
+			// the copy is written after the user has chosen a name, then the window closes
+			mCloseAfterSave = closing;
 			SaveDocumentAs();
 			return false;
 		}
@@ -1353,6 +1372,9 @@ PDFWindow::MessageReceived(BMessage* message)
 	case SAVE_AS_FILE_CMD:
 		SaveDocumentAs();
 		break;
+	case B_CANCEL:
+		mCloseAfterSave = false;	// no name was chosen, the window stays
+		break;
 	case B_SAVE_REQUESTED: {
 		entry_ref directory;
 		const char* name;
@@ -1890,6 +1912,19 @@ PDFWindow::MessageReceived(BMessage* message)
 				start.AddBool("ignoreCase", ignoreCase != 0);
 				start.AddBool("backward", backward != 0);
 				MessageReceived(&start);
+			} else if (cmd == "savecopy") {
+				// what the file panel sends when a name is chosen (in "text": the path)
+				BString text;
+				message->FindString("text", &text);
+				BPath path(text.String());
+				BPath parent;
+				path.GetParent(&parent);
+				entry_ref directory;
+				get_ref_for_path(parent.Path(), &directory);
+				BMessage saved(B_SAVE_REQUESTED);
+				saved.AddRef("directory", &directory);
+				saved.AddString("name", path.Leaf());
+				MessageReceived(&saved);
 			} else if (cmd == "splitinfo") {
 				FILE* out = fopen("/tmp/ts_test.out", "a");
 				if (out != NULL) {
@@ -1910,7 +1945,7 @@ PDFWindow::MessageReceived(BMessage* message)
 					{ "flowsingle", FLOW_SINGLE_CMD }, { "flowdouble", FLOW_DOUBLE_CMD }, { "flowcontinuous", FLOW_CONTINUOUS_CMD }, { "fitwidth", FIT_TO_PAGE_WIDTH_CMD }, { "fitpage", FIT_TO_PAGE_CMD },
 					{ "back", HISTORY_BACK_CMD }, { "forward", HISTORY_FORWARD_CMD },
 					{ "pagelist", SHOW_PAGE_LIST_CMD }, { "attachments", SHOW_ATTACHMENTS_CMD }, { "annotations", SHOW_ANNOTATIONS_CMD }, { "sidebar", HIDE_LEFT_PANEL_CMD }, { "bookmarks", SHOW_BOOKMARKS_CMD },
-					{ "zoomin", ZOOM_IN_CMD }, { "zoomout", ZOOM_OUT_CMD }, { "next", NEXT_PAGE_CMD },
+					{ "close", CLOSE_FILE_CMD }, { "zoomin", ZOOM_IN_CMD }, { "zoomout", ZOOM_OUT_CMD }, { "next", NEXT_PAGE_CMD },
 					{ "previous", PREVIOUS_PAGE_CMD }, { "last", LAST_PAGE_CMD }, { "first", FIRST_PAGE_CMD },
 					{ "copy", COPY_SELECTION_CMD }, { "selectall", SELECT_ALL_CMD }, { "addbookmark", ADD_USER_BOOKMARK_CMD },
 					{ NULL, 0 }
