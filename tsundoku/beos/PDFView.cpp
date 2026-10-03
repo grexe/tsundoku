@@ -1995,10 +1995,10 @@ PDFView::ActivateSlot(PageSlot* slot)
 
 
 void
-PDFView::StartRender(PageSlot* slot)
+PDFView::StartRender(PageSlot* slot, bool keepImage)
 {
 	slot->rendering = true;
-	slot->renderer->Start(slot->page, slot->number, GetZoomDPI(), mRotation, &slot->rendererId);
+	slot->renderer->Start(slot->page, slot->number, GetZoomDPI(), mRotation, &slot->rendererId, keepImage);
 }
 
 
@@ -2211,7 +2211,9 @@ PDFView::PostRedraw(thread_id id, BBitmap *bitmap) {
 		slot->rendererId = -1;
 		if (slot == mActive)
 			mRendering = false;
+		TimingMark("page rendered");
 		UpdateFindQuads(slot);
+		TimingMark("find quads updated");
 		Invalidate(BRect(slot->origin.x - 1, slot->origin.y - 1, slot->origin.x + slot->page->GetWidth(),
 			slot->origin.y + slot->page->GetHeight()));
 		break;
@@ -2936,12 +2938,16 @@ PDFView::AnnotateSelection(MarkupType type, uint32 rgb)
 
 	float color[3] = { ((rgb >> 16) & 0xff) / 255.0f, ((rgb >> 8) & 0xff) / 255.0f, (rgb & 0xff) / 255.0f };
 	std::vector<fz_quad> quads = mQuads;
+	TimingStart();
 	WaitForPage(true);
+	TimingMark("render aborted");
 	if (!mDoc->AddMarkup(ActivePage(), type, &quads[0], (int)quads.size(), color))
 		return false;
+	TimingMark("annotation added to the document");
 
 	SelectNone();
-	AnnotationsChanged();
+	AnnotationsChanged(ActivePage());
+	TimingMark("view updated (render started)");
 	return true;
 }
 
@@ -2976,16 +2982,26 @@ PDFView::AnnotationsChanged(int page)
 	// the page is new, nothing of the old one stays; but a selected annotation is still the one (callers that
 	// remove it have cleared the selection)
 	int selected = mAnnotationIndex;
-	mRenderedPage = 0;
 	mNoteTip = 0;
-	if (page > 0 && !PageShown(page))
-		SetPage(page);	// draws it
-	else
-		Redraw();
-	mAnnotationIndex = selected;
+	PageSlot* slot = page > 0 ? SlotForPage(page) : NULL;
+	if (slot != NULL) {
+		// only this page is rendered again, and the old image stays until the new one is there
+		slot->renderer->Abort();
+		slot->renderer->Wait();
+		StartRender(slot, true);
+		if (slot == mActive)
+			mRendering = true;
+	} else {
+		mRenderedPage = 0;
+		if (page > 0 && !PageShown(page))
+			SetPage(page);	// draws it
+		else
+			Redraw();
+		mAnnotationIndex = selected;
+	}
 	SelectionChanged();
 	if (PDFWindow* window = GetPDFWindow())
-		window->AnnotationsChanged();
+		window->AnnotationsChanged(page);
 }
 
 

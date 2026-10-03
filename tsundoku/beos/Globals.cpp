@@ -39,3 +39,33 @@ void ExitBePDF()
 	delete gPdfLock;
 	gPdfLock = NULL;
 }
+
+
+#ifdef TSUNDOKU_TESTING
+#include <OS.h>
+#include <stdio.h>
+
+static bigtime_t sTimingStart = 0;
+
+void
+TimingStart()
+{
+	sTimingStart = system_time();
+	FILE* file = fopen("/tmp/ts_timing.log", "a");
+	if (file != NULL) {
+		fprintf(file, "--- start\n");
+		fclose(file);
+	}
+}
+
+
+void
+TimingMark(const char* what)
+{
+	FILE* file = fopen("/tmp/ts_timing.log", "a");
+	if (file != NULL) {
+		fprintf(file, "%6lld ms  %s\n", (long long)((system_time() - sTimingStart) / 1000), what);
+		fclose(file);
+	}
+}
+#endif

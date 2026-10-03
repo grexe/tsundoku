@@ -28,6 +28,8 @@
 #include <StringView.h>
 #include <Window.h>
 
+#include "Globals.h"
+
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "AnnotationsView"
 
@@ -60,8 +62,11 @@ AnnotationsView::AnnotationsView(Document* document, uint32 chosenMessage)
 	fDocument(document),
 	fChosenMessage(chosenMessage),
 	fThread(-1),
+	fWake(-1),
 	fCancel(false),
+	fQuit(false),
 	fLock("annotations"),
+	fRequestAll(false),
 	fCount(0)
 {
 	// the standard list with columns that can be sorted and resized, but not moved or taken away
@@ -106,15 +111,41 @@ AnnotationsView::AttachedToWindow()
 }
 
 
+// One worker thread reads the annotations, so that the window never waits for the document (a page that is
+// rendered holds it). It takes the requests together: all pages, or single pages that have changed.
+void
+AnnotationsView::Start()
+{
+	if (fThread >= 0 || fDocument == NULL || !fMessenger.IsValid())
+		return;
+
+	fQuit = false;
+	fCancel = false;
+	fWake = create_sem(0, "annotations wake");
+	fThread = spawn_thread(WorkerThread, "annotations scan", B_LOW_PRIORITY, this);
+	if (fThread >= 0)
+		resume_thread(fThread);
+}
+
+
 void
 AnnotationsView::Stop()
 {
 	if (fThread >= 0) {
+		fQuit = true;
 		fCancel = true;
+		release_sem(fWake);
 		status_t result;
 		wait_for_thread(fThread, &result);
 		fThread = -1;
+		delete_sem(fWake);
+		fWake = -1;
 	}
+	fLock.Lock();
+	fRequestAll = false;
+	fRequestPages.clear();
+	fResults.clear();
+	fLock.Unlock();
 }
 
 
@@ -130,57 +161,133 @@ AnnotationsView::SetDocument(Document* document)
 void
 AnnotationsView::Refresh()
 {
-	Stop();
 	if (fDocument == NULL || !fMessenger.IsValid())
 		return;
+	Start();
+	if (fThread < 0)
+		return;
 
-	fCancel = false;
-	fThread = spawn_thread(ScanThread, "annotations scan", B_LOW_PRIORITY, this);
-	if (fThread >= 0)
-		resume_thread(fThread);
+	fLock.Lock();
+	fRequestAll = true;
+	fRequestPages.clear();
+	fCancel = true;		// a scan that is on its way starts again
+	fLock.Unlock();
+	release_sem(fWake);
+}
+
+
+void
+AnnotationsView::RefreshPage(int page)
+{
+	if (fDocument == NULL || !fMessenger.IsValid())
+		return;
+	Start();
+	if (fThread < 0)
+		return;
+
+	fLock.Lock();
+	if (!fRequestAll)
+		fRequestPages.insert(page);
+	fLock.Unlock();
+	release_sem(fWake);
 }
 
 
 int32
-AnnotationsView::ScanThread(void* data)
+AnnotationsView::WorkerThread(void* data)
 {
-	((AnnotationsView*)data)->Scan();
+	((AnnotationsView*)data)->Work();
 	return 0;
 }
 
 
 void
-AnnotationsView::Scan()
+AnnotationsView::Work()
 {
-	std::vector<DocAnnotationEntry> entries;
-	if (fDocument->ListAnnotations(entries, &fCancel) && !fCancel) {
+	while (acquire_sem(fWake) == B_OK && !fQuit) {
 		fLock.Lock();
-		fPending.swap(entries);
+		bool all = fRequestAll;
+		std::set<int> pages;
+		pages.swap(fRequestPages);
+		fRequestAll = false;
+		fCancel = false;
 		fLock.Unlock();
-		fMessenger.SendMessage(kScanDone);
+
+		if (all) {
+			Result result;
+			result.all = true;
+			result.page = 0;
+			TimingMark("list: scan starts");
+			if (fDocument->ListAnnotations(result.entries, &fCancel) && !fCancel) {
+				TimingMark("list: scan done");
+				fLock.Lock();
+				fResults.push_back(result);
+				fLock.Unlock();
+				fMessenger.SendMessage(kScanDone);
+			}
+			continue;
+		}
+
+		for (std::set<int>::const_iterator it = pages.begin(); it != pages.end() && !fQuit; ++it) {
+			Result result;
+			result.all = false;
+			result.page = *it;
+			TimingMark("list: page scan starts");
+			if (!fDocument->ListAnnotationsOnPage(*it, result.entries))
+				continue;
+			TimingMark("list: page scan done");
+			fLock.Lock();
+			fResults.push_back(result);
+			fLock.Unlock();
+			fMessenger.SendMessage(kScanDone);
+		}
 	}
 }
 
 
 void
-AnnotationsView::Fill()
+AnnotationsView::AddRow(const DocAnnotationEntry& entry)
 {
-	std::vector<DocAnnotationEntry> entries;
-	fLock.Lock();
-	entries.swap(fPending);
-	fLock.Unlock();
+	AnnotationRow* row = new AnnotationRow(entry.page, entry.annotation.index);
+	row->SetField(new BIntegerField(entry.page), 0);
+	row->SetField(new BStringField(entry.annotation.label.String()), 1);
+	row->SetField(new BStringField(entry.excerpt.String()), 2);
+	fList->AddRow(row);
+}
 
+
+void
+AnnotationsView::FillAll(const std::vector<DocAnnotationEntry>& entries)
+{
 	fList->Clear();
-	for (size_t i = 0; i < entries.size(); i++) {
-		const DocAnnotationEntry& entry = entries[i];
-		AnnotationRow* row = new AnnotationRow(entry.page, entry.annotation.index);
-		row->SetField(new BIntegerField(entry.page), 0);
-		row->SetField(new BStringField(entry.annotation.label.String()), 1);
-		row->SetField(new BStringField(entry.excerpt.String()), 2);
-		fList->AddRow(row);
-	}
-	fCount = (int)entries.size();
+	for (size_t i = 0; i < entries.size(); i++)
+		AddRow(entries[i]);
+}
 
+
+// the lines of one page are replaced, the others stay as they are (and where the user has scrolled to)
+void
+AnnotationsView::FillPage(int page, const std::vector<DocAnnotationEntry>& entries)
+{
+	std::vector<BRow*> old;
+	for (int32 i = 0; i < fList->CountRows(); i++) {
+		AnnotationRow* row = dynamic_cast<AnnotationRow*>(fList->RowAt(i));
+		if (row != NULL && row->Page() == page)
+			old.push_back(row);
+	}
+	for (size_t i = 0; i < old.size(); i++) {
+		fList->RemoveRow(old[i]);
+		delete old[i];
+	}
+	for (size_t i = 0; i < entries.size(); i++)
+		AddRow(entries[i]);
+}
+
+
+void
+AnnotationsView::UpdateStatus()
+{
+	fCount = fList->CountRows();
 	BString status;
 	if (fCount == 0)
 		status = B_TRANSLATE("No annotations");
@@ -189,6 +296,26 @@ AnnotationsView::Fill()
 	else
 		status << fCount << " " << B_TRANSLATE("annotations");
 	fStatus->SetText(status.String());
+}
+
+
+void
+AnnotationsView::Fill()
+{
+	std::vector<Result> results;
+	fLock.Lock();
+	results.swap(fResults);
+	fLock.Unlock();
+
+	TimingMark("list: scan result received");
+	for (size_t i = 0; i < results.size(); i++) {
+		if (results[i].all)
+			FillAll(results[i].entries);
+		else
+			FillPage(results[i].page, results[i].entries);
+	}
+	UpdateStatus();
+	TimingMark("list: filled");
 }
 
 

@@ -172,6 +172,8 @@ public:
 	// All annotations of the document in the order of the pages. Takes the lock page by page, so it can run beside
 	// the rendering; stops early when *cancel becomes true.
 	bool         ListAnnotations(std::vector<DocAnnotationEntry>& entries, const volatile bool* cancel);
+	// the same for one page (1-based), quick: for the list after a change on that page
+	bool         ListAnnotationsOnPage(int page, std::vector<DocAnnotationEntry>& entries);
 	// Where the annotation with this id is (page 1-based, index as in DocAnnotation); scans the document.
 	bool         FindAnnotationById(const char* id, int* page, int* index);
 	// Moves or resizes: the annotation is fitted into the new bounds (a note only follows the corner).
@@ -210,6 +212,7 @@ public:
 
 private:
 	Document(fz_context* context, fz_document* document, const char* path);
+	void ListPage(int pageNo, std::vector<DocAnnotationEntry>& entries);
 
 	struct HistoryEntry {
 		BString name;

@@ -1413,75 +1413,87 @@ Excerpt(const DocAnnotation& annotation, const char* text)
 }
 
 
+// the annotations of one page with the text they cover; holds the lock for this page only
+void
+Document::ListPage(int pageNo, std::vector<DocAnnotationEntry>& entries)
+{
+	DocumentLocker locker(this);
+	if (!PageHasListedAnnotation(fContext, pdf_specifics(fContext, fDocument), pageNo - 1))
+		return;
+
+	std::vector<DocAnnotation> annotations;
+	fz_page* page = NULL;
+	fz_stext_page* text = NULL;
+	std::vector<BString> excerpts;
+
+	fz_var(page);
+	fz_var(text);
+	int loaded = 0;
+	fz_try(fContext) {
+		page = fz_load_page(fContext, fDocument, pageNo - 1);
+		loaded = 1;
+	}
+	fz_catch(fContext) {
+		loaded = 0;
+	}
+	if (!loaded)
+		return;
+
+	LoadAnnotations(page, annotations);
+
+	for (size_t i = 0; i < annotations.size(); i++) {
+		const DocAnnotation& annotation = annotations[i];
+		char* copied = NULL;
+		if (annotation.isMarkup && !annotation.quads.empty()) {
+			const fz_quad& first = annotation.quads.front();
+			const fz_quad& last = annotation.quads.back();
+			fz_point a = fz_make_point(first.ul.x + 0.5f, (first.ul.y + first.ll.y) / 2);
+			fz_point b = fz_make_point(last.ur.x - 0.5f, (last.ur.y + last.lr.y) / 2);
+			fz_var(copied);
+			fz_try(fContext) {
+				if (text == NULL)
+					text = fz_new_stext_page_from_page(fContext, page, NULL);
+				copied = fz_copy_selection(fContext, text, a, b, 0);
+			}
+			fz_catch(fContext) {
+				copied = NULL;
+			}
+		}
+		DocAnnotationEntry entry;
+		entry.page = pageNo;
+		entry.annotation = annotation;
+		entry.excerpt = Excerpt(annotation, copied != NULL ? copied : "");
+		fz_free(fContext, copied);
+		entries.push_back(entry);
+	}
+
+	fz_drop_stext_page(fContext, text);
+	fz_drop_page(fContext, page);
+}
+
+
 bool
 Document::ListAnnotations(std::vector<DocAnnotationEntry>& entries, const volatile bool* cancel)
 {
 	if (!fIsPDF)
 		return false;
 
-	pdf_document* pdf;
-	{
-		DocumentLocker locker(this);
-		pdf = pdf_specifics(fContext, fDocument);
-	}
-
 	for (int pageNo = 1; pageNo <= fPageCount; pageNo++) {
 		if (cancel != NULL && *cancel)
 			return false;
-
-		DocumentLocker locker(this);
-		if (!PageHasListedAnnotation(fContext, pdf, pageNo - 1))
-			continue;
-
-		std::vector<DocAnnotation> annotations;
-		fz_page* page = NULL;
-		fz_stext_page* text = NULL;
-		std::vector<BString> excerpts;
-
-		fz_var(page);
-		fz_var(text);
-		int loaded = 0;
-		fz_try(fContext) {
-			page = fz_load_page(fContext, fDocument, pageNo - 1);
-			loaded = 1;
-		}
-		fz_catch(fContext) {
-			loaded = 0;
-		}
-		if (!loaded)
-			continue;
-
-		LoadAnnotations(page, annotations);
-
-		for (size_t i = 0; i < annotations.size(); i++) {
-			const DocAnnotation& annotation = annotations[i];
-			char* copied = NULL;
-			if (annotation.isMarkup && !annotation.quads.empty()) {
-				const fz_quad& first = annotation.quads.front();
-				const fz_quad& last = annotation.quads.back();
-				fz_point a = fz_make_point(first.ul.x + 0.5f, (first.ul.y + first.ll.y) / 2);
-				fz_point b = fz_make_point(last.ur.x - 0.5f, (last.ur.y + last.lr.y) / 2);
-				fz_var(copied);
-				fz_try(fContext) {
-					if (text == NULL)
-						text = fz_new_stext_page_from_page(fContext, page, NULL);
-					copied = fz_copy_selection(fContext, text, a, b, 0);
-				}
-				fz_catch(fContext) {
-					copied = NULL;
-				}
-			}
-			DocAnnotationEntry entry;
-			entry.page = pageNo;
-			entry.annotation = annotation;
-			entry.excerpt = Excerpt(annotation, copied != NULL ? copied : "");
-			fz_free(fContext, copied);
-			entries.push_back(entry);
-		}
-
-		fz_drop_stext_page(fContext, text);
-		fz_drop_page(fContext, page);
+		ListPage(pageNo, entries);
 	}
+	return true;
+}
+
+
+bool
+Document::ListAnnotationsOnPage(int pageNo, std::vector<DocAnnotationEntry>& entries)
+{
+	if (!fIsPDF || pageNo < 1 || pageNo > fPageCount)
+		return false;
+
+	ListPage(pageNo, entries);
 	return true;
 }
 

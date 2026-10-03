@@ -283,7 +283,7 @@ public:
 	bool PageShown(int page) const { return SlotForPage(page) != NULL; }
 	void Relayout();                     // sizes, canvas, places of the slots, scroll bars
 	void SyncSlots();                    // slots for the pages the layout needs
-	void StartRender(PageSlot* slot);
+	void StartRender(PageSlot* slot, bool keepImage = false);
 	void UpdateVisibleSlots();           // after scrolling in a continuous flow
 	void NotifyPageChanged();
 	void ScrollToPage(int page, bool top);

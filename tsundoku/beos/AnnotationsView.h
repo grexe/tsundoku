@@ -20,6 +20,7 @@
 #ifndef _ANNOTATIONS_VIEW_H_
 #define _ANNOTATIONS_VIEW_H_
 
+#include <set>
 #include <vector>
 
 #include <Locker.h>
@@ -44,6 +45,8 @@ public:
 	void SetDocument(Document* document);
 	// reads the annotations of the document again (in the background)
 	void Refresh();
+	// reads those of one page again, for a change that is limited to it
+	void RefreshPage(int page);
 	// stops reading, to be called before the document goes away
 	void Stop();
 	int  Count() const { return fCount; }
@@ -56,8 +59,20 @@ public:
 	virtual void MessageReceived(BMessage* message);
 
 private:
-	static int32 ScanThread(void* data);
-	void Scan();
+	// what the worker found
+	struct Result {
+		bool all;
+		int  page;
+		std::vector<DocAnnotationEntry> entries;
+	};
+
+	static int32 WorkerThread(void* data);
+	void Work();
+	void Start();
+	void AddRow(const DocAnnotationEntry& entry);
+	void FillAll(const std::vector<DocAnnotationEntry>& entries);
+	void FillPage(int page, const std::vector<DocAnnotationEntry>& entries);
+	void UpdateStatus();
 	void Fill();
 
 	Document*      fDocument;
@@ -69,9 +84,13 @@ private:
 	BStringView*   fStatus;
 	BMessenger     fMessenger;
 	thread_id      fThread;
-	volatile bool  fCancel;
-	BLocker        fLock;
-	std::vector<DocAnnotationEntry> fPending;   // what the thread found
+	sem_id         fWake;
+	volatile bool  fCancel;     // stops a scan of all pages that a new request makes obsolete
+	volatile bool  fQuit;
+	BLocker        fLock;      // guards the members below
+	bool           fRequestAll;
+	std::set<int>  fRequestPages;
+	std::vector<Result> fResults;
 	int            fCount;
 };
 

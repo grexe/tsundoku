@@ -284,7 +284,8 @@ public:
 	const BEntry* CurrentFile() const { return &mCurrentFile; }
 	void UpdateInputEnabler();
 	// the annotations of the document have changed: the list of them is read again
-	void AnnotationsChanged();
+	// a page (or all of them, when 0) has other annotations
+	void AnnotationsChanged(int page = 0);
 
 	void UpdateWindowsMenu();
 

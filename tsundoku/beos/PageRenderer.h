@@ -45,7 +45,9 @@ public:
 
 	// start rendering of a page asynchronously, the matrix and size of the page are valid when this returns
 	// returns an unique identifier in id (id is greater than or equal to zero)
-	void Start(CachedPage* page, int pageNo, int zoomDPI, int rotate, thread_id* id);
+	// With keepImage the old image stays visible until the new one is complete (if the size is the same), for a
+	// change in a page that is shown.
+	void Start(CachedPage* page, int pageNo, int zoomDPI, int rotate, thread_id* id, bool keepImage = false);
 	// abort rendering process asynchronously
 	void Abort();
 	// waits for rendering process to finish; returns immediately when no process runs
@@ -73,6 +75,7 @@ private:
 	thread_id   mRenderingThread;
 	CachedPage* mPage;
 	BBitmap*    mBitmap;
+	BBitmap*    mScratch;   // rendered into first when the old image is kept
 	int         mPageNo;
 	fz_cookie   mCookie;
 };

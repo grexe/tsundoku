@@ -39,6 +39,7 @@ PageRenderer::PageRenderer()
 	mRenderingThread(-1),
 	mPage(NULL),
 	mBitmap(NULL),
+	mScratch(NULL),
 	mPageNo(0)
 {
 	memset(&mCookie, 0, sizeof(mCookie));
@@ -49,6 +50,7 @@ PageRenderer::~PageRenderer()
 {
 	Abort();
 	Wait();
+	delete mScratch;
 }
 
 
@@ -70,7 +72,7 @@ PageRenderer::SetListener(BLooper* looper, BHandler* handler)
 
 
 void
-PageRenderer::Start(CachedPage* page, int pageNo, int zoomDPI, int rotation, thread_id* id)
+PageRenderer::Start(CachedPage* page, int pageNo, int zoomDPI, int rotation, thread_id* id, bool keepImage)
 {
 	// stop thread
 	Abort();
@@ -90,6 +92,7 @@ PageRenderer::Start(CachedPage* page, int pageNo, int zoomDPI, int rotation, thr
 
 	// (re-)create bitmap, it is reused as long as it is large enough
 	mBitmap = mPage->GetBitmap();
+	bool oldImage = mBitmap != NULL && mPage->GetWidth() == width && mPage->GetHeight() == height;
 	if (mBitmap == NULL || width > mBitmap->Bounds().Width() + 1 || height > mBitmap->Bounds().Height() + 1) {
 		delete mBitmap;
 		mBitmap = new BBitmap(BRect(0, 0, width - 1, height - 1), B_RGB32);
@@ -106,6 +109,18 @@ PageRenderer::Start(CachedPage* page, int pageNo, int zoomDPI, int rotation, thr
 		mPage->SetBitmap(mBitmap, width, height);
 	} else
 		mPage->SetBitmapSize(width, height);
+
+	// the old image stays if it is of the size of the new one, the new one is made in a bitmap of its own and
+	// copied over when it is done (no white flash in between)
+	delete mScratch;
+	mScratch = NULL;
+	if (keepImage && oldImage && width > 1 && height > 1) {
+		mScratch = new BBitmap(BRect(0, 0, width - 1, height - 1), B_RGB32);
+		if (mScratch->InitCheck() != B_OK) {
+			delete mScratch;
+			mScratch = NULL;
+		}
+	}
 
 	mPage->MakeEmpty();
 	mPage->mDocument = mDocument;
@@ -193,8 +208,20 @@ PageRenderer::Render()
 	DocumentLocker locker(document);
 	fz_context* context = document->Context();
 
-	bool ok = RenderToBitmap(document, mPageNo, mPage->Matrix(), mBitmap, (int)mWidth, (int)mHeight,
-		&mCookie);
+	bool ok = RenderToBitmap(document, mPageNo, mPage->Matrix(), mScratch != NULL ? mScratch : mBitmap,
+		(int)mWidth, (int)mHeight, &mCookie);
+
+	if (mScratch != NULL) {
+		if (ok) {
+			int rowBytes = (int)mWidth * 4;
+			for (int y = 0; y < (int)mHeight; y++) {
+				memcpy((uint8*)mBitmap->Bits() + y * mBitmap->BytesPerRow(),
+					(uint8*)mScratch->Bits() + y * mScratch->BytesPerRow(), rowBytes);
+			}
+		}
+		delete mScratch;
+		mScratch = NULL;
+	}
 
 	if (ok) {
 		// what is needed to select text and follow links

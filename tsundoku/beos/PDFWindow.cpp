@@ -230,8 +230,12 @@ PDFWindow::~PDFWindow()
 	}
 }
 
-void PDFWindow::AnnotationsChanged() {
-	if (mAnnotationsView != NULL)
+void PDFWindow::AnnotationsChanged(int page) {
+	if (mAnnotationsView == NULL)
+		return;
+	if (page > 0)
+		mAnnotationsView->RefreshPage(page);
+	else
 		mAnnotationsView->Refresh();
 }
 
@@ -1147,11 +1151,16 @@ void PDFWindow::SetUpViews(entry_ref* ref,
 
 	// SplitView
 	mSplitView = new BSplitView(B_HORIZONTAL);
-	// the outline needs room for chapter titles (the divider can still be dragged)
+	// the outline needs room for chapter titles, but the divider must not snap the panel shut or open when it is
+	// dragged (the panel is hidden with the command, not by dragging)
 	mLayerView->SetExplicitMinSize(
-		BSize(be_plain_font->StringWidth("M") * 20, B_SIZE_UNSET));
-	mSplitView->AddChild(mLayerView, 3);
-	mSplitView->AddChild(fMainContainer, 10);
+		BSize(be_plain_font->StringWidth("M") * 14, B_SIZE_UNSET));
+	// The weights decide how the width is shared (the panel gets about 2/7 of it, and keeps its share when the window
+	// grows). The tab view reports the width of its tabs as its largest size, which is less than its smallest.
+	mLayerView->SetExplicitMaxSize(BSize(B_SIZE_UNLIMITED, B_SIZE_UNSET));
+	mSplitView->SetCollapsible(false);
+	mSplitView->AddChild(mLayerView, 2);
+	mSplitView->AddChild(fMainContainer, 5);
 	mSplitView->SetInsets(0);
 	mSplitView->SetSpacing(4);
 
@@ -1881,6 +1890,18 @@ PDFWindow::MessageReceived(BMessage* message)
 				start.AddBool("ignoreCase", ignoreCase != 0);
 				start.AddBool("backward", backward != 0);
 				MessageReceived(&start);
+			} else if (cmd == "splitinfo") {
+				FILE* out = fopen("/tmp/ts_test.out", "a");
+				if (out != NULL) {
+					BView* views[2] = { mLayerView, fMainContainer };
+					for (int i = 0; i < 2; i++) {
+						fprintf(out, "split item %d: frame %g..%g min %g pref %g max %g weight %g\n", i,
+							views[i]->Frame().left, views[i]->Frame().right, views[i]->MinSize().width,
+							views[i]->PreferredSize().width, views[i]->MaxSize().width, mSplitView->ItemWeight(i));
+					}
+					fprintf(out, "split view width %g\n", mSplitView->Bounds().Width());
+					fclose(out);
+				}
 			} else if (cmd.StartsWith("do_")) {
 				// any command of the window by name
 				static const struct { const char* name; uint32 what; } commands[] = {

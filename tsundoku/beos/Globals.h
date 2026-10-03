@@ -38,6 +38,16 @@ public:
 	~PDFLock() { gPdfLock->Unlock(); }
 };
 
+// How long things take after a change, in the test build only: TimingStart() starts the clock, TimingMark() writes
+// the time since to /tmp/ts_timing.log.
+#ifdef TSUNDOKU_TESTING
+void TimingStart();
+void TimingMark(const char* what);
+#else
+inline void TimingStart() {}
+inline void TimingMark(const char*) {}
+#endif
+
 // Initializes global variables
 void InitBePDF();
 // Frees global variables
