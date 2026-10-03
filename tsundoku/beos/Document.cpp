@@ -27,12 +27,16 @@
 #include <string.h>
 
 #include <File.h>
+#include <Catalog.h>
 #include <Node.h>
 #include <fs_attr.h>
 
 extern "C" {
 #include <mupdf/pdf.h>
 }
+
+#undef B_TRANSLATION_CONTEXT
+#define B_TRANSLATION_CONTEXT "Document"
 
 // Note: fz_try() uses setjmp()/longjmp(), so no C++ objects with destructors may be created or destroyed inside
 // of a fz_try() block. The code below keeps to plain C types in there.
@@ -118,7 +122,9 @@ Document::Document(fz_context* context, fz_document* document, const char* path)
 	fEncrypted(false),
 	fCanSave(false),
 	fWritable(false),
-	fModified(false)
+	fModified(false),
+	fHistoryPosition(0),
+	fSavedPosition(0)
 {
 	int pages = 0;
 	int isPDF = 0;
@@ -128,8 +134,11 @@ Document::Document(fz_context* context, fz_document* document, const char* path)
 	fz_try(fContext) {
 		pages = fz_count_pages(fContext, fDocument);
 		isPDF = pdf_specifics(fContext, fDocument) != NULL;
-		if (isPDF)
+		if (isPDF) {
 			canSave = pdf_can_be_saved_incrementally(fContext, pdf_specifics(fContext, fDocument));
+			// edits are operations that can be undone
+			pdf_enable_journal(fContext, pdf_specifics(fContext, fDocument));
+		}
 		char buffer[128];
 		if (fz_lookup_metadata(fContext, fDocument, FZ_META_ENCRYPTION, buffer, sizeof(buffer)) > 0
 			&& strcmp(buffer, "None") != 0)
@@ -671,6 +680,27 @@ Document::LoadAnnotations(fz_page* page, std::vector<DocAnnotation>& annotations
 }
 
 
+// An edit is one operation of the journal of MuPDF, which is what Undo() and Redo() work with. Everything the
+// edit does is in between of begin and end; if it fails it is abandoned as a whole.
+#define BEGIN_EDIT(name) \
+	fz_var(began); \
+	pdf_begin_operation(fContext, pdf_specifics(fContext, fDocument), name); \
+	began = 1;
+
+#define END_EDIT() \
+	pdf_end_operation(fContext, pdf_specifics(fContext, fDocument)); \
+	began = 0;
+
+#define ABANDON_EDIT() \
+	if (began) { \
+		fz_try(fContext) { \
+			pdf_abandon_operation(fContext, pdf_specifics(fContext, fDocument)); \
+		} \
+		fz_catch(fContext) { \
+		} \
+	}
+
+
 bool
 Document::AddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int count, const float color[3])
 {
@@ -679,16 +709,21 @@ Document::AddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int count
 
 	static const int types[] = { PDF_ANNOT_HIGHLIGHT, PDF_ANNOT_UNDERLINE, PDF_ANNOT_STRIKE_OUT,
 		PDF_ANNOT_SQUIGGLY };
+	const char* names[] = { B_TRANSLATE("Add highlight"), B_TRANSLATE("Add underline"),
+		B_TRANSLATE("Add strike out"), B_TRANSLATE("Add squiggly line") };
+	BString operation(names[type]);
 
 	const char* author = getenv("USER");
 	DocumentLocker locker(this);
 	fz_page* page = NULL;
 	int ok = 0;
+	int began = 0;
 
 	fz_var(page);
 	fz_try(fContext) {
 		page = fz_load_page(fContext, fDocument, pageNo - 1);
 		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
+		BEGIN_EDIT(operation.String())
 		pdf_annot* annot = pdf_create_annot(fContext, pdfPage, (enum pdf_annot_type)types[type]);
 		pdf_set_annot_quad_points(fContext, annot, count, quads);
 		pdf_set_annot_color(fContext, annot, 3, color);
@@ -697,6 +732,7 @@ Document::AddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int count
 		pdf_set_annot_creation_date(fContext, annot, (int64_t)time(NULL));
 		pdf_set_annot_modification_date(fContext, annot, (int64_t)time(NULL));
 		pdf_update_annot(fContext, annot);
+		END_EDIT()
 		ok = 1;
 	}
 	fz_always(fContext) {
@@ -704,10 +740,11 @@ Document::AddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int count
 	}
 	fz_catch(fContext) {
 		LogError(fContext, "cannot add annotation");
+		ABANDON_EDIT()
 		ok = 0;
 	}
 	if (ok)
-		fModified = true;
+		RecordOperation(pageNo, operation.String());
 	return ok != 0;
 }
 
@@ -734,9 +771,11 @@ Document::DeleteAnnotation(int pageNo, int index)
 	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
 		return false;
 
+	BString operation(B_TRANSLATE("Delete annotation"));
 	DocumentLocker locker(this);
 	fz_page* page = NULL;
 	int ok = 0;
+	int began = 0;
 
 	fz_var(page);
 	fz_try(fContext) {
@@ -744,7 +783,9 @@ Document::DeleteAnnotation(int pageNo, int index)
 		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
 		pdf_annot* annot = FindAnnotation(fContext, pdfPage, index);
 		if (annot != NULL) {
+			BEGIN_EDIT(operation.String())
 			pdf_delete_annot(fContext, pdfPage, annot);
+			END_EDIT()
 			ok = 1;
 		}
 	}
@@ -753,10 +794,11 @@ Document::DeleteAnnotation(int pageNo, int index)
 	}
 	fz_catch(fContext) {
 		LogError(fContext, "cannot delete annotation");
+		ABANDON_EDIT()
 		ok = 0;
 	}
 	if (ok)
-		fModified = true;
+		RecordOperation(pageNo, operation.String());
 	return ok != 0;
 }
 
@@ -767,9 +809,11 @@ Document::SetAnnotationContents(int pageNo, int index, const char* text)
 	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
 		return false;
 
+	BString operation(B_TRANSLATE("Edit note"));
 	DocumentLocker locker(this);
 	fz_page* page = NULL;
 	int ok = 0;
+	int began = 0;
 
 	fz_var(page);
 	fz_try(fContext) {
@@ -777,9 +821,11 @@ Document::SetAnnotationContents(int pageNo, int index, const char* text)
 		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
 		pdf_annot* annot = FindAnnotation(fContext, pdfPage, index);
 		if (annot != NULL) {
+			BEGIN_EDIT(operation.String())
 			pdf_set_annot_contents(fContext, annot, text);
 			pdf_set_annot_modification_date(fContext, annot, (int64_t)time(NULL));
 			pdf_update_annot(fContext, annot);
+			END_EDIT()
 			ok = 1;
 		}
 	}
@@ -788,10 +834,11 @@ Document::SetAnnotationContents(int pageNo, int index, const char* text)
 	}
 	fz_catch(fContext) {
 		LogError(fContext, "cannot change annotation");
+		ABANDON_EDIT()
 		ok = 0;
 	}
 	if (ok)
-		fModified = true;
+		RecordOperation(pageNo, operation.String());
 	return ok != 0;
 }
 
@@ -803,9 +850,11 @@ Document::SetAnnotationColor(int pageNo, int index, uint32 rgb)
 		return false;
 
 	float color[3] = { ((rgb >> 16) & 0xff) / 255.0f, ((rgb >> 8) & 0xff) / 255.0f, (rgb & 0xff) / 255.0f };
+	BString operation(B_TRANSLATE("Change color"));
 	DocumentLocker locker(this);
 	fz_page* page = NULL;
 	int ok = 0;
+	int began = 0;
 
 	fz_var(page);
 	fz_try(fContext) {
@@ -813,9 +862,11 @@ Document::SetAnnotationColor(int pageNo, int index, uint32 rgb)
 		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
 		pdf_annot* annot = FindAnnotation(fContext, pdfPage, index);
 		if (annot != NULL) {
+			BEGIN_EDIT(operation.String())
 			pdf_set_annot_color(fContext, annot, 3, color);
 			pdf_set_annot_modification_date(fContext, annot, (int64_t)time(NULL));
 			pdf_update_annot(fContext, annot);
+			END_EDIT()
 			ok = 1;
 		}
 	}
@@ -824,11 +875,121 @@ Document::SetAnnotationColor(int pageNo, int index, uint32 rgb)
 	}
 	fz_catch(fContext) {
 		LogError(fContext, "cannot change the color of an annotation");
+		ABANDON_EDIT()
 		ok = 0;
 	}
 	if (ok)
-		fModified = true;
+		RecordOperation(pageNo, operation.String());
 	return ok != 0;
+}
+
+
+// Remembers an edit that has been made: what it was and on which page, to offer it for undo.
+void
+Document::RecordOperation(int page, const char* name)
+{
+	int steps = 0;
+	int position = 0;
+	fz_try(fContext) {
+		position = pdf_undoredo_state(fContext, pdf_specifics(fContext, fDocument), &steps);
+	}
+	fz_catch(fContext) {
+		position = 0;
+	}
+
+	if (position <= 0) {
+		// no journal entry, so there is nothing to undo; the document is changed all the same
+		fModified = true;
+		return;
+	}
+
+	HistoryEntry entry;
+	entry.name = name;
+	entry.page = page;
+	fHistory.resize(position - 1);	// a new edit ends what could be redone
+	fHistory.push_back(entry);
+	fHistoryPosition = position;
+	fModified = fHistoryPosition != fSavedPosition;
+}
+
+
+BString
+Document::UndoLabel() const
+{
+	return fHistoryPosition > 0 ? fHistory[fHistoryPosition - 1].name : BString();
+}
+
+
+BString
+Document::RedoLabel() const
+{
+	return fHistoryPosition < (int)fHistory.size() ? fHistory[fHistoryPosition].name : BString();
+}
+
+
+// Takes back the last edit; returns the page (1-based) it was on, 0 if there is nothing to undo.
+int
+Document::Undo()
+{
+	if (!CanUndo())
+		return 0;
+
+	DocumentLocker locker(this);
+	int ok = 0;
+	fz_try(fContext) {
+		pdf_undo(fContext, pdf_specifics(fContext, fDocument));
+		ok = 1;
+	}
+	fz_catch(fContext) {
+		LogError(fContext, "cannot undo");
+	}
+	if (!ok)
+		return 0;
+
+	fHistoryPosition--;
+	fModified = fHistoryPosition != fSavedPosition;
+	return fHistory[fHistoryPosition].page;
+}
+
+
+int
+Document::Redo()
+{
+	if (!CanRedo())
+		return 0;
+
+	DocumentLocker locker(this);
+	int ok = 0;
+	fz_try(fContext) {
+		pdf_redo(fContext, pdf_specifics(fContext, fDocument));
+		ok = 1;
+	}
+	fz_catch(fContext) {
+		LogError(fContext, "cannot redo");
+	}
+	if (!ok)
+		return 0;
+
+	fHistoryPosition++;
+	fModified = fHistoryPosition != fSavedPosition;
+	return fHistory[fHistoryPosition - 1].page;
+}
+
+
+// what has been written to disk is not undone any more (the file is loaded again after it changed)
+void
+Document::ForgetHistory()
+{
+	fz_try(fContext) {
+		pdf_document* pdf = pdf_specifics(fContext, fDocument);
+		if (pdf->journal != NULL)
+			pdf_discard_journal(fContext, pdf->journal);
+	}
+	fz_catch(fContext) {
+	}
+	fHistory.clear();
+	fHistoryPosition = 0;
+	fSavedPosition = 0;
 }
 
 
@@ -865,8 +1026,10 @@ Document::Save()
 		LogError(fContext, "cannot save document");
 		ok = 0;
 	}
-	if (ok)
+	if (ok) {
 		fModified = false;
+		ForgetHistory();
+	}
 	return ok != 0;
 }
 
@@ -917,6 +1080,7 @@ Document::SaveCopy(const char* path)
 	if (ok) {
 		CopyAttributes(fPath.String(), path);
 		fModified = false;
+		ForgetHistory();
 	}
 	return ok != 0;
 }

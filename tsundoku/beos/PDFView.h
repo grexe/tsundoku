@@ -207,7 +207,8 @@ public:
 	const DocAnnotation* OnAnnotation(BPoint p);
 	void LinkToString(const DocLink* link, BString* string);
 	void ShowPopUpMenu(BPoint point, const DocLink* link, const DocAnnotation* annotation);
-	void AnnotationsChanged();
+	// shows the changed annotations, on another page if the change was there
+	void AnnotationsChanged(int page = 0);
 	// before the first change of a read-only file: tells the user, false if the user does not want to go on
 	bool ConfirmEditable();
 	void CopyText(BString *str);
@@ -275,6 +276,8 @@ public:
 	bool HasTextSelection() const { return mSelected == SELECTED && mSelectionKind == kSelectText; }
 	// marks the selected text in the document, rgb is 0xRRGGBB
 	bool AnnotateSelection(MarkupType type, uint32 rgb);
+	void Undo();
+	void Redo();
 	// finds a quoted passage, selects it and shows it (see PDFSearch.cpp)
 	bool ShowQuote(const char* quote, int page, bool annotate);
 	void SetFilledSelection(bool filled);

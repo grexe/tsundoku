@@ -2325,12 +2325,35 @@ PDFView::ConfirmEditable()
 
 // Shows the changed annotations of the page.
 void
-PDFView::AnnotationsChanged()
+PDFView::AnnotationsChanged(int page)
 {
 	mRenderedPage = 0;	// the page is new, nothing of the old one stays
 	mNoteTip = 0;
-	Redraw();
+	if (page > 0 && page != mCurrentPage)
+		SetPage(page);	// draws it
+	else
+		Redraw();
 	SelectionChanged();
+}
+
+
+void
+PDFView::Undo()
+{
+	WaitForPage(true);
+	int page = mDoc->Undo();
+	if (page > 0)
+		AnnotationsChanged(page);
+}
+
+
+void
+PDFView::Redo()
+{
+	WaitForPage(true);
+	int page = mDoc->Redo();
+	if (page > 0)
+		AnnotationsChanged(page);
 }
 
 
@@ -2584,6 +2607,10 @@ PDFView::TestCommand(BMessage* message)
 		bool ok = AnnotateSelection(type, kind == "highlight" ? 0xffeb3b : 0xe53935);
 		TestLog("annotate %s: %s, unsaved changes: %d", kind.String(), ok ? "ok" : "failed",
 			(int)mDoc->HasUnsavedChanges());
+	} else if (cmd == "history") {
+		TestLog("history: undo %d [%s], redo %d [%s], unsaved %d, page %d", (int)mDoc->CanUndo(),
+			mDoc->UndoLabel().String(), (int)mDoc->CanRedo(), mDoc->RedoLabel().String(),
+			(int)mDoc->HasUnsavedChanges(), mCurrentPage);
 	} else if (cmd == "popup") {
 		// the context menu as a secondary click at (x1, y1) shows it (blocks until it is closed)
 		BPoint where(x1, y1);

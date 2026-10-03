@@ -139,6 +139,15 @@ public:
 	bool         SetAnnotationColor(int page, int index, uint32 rgb);
 
 	// Saving adds the changes to the end of the file (so that its attributes and the rest stay as they are).
+	// Undo and redo of the edits above. They return the page (1-based) that changed, 0 if there was nothing to do.
+	// The history is not kept over a save.
+	bool         CanUndo() const { return fHistoryPosition > 0; }
+	bool         CanRedo() const { return fHistoryPosition < (int)fHistory.size(); }
+	BString      UndoLabel() const;
+	BString      RedoLabel() const;
+	int          Undo();
+	int          Redo();
+
 	bool         HasUnsavedChanges();
 	bool         CanSave();
 	// false if the file is on a read-only volume or not writable for the user
@@ -157,6 +166,13 @@ public:
 private:
 	Document(fz_context* context, fz_document* document, const char* path);
 
+	struct HistoryEntry {
+		BString name;
+		int     page;
+	};
+	void RecordOperation(int page, const char* name);
+	void ForgetHistory();
+
 	fz_context*     fContext;
 	fz_document*    fDocument;
 	BString         fPath;
@@ -167,6 +183,9 @@ private:
 	bool            fCanSave;      // changes can be added to the file
 	bool            fWritable;     // the file can be written
 	volatile bool   fModified;     // changed since opened or saved
+	std::vector<HistoryEntry> fHistory;   // the edits that can be undone, the first one is the oldest
+	int             fHistoryPosition;     // how many of them are done, the others can be redone
+	int             fSavedPosition;       // where the file was saved
 	std::vector<fz_rect> fBounds;   // cache, empty rectangle if unknown
 	std::vector<bool>    fBoundsKnown;
 };

@@ -37,6 +37,8 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
 - Selected text can be highlighted, underlined or struck out (Edit menu or the menu of the secondary button, with a
   choice of colors, each shown with a sample). The marks are real PDF annotations, other readers show them. From the
   menu of an existing mark its color and its note can be changed, or the mark deleted; the note shows as a tooltip when the mouse rests on the mark.
+  Edit > Undo and Redo (Cmd+Z, Cmd+Shift+Z) take back and repeat these changes one by one and go to the page they
+  were made on; the history ends when the document is saved.
   File > Save (Cmd+S) adds the changes to the end of the file, so its attributes stay as they are. For a file that
   cannot be written (system directory, the title says "read-only") or that MuPDF had to repair, Save and
   File > Save as… (Cmd+Shift+S) write a copy, with the attributes of the original, and Tsundoku goes on with the copy. The

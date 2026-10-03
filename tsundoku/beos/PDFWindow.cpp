@@ -632,6 +632,17 @@ void PDFWindow::UpdateInputEnabler()
 		fMenuBar->FindItem(ANNOTATE_UNDERLINE_CMD)->SetEnabled(canMark);
 		fMenuBar->FindItem(ANNOTATE_STRIKEOUT_CMD)->SetEnabled(canMark);
 		fMenuBar->FindItem(SAVE_FILE_CMD)->SetEnabled(doc->HasUnsavedChanges());
+
+		// "Undo Add highlight": what would be undone is named
+		BString undo(B_TRANSLATE("Undo")), redo(B_TRANSLATE("Redo"));
+		if (doc->CanUndo())
+			undo << " " << doc->UndoLabel();
+		if (doc->CanRedo())
+			redo << " " << doc->RedoLabel();
+		fMenuBar->FindItem(UNDO_CMD)->SetLabel(undo.String());
+		fMenuBar->FindItem(UNDO_CMD)->SetEnabled(doc->CanUndo());
+		fMenuBar->FindItem(REDO_CMD)->SetLabel(redo.String());
+		fMenuBar->FindItem(REDO_CMD)->SetEnabled(doc->CanRedo());
 		fMenuBar->FindItem(SAVE_AS_FILE_CMD)->SetEnabled(doc->IsPDF());
 
 		bool hasUserBookmark = mOutlinesView->HasUserBookmark(page);
@@ -698,6 +709,9 @@ BMenuBar* PDFWindow::BuildMenu()
 		.End()
 
 		.AddMenu(B_TRANSLATE("Edit"))
+			.AddItem(B_TRANSLATE("Undo"), UNDO_CMD, 'Z')
+			.AddItem(B_TRANSLATE("Redo"), REDO_CMD, 'Z', B_SHIFT_KEY)
+			.AddSeparator()
 			.AddItem(B_TRANSLATE("Copy"), COPY_SELECTION_CMD, 'C')
 			.AddSeparator()
 			.AddItem(B_TRANSLATE("Select all"), SELECT_ALL_CMD, 'A')
@@ -1157,6 +1171,12 @@ PDFWindow::MessageReceived(BMessage* message)
 		break;
 	case SAVE_FILE_CMD:
 		SaveDocument();
+		break;
+	case UNDO_CMD:
+		mMainView->Undo();
+		break;
+	case REDO_CMD:
+		mMainView->Redo();
 		break;
 	case SAVE_AS_FILE_CMD:
 		SaveDocumentAs();
@@ -1649,7 +1669,7 @@ PDFWindow::MessageReceived(BMessage* message)
 			} else if (cmd.StartsWith("do_")) {
 				// any command of the window by name
 				static const struct { const char* name; uint32 what; } commands[] = {
-					{ "fileinfo", FILE_INFO_CMD }, { "save", SAVE_FILE_CMD }, { "preferences", PREFERENCES_FILE_CMD },
+					{ "fileinfo", FILE_INFO_CMD }, { "undo", UNDO_CMD }, { "redo", REDO_CMD }, { "save", SAVE_FILE_CMD }, { "preferences", PREFERENCES_FILE_CMD },
 					{ "printsettings", PRINT_SETTINGS_CMD }, { "rotate", ROTATE_CLOCKWISE_CMD },
 					{ "fitwidth", FIT_TO_PAGE_WIDTH_CMD }, { "fitpage", FIT_TO_PAGE_CMD },
 					{ "back", HISTORY_BACK_CMD }, { "forward", HISTORY_FORWARD_CMD },
