@@ -55,6 +55,7 @@
 #include "FileInfoWindow.h"
 #include "FindTextWindow.h"
 #include "LayoutUtils.h"
+#include "AttachmentsView.h"
 #include "OutlinesWindow.h"
 #include "PageRenderer.h"
 #include "PasswordWindow.h"
@@ -135,6 +136,7 @@ PDFWindow::PDFWindow(entry_ref* ref, BRect frame, const char *ownerPassword,
 
 	mZoomMenu = mRotationMenu = NULL;
 	mLayerView = NULL;
+	mAttachmentsView = NULL;
 
 	mOWMessenger = NULL;
 	mFIWMessenger = NULL;
@@ -485,6 +487,10 @@ void PDFWindow::UpdateInputEnabler()
 			->SetMarked(mShowLeftPanel && active == PAGE_LIST_PANEL);
 		fMenuBar->FindItem(SHOW_BOOKMARKS_CMD)
 			->SetMarked(mShowLeftPanel && active == BOOKMARKS_PANEL);
+		fMenuBar->FindItem(SHOW_ATTACHMENTS_CMD)
+			->SetEnabled(mAttachmentsView != NULL && mAttachmentsView->Count() > 0);
+		fMenuBar->FindItem(SHOW_ATTACHMENTS_CMD)
+			->SetMarked(mShowLeftPanel && active == ATTACHMENTS_PANEL);
 		fMenuBar->FindItem(HIDE_LEFT_PANEL_CMD)->SetEnabled(mShowLeftPanel);
 
 		fMenuBar->FindItem(OPEN_FILE_CMD)->SetEnabled(!mFullScreen);
@@ -576,6 +582,7 @@ BMenuBar* PDFWindow::BuildMenu()
 		.AddMenu(B_TRANSLATE("View"))
 			.AddItem(B_TRANSLATE("Show bookmarks"), SHOW_BOOKMARKS_CMD, 'B')
 			.AddItem(B_TRANSLATE("Show page list"), SHOW_PAGE_LIST_CMD, 'L')
+			.AddItem(B_TRANSLATE("Show attachments"), SHOW_ATTACHMENTS_CMD)
 			.AddItem(B_TRANSLATE("Hide side bar"), HIDE_LEFT_PANEL_CMD, 'H')
 			.AddSeparator()
 			.AddItem(mFullScreenItem = new BMenuItem(B_TRANSLATE("Fullscreen"),
@@ -793,8 +800,11 @@ BCardView* PDFWindow::BuildLeftPanel()
 	BView *pageView = new BScrollView("pageScrollView", mPagesView,
 		B_FRAME_EVENTS, true, true, B_FANCY_BORDER);
 
+	mAttachmentsView = new AttachmentsView(mMainView->GetDocument());
+
 	layerView->CardLayout()->AddView(mOutlinesView);
 	layerView->CardLayout()->AddView(pageView);
+	layerView->CardLayout()->AddView(mAttachmentsView);
 
 	return layerView;
 }
@@ -905,6 +915,9 @@ int16 i;
 
 void PDFWindow::NewDoc(Document *doc) {
 	mOutlinesView->SetDocument(doc, mFileAttributes.GetBookmarks());
+	mAttachmentsView->SetDocument(doc);
+	if (mAttachmentsView->Count() == 0 && mLayerView->CardLayout()->VisibleIndex() == ATTACHMENTS_PANEL)
+		ShowLeftPanel(BOOKMARKS_PANEL);
 	ActivateOutlines();
 	CollapseOutlinePanelIfEmpty();
 
@@ -961,6 +974,22 @@ PDFWindow::SetPage(int32 page) {
 	mPagesView->ScrollToSelection();
 	mOutlinesView->SelectPage(page);
 }
+
+
+#ifdef TSUNDOKU_TESTING
+// hey sends numbers as text
+static int32
+TestInt(BMessage* message, const char* name, int32 fallback)
+{
+	int32 value;
+	if (message->FindInt32(name, &value) == B_OK)
+		return value;
+	const char* text;
+	if (message->FindString(name, &text) == B_OK)
+		return atoi(text);
+	return fallback;
+}
+#endif
 
 
 void
@@ -1224,6 +1253,12 @@ PDFWindow::MessageReceived(BMessage* message)
 		else
 			ShowLeftPanel(PAGE_LIST_PANEL);
 		break;
+	case SHOW_ATTACHMENTS_CMD:
+		if (mShowLeftPanel && mLayerView->CardLayout()->VisibleIndex() == ATTACHMENTS_PANEL)
+			HideLeftPanel();
+		else
+			ShowLeftPanel(ATTACHMENTS_PANEL);
+		break;
 	case HIDE_LEFT_PANEL_CMD:
 		HideLeftPanel();
 		break;
@@ -1403,6 +1438,18 @@ PDFWindow::MessageReceived(BMessage* message)
 						decorator.bottom, screen.left, screen.top, screen.right, screen.bottom);
 					fclose(out);
 				}
+			} else if (cmd == "saveattachment") {
+				// index and path, writes the result to the test log
+				int32 index = 0;
+				BString path;
+				index = TestInt(message, "which", 0);
+				message->FindString("text", &path);
+				bool ok = mMainView->GetDocument()->SaveAttachment(index, path.String());
+				FILE* out = fopen("/tmp/ts_test.out", "a");
+				if (out != NULL) {
+					fprintf(out, "saveattachment %d -> %s: %s\n", (int)index, path.String(), ok ? "ok" : "failed");
+					fclose(out);
+				}
 			} else if (cmd == "find") {
 				// as the find window does it
 				if (mFindWindow == NULL)
@@ -1410,8 +1457,8 @@ PDFWindow::MessageReceived(BMessage* message)
 				BString text;
 				message->FindString("text", &text);
 				int32 ignoreCase = 1, backward = 0;
-				message->FindInt32("ignoreCase", &ignoreCase);
-				message->FindInt32("backward", &backward);
+				ignoreCase = TestInt(message, "ignoreCase", 1);
+				backward = TestInt(message, "backward", 0);
 				BMessage start(FindTextWindow::FIND_START_NOTIFY_MSG);
 				start.AddString("text", text);
 				start.AddBool("ignoreCase", ignoreCase != 0);
@@ -1424,7 +1471,7 @@ PDFWindow::MessageReceived(BMessage* message)
 					{ "printsettings", PRINT_SETTINGS_CMD }, { "rotate", ROTATE_CLOCKWISE_CMD },
 					{ "fitwidth", FIT_TO_PAGE_WIDTH_CMD }, { "fitpage", FIT_TO_PAGE_CMD },
 					{ "back", HISTORY_BACK_CMD }, { "forward", HISTORY_FORWARD_CMD },
-					{ "pagelist", SHOW_PAGE_LIST_CMD }, { "bookmarks", SHOW_BOOKMARKS_CMD },
+					{ "pagelist", SHOW_PAGE_LIST_CMD }, { "attachments", SHOW_ATTACHMENTS_CMD }, { "bookmarks", SHOW_BOOKMARKS_CMD },
 					{ "zoomin", ZOOM_IN_CMD }, { "zoomout", ZOOM_OUT_CMD }, { "next", NEXT_PAGE_CMD },
 					{ "previous", PREVIOUS_PAGE_CMD }, { "last", LAST_PAGE_CMD }, { "first", FIRST_PAGE_CMD },
 					{ "copy", COPY_SELECTION_CMD }, { "selectall", SELECT_ALL_CMD }, { "addbookmark", ADD_USER_BOOKMARK_CMD },

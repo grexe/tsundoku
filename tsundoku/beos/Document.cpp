@@ -20,9 +20,12 @@
 #include "Document.h"
 
 #include <math.h>
+#include <time.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
+
+#include <File.h>
 
 extern "C" {
 #include <mupdf/pdf.h>
@@ -411,4 +414,119 @@ Document::ResolveLink(const char* uri, int* page, float* x, float* y)
 	*x = px;
 	*y = py;
 	return true;
+}
+
+
+// The embedded files are the name tree /Names /EmbeddedFiles, flattened into one dictionary by MuPDF.
+bool
+Document::LoadAttachments(std::vector<DocAttachment>& attachments)
+{
+	if (!fIsPDF)
+		return false;
+
+	DocumentLocker locker(this);
+	pdf_document* pdf = pdf_specifics(fContext, fDocument);
+	pdf_obj* names = NULL;
+	int count = 0;
+
+	fz_var(names);
+	fz_var(count);
+	fz_try(fContext) {
+		names = pdf_load_name_tree(fContext, pdf, PDF_NAME(EmbeddedFiles));
+		count = pdf_dict_len(fContext, names);
+	}
+	fz_catch(fContext) {
+		LogError(fContext, "cannot load attachments");
+		count = 0;
+	}
+
+	for (int i = 0; i < count; i++) {
+		char name[512], mime[128];
+		int ok = 0;
+		int size = -1;
+		int64_t modified = -1;
+		name[0] = mime[0] = '\0';
+
+		fz_var(ok);
+		fz_try(fContext) {
+			pdf_obj* spec = pdf_dict_get_val(fContext, names, i);
+			if (pdf_is_embedded_file(fContext, spec)) {
+				pdf_filespec_params params;
+				pdf_get_filespec_params(fContext, spec, &params);
+				const char* title = params.filename;
+				if (title == NULL || title[0] == '\0')
+					title = pdf_to_name(fContext, pdf_dict_get_key(fContext, names, i));
+				strlcpy(name, title != NULL ? title : "", sizeof(name));
+				strlcpy(mime, params.mimetype != NULL ? params.mimetype : "", sizeof(mime));
+				size = params.size;
+				modified = params.modified;
+				ok = 1;
+			}
+		}
+		fz_catch(fContext) {
+			ok = 0;
+		}
+
+		if (!ok)
+			continue;
+		DocAttachment attachment;
+		attachment.name = name;
+		attachment.mimeType = mime;
+		attachment.size = size;
+		attachment.modified = (time_t)modified;
+		attachments.push_back(attachment);
+	}
+
+	pdf_drop_obj(fContext, names);
+	return !attachments.empty();
+}
+
+
+// The index counts the embedded files in the order of LoadAttachments(), so entries that are not files are
+// skipped here too.
+bool
+Document::SaveAttachment(int index, const char* path)
+{
+	if (!fIsPDF || index < 0)
+		return false;
+
+	DocumentLocker locker(this);
+	pdf_document* pdf = pdf_specifics(fContext, fDocument);
+	pdf_obj* names = NULL;
+	fz_buffer* contents = NULL;
+	const unsigned char* data = NULL;
+	size_t size = 0;
+	int count = 0;
+
+	fz_var(names);
+	fz_var(contents);
+	fz_var(count);
+	fz_try(fContext) {
+		names = pdf_load_name_tree(fContext, pdf, PDF_NAME(EmbeddedFiles));
+		int length = pdf_dict_len(fContext, names);
+		for (int i = 0; i < length; i++) {
+			pdf_obj* spec = pdf_dict_get_val(fContext, names, i);
+			if (!pdf_is_embedded_file(fContext, spec))
+				continue;
+			if (count++ == index) {
+				contents = pdf_load_embedded_file_contents(fContext, spec);
+				size = fz_buffer_storage(fContext, contents, (unsigned char**)&data);
+				break;
+			}
+		}
+	}
+	fz_catch(fContext) {
+		LogError(fContext, "cannot read attachment");
+		contents = NULL;
+	}
+
+	bool ok = false;
+	if (contents != NULL) {
+		BFile file(path, B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
+		ok = file.InitCheck() == B_OK && file.Write(data, size) == (ssize_t)size;
+	}
+
+	fz_drop_buffer(fContext, contents);
+	pdf_drop_obj(fContext, names);
+	return ok;
 }

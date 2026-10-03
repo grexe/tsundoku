@@ -49,6 +49,14 @@ struct DocOutlineEntry {
 	BString uri;         // for entries that point somewhere else
 };
 
+// A file embedded in the document (PDF attachments).
+struct DocAttachment {
+	BString name;
+	BString mimeType;
+	int64   size;        // -1 if unknown
+	time_t  modified;    // -1 if unknown
+};
+
 // A document read by MuPDF (PDF, XPS, CBZ, images, ...).
 //
 // MuPDF contexts must not be used by two threads at the same time. All threads share the context of the
@@ -95,6 +103,10 @@ public:
 	BString      PageLabel(int page);
 
 	bool         LoadOutline(std::vector<DocOutlineEntry>& entries);
+
+	// The files embedded in the document (PDF only). The index in the list is what SaveAttachment() takes.
+	bool         LoadAttachments(std::vector<DocAttachment>& attachments);
+	bool         SaveAttachment(int index, const char* path);
 
 	// For internal links: the page (1-based) and the position (page space, may be NaN) the link goes to.
 	bool         ResolveLink(const char* uri, int* page, float* x, float* y);

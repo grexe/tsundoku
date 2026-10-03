@@ -39,6 +39,7 @@
 #include "PDFView.h"
 #include "ToolTip.h"
 
+class AttachmentsView;
 class OutlinesView;
 
 class RecentDocumentsMenu : public BMenu
@@ -138,6 +139,7 @@ public:
 		// show/hide Page List
 		SHOW_BOOKMARKS_CMD,
 		SHOW_PAGE_LIST_CMD,
+		SHOW_ATTACHMENTS_CMD,
 		HIDE_LEFT_PANEL_CMD,
 		// full screen
 		FULL_SCREEN_CMD,
@@ -152,6 +154,7 @@ public:
 	enum {
 		BOOKMARKS_PANEL = 0,
 		PAGE_LIST_PANEL,
+		ATTACHMENTS_PANEL,
 	};
 
 	// pending mask
@@ -176,6 +179,7 @@ private:
 	BCardView*		mLayerView;
 	BListView      *mPagesView;
 	OutlinesView   *mOutlinesView;
+	AttachmentsView *mAttachmentsView;
 
 	BMessage       *mPrintSettings;
 	FindTextWindow *mFindWindow;

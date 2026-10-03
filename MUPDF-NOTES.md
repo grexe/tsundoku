@@ -101,6 +101,13 @@ make build=release HAVE_X11=no HAVE_GLUT=no HAVE_CURL=no \
 - Not available in the C API: the list of fonts of a page (the "fonts of this page" tab of the file info is gone),
   PDF version and linearization (the BFS attributes `PDF:version` and `PDF:linearized` are not written any more).
 
+- Search highlights: `fz_match_stext_page_cb` is run again on the stext of the shown page once it is rendered
+  (`PDFView::UpdateFindQuads`), so all hits are drawn after a page change as well. Quads are in page space, which is why
+  the selection and the highlights survive zoom and rotation; a rectangle selection is converted to page space and back.
+- Attachments: `pdf_load_name_tree(PDF_NAME(EmbeddedFiles))` flattens the name tree into a dictionary, entries that
+  pass `pdf_is_embedded_file` are the attachments, `pdf_get_filespec_params` gives name, MIME type, size and date,
+  `pdf_load_embedded_file_contents` the bytes. File attachment annotations on pages are not listed.
+
 ## Testing without a mouse
 
 `make DEFINES=TSUNDOKU_TESTING` compiles hooks that let `hey` drive the view and write what happened to
@@ -112,7 +119,9 @@ hey Tsundoku "TSTX" Window 0 with cmd=word and x1=150 and y1=131
 hey Tsundoku "TSTX" Window 0 with cmd=do_fileinfo         # any window command: do_rotate, do_zoomin, ...
 ```
 
-Coordinates are in the view. Things that cost time: `hey` needs `and` between the `name=value` pairs, turns a
+Coordinates are in the view. Other hooks: `cmd=find and text=... and backward=1`, `cmd=saveattachment and which=N and
+text=/path`. Things that cost time: `hey` sends numbers as text (the hooks read both), a field called `index` is not
+safe either; `hey` needs `and` between the `name=value` pairs, turns a
 field called `name` (or any value that looks like a file) into an `entry_ref`, and the screen blanker of the VM has
 to be killed or the screenshot is black. `screenshot -s -f png file.png` takes the picture.
 
