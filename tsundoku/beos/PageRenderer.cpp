@@ -185,6 +185,8 @@ PageRenderer::RenderToBitmap(Document* document, int pageNo, const fz_matrix& ma
 		fz_clear_pixmap_with_value(context, pixmap, 0xff);
 		device = fz_new_draw_device(context, fz_identity, pixmap);
 		fz_run_page(context, page, device, matrix, cookie);
+		// the marks of a reflowable document are not in the file, they are drawn here
+		document->PaintStoredAnnotations(pageNo, device, matrix);
 		fz_close_device(context, device);
 	}
 	fz_always(context) {
@@ -236,7 +238,7 @@ PageRenderer::Render()
 			page = fz_load_page(context, document->Doc(), mPageNo - 1);
 			text = fz_new_stext_page_from_page(context, page, NULL);
 			links = fz_load_links(context, page);
-			document->LoadAnnotations(page, mPage->mAnnotations);
+			document->LoadAnnotations(mPageNo, page, mPage->mAnnotations);
 		}
 		fz_always(context) {
 			fz_drop_page(context, page);

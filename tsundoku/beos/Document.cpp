@@ -19,6 +19,8 @@
 
 #include "Document.h"
 
+#include "EpubInfo.h"
+
 #include <math.h>
 #include <time.h>
 #include <pthread.h>
@@ -60,6 +62,17 @@ static fz_locks_context sLocks = { NULL, LockFunction, UnlockFunction };
 static const size_t kStoreSize = 128 * 1024 * 1024;
 
 
+// MuPDF warns about every EPUB 3 ("unknown epub version: 3.0") though it reads them; that is no news for the
+// error window, which opens by itself when something is printed.
+static void
+WarningCallback(void*, const char* message)
+{
+	if (strncmp(message, "unknown epub version", 20) == 0)
+		return;
+	fprintf(stderr, "warning: %s\n", message);
+}
+
+
 static void
 LogError(fz_context* context, const char* what)
 {
@@ -76,6 +89,7 @@ Document::Open(const char* path, const char* password, Document** _document)
 	if (context == NULL)
 		return kFailed;
 
+	fz_set_warning_callback(context, WarningCallback, NULL);
 	fz_document* document = NULL;
 	bool needsPassword = false;
 	bool failed = false;
@@ -124,15 +138,24 @@ Document::Document(fz_context* context, fz_document* document, const char* path)
 	fWritable(false),
 	fModified(false),
 	fHistoryPosition(0),
-	fSavedPosition(0)
+	fSavedPosition(0),
+	fReflowable(false),
+	fTextSize(kDefaultTextSize),
+	fEpub(NULL),
+	fKeptBookmark(0),
+	fKeptPage(0),
+	fResolvedValid(false),
+	fStoreSavedDepth(0)
 {
 	int pages = 0;
 	int isPDF = 0;
 	int encrypted = 0;
 	int canSave = 0;
+	int reflowable = 0;
 
 	fz_try(fContext) {
 		pages = fz_count_pages(fContext, fDocument);
+		reflowable = fz_is_document_reflowable(fContext, fDocument);
 		isPDF = pdf_specifics(fContext, fDocument) != NULL;
 		if (isPDF) {
 			canSave = pdf_can_be_saved_incrementally(fContext, pdf_specifics(fContext, fDocument));
@@ -151,6 +174,7 @@ Document::Document(fz_context* context, fz_document* document, const char* path)
 
 	fPageCount = pages;
 	fIsPDF = isPDF != 0;
+	fReflowable = reflowable != 0 && !fIsPDF;
 	fEncrypted = encrypted != 0;
 	fCanSave = canSave != 0;
 	{
@@ -162,12 +186,20 @@ Document::Document(fz_context* context, fz_document* document, const char* path)
 	fz_rect empty = fz_empty_rect;
 	fBounds.assign(pages > 0 ? pages : 0, empty);
 	fBoundsKnown.assign(pages > 0 ? pages : 0, false);
+
+	if (fReflowable) {
+		// the marks are kept in an attribute of the file, the metadata is in its package document
+		fCanSave = true;
+		LoadStore();
+		fEpub = EpubInfo::Read(path);
+	}
 }
 
 
 Document::~Document()
 {
 	fLock.Lock();
+	delete fEpub;
 	fz_drop_document(fContext, fDocument);
 	fz_drop_context(fContext);
 	fLock.Unlock();
@@ -272,6 +304,21 @@ Document::PageMatrix(int page, float dpi, int rotation, fz_matrix* matrix, int* 
 BString
 Document::Metadata(const char* key)
 {
+	if (fEpub != NULL) {
+		// what the package document says, MuPDF only knows the title and the first author
+		BString value;
+		if (strcmp(key, FZ_META_INFO_TITLE) == 0)
+			value = fEpub->title;
+		else if (strcmp(key, FZ_META_INFO_AUTHOR) == 0)
+			value = fEpub->Authors();
+		else if (strcmp(key, FZ_META_INFO_SUBJECT) == 0)
+			value = fEpub->description;
+		else if (strcmp(key, FZ_META_INFO_KEYWORDS) == 0)
+			value = fEpub->Subjects();
+		if (value.Length() > 0)
+			return value;
+	}
+
 	char buffer[1024];
 	int length = -1;
 
@@ -561,7 +608,7 @@ Document::SaveAttachment(int index, const char* path)
 
 // A new name for an annotation that nobody else has: 128 random bits in the form of a UUID. Other programs and
 // SEN refer to the annotation with it, so it has to stay with the annotation in the file.
-static void
+void
 NewAnnotationId(char* id, size_t size)
 {
 	unsigned char bytes[16];
@@ -600,13 +647,24 @@ IsListedAnnotation(int type)
 bool
 Document::CanEditAnnotations()
 {
+	return (fIsPDF || fReflowable) && CanAnnotate();
+}
+
+
+bool
+Document::CanDrawAnnotations()
+{
 	return fIsPDF && CanAnnotate();
 }
 
 
 bool
-Document::LoadAnnotations(fz_page* page, std::vector<DocAnnotation>& annotations)
+Document::LoadAnnotations(int pageNo, fz_page* page, std::vector<DocAnnotation>& annotations)
 {
+	if (UsesStore()) {
+		StoreAnnotationsOnPage(pageNo, annotations);
+		return true;
+	}
 	if (!fIsPDF)
 		return false;
 
@@ -808,6 +866,8 @@ Document::AddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int count
 {
 	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount || count <= 0)
 		return false;
+	if (UsesStore())
+		return StoreAddMarkup(pageNo, type, quads, count, color);
 
 	static const int types[] = { PDF_ANNOT_HIGHLIGHT, PDF_ANNOT_UNDERLINE, PDF_ANNOT_STRIKE_OUT,
 		PDF_ANNOT_SQUIGGLY };
@@ -875,6 +935,8 @@ Document::DeleteAnnotation(int pageNo, int index)
 {
 	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
 		return false;
+	if (UsesStore())
+		return StoreDelete(pageNo, index);
 
 	BString operation(B_TRANSLATE("Delete annotation"));
 	DocumentLocker locker(this);
@@ -913,6 +975,8 @@ Document::SetAnnotationContents(int pageNo, int index, const char* text)
 {
 	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
 		return false;
+	if (UsesStore())
+		return StoreSetContents(pageNo, index, text);
 
 	BString operation(B_TRANSLATE("Edit note"));
 	DocumentLocker locker(this);
@@ -953,6 +1017,8 @@ Document::SetAnnotationColor(int pageNo, int index, uint32 rgb)
 {
 	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
 		return false;
+	if (UsesStore())
+		return StoreSetColor(pageNo, index, rgb);
 
 	float color[3] = { ((rgb >> 16) & 0xff) / 255.0f, ((rgb >> 8) & 0xff) / 255.0f, (rgb & 0xff) / 255.0f };
 	BString operation(B_TRANSLATE("Change color"));
@@ -1018,7 +1084,7 @@ static const float kShapeLineWidth = 2;
 bool
 Document::AddNote(int pageNo, fz_point where, const char* text)
 {
-	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
+	if (!CanDrawAnnotations() || pageNo < 1 || pageNo > fPageCount)
 		return false;
 
 	BString operation(B_TRANSLATE("Add note"));
@@ -1068,7 +1134,7 @@ Document::AddNote(int pageNo, fz_point where, const char* text)
 bool
 Document::AddFreeText(int pageNo, fz_point where, const char* text)
 {
-	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
+	if (!CanDrawAnnotations() || pageNo < 1 || pageNo > fPageCount)
 		return false;
 
 	BString operation(B_TRANSLATE("Add text"));
@@ -1126,7 +1192,7 @@ Document::AddFreeText(int pageNo, fz_point where, const char* text)
 bool
 Document::AddShape(int pageNo, ShapeType type, fz_point from, fz_point to, uint32 rgb)
 {
-	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
+	if (!CanDrawAnnotations() || pageNo < 1 || pageNo > fPageCount)
 		return false;
 
 	const char* names[] = { B_TRANSLATE("Add rectangle"), B_TRANSLATE("Add ellipse"), B_TRANSLATE("Add line"),
@@ -1185,7 +1251,7 @@ Document::AddShape(int pageNo, ShapeType type, fz_point from, fz_point to, uint3
 bool
 Document::AddInk(int pageNo, const fz_point* points, int count, uint32 rgb)
 {
-	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount || count < 2)
+	if (!CanDrawAnnotations() || pageNo < 1 || pageNo > fPageCount || count < 2)
 		return false;
 
 	BString operation(B_TRANSLATE("Add drawing"));
@@ -1242,7 +1308,7 @@ MapPoint(fz_point p, fz_rect from, fz_rect to, float scaleX, float scaleY)
 bool
 Document::SetAnnotationBounds(int pageNo, int index, fz_rect bounds, bool resize)
 {
-	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
+	if (!CanDrawAnnotations() || pageNo < 1 || pageNo > fPageCount)
 		return false;
 
 	BString operation(resize ? B_TRANSLATE("Resize annotation") : B_TRANSLATE("Move annotation"));
@@ -1327,7 +1393,28 @@ Document::SetAnnotationBounds(int pageNo, int index, fz_rect bounds, bool resize
 bool
 Document::FindAnnotationById(const char* id, int* _page, int* _index)
 {
-	if (!fIsPDF || id == NULL || id[0] == '\0')
+	if (id == NULL || id[0] == '\0')
+		return false;
+	if (UsesStore()) {
+		DocumentLocker locker(this);
+		ResolveStore();
+		for (size_t i = 0; i < fStore.size(); i++) {
+			if (fStore[i].id != id || fResolved[i].empty())
+				continue;
+			int page = fResolved[i][0].page;
+			std::vector<DocAnnotation> onPage;
+			StoreAnnotationsOnPage(page, onPage);
+			for (size_t k = 0; k < onPage.size(); k++) {
+				if (onPage[k].id == id) {
+					*_page = page;
+					*_index = onPage[k].index;
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	if (!fIsPDF)
 		return false;
 
 	DocumentLocker locker(this);
@@ -1418,7 +1505,10 @@ void
 Document::ListPage(int pageNo, std::vector<DocAnnotationEntry>& entries)
 {
 	DocumentLocker locker(this);
-	if (!PageHasListedAnnotation(fContext, pdf_specifics(fContext, fDocument), pageNo - 1))
+	if (UsesStore()) {
+		if (!StorePageHasParts(pageNo))
+			return;
+	} else if (!fIsPDF || !PageHasListedAnnotation(fContext, pdf_specifics(fContext, fDocument), pageNo - 1))
 		return;
 
 	std::vector<DocAnnotation> annotations;
@@ -1439,12 +1529,14 @@ Document::ListPage(int pageNo, std::vector<DocAnnotationEntry>& entries)
 	if (!loaded)
 		return;
 
-	LoadAnnotations(page, annotations);
+	LoadAnnotations(pageNo, page, annotations);
 
 	for (size_t i = 0; i < annotations.size(); i++) {
 		const DocAnnotation& annotation = annotations[i];
+		if (annotation.continued)
+			continue;	// listed with its first part
 		char* copied = NULL;
-		if (annotation.isMarkup && !annotation.quads.empty()) {
+		if (annotation.isMarkup && !annotation.quads.empty() && !UsesStore()) {
 			const fz_quad& first = annotation.quads.front();
 			const fz_quad& last = annotation.quads.back();
 			fz_point a = fz_make_point(first.ul.x + 0.5f, (first.ul.y + first.ll.y) / 2);
@@ -1462,7 +1554,7 @@ Document::ListPage(int pageNo, std::vector<DocAnnotationEntry>& entries)
 		DocAnnotationEntry entry;
 		entry.page = pageNo;
 		entry.annotation = annotation;
-		entry.excerpt = Excerpt(annotation, copied != NULL ? copied : "");
+		entry.excerpt = Excerpt(annotation, UsesStore() ? annotation.quote.String() : copied != NULL ? copied : "");
 		fz_free(fContext, copied);
 		entries.push_back(entry);
 	}
@@ -1475,7 +1567,7 @@ Document::ListPage(int pageNo, std::vector<DocAnnotationEntry>& entries)
 bool
 Document::ListAnnotations(std::vector<DocAnnotationEntry>& entries, const volatile bool* cancel)
 {
-	if (!fIsPDF)
+	if (!fIsPDF && !UsesStore())
 		return false;
 
 	for (int pageNo = 1; pageNo <= fPageCount; pageNo++) {
@@ -1490,7 +1582,7 @@ Document::ListAnnotations(std::vector<DocAnnotationEntry>& entries, const volati
 bool
 Document::ListAnnotationsOnPage(int pageNo, std::vector<DocAnnotationEntry>& entries)
 {
-	if (!fIsPDF || pageNo < 1 || pageNo > fPageCount)
+	if ((!fIsPDF && !UsesStore()) || pageNo < 1 || pageNo > fPageCount)
 		return false;
 
 	ListPage(pageNo, entries);
@@ -1530,6 +1622,8 @@ Document::RecordOperation(int page, const char* name)
 BString
 Document::UndoLabel() const
 {
+	if (UsesStore())
+		return fStoreUndo.empty() ? BString() : fStoreUndo.back().name;
 	return fHistoryPosition > 0 ? fHistory[fHistoryPosition - 1].name : BString();
 }
 
@@ -1537,6 +1631,8 @@ Document::UndoLabel() const
 BString
 Document::RedoLabel() const
 {
+	if (UsesStore())
+		return fStoreRedo.empty() ? BString() : fStoreRedo.back().name;
 	return fHistoryPosition < (int)fHistory.size() ? fHistory[fHistoryPosition].name : BString();
 }
 
@@ -1547,6 +1643,8 @@ Document::Undo()
 {
 	if (!CanUndo())
 		return 0;
+	if (UsesStore())
+		return StoreUndoRedo(true);
 
 	DocumentLocker locker(this);
 	int ok = 0;
@@ -1571,6 +1669,8 @@ Document::Redo()
 {
 	if (!CanRedo())
 		return 0;
+	if (UsesStore())
+		return StoreUndoRedo(false);
 
 	DocumentLocker locker(this);
 	int ok = 0;
@@ -1625,6 +1725,14 @@ Document::CanSave()
 bool
 Document::Save()
 {
+	if (UsesStore()) {
+		DocumentLocker locker(this);
+		if (!WriteStore(fPath.String()))
+			return false;
+		fModified = false;
+		fStoreSavedDepth = fStoreUndo.size();
+		return true;
+	}
 	if (!fIsPDF)
 		return false;
 
@@ -1649,7 +1757,7 @@ Document::Save()
 
 
 // copies all attributes (bookmarks and position of Tsundoku, the type, ...) from one file to the other
-static void
+void
 CopyAttributes(const char* from, const char* to)
 {
 	BNode source(from), target(to);
@@ -1677,6 +1785,8 @@ CopyAttributes(const char* from, const char* to)
 bool
 Document::SaveCopy(const char* path)
 {
+	if (UsesStore())
+		return fPath != path && StoreSaveCopy(path);
 	if (!fIsPDF || fPath == path)
 		return false;
 

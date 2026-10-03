@@ -344,6 +344,10 @@ PDFView::OpenFile(entry_ref *ref, const char *ownerPassword, const char *userPas
 
 	UpdatePanelDirectory(&path);
 
+	// a book is laid out with the text size of the settings
+	if (newDoc->IsReflowable())
+		newDoc->Layout(gApp->GetSettings()->GetTextSize());
+
 	// the page cache refers to the previous document
 	SetSlotsDocument(NULL);
 	delete mDoc;
@@ -1628,7 +1632,10 @@ PDFView::ShowPopUpMenu(BPoint point, const DocLink* link, const DocAnnotation* a
 			i->SetTarget(this);
 			add->AddItem(i);
 		}
-		menu->AddItem(add);
+		if (mDoc->CanDrawAnnotations())
+			menu->AddItem(add);
+		else
+			delete add;
 
 		if (annotation != NULL) {
 			if (annotation->hasColor && !annotation->isFreeText) {
@@ -2984,7 +2991,16 @@ PDFView::AnnotationsChanged(int page)
 	int selected = mAnnotationIndex;
 	mNoteTip = 0;
 	PageSlot* slot = page > 0 ? SlotForPage(page) : NULL;
-	if (slot != NULL) {
+	if (mDoc->IsReflowable() && (page <= 0 || PageShown(page))) {
+		// a mark can run over a page break: every page that is shown is drawn again, with the old image kept
+		for (size_t i = 0; i < mSlots.size(); i++) {
+			mSlots[i]->renderer->Abort();
+			mSlots[i]->renderer->Wait();
+			StartRender(mSlots[i], true);
+			if (mSlots[i] == mActive)
+				mRendering = true;
+		}
+	} else if (slot != NULL) {
 		// only this page is rendered again, and the old image stays until the new one is there
 		slot->renderer->Abort();
 		slot->renderer->Wait();
@@ -3000,8 +3016,56 @@ PDFView::AnnotationsChanged(int page)
 		mAnnotationIndex = selected;
 	}
 	SelectionChanged();
+	if (PDFWindow* window = GetPDFWindow()) {
+		// the parts of a mark on other pages change with it: the list is read again as a whole
+		window->AnnotationsChanged(mDoc->IsReflowable() ? 0 : page);
+	}
+}
+
+
+// The text size of a book: the pages are made again for it and the reader stays where the text was.
+void
+PDFView::ChangeTextSize(bool larger)
+{
+	if (mDoc == NULL || !mDoc->IsReflowable())
+		return;
+
+	static const float kSizes[] = { 8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 32, 40 };
+	const int count = sizeof(kSizes) / sizeof(kSizes[0]);
+	float current = mDoc->TextSize();
+	float size = current;
+	if (larger) {
+		for (int i = 0; i < count; i++) {
+			if (kSizes[i] > current + 0.01f) {
+				size = kSizes[i];
+				break;
+			}
+		}
+	} else {
+		for (int i = count - 1; i >= 0; i--) {
+			if (kSizes[i] < current - 0.01f) {
+				size = kSizes[i];
+				break;
+			}
+		}
+	}
+	if (size == current)
+		return;
+
+	WaitForPage(true);
+	SelectNone();
+	mAnnotationIndex = -1;
+	int page = mDoc->ChangeTextSize(size, mCurrentPage);
+	gApp->GetSettings()->SetTextSize(mDoc->TextSize());
+	mCurrentPage = page;
+	mInteractionPage = page;
+	mRenderedPage = 0;
+	mFindHighlight = false;
+	Redraw();
+	if (mLayout.IsContinuous())
+		ScrollToPage(mCurrentPage, true);
 	if (PDFWindow* window = GetPDFWindow())
-		window->AnnotationsChanged(page);
+		window->TextSizeChanged();
 }
 
 
@@ -3023,7 +3087,7 @@ static const uint32 kDrawingColor = 0xe53935;
 void
 PDFView::SetTool(PlacementTool tool, const fz_point* position)
 {
-	if (tool == kToolNone || !mDoc->CanEditAnnotations()) {
+	if (tool == kToolNone || !mDoc->CanDrawAnnotations()) {
 		beep();
 		return;
 	}
@@ -3864,6 +3928,17 @@ PDFView::TestCommand(BMessage* message)
 		DisplayLink(BPoint(x1, y1));
 		ShowToolTip(ToolTip());	// a real mouse shows it when it rests
 		TestLog("hover (%g,%g): note tip %d", x1, y1, mNoteTip);
+	} else if (cmd == "allannots") {
+		// all annotations of the document as the list gets them
+		std::vector<DocAnnotationEntry> entries;
+		bool ok = mDoc->ListAnnotations(entries, NULL);
+		TestLog("allannots (%s) text size %g, %d pages: %d", ok ? "ok" : "failed", mDoc->TextSize(),
+			mDoc->PageCount(), (int)entries.size());
+		for (size_t i = 0; i < entries.size(); i++) {
+			TestLog("  page %d #%d %s quads %d [%s]", entries[i].page, entries[i].annotation.index,
+				entries[i].annotation.label.String(), (int)entries[i].annotation.quads.size(),
+				entries[i].excerpt.String());
+		}
 	} else if (cmd == "annots") {
 		// what the page has, and what is under a point (x1, y1)
 		WaitForPage();

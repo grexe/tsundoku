@@ -27,7 +27,7 @@ jobs:
         shell: cpa.sh {0}
         run: |
           pkgman add-repo https://kiri.sen-labs.org/x86_64
-          pkgman install -y mupdf1.28_devel freetype_devel cmd:gcc gcc_syslibs_devel cmd:make cmd:pkg_config
+          pkgman install -y mupdf1.28_devel libzip_devel libxml2_devel freetype_devel cmd:gcc gcc_syslibs_devel cmd:make cmd:pkg_config
 
       - name: Build and package
         shell: cpa.sh {0}

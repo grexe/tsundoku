@@ -241,6 +241,18 @@ void PDFWindow::AnnotationsChanged(int page) {
 		mAnnotationsView->Refresh();
 }
 
+void PDFWindow::TextSizeChanged() {
+	Document* doc = mMainView->GetDocument();
+	SetTotalPageNumber(mMainView->GetNumPages());
+	FillPageList();
+	UpdatePageList();
+	// the entries of the outline point to other pages now
+	mOutlinesView->SetDocument(doc, mFileAttributes.GetBookmarks());
+	mAnnotationsView->Refresh();
+	SetPage(mMainView->Page());
+	UpdateInputEnabler();
+}
+
 void PDFWindow::SetTotalPageNumber(int pages) {
 	const char *fmt = B_TRANSLATE("of %d");
 	int len = strlen(fmt) + 30;
@@ -403,7 +415,7 @@ void PDFWindow::SaveDocument() {
 // Asks where to write a copy of the document with its changes.
 void PDFWindow::SaveDocumentAs() {
 	Document* doc = mMainView->GetDocument();
-	if (!doc->IsPDF())
+	if (!doc->IsPDF() && !doc->IsReflowable())
 		return;
 
 	if (mSavePanel == NULL) {
@@ -689,7 +701,11 @@ void PDFWindow::UpdateInputEnabler()
 		fMenuBar->FindItem(UNDO_CMD)->SetEnabled(doc->CanUndo());
 		fMenuBar->FindItem(REDO_CMD)->SetLabel(redo.String());
 		fMenuBar->FindItem(REDO_CMD)->SetEnabled(doc->CanRedo());
-		fMenuBar->FindItem(SAVE_AS_FILE_CMD)->SetEnabled(doc->IsPDF());
+		fMenuBar->FindItem(SAVE_AS_FILE_CMD)->SetEnabled(doc->IsPDF() || doc->IsReflowable());
+		// shapes, notes and drawings are for pages that stay as they are
+		fMenuBar->FindItem(B_TRANSLATE("Add"))->SetEnabled(doc->CanDrawAnnotations());
+		fMenuBar->FindItem(TEXT_LARGER_CMD)->SetEnabled(doc->IsReflowable() && doc->TextSize() < Document::kMaxTextSize);
+		fMenuBar->FindItem(TEXT_SMALLER_CMD)->SetEnabled(doc->IsReflowable() && doc->TextSize() > Document::kMinTextSize);
 
 		bool hasUserBookmark = mOutlinesView->HasUserBookmark(page);
 		bool selected    = hasUserBookmark && mOutlinesView->IsUserBMSelected();
@@ -914,6 +930,8 @@ BMenuBar* PDFWindow::BuildMenu()
 			.AddSeparator()
 			.AddItem(B_TRANSLATE("Zoom in"), (ZOOM_IN_CMD), '+')
 			.AddItem(B_TRANSLATE("Zoom out"), (ZOOM_OUT_CMD), '-')
+			.AddItem(B_TRANSLATE("Larger text"), TEXT_LARGER_CMD, 'T')
+			.AddItem(B_TRANSLATE("Smaller text"), TEXT_SMALLER_CMD, 'T', B_SHIFT_KEY)
 			.AddSeparator()
 
 			.AddMenu(mZoomMenu = new BMenu(B_TRANSLATE("Zoom")))
@@ -1516,6 +1534,10 @@ PDFWindow::MessageReceived(BMessage* message)
 	case FIT_TO_PAGE_WIDTH_CMD:
 		mMainView->FitToPageWidth();
 		break;
+	case TEXT_LARGER_CMD:
+	case TEXT_SMALLER_CMD:
+		mMainView->ChangeTextSize(message->what == TEXT_LARGER_CMD);
+		break;
 	case TITLE_PAGE_ALONE_CMD:
 		mMainView->SetTitlePageAlone(!mMainView->TitlePageAlone());
 		break;
@@ -1945,7 +1967,7 @@ PDFWindow::MessageReceived(BMessage* message)
 					{ "flowsingle", FLOW_SINGLE_CMD }, { "flowdouble", FLOW_DOUBLE_CMD }, { "flowcontinuous", FLOW_CONTINUOUS_CMD }, { "fitwidth", FIT_TO_PAGE_WIDTH_CMD }, { "fitpage", FIT_TO_PAGE_CMD },
 					{ "back", HISTORY_BACK_CMD }, { "forward", HISTORY_FORWARD_CMD },
 					{ "pagelist", SHOW_PAGE_LIST_CMD }, { "attachments", SHOW_ATTACHMENTS_CMD }, { "annotations", SHOW_ANNOTATIONS_CMD }, { "sidebar", HIDE_LEFT_PANEL_CMD }, { "bookmarks", SHOW_BOOKMARKS_CMD },
-					{ "close", CLOSE_FILE_CMD }, { "zoomin", ZOOM_IN_CMD }, { "zoomout", ZOOM_OUT_CMD }, { "next", NEXT_PAGE_CMD },
+					{ "close", CLOSE_FILE_CMD }, { "textlarger", TEXT_LARGER_CMD }, { "textsmaller", TEXT_SMALLER_CMD }, { "zoomin", ZOOM_IN_CMD }, { "zoomout", ZOOM_OUT_CMD }, { "next", NEXT_PAGE_CMD },
 					{ "previous", PREVIOUS_PAGE_CMD }, { "last", LAST_PAGE_CMD }, { "first", FIRST_PAGE_CMD },
 					{ "copy", COPY_SELECTION_CMD }, { "selectall", SELECT_ALL_CMD }, { "addbookmark", ADD_USER_BOOKMARK_CMD },
 					{ NULL, 0 }

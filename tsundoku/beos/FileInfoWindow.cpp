@@ -25,14 +25,21 @@
 #include <ctype.h>
 
 #include <locale/Catalog.h>
+#include <vector>
+
+#include <Bitmap.h>
 #include <Box.h>
 #include <Button.h>
+#include <GroupLayout.h>
 #include <LayoutBuilder.h>
 #include <Path.h>
+#include <DataIO.h>
 #include <Region.h>
 #include <StringView.h>
 #include <TabView.h>
+#include <TranslationUtils.h>
 
+#include "EpubInfo.h"
 #include "Globals.h"
 #include "FileInfoWindow.h"
 #include "LayoutUtils.h"
@@ -49,6 +56,38 @@ const char *FileInfoWindow::producerKey = "Producer";
 const char *FileInfoWindow::titleKey = "Title";
 const char *FileInfoWindow::subjectKey = "Subject";
 const char *FileInfoWindow::keywordsKey = "Keywords";
+
+// the cover of a book
+class CoverView : public BView {
+public:
+	CoverView(BBitmap* bitmap)
+		:
+		BView("cover", B_WILL_DRAW),
+		fBitmap(bitmap)
+	{
+		SetViewColor(B_TRANSPARENT_COLOR);
+		BRect bounds = bitmap->Bounds();
+		float height = 220;
+		float width = height * (bounds.Width() + 1) / (bounds.Height() + 1);
+		SetExplicitMinSize(BSize(width, height));
+		SetExplicitMaxSize(BSize(width, height));
+		SetExplicitPreferredSize(BSize(width, height));
+	}
+
+	~CoverView() { delete fBitmap; }
+
+	virtual void Draw(BRect)
+	{
+		SetDrawingMode(B_OP_COPY);
+		DrawBitmap(fBitmap, fBitmap->Bounds(), Bounds(), B_FILTER_BITMAP_BILINEAR);
+		SetHighColor(tint_color(ui_color(B_PANEL_BACKGROUND_COLOR), B_DARKEN_2_TINT));
+		StrokeRect(Bounds());
+	}
+
+private:
+	BBitmap* fBitmap;
+};
+
 
 static const char *YesNo(bool yesNo) {
 	return yesNo ? B_TRANSLATE("Yes") : B_TRANSLATE("No");
@@ -177,23 +216,70 @@ void FileInfoWindow::Refresh(BEntry *file, Document *doc) {
 	pages << doc->PageCount();
 	AddPair(document, new BStringView("", B_TRANSLATE("Pages:")), new BStringView("", pages.String()));
 
-	CreateProperty(document, doc, titleKey, B_TRANSLATE("Title:"));
-	CreateProperty(document, doc, subjectKey, B_TRANSLATE("Subject:"));
-	CreateProperty(document, doc, authorKey, B_TRANSLATE("Author:"));
-	CreateProperty(document, doc, keywordsKey, B_TRANSLATE("Keywords:"));
-	CreateProperty(document, doc, creatorKey, B_TRANSLATE("Creator:"));
-	CreateProperty(document, doc, producerKey, B_TRANSLATE("Producer:"));
-	CreateProperty(document, doc, creationDateKey, B_TRANSLATE("Created:"));
-	CreateProperty(document, doc, modDateKey, B_TRANSLATE("Modified:"));
+	BView* cover = NULL;
+	if (const EpubInfo* epub = doc->Epub()) {
+		// what the package document of the book says
+		struct Row { const char* title; BString value; };
+		BString series = epub->series;
+		if (series.Length() > 0 && epub->seriesIndex.Length() > 0)
+			series << " #" << epub->seriesIndex;
+		Row rows[] = {
+			{ B_TRANSLATE("Title:"), epub->title },
+			{ B_TRANSLATE("Author:"), epub->Authors() },
+			{ B_TRANSLATE("Series:"), series },
+			{ B_TRANSLATE("Language:"), epub->language },
+			{ B_TRANSLATE("Publisher:"), epub->publisher },
+			{ B_TRANSLATE("Published:"), epub->date },
+			{ B_TRANSLATE("Identifier:"), epub->identifier },
+			{ B_TRANSLATE("Subjects:"), epub->Subjects() },
+			{ B_TRANSLATE("Description:"), epub->description },
+			{ B_TRANSLATE("EPUB version:"), epub->version }
+		};
+		for (size_t i = 0; i < sizeof(rows) / sizeof(rows[0]); i++) {
+			if (rows[i].value.Length() == 0)
+				continue;
+			BString shown(rows[i].value);
+			if (shown.CountChars() > 120) {
+				shown.TruncateChars(120);
+				shown << "\xe2\x80\xa6";
+			}
+			AddPair(document, new BStringView("", rows[i].title), new BStringView("", shown.String()));
+		}
+
+		std::vector<uint8> data;
+		if (epub->coverMember.Length() > 0 && path.InitCheck() == B_OK
+			&& EpubInfo::ReadMember(path.Path(), epub->coverMember.String(), &data) && !data.empty()) {
+			BMemoryIO io(&data[0], data.size());
+			if (BBitmap* bitmap = BTranslationUtils::GetBitmap(&io))
+				cover = new CoverView(bitmap);
+		}
+	} else {
+		CreateProperty(document, doc, titleKey, B_TRANSLATE("Title:"));
+		CreateProperty(document, doc, subjectKey, B_TRANSLATE("Subject:"));
+		CreateProperty(document, doc, authorKey, B_TRANSLATE("Author:"));
+		CreateProperty(document, doc, keywordsKey, B_TRANSLATE("Keywords:"));
+		CreateProperty(document, doc, creatorKey, B_TRANSLATE("Creator:"));
+		CreateProperty(document, doc, producerKey, B_TRANSLATE("Producer:"));
+		CreateProperty(document, doc, creationDateKey, B_TRANSLATE("Created:"));
+		CreateProperty(document, doc, modDateKey, B_TRANSLATE("Modified:"));
+	}
 
 	BView *docView = new BView(B_TRANSLATE("Document"), 0);
+	BGroupLayout* column = NULL;
 	BLayoutBuilder::Group<>(docView, B_VERTICAL)
 		.SetInsets(B_USE_WINDOW_INSETS)
 		.AddGroup(B_HORIZONTAL)
 			.Add(document)
 			.AddGlue()
+			.AddGroup(B_VERTICAL)
+				.GetLayout(&column)
+				.AddGlue()
+			.End()
 		.End()
 		.AddGlue();
+	// the cover of a book is to the right of the properties
+	if (cover != NULL)
+		column->AddView(0, cover);
 
 	tabs->AddTab(docView);
 

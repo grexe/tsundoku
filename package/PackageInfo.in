@@ -30,4 +30,6 @@ requires		{
 	haiku
 	lib:libfreetype
 	lib:libmupdf1.28 >= 1.28
+	lib:libxml2
+	lib:libzip
 }

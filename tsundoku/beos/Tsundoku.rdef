@@ -2,10 +2,10 @@ resource app_flags B_MULTIPLE_LAUNCH;
 
 resource app_version {
 	major  = 0,
-	middle = 4,
-	minor  = 1,
+	middle = 5,
+	minor  = 0,
 
-	variety = B_APPV_FINAL,
+	variety = B_APPV_DEVELOPMENT,
 	internal = 0,
 
 	short_info = "Document reader",
@@ -15,7 +15,8 @@ resource app_version {
 resource app_signature "application/x-vnd.sen-labs.Tsundoku";
 
 resource file_types message {
-	"types" = "application/pdf"
+	"types" = "application/pdf",
+	"types" = "application/epub+zip"
 };
 
 resource(86, "NOTE_ANNOT") #'BBMP' archive BBitmap {

@@ -22,6 +22,8 @@
 
 #include <vector>
 
+#include <Node.h>
+
 #include <Locker.h>
 #include <String.h>
 
@@ -101,6 +103,8 @@ struct DocAnnotation {
 	bool    isFreeText;   // the contents are text on the page, not a note
 	bool    hasColor;
 	uint32  color;        // 0xRRGGBB, if hasColor
+	BString quote;        // reflowable documents: the words that are marked
+	bool    continued = false;   // the part of a mark that runs over a page break, on the page after the first
 };
 
 // An annotation with the page it is on, for a list of all of them.
@@ -108,6 +112,30 @@ struct DocAnnotationEntry {
 	int           page;           // 1-based
 	DocAnnotation annotation;
 	BString       excerpt;        // the text a mark covers, or the note
+};
+
+class EpubInfo;
+
+// An annotation of a reflowable document (EPUB). Such a document has no fixed pages to attach an annotation to, so
+// it is tied to the text: the chapter, where in it the page was, and the words it covers. It is found again after
+// the pages have changed (another text size). The annotations are kept in an attribute of the file itself.
+struct StoredAnnotation {
+	BString id;
+	int     markup;       // MarkupType
+	uint32  color;        // 0xRRGGBB
+	BString contents;     // the note, may be empty
+	BString author;
+	int64   created;
+	int32   chapter;
+	float   fraction;     // where the page was in the chapter (0 to 1)
+	float   ypos;         // where the text started on the page (0 to 1)
+	BString quote;        // the words, in one line
+};
+
+// Where a stored annotation is now: on one page, or two if it runs over a page break.
+struct StoredPart {
+	int                  page;     // 1-based
+	std::vector<fz_quad> quads;    // empty if the text was not found any more
 };
 
 // A document read by MuPDF (PDF, XPS, CBZ, images, ...).
@@ -135,6 +163,18 @@ public:
 	const char*  Path() const { return fPath.String(); }
 	int          PageCount() const { return fPageCount; }
 	bool         IsPDF() const { return fIsPDF; }
+
+	// Reflowable documents (EPUB, HTML, text) have no pages of their own. They are laid out for a page size and a
+	// text size (in points); a change of the text size changes the pages.
+	bool         IsReflowable() const { return fReflowable; }
+	float        TextSize() const { return fTextSize; }
+	// lays out for the text size (when opened)
+	void         Layout(float textSize);
+	// lays out again; returns the page that the one that was shown is on now
+	int          ChangeTextSize(float textSize, int currentPage);
+	// what an EPUB says about itself, NULL for other documents
+	const EpubInfo* Epub() const { return fEpub; }
+	static const float kReflowWidth, kReflowHeight, kDefaultTextSize, kMinTextSize, kMaxTextSize;
 	bool         IsEncrypted() const { return fEncrypted; }
 
 	bool         CanPrint();
@@ -163,8 +203,13 @@ public:
 
 	// Annotations (PDF only). The page is 1-based, the index is DocAnnotation::index.
 	// LoadAnnotations() needs the page to be loaded and the lock to be held.
+	// marks on text (and notes to them): PDF and reflowable documents
 	bool         CanEditAnnotations();
-	bool         LoadAnnotations(fz_page* page, std::vector<DocAnnotation>& annotations);
+	// shapes, free text, notes and drawings on the page: PDF only
+	bool         CanDrawAnnotations();
+	bool         LoadAnnotations(int pageNo, fz_page* page, std::vector<DocAnnotation>& annotations);
+	// draws the marks of a reflowable document on the page (in the device of the rendering of the page)
+	void         PaintStoredAnnotations(int pageNo, fz_device* device, fz_matrix ctm);
 	bool         AddMarkup(int page, MarkupType type, const fz_quad* quads, int count, const float color[3]);
 	bool         DeleteAnnotation(int page, int index);
 	bool         SetAnnotationContents(int page, int index, const char* text);
@@ -188,8 +233,10 @@ public:
 	// Saving adds the changes to the end of the file (so that its attributes and the rest stay as they are).
 	// Undo and redo of the edits above. They return the page (1-based) that changed, 0 if there was nothing to do.
 	// The history is not kept over a save.
-	bool         CanUndo() const { return fHistoryPosition > 0; }
-	bool         CanRedo() const { return fHistoryPosition < (int)fHistory.size(); }
+	bool         CanUndo() const { return fReflowable && !fIsPDF ? !fStoreUndo.empty() : fHistoryPosition > 0; }
+	bool         CanRedo() const {
+		return fReflowable && !fIsPDF ? !fStoreRedo.empty() : fHistoryPosition < (int)fHistory.size();
+	}
 	BString      UndoLabel() const;
 	BString      RedoLabel() const;
 	int          Undo();
@@ -214,6 +261,27 @@ private:
 	Document(fz_context* context, fz_document* document, const char* path);
 	void ListPage(int pageNo, std::vector<DocAnnotationEntry>& entries);
 
+	// the marks of a reflowable document (see DocumentReflow.cpp)
+	bool UsesStore() const { return fReflowable && !fIsPDF; }
+	void LoadStore();
+	bool WriteStore(const char* path);
+	void ResolveStore();
+	bool StorePageHasParts(int pageNo);
+	void StoreAnnotationsOnPage(int pageNo, std::vector<DocAnnotation>& annotations);
+	bool StoreIndexFor(int pageNo, int index, int* storeIndex);
+	void PushStoreUndo(const char* name, int page);
+	bool StoreAddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int count, const float color[3]);
+	bool StoreDelete(int pageNo, int index);
+	bool StoreSetContents(int pageNo, int index, const char* text);
+	bool StoreSetColor(int pageNo, int index, uint32 rgb);
+	int  StoreUndoRedo(bool undo);
+	bool StoreSaveCopy(const char* path);
+	struct StoreState {
+		BString                       name;
+		int                           page;
+		std::vector<StoredAnnotation> annotations;
+	};
+
 	struct HistoryEntry {
 		BString name;
 		int     page;
@@ -234,6 +302,16 @@ private:
 	std::vector<HistoryEntry> fHistory;   // the edits that can be undone, the first one is the oldest
 	int             fHistoryPosition;     // how many of them are done, the others can be redone
 	int             fSavedPosition;       // where the file was saved
+	bool            fReflowable;
+	float           fTextSize;
+	EpubInfo*       fEpub;
+	fz_bookmark     fKeptBookmark;   // where the reader was before the text size changed, for the next change
+	int             fKeptPage;       // the page it led to, 0 if none
+	std::vector<StoredAnnotation>       fStore;
+	std::vector<std::vector<StoredPart> > fResolved;   // where the marks are now, same order as fStore
+	bool            fResolvedValid;
+	std::vector<StoreState> fStoreUndo, fStoreRedo;
+	size_t          fStoreSavedDepth;
 	std::vector<fz_rect> fBounds;   // cache, empty rectangle if unknown
 	std::vector<bool>    fBoundsKnown;
 };

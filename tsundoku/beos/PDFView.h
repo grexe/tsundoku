@@ -390,6 +390,8 @@ public:
 	// marks the selected text in the document, rgb is 0xRRGGBB
 	bool AnnotateSelection(MarkupType type, uint32 rgb);
 	void Undo();
+	// reflowable documents: the pages are made for another text size
+	void ChangeTextSize(bool larger);
 	void Redo();
 	// Prepares to create an annotation. A note or text goes to the position if there is one (page space), a
 	// shape is drawn with the next drag.

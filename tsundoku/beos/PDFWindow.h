@@ -106,6 +106,8 @@ public:
 		FLOW_DOUBLE_CMD,
 		FLOW_CONTINUOUS_CMD,
 		TITLE_PAGE_ALONE_CMD,
+		TEXT_LARGER_CMD,
+		TEXT_SMALLER_CMD,
 
 		// Page
 		FIRST_PAGE_CMD,
@@ -288,6 +290,8 @@ public:
 	// the annotations of the document have changed: the list of them is read again
 	// a page (or all of them, when 0) has other annotations
 	void AnnotationsChanged(int page = 0);
+	// a reflowable document has other pages now: the lists and the numbers are made anew
+	void TextSizeChanged();
 
 	void UpdateWindowsMenu();
 

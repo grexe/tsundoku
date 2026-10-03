@@ -9,7 +9,7 @@
 Tsundoku is a document reader for [Haiku](https://www.haiku-os.org), made for the papers and documents we collect
 and mean to read someday. It is a fork of [BePDF](https://github.com/HaikuArchives/BePDF) that renders with
 [MuPDF](https://mupdf.com) instead of XPDF: faster, with better quality, and with support for many more formats than
-PDF (XPS, comics, images and more, as the user interface learns to handle them).
+PDF (EPUB books, XPS, comics, images and more, as the user interface learns to handle them).
 
 ## Why a fork?
 
@@ -65,6 +65,19 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   lists all annotations of the document in columns for page, type and the text they mark or hold, sorted by clicking a
   title; choosing one goes there and selects it. View > Hide sidebar (it reads Show sidebar when the sidebar is hidden)
   sits with Fullscreen.
+- EPUB books open like PDF files. A book has no fixed pages, so it is laid out as pages of 6 by 9 inches for a text
+  size (View > Larger text, Smaller text, Cmd+T and Cmd+Shift+T); the reader stays where the text was, and the
+  text size is kept in the settings. MuPDF lays out and draws the book; its metadata is read from the package
+  document with libzip and libxml2 (title, authors, series, language, publisher, date, identifier, subjects, the
+  description and the cover show in File info). The EPUB type is made known to Haiku by its first file, so that
+  an EPUB is not taken for a web page; which application opens it is left to you.
+  Text can be highlighted, underlined and struck out in books as well (the other kinds of annotations are for
+  pages that stay as they are). A mark is tied to the text, not to a page: the chapter, where on the page it was and
+  the words it covers. So it is found again when the pages change with the text size, and a mark that runs over a
+  page break is drawn on both pages. The marks are kept in the attribute `tsundoku:annotations` of the EPUB file itself,
+  like the styles of StyledEdit are, and not in a file of their own: they go along when the file is copied in
+  Tracker, and File > Save as… copies them with the book. Save, Undo and Redo work as for PDF files; a book on a
+  read-only volume is saved as a copy.
 - The files embedded in a PDF are listed in View > Show attachments and can be saved.
 - The outline follows the current page: the chapter a page belongs to is selected and scrolled into view, also after a
   jump from another application.
@@ -72,7 +85,9 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
 - Settings are stored in `~/config/settings/Tsundoku`, separate from BePDF. Everything else BePDF stores (bookmarks and
   the position per file in BFS attributes) is unchanged and compatible.
 
-Known limits: in the continuous flow a text selection stops at the end of the page it was started on.
+Known limits: in the continuous flow a text selection stops at the end of the page it was started on. In books, the
+pages follow the text size, so a page number (a bookmark of your own, the page to come back to) is only right for
+the size it was made at, and notes, shapes and drawings are PDF only.
 
 Not there yet, and planned: line widths and fill colors, scripting of annotations from other programs, the fonts of a document in
 the file info. See [PLAN-mupdf.md](PLAN-mupdf.md).
@@ -106,12 +121,12 @@ Each release on GitHub also has the package as a file.
 
 ## Building
 
-With the repository above added, `pkgman install mupdf1.28_devel freetype_devel` is all that is needed, and
+With the repository above added, `pkgman install mupdf1.28_devel libzip_devel libxml2_devel freetype_devel` is all that is needed, and
 `./build.sh` uses it. Without it, the build gets MuPDF itself, and the development packages of the libraries MuPDF
 uses are taken from the system:
 
 ```
-pkgman install freetype_devel harfbuzz_devel openjpeg_devel jbig2dec_devel brotli_devel libjpeg_turbo_devel
+pkgman install libzip_devel libxml2_devel freetype_devel harfbuzz_devel openjpeg_devel jbig2dec_devel brotli_devel libjpeg_turbo_devel
 git clone https://github.com/grexe/tsundoku
 cd tsundoku
 ./build.sh

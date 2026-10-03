@@ -36,7 +36,9 @@ SRCS = beos/AnnotationsView.cpp \
 	beos/AttachmentsView.cpp \
 	beos/CachedPage.cpp \
 	beos/Document.cpp \
+	beos/DocumentReflow.cpp \
 	beos/EntryChangedMonitor.cpp \
+	beos/EpubInfo.cpp \
 	beos/FileInfoWindow.cpp \
 	beos/FindTextWindow.cpp \
 	beos/Globals.cpp \
@@ -87,7 +89,7 @@ RSRCS =
 #	- 	if your library does not follow the standard library naming scheme,
 #		you need to specify the path to the library and it's name.
 #		(e.g. for mylib.a, specify "mylib.a" or "path/mylib.a")
-LIBS = shared be textencoding columnlistview tracker translation localestub $(STDCPPLIBS)
+LIBS = shared be textencoding columnlistview tracker translation localestub xml2 zip $(STDCPPLIBS)
 ifdef MUPDF_DIR
 LIBS += $(MUPDF_DIR)/build/release/libmupdf.a $(MUPDF_DIR)/build/release/libmupdf-third.a \
 	freetype harfbuzz openjp2 jbig2dec brotlidec brotlienc brotlicommon jpeg z
@@ -105,7 +107,7 @@ LIBPATHS = /boot/home/config/develop/lib
 #	Additional paths to look for system headers. These use the form
 #	"#include <header>". Directories that contain the files in SRCS are
 #	NOT auto-included here.
-SYSTEM_INCLUDE_PATHS = /system/develop/headers/private/interface
+SYSTEM_INCLUDE_PATHS = /system/develop/headers/private/interface /system/develop/headers/libxml2
 ifdef MUPDF_DIR
 SYSTEM_INCLUDE_PATHS += $(MUPDF_DIR)/include
 else

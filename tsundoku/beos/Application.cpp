@@ -39,6 +39,7 @@
 #include <Button.h>
 #include <LayoutBuilder.h>
 #include <Messenger.h>
+#include <MimeType.h>
 #include <TextView.h>
 #include <View.h>
 #include <Window.h>
@@ -127,6 +128,30 @@ int main()
 
 
 
+// Haiku does not know EPUB files (one that is not compressed would be taken for a web page), so the type is made
+// known, by its extension and by the name of the first file of the container. Which application opens them is
+// left to the user.
+static void
+InstallMimeTypes()
+{
+	BMimeType epub("application/epub+zip");
+	if (epub.InitCheck() != B_OK)
+		return;
+	if (!epub.IsInstalled()) {
+		if (epub.Install() != B_OK)
+			return;
+		epub.SetShortDescription(B_TRANSLATE("EPUB e-book"));
+		epub.SetLongDescription(B_TRANSLATE("Electronic publication (EPUB)"));
+		BMessage extensions;
+		extensions.AddString("extensions", "epub");
+		epub.SetFileExtensions(&extensions);
+	}
+	BString rule;
+	if (epub.GetSnifferRule(&rule) != B_OK || rule.Length() == 0)
+		epub.SetSnifferRule("1.0 [30] ('mimetypeapplication/epub+zip')");
+}
+
+
 ///////////////////////////////////////////////////////////
 BepdfApplication::BepdfApplication()
 		: BApplication ( BEPDF_APP_SIG )
@@ -166,6 +191,7 @@ BepdfApplication::BepdfApplication()
 
 	BPath path(mAppPath);
 	LoadSettings();
+	InstallMimeTypes();
 
 	InitBePDF();
 }
