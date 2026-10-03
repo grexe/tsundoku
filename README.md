@@ -71,6 +71,11 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   document with libzip and libxml2 (title, authors, series, language, publisher, date, identifier, subjects, the
   description and the cover show in File info). The EPUB type is made known to Haiku by its first file, so that
   an EPUB is not taken for a web page; which application opens it is left to you.
+  The page list of a book is an outline: chapters, with the pages of the chapter that is read below it. What a book
+  says about itself is written to separate BFS attributes of the file, those of the `application/pdf` type where they
+  fit (`META:title`, `META:author`, `META:subject`, `META:keyw`, `META:creator`) and `EPUB:language`, `EPUB:publisher`,
+  `EPUB:published`, `EPUB:identifier`, `EPUB:series`, `EPUB:series_index` and `EPUB:version` besides; they are defined for
+  the type (so Tracker offers them as columns) and their indices are made on the volume, so a query finds books by them.
   Text can be highlighted, underlined and struck out in books as well (the other kinds of annotations are for
   pages that stay as they are). A mark is tied to the text, not to a page: the chapter, where on the page it was and
   the words it covers. So it is found again when the pages change with the text size, and a mark that runs over a

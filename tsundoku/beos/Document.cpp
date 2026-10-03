@@ -145,7 +145,8 @@ Document::Document(fz_context* context, fz_document* document, const char* path,
 	fEpub(NULL),
 	fKeptBookmark(0),
 	fKeptPage(0),
-	fStoreSavedDepth(0)
+	fStoreSavedDepth(0),
+	fOutlineCached(false)
 {
 	int pages = 0;
 	int isPDF = 0;
@@ -445,6 +446,11 @@ bool
 Document::LoadOutline(std::vector<DocOutlineEntry>& entries)
 {
 	DocumentLocker locker(this);
+	// to find where the entries of a book lead, its chapters are looked into: that is done once per layout
+	if (fReflowable && fOutlineCached) {
+		entries = fOutlineCache;
+		return !entries.empty();
+	}
 	fz_outline* outline = NULL;
 
 	fz_var(outline);
@@ -461,6 +467,10 @@ Document::LoadOutline(std::vector<DocOutlineEntry>& entries)
 
 	AddOutlineEntries(this, outline, 0, entries);
 	fz_drop_outline(fContext, outline);
+	if (fReflowable) {
+		fOutlineCache = entries;
+		fOutlineCached = true;
+	}
 	return !entries.empty();
 }
 

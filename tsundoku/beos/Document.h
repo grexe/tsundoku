@@ -198,6 +198,14 @@ public:
 
 	bool         LoadOutline(std::vector<DocOutlineEntry>& entries);
 
+	// Chapters (the files of a book); other documents have one. 0-based chapters, 1-based pages.
+	int          ChapterCount();
+	int          ChapterOfPage(int page);
+	int          ChapterFirstPage(int chapter);
+	int          ChapterPageCount(int chapter);
+	// The title of each chapter from the outline (the highest entry that points into it), empty if it has none.
+	std::vector<BString> ChapterTitles();
+
 	// The files embedded in the document (PDF only). The index in the list is what SaveAttachment() takes.
 	bool         LoadAttachments(std::vector<DocAttachment>& attachments);
 	bool         SaveAttachment(int index, const char* path);
@@ -315,6 +323,8 @@ private:
 	std::vector<char> fResolvedKnown;   // for each: is the place known for the pages as they are
 	std::vector<StoreState> fStoreUndo, fStoreRedo;
 	size_t          fStoreSavedDepth;
+	std::vector<DocOutlineEntry> fOutlineCache;   // of a book, until it is laid out again
+	bool            fOutlineCached;
 	std::vector<fz_rect> fBounds;   // cache, empty rectangle if unknown
 	std::vector<bool>    fBoundsKnown;
 };

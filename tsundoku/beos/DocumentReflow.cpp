@@ -102,6 +102,7 @@ Document::Layout(float textSize)
 	fBoundsKnown.assign(pages, false);
 	// the marks are somewhere else on the new pages
 	fResolvedKnown.assign(fStore.size(), 0);
+	fOutlineCached = false;
 }
 
 
@@ -151,6 +152,91 @@ Document::ChangeTextSize(float textSize, int currentPage)
 	fKeptBookmark = bookmark;
 	fKeptPage = marked ? page : 0;
 	return page;
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+// Chapters
+
+int
+Document::ChapterCount()
+{
+	DocumentLocker locker(this);
+	int count = 1;
+	fz_try(fContext) {
+		count = fz_count_chapters(fContext, fDocument);
+	}
+	fz_catch(fContext) {
+		count = 1;
+	}
+	return count < 1 ? 1 : count;
+}
+
+
+int
+Document::ChapterOfPage(int page)
+{
+	DocumentLocker locker(this);
+	int chapter = 0;
+	fz_try(fContext) {
+		chapter = fz_location_from_page_number(fContext, fDocument, page - 1).chapter;
+	}
+	fz_catch(fContext) {
+		chapter = 0;
+	}
+	return chapter;
+}
+
+
+int
+Document::ChapterFirstPage(int chapter)
+{
+	DocumentLocker locker(this);
+	int page = 1;
+	fz_try(fContext) {
+		page = fz_page_number_from_location(fContext, fDocument, fz_make_location(chapter, 0)) + 1;
+	}
+	fz_catch(fContext) {
+		page = 1;
+	}
+	return page;
+}
+
+
+int
+Document::ChapterPageCount(int chapter)
+{
+	DocumentLocker locker(this);
+	int count = 0;
+	fz_try(fContext) {
+		count = fz_count_chapter_pages(fContext, fDocument, chapter);
+	}
+	fz_catch(fContext) {
+		count = 0;
+	}
+	return count;
+}
+
+
+std::vector<BString>
+Document::ChapterTitles()
+{
+	int chapters = ChapterCount();
+	std::vector<BString> titles(chapters);
+	std::vector<int> levels(chapters, 1000);
+
+	std::vector<DocOutlineEntry> entries;
+	LoadOutline(entries);
+	for (size_t i = 0; i < entries.size(); i++) {
+		if (entries[i].page < 1 || entries[i].title.Length() == 0)
+			continue;
+		int chapter = ChapterOfPage(entries[i].page);
+		if (chapter >= 0 && chapter < chapters && entries[i].level < levels[chapter]) {
+			levels[chapter] = entries[i].level;
+			titles[chapter] = entries[i].title;
+		}
+	}
+	return titles;
 }
 
 

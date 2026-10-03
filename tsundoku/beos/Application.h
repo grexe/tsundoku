@@ -105,6 +105,7 @@ private:
 	BPath          mAppPath;
 	BPath          mDefaultPDF;
 	team_id        mTeamID;
+	entry_ref      mAppRef;
 	PDFWindow*     mWindow;
 
 	GlobalSettings* mSettings;

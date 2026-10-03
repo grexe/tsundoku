@@ -281,16 +281,15 @@ void PDFWindow::InitAfterOpen() {
 		}
 
 		// set page number list
+		// the numbers first, the labels (PDF files) when the document is not busy
+		FillPageList();
 		if (mMainView->GetDocument()->Lock()->LockWithTimeout(0) == B_OK) {
 			UpdatePageList();
 			mMainView->GetDocument()->Lock()->Unlock();
-		} else {
-			FillPageList();
+		} else
 			SetPending(UPDATE_PAGE_LIST_PENDING);
-		}
 		// select page number
-		mPagesView->Select(mFileAttributes.GetPage()-1);
-		mPagesView->ScrollToSelection();
+		SelectInPageList(mFileAttributes.GetPage());
 		if (s->GetRestorePageNumber()) {
 			SetZoom(s->GetZoom());
 			SetRotation(s->GetRotation());
@@ -301,27 +300,70 @@ void PDFWindow::InitAfterOpen() {
 }
 
 
+// The pages by their numbers; a book is in chapters, with the pages of a chapter below it.
 void PDFWindow::FillPageList() {
-	BList list;
-	for (int32 i = 0; i < mMainView->GetNumPages(); i++) {
-		char pageNo[20];
-		sprintf(pageNo, "%5.0d", (int)(i+1));
-		list.AddItem(new BStringItem(pageNo));
-	}
-
+	Document* document = mMainView->GetDocument();
 	MakeEmpty(mPagesView);
-	mPagesView->AddList(&list);
+	mPageItems.clear();
+	mChapterItems.clear();
+
+	int pages = mMainView->GetNumPages();
+	int chapters = document->IsReflowable() ? document->ChapterCount() : 1;
+	std::vector<BString> titles;
+	if (chapters > 1)
+		titles = document->ChapterTitles();
+
+	mPageItems.assign(pages, (PageListItem*)NULL);
+	if (chapters > 1) {
+		mChapterItems.assign(chapters, (PageListItem*)NULL);
+		for (int chapter = 0; chapter < chapters; chapter++) {
+			int first = document->ChapterFirstPage(chapter);
+			int count = document->ChapterPageCount(chapter);
+			BString title = titles[chapter];
+			if (title.Length() == 0) {
+				title = B_TRANSLATE("Chapter");
+				title << " " << chapter + 1;
+			}
+			PageListItem* chapterItem = new PageListItem(title.String(), 0, first, true);
+			mChapterItems[chapter] = chapterItem;
+			mPagesView->AddItem(chapterItem);
+			// (an item goes right below its parent, so the last page is added first)
+			int last = count;
+			if (first + last - 1 > pages)
+				last = pages - first + 1;
+			for (int k = last - 1; k >= 0; k--) {
+				BString number;
+				number << first + k;
+				PageListItem* item = new PageListItem(number.String(), 1, first + k, false);
+				mPageItems[first + k - 1] = item;
+				mPagesView->AddUnder(item, chapterItem);
+			}
+			mPagesView->Collapse(chapterItem);
+		}
+	} else {
+		for (int i = 1; i <= pages; i++) {
+			BString number;
+			number << i;
+			PageListItem* item = new PageListItem(number.String(), 0, i, false);
+			mPageItems[i - 1] = item;
+			mPagesView->AddItem(item);
+		}
+	}
 }
 
 
+// The labels of the pages of a PDF file, if it has any.
 void PDFWindow::UpdatePageList() {
 	Document* document = mMainView->GetDocument();
+	if (document->IsReflowable())
+		return;
+
 	int pages = document->PageCount();
 	// the labels need every page to be loaded, which takes a while for really large documents
 	if (pages > 2000)
 		return;
 
-	BList list;
+	std::vector<BString> labels(pages);
 	bool hasLabels = false;
 	for (int i = 1; i <= pages; i++) {
 		BString label = document->PageLabel(i);
@@ -329,17 +371,50 @@ void PDFWindow::UpdatePageList() {
 		number << i;
 		if (label.Length() > 0 && label != number)
 			hasLabels = true;
-		list.AddItem(new BStringItem(label.Length() > 0 ? label.String() : number.String()));
+		labels[i - 1] = label.Length() > 0 ? label : number;
 	}
+	if (!hasLabels)
+		return;
 
-	if (hasLabels) {
-		MakeEmpty(mPagesView);
-		mPagesView->AddList(&list);
-	} else {
-		for (int32 i = list.CountItems() - 1; i >= 0; i--)
-			delete (BStringItem*)list.ItemAt(i);
+	int selected = mPagesView->CurrentSelection();
+	PageListItem* current = selected >= 0 ? dynamic_cast<PageListItem*>(mPagesView->ItemAt(selected)) : NULL;
+	int page = current != NULL ? current->Page() : 0;
+
+	MakeEmpty(mPagesView);
+	mPageItems.assign(pages, (PageListItem*)NULL);
+	for (int i = 1; i <= pages; i++) {
+		PageListItem* item = new PageListItem(labels[i - 1].String(), 0, i, false);
+		mPageItems[i - 1] = item;
+		mPagesView->AddItem(item);
 	}
+	if (page > 0)
+		SelectInPageList(page);
 }
+
+
+void PDFWindow::SelectInPageList(int page) {
+	if (page < 1 || page > (int)mPageItems.size() || mPageItems[page - 1] == NULL)
+		return;
+
+	PageListItem* item = mPageItems[page - 1];
+	if (!mChapterItems.empty()) {
+		// only the chapter that is read is open
+		int chapter = mMainView->GetDocument()->ChapterOfPage(page);
+		for (size_t i = 0; i < mChapterItems.size(); i++) {
+			if ((int)i == chapter) {
+				if (!mChapterItems[i]->IsExpanded())
+					mPagesView->Expand(mChapterItems[i]);
+			} else if (mChapterItems[i]->IsExpanded())
+				mPagesView->Collapse(mChapterItems[i]);
+		}
+	}
+	int32 index = mPagesView->IndexOf(item);
+	if (index < 0)
+		return;
+	mPagesView->Select(index);
+	mPagesView->ScrollToSelection();
+}
+
 
 bool PDFWindow::SetPendingIfLocked(uint32 mask) {
 	if (mMainView->GetDocument()->Lock()->LockWithTimeout(0) == B_OK) {
@@ -1139,7 +1214,7 @@ SidebarTabView* PDFWindow::BuildLeftPanel()
 		this, B_FRAME_EVENTS);
 
 	// the page numbers
-	mPagesView = new BListView("pagesList", B_SINGLE_SELECTION_LIST,
+	mPagesView = new BOutlineListView("pagesList", B_SINGLE_SELECTION_LIST,
 		B_WILL_DRAW | B_NAVIGABLE | B_FRAME_EVENTS);
 	mPagesView->SetSelectionMessage(new BMessage(PAGE_SELECTED_CMD));
 
@@ -1322,13 +1397,12 @@ void
 PDFWindow::SetPage(int32 page) {
 	char pageStr [64];
     if (page <= 0) page = 1;
-    if (page > mPagesView->CountItems()) {
-        page = mPagesView->CountItems();
+    if (page > (int32)mPageItems.size() && !mPageItems.empty()) {
+        page = (int32)mPageItems.size();
     }
-	snprintf (pageStr, sizeof (pageStr), "%d" B_PRId32, page);
+	snprintf (pageStr, sizeof (pageStr), "%d", (int)page);
 	mPageNumberItem->SetText (pageStr);
-	mPagesView->Select(page-1);
-	mPagesView->ScrollToSelection();
+	SelectInPageList(page);
 	mOutlinesView->SelectPage(page);
 }
 
@@ -1504,10 +1578,14 @@ PDFWindow::MessageReceived(BMessage* message)
         }
 		break;
     }
-	case PAGE_SELECTED_CMD:
-		page = mPagesView->CurrentSelection(0) + 1;
-		mMainView->MoveToPage(page);
+	case PAGE_SELECTED_CMD: {
+		// a chapter stands for its first page
+		int32 selected = mPagesView->CurrentSelection(0);
+		PageListItem* item = selected >= 0 ? dynamic_cast<PageListItem*>(mPagesView->ItemAt(selected)) : NULL;
+		if (item != NULL)
+			mMainView->MoveToPage(item->Page());
 		break;
+	}
 	case GOTO_PAGE_MENU_CMD:
 		mPageNumberItem->MakeFocus();
 		break;

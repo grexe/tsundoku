@@ -21,6 +21,9 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
+#include <strings.h>
+#include <time.h>
 #include <ctype.h>
 
 #include <locale/Catalog.h>
@@ -39,6 +42,8 @@
 #include <Button.h>
 #include <LayoutBuilder.h>
 #include <Messenger.h>
+#include <fs_index.h>
+#include <Mime.h>
 #include <MimeType.h>
 #include <TextView.h>
 #include <View.h>
@@ -51,6 +56,7 @@
 #include "Globals.h"
 #include "TraceWindow.h"
 #include "Document.h"
+#include "EpubInfo.h"
 #include "FileInfoWindow.h"
 
 #undef B_TRANSLATION_CONTEXT
@@ -132,7 +138,7 @@ int main()
 // known, by its extension and by the name of the first file of the container. Which application opens them is
 // left to the user.
 static void
-InstallMimeTypes()
+InstallMimeTypes(const entry_ref* application)
 {
 	BMimeType epub("application/epub+zip");
 	if (epub.InitCheck() != B_OK)
@@ -146,9 +152,86 @@ InstallMimeTypes()
 		extensions.AddString("extensions", "epub");
 		epub.SetFileExtensions(&extensions);
 	}
+	// The attributes of a book are those that Tracker, queries and the file info know from PDF files (title, author,
+	// subject, creator, keywords), under the same names, so that a column or a query works for both; what only a book
+	// has is added in the same way.
+	BMimeType pdf("application/pdf");
+	BMessage pdfInfo, epubInfo;
+	if (pdf.GetAttrInfo(&pdfInfo) == B_OK) {
+		static const char* const shared[] = { "META:title", "META:author", "META:subject", "META:creator",
+			"META:keyw", NULL };
+		const char* name;
+		for (int32 i = 0; pdfInfo.FindString("attr:name", i, &name) == B_OK; i++) {
+			bool wanted = false;
+			for (int k = 0; shared[k] != NULL; k++) {
+				if (strcmp(name, shared[k]) == 0)
+					wanted = true;
+			}
+			if (!wanted)
+				continue;
+			const char* publicName = name;
+			int32 type = B_STRING_TYPE, width = 150, alignment = B_ALIGN_LEFT;
+			bool viewable = true, editable = false, extra = false;
+			pdfInfo.FindString("attr:public_name", i, &publicName);
+			pdfInfo.FindInt32("attr:type", i, &type);
+			pdfInfo.FindInt32("attr:width", i, &width);
+			pdfInfo.FindInt32("attr:alignment", i, &alignment);
+			pdfInfo.FindBool("attr:viewable", i, &viewable);
+			pdfInfo.FindBool("attr:editable", i, &editable);
+			pdfInfo.FindBool("attr:extra", i, &extra);
+			epubInfo.AddString("attr:name", name);
+			epubInfo.AddString("attr:public_name", publicName);
+			epubInfo.AddInt32("attr:type", type);
+			epubInfo.AddInt32("attr:width", width);
+			epubInfo.AddInt32("attr:alignment", alignment);
+			epubInfo.AddBool("attr:viewable", viewable);
+			epubInfo.AddBool("attr:editable", editable);
+			epubInfo.AddBool("attr:extra", extra);
+		}
+	}
+	static const struct { const char* name; const char* label; int32 type; int32 width; } kBookAttributes[] = {
+		{ "EPUB:language", B_TRANSLATE_MARK("Language"), B_STRING_TYPE, 60 },
+		{ "EPUB:publisher", B_TRANSLATE_MARK("Publisher"), B_STRING_TYPE, 150 },
+		{ "EPUB:published", B_TRANSLATE_MARK("Published"), B_TIME_TYPE, 100 },
+		{ "EPUB:identifier", B_TRANSLATE_MARK("Identifier"), B_STRING_TYPE, 200 },
+		{ "EPUB:series", B_TRANSLATE_MARK("Series"), B_STRING_TYPE, 150 },
+		{ "EPUB:series_index", B_TRANSLATE_MARK("Series number"), B_DOUBLE_TYPE, 60 },
+		{ "EPUB:version", B_TRANSLATE_MARK("EPUB version"), B_DOUBLE_TYPE, 60 }
+	};
+	for (size_t i = 0; i < sizeof(kBookAttributes) / sizeof(kBookAttributes[0]); i++) {
+		epubInfo.AddString("attr:name", kBookAttributes[i].name);
+		epubInfo.AddString("attr:public_name", B_TRANSLATE_NOCOLLECT(kBookAttributes[i].label));
+		epubInfo.AddInt32("attr:type", kBookAttributes[i].type);
+		epubInfo.AddInt32("attr:width", kBookAttributes[i].width);
+		epubInfo.AddInt32("attr:alignment", B_ALIGN_LEFT);
+		epubInfo.AddBool("attr:viewable", true);
+		epubInfo.AddBool("attr:editable", false);
+		epubInfo.AddBool("attr:extra", false);
+	}
+	epub.SetAttrInfo(&epubInfo);
+
 	BString rule;
 	if (epub.GetSnifferRule(&rule) != B_OK || rule.Length() == 0)
 		epub.SetSnifferRule("1.0 [30] ('mimetypeapplication/epub+zip')");
+
+	// The database knows what an application supports from the entry of its signature, which is only made
+	// when the application is entered (mimeset -a). Nobody does that for an application that comes in a package
+	// or is built, so the entry is out of date after a new type has been added: Tsundoku would not be offered for
+	// EPUB files (Open with...). It is entered here, if it is not a supporting application of a type it names.
+	BMessage apps;
+	bool listed = false;
+	if (application != NULL && epub.GetSupportingApps(&apps) == B_OK) {
+		const char* signature;
+		for (int32 i = 0; apps.FindString("applications", i, &signature) == B_OK; i++) {
+			if (strcasecmp(signature, BEPDF_APP_SIG) == 0)
+				listed = true;
+		}
+		if (!listed) {
+			BPath path(application);
+			if (path.InitCheck() == B_OK)
+				create_app_meta_mime(path.Path(), false, true, true);
+		}
+	}
 }
 
 
@@ -164,6 +247,7 @@ BepdfApplication::BepdfApplication()
 	mGotSomething = false;
 	mReadyToQuit  = false;
 	mWindow = NULL;
+	mAppRef = entry_ref();
 
 	mStdoutTracer = NULL;
 	mStderrTracer = NULL;
@@ -179,6 +263,7 @@ BepdfApplication::BepdfApplication()
 	BEntry entry; app_info info;
 	if (B_OK == be_app->GetAppInfo(&info)) {
 		mTeamID = info.team;
+		mAppRef = info.ref;
 		entry = BEntry(&info.ref);
 		entry.GetPath(&mAppPath);
 		mAppPath.GetParent(&mAppPath);
@@ -191,7 +276,7 @@ BepdfApplication::BepdfApplication()
 
 	BPath path(mAppPath);
 	LoadSettings();
-	InstallMimeTypes();
+	InstallMimeTypes(mAppRef.device >= 0 ? &mAppRef : NULL);
 
 	InitBePDF();
 }
@@ -741,6 +826,36 @@ static struct {
 	{NULL, NULL, NULL, 0}
 };
 
+// A query only finds files by an attribute that is indexed on their volume, so the indices for what Tsundoku writes
+// are made (once for a volume) if they are missing.
+static void
+EnsureIndices(dev_t device)
+{
+	static const struct { const char* name; uint32 type; } kIndices[] = {
+		{ "META:title", B_STRING_TYPE }, { "META:author", B_STRING_TYPE }, { "META:subject", B_STRING_TYPE },
+		{ "META:creator", B_STRING_TYPE }, { "META:keyw", B_STRING_TYPE }, { "META:pages", B_INT32_TYPE },
+		{ "EPUB:language", B_STRING_TYPE }, { "EPUB:publisher", B_STRING_TYPE },
+		{ "EPUB:identifier", B_STRING_TYPE }, { "EPUB:series", B_STRING_TYPE },
+		{ "EPUB:series_index", B_DOUBLE_TYPE }, { "EPUB:version", B_DOUBLE_TYPE },
+		{ "EPUB:published", B_INT64_TYPE }, { "PDF:created", B_INT64_TYPE }, { "PDF:modified", B_INT64_TYPE }
+	};
+	static dev_t sDone[16];
+	static int sDoneCount = 0;
+	for (int i = 0; i < sDoneCount; i++) {
+		if (sDone[i] == device)
+			return;
+	}
+	if (sDoneCount < 16)
+		sDone[sDoneCount++] = device;
+
+	for (size_t i = 0; i < sizeof(kIndices) / sizeof(kIndices[0]); i++) {
+		index_info info;
+		if (fs_stat_index(device, kIndices[i].name, &info) != 0)
+			fs_create_index(device, kIndices[i].name, kIndices[i].type, 0);
+	}
+}
+
+
 ///////////////////////////////////////////////////////////
 void
 BepdfApplication::UpdateAttr(BNode &node, const char *name, type_code type, off_t offset, void *buffer, size_t length) {
@@ -756,6 +871,7 @@ void
 BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 	BNode node(ref);
 	if (node.InitCheck() != B_OK) return;
+	EnsureIndices(ref->device);
 
 	const bool force_overwrite = (modifiers() & B_COMMAND_KEY) == B_COMMAND_KEY;
 
@@ -765,8 +881,11 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 		}
 	}
 
-	int32 pages = (int32)doc->PageCount();
-	UpdateAttr(node, "META:pages", B_INT32_TYPE, 0, &pages, sizeof(int32));
+	// the number of pages of a book depends on the text size, it says nothing about the book
+	if (!doc->IsReflowable()) {
+		int32 pages = (int32)doc->PageCount();
+		UpdateAttr(node, "META:pages", B_INT32_TYPE, 0, &pages, sizeof(int32));
+	}
 
 	for (int i = 0; gAttrInfo[i].name; i++) {
 		if (gAttrInfo[i].pdf_name == NULL) continue;
@@ -781,6 +900,40 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 			} else {
 				UpdateAttr(node, gAttrInfo[i].name, B_STRING_TYPE, 0, (void*)value.String(), value.Length()+1);
 			}
+		}
+	}
+
+	// what only a book says, one attribute for each (so they can be shown in Tracker and queried)
+	if (const EpubInfo* epub = doc->Epub()) {
+		struct { const char* name; const BString* value; } strings[] = {
+			{ "EPUB:language", &epub->language }, { "EPUB:publisher", &epub->publisher },
+			{ "EPUB:identifier", &epub->identifier }, { "EPUB:series", &epub->series }
+		};
+		for (size_t i = 0; i < sizeof(strings) / sizeof(strings[0]); i++) {
+			if (strings[i].value->Length() > 0)
+				UpdateAttr(node, strings[i].name, B_STRING_TYPE, 0, (void*)strings[i].value->String(),
+					strings[i].value->Length() + 1);
+		}
+		if (epub->seriesIndex.Length() > 0) {
+			double index = atof(epub->seriesIndex.String());
+			UpdateAttr(node, "EPUB:series_index", B_DOUBLE_TYPE, 0, &index, sizeof(index));
+		}
+		if (epub->version.Length() > 0) {
+			double version = atof(epub->version.String());
+			UpdateAttr(node, "EPUB:version", B_DOUBLE_TYPE, 0, &version, sizeof(version));
+		}
+		// the date as far as it is given: 2026, 2026-09 or 2026-09-01
+		int year = 0, month = 1, day = 1;
+		if (sscanf(epub->date.String(), "%d-%d-%d", &year, &month, &day) >= 1 && year > 0) {
+			struct tm date;
+			memset(&date, 0, sizeof(date));
+			date.tm_year = year - 1900;
+			date.tm_mon = month >= 1 && month <= 12 ? month - 1 : 0;
+			date.tm_mday = day >= 1 && day <= 31 ? day : 1;
+			date.tm_hour = 12;
+			time_t published = mktime(&date);
+			if (published != (time_t)-1)
+				UpdateAttr(node, "EPUB:published", B_TIME_TYPE, 0, &published, sizeof(published));
 		}
 	}
 }

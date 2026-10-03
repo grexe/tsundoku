@@ -25,6 +25,9 @@
 
 
 #include <be/interface/ListView.h>
+#include <be/interface/OutlineListView.h>
+#include <be/interface/StringItem.h>
+#include <vector>
 #include <be/interface/PictureButton.h>
 #include <be/interface/TextControl.h>
 #include <be/storage/Entry.h>
@@ -54,6 +57,26 @@ public:
 private:
 	void UpdateRecentDocumentsMenu();
 	uint32 fWhat;
+};
+
+
+// An entry of the page list: a page, or a chapter (which stands for its first page)
+class PageListItem : public BStringItem {
+public:
+	PageListItem(const char* label, uint32 level, int page, bool isChapter)
+		:
+		BStringItem(label, level, false),
+		fPage(page),
+		fIsChapter(isChapter)
+	{
+	}
+
+	int  Page() const { return fPage; }
+	bool IsChapter() const { return fIsChapter; }
+
+private:
+	int  fPage;
+	bool fIsChapter;
 };
 
 
@@ -198,7 +221,9 @@ private:
 	PDFView*		mMainView;
 	BView*			fMainContainer;
 	SidebarTabView*	mLayerView;
-	BListView      *mPagesView;
+	BOutlineListView *mPagesView;
+	std::vector<PageListItem*> mPageItems;      // by page (0-based), owned by the list
+	std::vector<PageListItem*> mChapterItems;   // by chapter, empty if the document is not in chapters
 	OutlinesView   *mOutlinesView;
 	AttachmentsView *mAttachmentsView;
 	AnnotationsView *mAnnotationsView;
@@ -302,6 +327,8 @@ public:
 
 	void FillPageList();
 	void UpdatePageList();
+	// selects the page in the page list (and opens its chapter)
+	void SelectInPageList(int page);
 	// asks what to do with unsaved changes; false if the user wants to keep working on the document
 	bool ConfirmDiscardChanges(bool closing = false);
 	void SaveDocument();
