@@ -128,6 +128,11 @@ private:
 	int mFindPage, mFindIndex;
 	BString mFindNeedle;
 	bool mFindCaseSensitive;
+	// all hits of the search on the shown page (page space), shown until cleared
+	bool mFindHighlight;
+	std::vector<fz_quad> mFindQuads;
+	// the page that was last started to render, a selection stays as long as it is the same
+	int mRenderedPage;
 
 	BPoint CorrectMousePos(const BPoint point);
 	void OnMouseWheelChanged(BMessage *msg);
@@ -169,6 +174,9 @@ public:
 	void DrawPage(BRect updateRect);
 	void DrawBackground(BRect updateRect);
 	void DrawSelection(BRect updateRect);
+	void DrawFindHits(BRect updateRect);
+	void UpdateFindQuads();
+	void ClearFindHighlights();
 	virtual	void Draw (BRect updateRect);
 
 	virtual void FrameResized (float width, float height);

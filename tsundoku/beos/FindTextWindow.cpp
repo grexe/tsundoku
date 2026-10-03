@@ -132,7 +132,8 @@ void FindTextWindow::MessageReceived(BMessage *msg) {
 	case FIND_ABORT_MSG:
 		mLooper->PostMessage((uint32)FIND_ABORT_NOTIFY_MSG, NULL);
 		break;
-	case FIND_MSG: {
+	case FIND_MSG:
+	case FIND_REVERSE_MSG: {
 		mSearching = true;
 		const char *text = mText->Text();
 		if (strlen(text) == 0) return;
@@ -140,11 +141,12 @@ void FindTextWindow::MessageReceived(BMessage *msg) {
 		mFindStop->SetMessage(new BMessage(FIND_STOP_MSG));
 		mText->SetEnabled(false);
 
-		BMessage msg(FIND_START_NOTIFY_MSG);
-		msg.AddString("text", text);
-		msg.AddBool("ignoreCase", mIgnoreCase->Value() == B_CONTROL_ON);
-		msg.AddBool("backward", mBackward->Value() == B_CONTROL_ON);
-		mLooper->PostMessage(&msg, NULL);
+		bool backward = (mBackward->Value() == B_CONTROL_ON) != (msg->what == FIND_REVERSE_MSG);
+		BMessage start(FIND_START_NOTIFY_MSG);
+		start.AddString("text", text);
+		start.AddBool("ignoreCase", mIgnoreCase->Value() == B_CONTROL_ON);
+		start.AddBool("backward", backward);
+		mLooper->PostMessage(&start, NULL);
 		break; }
 	case FIND_ABORT_NOTIFY_MSG:
 		mFindStop->SetEnabled(false);

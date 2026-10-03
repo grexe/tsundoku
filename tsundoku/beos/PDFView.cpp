@@ -136,6 +136,8 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 	mFindPage = 0;
 	mFindIndex = -1;
 	mFindCaseSensitive = false;
+	mFindHighlight = false;
+	mRenderedPage = 0;
 
 	if (LoadFile(ref, fileAttributes, ownerPassword, userPassword, true, encrypted)) {
 		SetViewCursor(gApp->handCursor, true);
@@ -297,6 +299,8 @@ PDFView::LoadFile(entry_ref *ref, FileAttributes *fileAttributes, const char *ow
 		w->FitToScreen();
 		w->NewDoc(mDoc);
 		w->SetTitle (mTitle->String());
+		mRenderedPage = 0;
+		mFindHighlight = false;
 		Redraw();
 		ScrollTo(left, top);
 		w->Unlock();
@@ -433,6 +437,69 @@ PDFView::DrawBackground(BRect updateRect)
 }
 
 ///////////////////////////////////////////////////////////////////////////
+// the places where the search text has been found on this page
+void
+PDFView::DrawFindHits(BRect updateRect)
+{
+	if (!mFindHighlight || mFindQuads.empty())
+		return;
+
+	SetHighColor(255, 200, 0, 110);
+	SetDrawingMode(B_OP_ALPHA);
+	for (size_t i = 0; i < mFindQuads.size(); i++) {
+		const fz_quad& q = mFindQuads[i];
+		BPoint polygon[4] = { mPage->PageToDev(q.ul), mPage->PageToDev(q.ur),
+			mPage->PageToDev(q.lr), mPage->PageToDev(q.ll) };
+		for (int j = 0; j < 4; j++)
+			polygon[j] += BPoint(mLeft, mTop);
+		FillPolygon(polygon, 4);
+	}
+	SetDrawingMode(B_OP_COPY);
+}
+
+
+static int
+CollectQuads(fz_context*, void* data, int numQuads, fz_quad* quads, int, int)
+{
+	std::vector<fz_quad>* all = (std::vector<fz_quad>*)data;
+	for (int i = 0; i < numQuads; i++)
+		all->push_back(quads[i]);
+	return 0;
+}
+
+
+// Finds all hits of the last search on the shown page, once it has been rendered (the text is not there before).
+void
+PDFView::UpdateFindQuads()
+{
+	std::vector<fz_quad> quads;
+	fz_stext_page* text = mFindHighlight ? mPage->Text() : NULL;
+	if (text != NULL) {
+		DocumentLocker locker(mDoc);
+		fz_context* context = mDoc->Context();
+		fz_try(context) {
+			fz_match_stext_page_cb(context, text, mFindNeedle.String(), CollectQuads, &quads,
+				mFindCaseSensitive ? FZ_SEARCH_EXACT : FZ_SEARCH_IGNORE_CASE);
+		}
+		fz_catch(context) {
+			quads.clear();
+		}
+	}
+	mFindQuads.swap(quads);
+	Invalidate();
+}
+
+
+void
+PDFView::ClearFindHighlights()
+{
+	mFindHighlight = false;
+	mFindQuads.clear();
+	Invalidate();
+}
+
+
+///////////////////////////////////////////////////////////////////////////
 void
 PDFView::DrawSelection(BRect updateRect)
 {
@@ -493,6 +560,7 @@ PDFView::Draw(BRect updateRect)
 		if (GetPDFWindow()) {
 			GetPDFWindow()->GetFileAttributes()->SetLeftTop(rect.left, rect.top);
 		}
+		DrawFindHits(updateRect);
 		DrawSelection(updateRect);
 	}
 }
@@ -1207,10 +1275,29 @@ PDFView::Redraw()
 	}
 	mRendering = true;
 
-	mSelected = NOT_SELECTED;
-	mQuads.clear();
+	// A selection stays through zoom and rotation, it belongs to the page. Text is kept in page space, an
+	// area is converted to page space here and back to the new zoom below.
+	bool samePage = mRenderedPage == mCurrentPage;
+	bool keepSelection = samePage && mSelected == SELECTED;
+	bool keepArea = keepSelection && mSelectionKind == kSelectArea;
+	fz_rect areaOnPage = fz_empty_rect;
+	if (keepArea) {
+		fz_point a = mPage->DevToPage(mSelection.LeftTop());
+		fz_point b = mPage->DevToPage(mSelection.RightBottom());
+		areaOnPage = fz_make_rect(fminf(a.x, b.x), fminf(a.y, b.y), fmaxf(a.x, b.x), fmaxf(a.y, b.y));
+	}
+	if (!keepSelection) {
+		mSelected = NOT_SELECTED;
+		mQuads.clear();
+	}
+	if (!samePage)
+		mFindQuads.clear();
+	mRenderedPage = mCurrentPage;
+
 	mPageRenderer.Start(mPage, mCurrentPage, GetZoomDPI(), mRotation, &mRendererID);
 	mLink = NULL;
+	if (keepArea)
+		mSelection = mPage->PageToDev(areaOnPage);
 
 	mBitmap = mPage->GetBitmap();
 	mWidth = mPage->GetWidth(); mHeight = mPage->GetHeight();
@@ -1230,6 +1317,7 @@ PDFView::Redraw()
 void
 PDFView::RestartDoc() {
 	WaitForPage(true);
+	mRenderedPage = 0;
 	Redraw();
 }
 
@@ -1274,6 +1362,7 @@ PDFView::PostRedraw(thread_id id, BBitmap *bitmap) {
 	if (id != -1) {
 		mRendering = false;
 		mRendererID = -1;
+		UpdateFindQuads();
 		Invalidate();
 		BPoint mouse; uint32 buttons;
 		GetMouse(&mouse, &buttons);

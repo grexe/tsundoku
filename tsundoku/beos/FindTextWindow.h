@@ -51,6 +51,7 @@ public:
 		FIND_SET_PAGE_MSG         = 'FStP',
 		FIND_QUIT_REQUESTED_MSG   = 'QTrq',
 		FIND_MSG                  = 'Find',
+		FIND_REVERSE_MSG          = 'Frev',  // as Find, in the other direction
 		FIND_STOP_MSG             = 'Stop',
 		FIND_ABORT_MSG            = 'Abrt',
 		FIND_IGNORE_CASE_MSG      = 'TIgr',

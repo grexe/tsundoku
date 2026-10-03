@@ -113,6 +113,7 @@ public:
 		// Search
 		FIND_CMD,
 		FIND_NEXT_CMD,
+		FIND_PREVIOUS_CMD,
 
 		// User defined bookmarks
 		ADD_USER_BOOKMARK_CMD,

@@ -182,6 +182,8 @@ FindThread::Run() {
 		mMainView->mFindIndex = foundIndex;
 		mMainView->mFindNeedle = mFindText;
 		mMainView->mFindCaseSensitive = mCaseSensitive;
+		mMainView->mFindHighlight = true;
+		mMainView->UpdateFindQuads();
 		mMainView->SelectFound(hit.start, hit.end);
 		Window()->Unlock();
 	}

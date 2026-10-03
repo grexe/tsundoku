@@ -415,6 +415,7 @@ bool PDFWindow::CancelCommand(BMessage* msg) {
 			case ABOUT_APP_CMD:
 			case FIND_CMD:
 			case FIND_NEXT_CMD:
+			case FIND_PREVIOUS_CMD:
 			case PREFERENCES_FILE_CMD:
 			case FILE_INFO_CMD:
 			case PRINT_SETTINGS_CMD:
@@ -617,6 +618,7 @@ BMenuBar* PDFWindow::BuildMenu()
 		.AddMenu(B_TRANSLATE("Search"))
 			.AddItem(B_TRANSLATE("Find" B_UTF8_ELLIPSIS), FIND_CMD, 'F')
 			.AddItem(B_TRANSLATE("Find next" B_UTF8_ELLIPSIS), new BMessage(FIND_NEXT_CMD), 'G')
+			.AddItem(B_TRANSLATE("Find previous" B_UTF8_ELLIPSIS), new BMessage(FIND_PREVIOUS_CMD), 'G', B_SHIFT_KEY)
 		.End()
 
 		.AddMenu(B_TRANSLATE("Page"))
@@ -1010,6 +1012,7 @@ PDFWindow::MessageReceived(BMessage* message)
 	case SELECT_ALL_CMD: mMainView->SelectAll();
 		break;
 	case SELECT_NONE_CMD: mMainView->SelectNone();
+		mMainView->ClearFindHighlights();
 		break;
 	case FIRST_PAGE_CMD:
 		mMainView->MoveToPage(1);
@@ -1150,6 +1153,14 @@ PDFWindow::MessageReceived(BMessage* message)
 			mFindWindow = new FindTextWindow(gApp->GetSettings(), mFindText.String(), this);
 			Unlock();
 			mFindWindow->PostMessage('Find');
+		}
+		break;
+	case FIND_PREVIOUS_CMD:
+		mMainView->WaitForPage();
+		if (Lock()) {
+			mFindWindow = new FindTextWindow(gApp->GetSettings(), mFindText.String(), this);
+			Unlock();
+			mFindWindow->PostMessage(FindTextWindow::FIND_REVERSE_MSG);
 		}
 		break;
 /*	case KEYBOARD_SHORTCUTS_CMD: {
