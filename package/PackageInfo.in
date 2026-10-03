@@ -7,7 +7,7 @@ rendering with MuPDF. It reads PDF files and adds support for the semantic
 relations of SEN (Semantic Extensions Native), e.g. jumping to a page handed
 over by a relation. Settings and per-file bookmarks stay compatible with BePDF."
 packager		"Gregor B. Rosenauer <semantic.extensions@gmail.com>"
-vendor			"SEN Laboratories"
+vendor			"SEN Labs e.U."
 copyrights		{
 	"2026 Gregor B. Rosenauer"
 	"2013-2017 waddlesplash"
