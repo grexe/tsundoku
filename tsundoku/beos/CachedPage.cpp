@@ -94,6 +94,29 @@ CachedPage::FindLink(fz_point point) const
 }
 
 
+const DocAnnotation*
+CachedPage::FindAnnotation(fz_point point) const
+{
+	if (mState != READY)
+		return NULL;
+
+	// the last one is on top
+	for (int i = (int)mAnnotations.size() - 1; i >= 0; i--) {
+		const DocAnnotation& annotation = mAnnotations[i];
+		if (annotation.isMarkup && !annotation.quads.empty()) {
+			for (size_t j = 0; j < annotation.quads.size(); j++) {
+				if (fz_is_point_inside_quad(point, annotation.quads[j]))
+					return &annotation;
+			}
+		} else if (point.x >= annotation.rect.x0 && point.x < annotation.rect.x1
+				&& point.y >= annotation.rect.y0 && point.y < annotation.rect.y1) {
+			return &annotation;
+		}
+	}
+	return NULL;
+}
+
+
 void
 CachedPage::SetBitmap(BBitmap* bitmap, int32 width, int32 height)
 {
@@ -107,6 +130,7 @@ void
 CachedPage::MakeEmpty()
 {
 	mLinks.clear();
+	mAnnotations.clear();
 	if (mText != NULL && mDocument != NULL) {
 		DocumentLocker locker(mDocument);
 		fz_drop_stext_page(mDocument->Context(), mText);

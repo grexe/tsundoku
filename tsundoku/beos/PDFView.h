@@ -88,9 +88,11 @@ private:
 		MOVE_ACTION,
 		SELECT_ACTION,
 		DND_ACTION,
-		ZOOM_ACTION
+		ZOOM_ACTION,
+		SECONDARY_ACTION  // a click opens the menu, moving starts to drag the selection
 	} mMouseAction;
 	BPoint mMousePosition;
+	BPoint mSecondaryStart;
 	bool mDragStarted;
 
 	float mMouseWheelDY;
@@ -198,8 +200,10 @@ public:
 	void ScrollTo(float x, float y);
 	virtual void MessageReceived(BMessage *msg);
 	const DocLink* OnLink(BPoint p);
+	const DocAnnotation* OnAnnotation(BPoint p);
 	void LinkToString(const DocLink* link, BString* string);
-	void ShowPopUpMenu(BPoint point, const DocLink* link);
+	void ShowPopUpMenu(BPoint point, const DocLink* link, const DocAnnotation* annotation);
+	void AnnotationsChanged();
 	void CopyText(BString *str);
 	bool IsOk() { return mOk; }
 
@@ -262,6 +266,9 @@ public:
 	void CopySelection();
 	void SelectAll();
 	void SelectNone();
+	bool HasTextSelection() const { return mSelected == SELECTED && mSelectionKind == kSelectText; }
+	// marks the selected text in the document, rgb is 0xRRGGBB
+	bool AnnotateSelection(MarkupType type, uint32 rgb);
 	void SetFilledSelection(bool filled);
 
 	// caller must delete returned string object

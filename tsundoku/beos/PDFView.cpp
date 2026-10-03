@@ -53,6 +53,7 @@
 #include <be/translation/TranslatorRoster.h>
 #include <be/support/String.h>
 #include <be/support/Debug.h>
+#include <be/support/Beep.h>
 
 // BePDF
 #include "Globals.h"
@@ -60,6 +61,7 @@
 #include "CachedPage.h"
 #include "FileInfoWindow.h"
 #include "FindTextWindow.h"
+#include "NoteWindow.h"
 #include "PageRenderer.h"
 #include "PDFWindow.h"
 #include "PDFView.h"
@@ -82,6 +84,16 @@ static const int kZoomDPI[MAX_ZOOM - MIN_ZOOM + 1] = {
 #define COPY_LINK_MSG                  'cplk'
 #define COPY_SELECTION_MSG             'cpsl'
 #define SELECT_ALL_MSG                 'slal'
+#define ANNOTATE_MSG                   'anno'
+#define DELETE_ANNOTATION_MSG          'dlan'
+#define EDIT_NOTE_MSG                  'ednt'
+#define NOTE_ENTERED_MSG               'ntnt'
+
+// the colors offered for marking text
+static const struct { const char* name; uint32 rgb; } kMarkerColors[] = {
+	{ "Yellow", 0xffeb3b }, { "Green", 0x96e678 }, { "Blue", 0x78beff }, { "Pink", 0xff96c8 },
+	{ "Orange", 0xffb95a }
+};
 
 // more quads than a page can have lines of text
 static const int kMaxQuads = 8192;
@@ -349,6 +361,43 @@ void PDFView::MessageReceived(BMessage *msg) {
 	case SELECT_ALL_MSG:
 		SelectAll();
 		break;
+	case ANNOTATE_MSG: {
+		int32 type = kMarkupHighlight, rgb = 0xffeb3b;
+		msg->FindInt32("type", &type);
+		msg->FindInt32("color", &rgb);
+		AnnotateSelection((MarkupType)type, (uint32)rgb);
+		break;
+	}
+	case DELETE_ANNOTATION_MSG: {
+		int32 page = 0, index = -1;
+		msg->FindInt32("page", &page);
+		msg->FindInt32("index", &index);
+		if (mDoc->DeleteAnnotation(page, index))
+			AnnotationsChanged();
+		break;
+	}
+	case EDIT_NOTE_MSG: {
+		BMessage entered(NOTE_ENTERED_MSG);
+		int32 page = 0, index = -1;
+		msg->FindInt32("page", &page);
+		msg->FindInt32("index", &index);
+		entered.AddInt32("page", page);
+		entered.AddInt32("index", index);
+		const char* text = "";
+		msg->FindString("text", &text);
+		new NoteWindow(Window(), BMessenger(this), entered, text);
+		break;
+	}
+	case NOTE_ENTERED_MSG: {
+		int32 page = 0, index = -1;
+		const char* text = "";
+		msg->FindInt32("page", &page);
+		msg->FindInt32("index", &index);
+		msg->FindString("text", &text);
+		if (mDoc->SetAnnotationContents(page, index, text))
+			AnnotationsChanged();
+		break;
+	}
 	case OPEN_FILE_MSG:
 		if (B_OK == msg->FindString("file", &string)) {
 			PDFWindow::Launch(string.String());
@@ -803,10 +852,13 @@ PDFView::MouseDown (BPoint point) {
 			break;
 		case B_SECONDARY_MOUSE_BUTTON:
 			if ((mSelected == SELECTED) && InSelection(point)) {
-				SendDragMessage(B_SIMPLE_DATA); // start negotiated drag and drop
+				// a click opens the menu (see MouseUp), moving the mouse starts to drag the selection
+				mSecondaryStart = screen;
+				SetAction(SECONDARY_ACTION);
+				SetMouseEventMask(B_POINTER_EVENTS);
 				return;
 			}
-			ShowPopUpMenu(screen, OnLink(point));
+			ShowPopUpMenu(screen, OnLink(point), OnAnnotation(point));
 			return;
 		case B_TERTIARY_MOUSE_BUTTON: // zoom to selection
 			if (mSelected != NOT_SELECTED) {
@@ -931,6 +983,18 @@ PDFView::MouseMoved (BPoint point, uint32 transit, const BMessage *msg) {
 			}
 			break;
 		}
+		case SECONDARY_ACTION:
+		{
+			uint32 buttons = GetButtons();
+			BPoint offset = ConvertToScreen(point) - mSecondaryStart;
+			if ((buttons & B_SECONDARY_MOUSE_BUTTON) == 0) {
+				MouseUp(point);
+			} else if (fabsf(offset.x) > 4 || fabsf(offset.y) > 4) {
+				SetAction(NO_ACTION);
+				SendDragMessage(B_SIMPLE_DATA); // start negotiated drag and drop
+			}
+			break;
+		}
 		case SELECT_ACTION: // text selection
 		case ZOOM_ACTION: // zoom to selection
 		 	while(true) {
@@ -998,6 +1062,11 @@ PDFView::ResizeSelection(BPoint point) {
 ///////////////////////////////////////////////////////////////////////////
 void
 PDFView::MouseUp (BPoint point) {
+	if (mMouseAction == SECONDARY_ACTION) {
+		SetAction(NO_ACTION);
+		ShowPopUpMenu(ConvertToScreen(point), OnLink(point), OnAnnotation(point));
+		return;
+	}
 	if (mMouseAction == SELECT_ACTION) { // copy selection
 		if (mSelectionKind == kSelectText) {
 			BRect bounds = SelectionBounds();
@@ -1067,6 +1136,14 @@ PDFView::MouseUp (BPoint point) {
 }
 
 ///////////////////////////////////////////////////////////////////////////
+const DocAnnotation*
+PDFView::OnAnnotation(BPoint point) {
+	if (mRendering || (mDoc == NULL) || (mDoc->PageCount() == 0)) return NULL;
+
+	point = CorrectMousePos(point);
+	return mPage->FindAnnotation(mPage->DevToPage(point));
+}
+
 const DocLink*
 PDFView::OnLink(BPoint point) {
 	if (mRendering || (mDoc == NULL) || (mDoc->PageCount() == 0)) return NULL;
@@ -1153,7 +1230,7 @@ PDFView::GotoPosition(int page, float x, float y) {
 
 ///////////////////////////////////////////////////////////////////////////
 void
-PDFView::ShowPopUpMenu(BPoint point, const DocLink* link) {
+PDFView::ShowPopUpMenu(BPoint point, const DocLink* link, const DocAnnotation* annotation) {
 	BPopUpMenu* menu = new BPopUpMenu("PopUpMenu");
 	menu->SetAsyncAutoDestruct(true);
 
@@ -1170,6 +1247,54 @@ PDFView::ShowPopUpMenu(BPoint point, const DocLink* link) {
 	i->SetTarget(this);
 	i->SetEnabled(canCopy);
 	menu->AddItem(i);
+
+	if (mDoc->CanEditAnnotations() && (HasTextSelection() || annotation != NULL)) {
+		menu->AddSeparatorItem();
+
+		if (HasTextSelection()) {
+			BMenu* colors = new BMenu(B_TRANSLATE("Highlight"));
+			for (size_t c = 0; c < sizeof(kMarkerColors) / sizeof(kMarkerColors[0]); c++) {
+				msg = new BMessage(ANNOTATE_MSG);
+				msg->AddInt32("type", kMarkupHighlight);
+				msg->AddInt32("color", kMarkerColors[c].rgb);
+				i = new BMenuItem(B_TRANSLATE_NOCOLLECT(kMarkerColors[c].name), msg);
+				i->SetTarget(this);
+				colors->AddItem(i);
+			}
+			menu->AddItem(colors);
+
+			msg = new BMessage(ANNOTATE_MSG);
+			msg->AddInt32("type", kMarkupUnderline);
+			msg->AddInt32("color", 0xe53935);
+			i = new BMenuItem(B_TRANSLATE("Underline"), msg);
+			i->SetTarget(this);
+			menu->AddItem(i);
+
+			msg = new BMessage(ANNOTATE_MSG);
+			msg->AddInt32("type", kMarkupStrikeOut);
+			msg->AddInt32("color", 0xe53935);
+			i = new BMenuItem(B_TRANSLATE("Strike out"), msg);
+			i->SetTarget(this);
+			menu->AddItem(i);
+		}
+
+		if (annotation != NULL) {
+			msg = new BMessage(EDIT_NOTE_MSG);
+			msg->AddInt32("page", mCurrentPage);
+			msg->AddInt32("index", annotation->index);
+			msg->AddString("text", annotation->contents);
+			i = new BMenuItem(B_TRANSLATE("Edit note" B_UTF8_ELLIPSIS), msg);
+			i->SetTarget(this);
+			menu->AddItem(i);
+
+			msg = new BMessage(DELETE_ANNOTATION_MSG);
+			msg->AddInt32("page", mCurrentPage);
+			msg->AddInt32("index", annotation->index);
+			i = new BMenuItem(B_TRANSLATE("Delete annotation"), msg);
+			i->SetTarget(this);
+			menu->AddItem(i);
+		}
+	}
 
 	if (link != NULL) {
 		menu->AddSeparatorItem();
@@ -1949,6 +2074,37 @@ void PDFView::SetFilledSelection(bool filled) {
 }
 
 ///////////////////////////////////////////////////////////
+// Marks the selected text in the document: adds an annotation that covers the lines of the selection.
+bool
+PDFView::AnnotateSelection(MarkupType type, uint32 rgb)
+{
+	if (!HasTextSelection() || mQuads.empty() || !mDoc->CanEditAnnotations()) {
+		beep();
+		return false;
+	}
+
+	float color[3] = { ((rgb >> 16) & 0xff) / 255.0f, ((rgb >> 8) & 0xff) / 255.0f, (rgb & 0xff) / 255.0f };
+	std::vector<fz_quad> quads = mQuads;
+	WaitForPage(true);
+	if (!mDoc->AddMarkup(mCurrentPage, type, &quads[0], (int)quads.size(), color))
+		return false;
+
+	SelectNone();
+	AnnotationsChanged();
+	return true;
+}
+
+
+// Shows the changed annotations of the page.
+void
+PDFView::AnnotationsChanged()
+{
+	mRenderedPage = 0;	// the page is new, nothing of the old one stays
+	Redraw();
+	SelectionChanged();
+}
+
+
 void PDFView::SelectionChanged() {
 	PDFWindow* w = GetPDFWindow();
 	if (w) {
@@ -2190,6 +2346,39 @@ PDFView::TestCommand(BMessage* message)
 		BString* text = GetSelectedText();
 		TestLog("%s at (%g,%g): %s, text: [%s]", cmd.String(), x1, y1, ok ? "ok" : "nothing", text != NULL ? text->String() : "(none)");
 		delete text;
+	} else if (cmd == "annotate") {
+		// marks the selection: type= highlight, underline or strikeout (in "kind")
+		BString kind;
+		message->FindString("kind", &kind);
+		MarkupType type = kind == "underline" ? kMarkupUnderline
+			: kind == "strikeout" ? kMarkupStrikeOut : kMarkupHighlight;
+		bool ok = AnnotateSelection(type, kind == "highlight" ? 0xffeb3b : 0xe53935);
+		TestLog("annotate %s: %s, unsaved changes: %d", kind.String(), ok ? "ok" : "failed",
+			(int)mDoc->HasUnsavedChanges());
+	} else if (cmd == "annots") {
+		// what the page has, and what is under a point (x1, y1)
+		WaitForPage();
+		const std::vector<DocAnnotation>& list = mPage->mAnnotations;
+		TestLog("annots on page %d: %d", mCurrentPage, (int)list.size());
+		for (size_t i = 0; i < list.size(); i++) {
+			TestLog("  #%d type %d markup %d quads %d rect %g,%g-%g,%g author [%s] note [%s]", list[i].index,
+				list[i].type, (int)list[i].isMarkup, (int)list[i].quads.size(), list[i].rect.x0, list[i].rect.y0,
+				list[i].rect.x1, list[i].rect.y1, list[i].author.String(), list[i].contents.String());
+		}
+		const DocAnnotation* under = OnAnnotation(BPoint(x1, y1));
+		TestLog("  at (%g,%g): %s", x1, y1, under != NULL ? "annotation" : "nothing");
+	} else if (cmd == "delannot") {
+		bool ok = mDoc->DeleteAnnotation(mCurrentPage, (int)TestNumber(message, "which"));
+		if (ok)
+			AnnotationsChanged();
+		TestLog("delannot: %s", ok ? "ok" : "failed");
+	} else if (cmd == "setnote") {
+		BString text;
+		message->FindString("text", &text);
+		bool ok = mDoc->SetAnnotationContents(mCurrentPage, (int)TestNumber(message, "which"), text.String());
+		if (ok)
+			AnnotationsChanged();
+		TestLog("setnote: %s", ok ? "ok" : "failed");
 	} else if (cmd == "selectall") {
 		SelectAll();
 		BString* text = GetSelectedText();

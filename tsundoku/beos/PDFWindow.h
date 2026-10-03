@@ -66,6 +66,10 @@ public:
 		NEW_WINDOW_CMD,
 		CLOSE_FILE_CMD,
 		RELOAD_FILE_CMD,
+		SAVE_FILE_CMD,
+		ANNOTATE_HIGHLIGHT_CMD,
+		ANNOTATE_UNDERLINE_CMD,
+		ANNOTATE_STRIKEOUT_CMD,
 		SAVE_FILE_AS_CMD,
 		QUIT_APP_CMD,
 		ABOUT_APP_CMD,
@@ -272,6 +276,9 @@ public:
 
 	void FillPageList();
 	void UpdatePageList();
+	// asks what to do with unsaved changes; false if the user wants to keep working on the document
+	bool ConfirmDiscardChanges();
+	void SaveDocument();
 	void HandlePendingActions(bool ok);
 
 

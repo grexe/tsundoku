@@ -64,6 +64,9 @@ public:
 	// The link at the position (page space), NULL if there is none. Valid until the page is rendered again.
 	const DocLink* FindLink(fz_point point) const;
 
+	// The annotation at the position (page space), NULL if there is none. Valid until the page is rendered again.
+	const DocAnnotation* FindAnnotation(fz_point point) const;
+
 	// Structured text of the page for selecting and copying; NULL as long as the page is rendering.
 	// The caller holds the lock of the document while it uses it.
 	fz_stext_page* Text() const { return mState == READY ? mText : NULL; }
@@ -88,6 +91,7 @@ protected:
 	Document* mDocument;
 	fz_stext_page* mText;
 	std::vector<DocLink> mLinks;
+	std::vector<DocAnnotation> mAnnotations;
 };
 
 #endif

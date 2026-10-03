@@ -57,6 +57,25 @@ struct DocAttachment {
 	time_t  modified;    // -1 if unknown
 };
 
+// The kinds of markup that can be added to a selection of text.
+enum MarkupType {
+	kMarkupHighlight,
+	kMarkupUnderline,
+	kMarkupStrikeOut,
+	kMarkupSquiggly
+};
+
+// An annotation of a PDF page (not links, popups and form fields). Rectangle and quads are in page space.
+struct DocAnnotation {
+	int     type;         // pdf_annot_type
+	int     index;        // among the annotations of the page that are listed, to change or delete it
+	fz_rect rect;
+	std::vector<fz_quad> quads;   // for markup, the lines it covers
+	BString contents;
+	BString author;
+	bool    isMarkup;
+};
+
 // A document read by MuPDF (PDF, XPS, CBZ, images, ...).
 //
 // MuPDF contexts must not be used by two threads at the same time. All threads share the context of the
@@ -108,6 +127,19 @@ public:
 	bool         LoadAttachments(std::vector<DocAttachment>& attachments);
 	bool         SaveAttachment(int index, const char* path);
 
+	// Annotations (PDF only). The page is 1-based, the index is DocAnnotation::index.
+	// LoadAnnotations() needs the page to be loaded and the lock to be held.
+	bool         CanEditAnnotations();
+	bool         LoadAnnotations(fz_page* page, std::vector<DocAnnotation>& annotations);
+	bool         AddMarkup(int page, MarkupType type, const fz_quad* quads, int count, const float color[3]);
+	bool         DeleteAnnotation(int page, int index);
+	bool         SetAnnotationContents(int page, int index, const char* text);
+
+	// Saving adds the changes to the end of the file (so that its attributes and the rest stay as they are).
+	bool         HasUnsavedChanges();
+	bool         CanSave();
+	bool         Save();
+
 	// For internal links: the page (1-based) and the position (page space, may be NaN) the link goes to.
 	bool         ResolveLink(const char* uri, int* page, float* x, float* y);
 	bool         IsExternalLink(const char* uri);
@@ -122,6 +154,8 @@ private:
 	int             fPageCount;
 	bool            fIsPDF;
 	bool            fEncrypted;
+	bool            fCanSave;      // changes can be added to the file
+	volatile bool   fModified;     // changed since opened or saved
 	std::vector<fz_rect> fBounds;   // cache, empty rectangle if unknown
 	std::vector<bool>    fBoundsKnown;
 };

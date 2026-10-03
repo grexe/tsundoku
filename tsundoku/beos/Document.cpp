@@ -112,15 +112,20 @@ Document::Document(fz_context* context, fz_document* document, const char* path)
 	fLock("document lock"),
 	fPageCount(0),
 	fIsPDF(false),
-	fEncrypted(false)
+	fEncrypted(false),
+	fCanSave(false),
+	fModified(false)
 {
 	int pages = 0;
 	int isPDF = 0;
 	int encrypted = 0;
+	int canSave = 0;
 
 	fz_try(fContext) {
 		pages = fz_count_pages(fContext, fDocument);
 		isPDF = pdf_specifics(fContext, fDocument) != NULL;
+		if (isPDF)
+			canSave = pdf_can_be_saved_incrementally(fContext, pdf_specifics(fContext, fDocument));
 		char buffer[128];
 		if (fz_lookup_metadata(fContext, fDocument, FZ_META_ENCRYPTION, buffer, sizeof(buffer)) > 0
 			&& strcmp(buffer, "None") != 0)
@@ -134,6 +139,7 @@ Document::Document(fz_context* context, fz_document* document, const char* path)
 	fPageCount = pages;
 	fIsPDF = isPDF != 0;
 	fEncrypted = encrypted != 0;
+	fCanSave = canSave != 0;
 
 	fz_rect empty = fz_empty_rect;
 	fBounds.assign(pages > 0 ? pages : 0, empty);
@@ -529,4 +535,267 @@ Document::SaveAttachment(int index, const char* path)
 	fz_drop_buffer(fContext, contents);
 	pdf_drop_obj(fContext, names);
 	return ok;
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+// Annotations
+
+static const int kMaxAnnotationQuads = 512;
+
+
+// the annotations that are shown in the list: all but links, popups (belong to a note) and form fields
+static bool
+IsListedAnnotation(int type)
+{
+	return type != PDF_ANNOT_LINK && type != PDF_ANNOT_POPUP && type != PDF_ANNOT_WIDGET;
+}
+
+
+bool
+Document::CanEditAnnotations()
+{
+	return fIsPDF && CanAnnotate();
+}
+
+
+bool
+Document::LoadAnnotations(fz_page* page, std::vector<DocAnnotation>& annotations)
+{
+	if (!fIsPDF)
+		return false;
+
+	pdf_page* pdfPage = NULL;
+	fz_var(pdfPage);
+	fz_try(fContext) {
+		pdfPage = pdf_page_from_fz_page(fContext, page);
+	}
+	fz_catch(fContext) {
+		pdfPage = NULL;
+	}
+	if (pdfPage == NULL)
+		return false;
+
+	std::vector<fz_quad> quads(kMaxAnnotationQuads);
+	int index = 0;
+	pdf_annot* annot = NULL;
+
+	fz_var(annot);
+	fz_try(fContext) {
+		annot = pdf_first_annot(fContext, pdfPage);
+	}
+	fz_catch(fContext) {
+		annot = NULL;
+	}
+
+	while (annot != NULL) {
+		int type = PDF_ANNOT_UNKNOWN;
+		fz_rect rect = fz_empty_rect;
+		int quadCount = 0;
+		char contents[1024], author[128];
+		contents[0] = author[0] = '\0';
+		int ok = 0;
+		pdf_annot* next = NULL;
+
+		fz_var(ok);
+		fz_try(fContext) {
+			type = pdf_annot_type(fContext, annot);
+			if (IsListedAnnotation(type)) {
+				rect = pdf_bound_annot(fContext, annot);
+				if (pdf_annot_has_quad_points(fContext, annot)) {
+					quadCount = pdf_annot_quad_point_count(fContext, annot);
+					if (quadCount > kMaxAnnotationQuads)
+						quadCount = kMaxAnnotationQuads;
+					for (int i = 0; i < quadCount; i++)
+						quads[i] = pdf_annot_quad_point(fContext, annot, i);
+				}
+				const char* text = pdf_annot_contents(fContext, annot);
+				strlcpy(contents, text != NULL ? text : "", sizeof(contents));
+				const char* by = pdf_annot_author(fContext, annot);
+				strlcpy(author, by != NULL ? by : "", sizeof(author));
+				ok = 1;
+			}
+			next = pdf_next_annot(fContext, annot);
+		}
+		fz_catch(fContext) {
+			ok = 0;
+			next = NULL;
+		}
+
+		if (ok) {
+			DocAnnotation entry;
+			entry.type = type;
+			entry.index = index++;
+			entry.rect = rect;
+			entry.quads.assign(quads.begin(), quads.begin() + quadCount);
+			entry.contents = contents;
+			entry.author = author;
+			entry.isMarkup = type == PDF_ANNOT_HIGHLIGHT || type == PDF_ANNOT_UNDERLINE
+				|| type == PDF_ANNOT_STRIKE_OUT || type == PDF_ANNOT_SQUIGGLY;
+			annotations.push_back(entry);
+		}
+		annot = next;
+	}
+	return true;
+}
+
+
+bool
+Document::AddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int count, const float color[3])
+{
+	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount || count <= 0)
+		return false;
+
+	static const int types[] = { PDF_ANNOT_HIGHLIGHT, PDF_ANNOT_UNDERLINE, PDF_ANNOT_STRIKE_OUT,
+		PDF_ANNOT_SQUIGGLY };
+
+	DocumentLocker locker(this);
+	fz_page* page = NULL;
+	int ok = 0;
+
+	fz_var(page);
+	fz_try(fContext) {
+		page = fz_load_page(fContext, fDocument, pageNo - 1);
+		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
+		pdf_annot* annot = pdf_create_annot(fContext, pdfPage, (enum pdf_annot_type)types[type]);
+		pdf_set_annot_quad_points(fContext, annot, count, quads);
+		pdf_set_annot_color(fContext, annot, 3, color);
+		pdf_set_annot_creation_date(fContext, annot, (int64_t)time(NULL));
+		pdf_set_annot_modification_date(fContext, annot, (int64_t)time(NULL));
+		pdf_update_annot(fContext, annot);
+		ok = 1;
+	}
+	fz_always(fContext) {
+		fz_drop_page(fContext, page);
+	}
+	fz_catch(fContext) {
+		LogError(fContext, "cannot add annotation");
+		ok = 0;
+	}
+	if (ok)
+		fModified = true;
+	return ok != 0;
+}
+
+
+// the annotation with the index (counted as in LoadAnnotations)
+static pdf_annot*
+FindAnnotation(fz_context* context, pdf_page* page, int index)
+{
+	int n = 0;
+	for (pdf_annot* annot = pdf_first_annot(context, page); annot != NULL;
+			annot = pdf_next_annot(context, annot)) {
+		if (!IsListedAnnotation(pdf_annot_type(context, annot)))
+			continue;
+		if (n++ == index)
+			return annot;
+	}
+	return NULL;
+}
+
+
+bool
+Document::DeleteAnnotation(int pageNo, int index)
+{
+	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
+		return false;
+
+	DocumentLocker locker(this);
+	fz_page* page = NULL;
+	int ok = 0;
+
+	fz_var(page);
+	fz_try(fContext) {
+		page = fz_load_page(fContext, fDocument, pageNo - 1);
+		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
+		pdf_annot* annot = FindAnnotation(fContext, pdfPage, index);
+		if (annot != NULL) {
+			pdf_delete_annot(fContext, pdfPage, annot);
+			ok = 1;
+		}
+	}
+	fz_always(fContext) {
+		fz_drop_page(fContext, page);
+	}
+	fz_catch(fContext) {
+		LogError(fContext, "cannot delete annotation");
+		ok = 0;
+	}
+	if (ok)
+		fModified = true;
+	return ok != 0;
+}
+
+
+bool
+Document::SetAnnotationContents(int pageNo, int index, const char* text)
+{
+	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
+		return false;
+
+	DocumentLocker locker(this);
+	fz_page* page = NULL;
+	int ok = 0;
+
+	fz_var(page);
+	fz_try(fContext) {
+		page = fz_load_page(fContext, fDocument, pageNo - 1);
+		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
+		pdf_annot* annot = FindAnnotation(fContext, pdfPage, index);
+		if (annot != NULL) {
+			pdf_set_annot_contents(fContext, annot, text);
+			pdf_set_annot_modification_date(fContext, annot, (int64_t)time(NULL));
+			pdf_update_annot(fContext, annot);
+			ok = 1;
+		}
+	}
+	fz_always(fContext) {
+		fz_drop_page(fContext, page);
+	}
+	fz_catch(fContext) {
+		LogError(fContext, "cannot change annotation");
+		ok = 0;
+	}
+	if (ok)
+		fModified = true;
+	return ok != 0;
+}
+
+
+// no lock, the window asks this all the time while a page is rendered
+bool
+Document::HasUnsavedChanges()
+{
+	return fModified;
+}
+
+
+bool
+Document::CanSave()
+{
+	return fCanSave;
+}
+
+
+bool
+Document::Save()
+{
+	if (!fIsPDF)
+		return false;
+
+	DocumentLocker locker(this);
+	int ok = 0;
+	fz_try(fContext) {
+		pdf_write_options options = pdf_default_write_options;
+		options.do_incremental = 1;
+		pdf_save_document(fContext, pdf_specifics(fContext, fDocument), fPath.String(), &options);
+		ok = 1;
+	}
+	fz_catch(fContext) {
+		LogError(fContext, "cannot save document");
+		ok = 0;
+	}
+	if (ok)
+		fModified = false;
+	return ok != 0;
 }

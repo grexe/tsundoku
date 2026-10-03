@@ -32,15 +32,21 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   selected text is copied right away. With Shift as well the selection is a rectangle, which also copies the picture
   of that area. Dragging without a key still moves the page, and the secondary button opens a menu (copy, select
   all, and the link actions).
-- Searching finds the text in the order of reading and continues after the previous hit.
+- Searching finds the text in the order of reading and continues after the previous hit (also backwards, Shift+G), and
+  shows all hits on the page. A selection stays when you zoom or rotate.
+- Selected text can be highlighted, underlined or struck out (Edit menu or the menu of the secondary button, with a
+  choice of colors). The marks are real PDF annotations, other readers show them. A note can be added to a mark or
+  changed, and a mark can be deleted from the same menu. File > Save (Cmd+S) adds the changes to the end of the file,
+  so its attributes stay as they are; this does not work for files that MuPDF had to repair.
+- The files embedded in a PDF are listed in View > Show attachments and can be saved.
 - The outline follows the current page: the chapter a page belongs to is selected and scrolled into view, also after a
   jump from another application.
 - The side bar is wider by default, and it collapses on its own if the document has neither an outline nor bookmarks.
 - Settings are stored in `~/config/settings/Tsundoku`, separate from BePDF. Everything else BePDF stores (bookmarks and
   the position per file in BFS attributes) is unchanged and compatible.
 
-Not there yet, and planned: editing of annotations (BePDF could, Tsundoku shows the ones that are in the file),
-the list of attachments, the fonts of a document in the file info. See [PLAN-mupdf.md](PLAN-mupdf.md).
+Not there yet, and planned: more kinds of annotations (notes on the page, free text, shapes, ink; BePDF could,
+Tsundoku shows the ones that are in the file), the fonts of a document in the file info. See [PLAN-mupdf.md](PLAN-mupdf.md).
 
 ### Features
 

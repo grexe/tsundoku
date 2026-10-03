@@ -209,6 +209,7 @@ PageRenderer::Render()
 			page = fz_load_page(context, document->Doc(), mPageNo - 1);
 			text = fz_new_stext_page_from_page(context, page, NULL);
 			links = fz_load_links(context, page);
+			document->LoadAnnotations(page, mPage->mAnnotations);
 		}
 		fz_always(context) {
 			fz_drop_page(context, page);

@@ -42,6 +42,7 @@ SRCS = beos/AttachmentsView.cpp \
 	beos/Application.cpp \
 	beos/History.cpp \
 	beos/LayoutUtils.cpp \
+	beos/NoteWindow.cpp \
 	beos/OutlinesWindow.cpp \
 	beos/PDFPrint.cpp \
 	beos/PDFSearch.cpp \

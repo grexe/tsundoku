@@ -353,12 +353,50 @@ void PDFWindow::StoreFileAttributes() {
 
 ///////////////////////////////////////////////////////////
 bool PDFWindow::QuitRequested() {
+	if (!ConfirmDiscardChanges())
+		return false;
 	gApp->WindowClosed();
 	mMainView->WaitForPage(true);
 	StoreFileAttributes();
 	be_app->PostMessage(B_QUIT_REQUESTED);
 	return true;
 }
+
+///////////////////////////////////////////////////////////
+void PDFWindow::SaveDocument() {
+	Document* doc = mMainView->GetDocument();
+	if (!doc->HasUnsavedChanges())
+		return;
+	if (!doc->Save()) {
+		BAlert* alert = new BAlert("Error", B_TRANSLATE("The document could not be saved."),
+			B_TRANSLATE("OK"), NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT);
+		alert->Go();
+	}
+	UpdateInputEnabler();
+}
+
+
+bool PDFWindow::ConfirmDiscardChanges() {
+	if (mMainView == NULL)
+		return true;
+	Document* doc = mMainView->GetDocument();
+	if (doc == NULL || !doc->HasUnsavedChanges())
+		return true;
+
+	BString text(B_TRANSLATE("The document has unsaved changes (annotations)."));
+	if (!doc->CanSave())
+		text << "\n" << B_TRANSLATE("They cannot be saved in this file.");
+	BAlert* alert = new BAlert("Unsaved", text.String(), B_TRANSLATE("Cancel"), B_TRANSLATE("Discard"),
+		doc->CanSave() ? B_TRANSLATE("Save") : NULL, B_WIDTH_AS_USUAL, B_WARNING_ALERT);
+	alert->SetShortcut(0, B_ESCAPE);
+	int32 choice = alert->Go();
+	if (choice == 0)
+		return false;
+	if (choice == 2 && !doc->Save())
+		return false;
+	return true;
+}
+
 
 ///////////////////////////////////////////////////////////
 void PDFWindow::CleanUpBeforeLoad() {
@@ -375,6 +413,8 @@ bool PDFWindow::IsCurrentFile(entry_ref *ref) const {
 ///////////////////////////////////////////////////////////
 bool PDFWindow::LoadFile(entry_ref *ref, const char *ownerPassword, const char *userPassword, bool *encrypted) {
 	if (mMainView != NULL) {
+		if (!ConfirmDiscardChanges())
+			return false;
 		StoreFileAttributes();
 		CleanUpBeforeLoad();
 		// load new file
@@ -508,6 +548,12 @@ void PDFWindow::UpdateInputEnabler()
 		fMenuBar->FindItem(SELECT_ALL_CMD)->SetEnabled(okToCopy);
 		fMenuBar->FindItem(SELECT_NONE_CMD)->SetEnabled(okToCopy);
 
+		bool canMark = doc->CanEditAnnotations() && mMainView->HasTextSelection();
+		fMenuBar->FindItem(ANNOTATE_HIGHLIGHT_CMD)->SetEnabled(canMark);
+		fMenuBar->FindItem(ANNOTATE_UNDERLINE_CMD)->SetEnabled(canMark);
+		fMenuBar->FindItem(ANNOTATE_STRIKEOUT_CMD)->SetEnabled(canMark);
+		fMenuBar->FindItem(SAVE_FILE_CMD)->SetEnabled(doc->HasUnsavedChanges() && doc->CanSave());
+
 		bool hasUserBookmark = mOutlinesView->HasUserBookmark(page);
 		bool selected    = hasUserBookmark && mOutlinesView->IsUserBMSelected();
 		fMenuBar->FindItem(ADD_USER_BOOKMARK_CMD)->SetEnabled(!hasUserBookmark);
@@ -558,11 +604,12 @@ BMenuBar* PDFWindow::BuildMenu()
 			.AddItem(mNewMenu  = new RecentDocumentsMenu(
 				B_TRANSLATE("Open in new window" B_UTF8_ELLIPSIS),
 				OPEN_IN_NEW_WINDOW_CMD))
+			.AddItem(B_TRANSLATE("Save"), SAVE_FILE_CMD, 'S')
 			.AddItem(B_TRANSLATE("Reload"), RELOAD_FILE_CMD, 'R')
 			.AddItem(mFileInfoItem = new BMenuItem(B_TRANSLATE("File info" B_UTF8_ELLIPSIS),
 				new BMessage(FILE_INFO_CMD), 'I'))
 			.AddSeparator()
-			.AddItem(B_TRANSLATE("Page setup" B_UTF8_ELLIPSIS), PAGESETUP_FILE_CMD, 'S')
+			.AddItem(B_TRANSLATE("Page setup" B_UTF8_ELLIPSIS), PAGESETUP_FILE_CMD, 'S', B_SHIFT_KEY)
 			.AddItem(B_TRANSLATE("Print" B_UTF8_ELLIPSIS), PRINT_SETTINGS_CMD, 'P')
 			.AddSeparator()
 			.AddItem(B_TRANSLATE("Close"), CLOSE_FILE_CMD, 'W')
@@ -574,6 +621,10 @@ BMenuBar* PDFWindow::BuildMenu()
 			.AddSeparator()
 			.AddItem(B_TRANSLATE("Select all"), SELECT_ALL_CMD, 'A')
 			.AddItem(B_TRANSLATE("Select none"), SELECT_NONE_CMD, 'A', B_SHIFT_KEY)
+			.AddSeparator()
+			.AddItem(B_TRANSLATE("Highlight selection"), ANNOTATE_HIGHLIGHT_CMD, 'H', B_SHIFT_KEY)
+			.AddItem(B_TRANSLATE("Underline selection"), ANNOTATE_UNDERLINE_CMD, 'U', B_SHIFT_KEY)
+			.AddItem(B_TRANSLATE("Strike out selection"), ANNOTATE_STRIKEOUT_CMD, 'K', B_SHIFT_KEY)
 			.AddSeparator()
 			.AddItem(mPreferencesItem = new BMenuItem(B_TRANSLATE("Preferences" B_UTF8_ELLIPSIS),
 										new BMessage(PREFERENCES_FILE_CMD), ','))
@@ -1023,6 +1074,18 @@ PDFWindow::MessageReceived(BMessage* message)
 	case RELOAD_FILE_CMD:
 		Reload();
 		break;
+	case SAVE_FILE_CMD:
+		SaveDocument();
+		break;
+	case ANNOTATE_HIGHLIGHT_CMD:
+		mMainView->AnnotateSelection(kMarkupHighlight, 0xffeb3b);
+		break;
+	case ANNOTATE_UNDERLINE_CMD:
+		mMainView->AnnotateSelection(kMarkupUnderline, 0xe53935);
+		break;
+	case ANNOTATE_STRIKEOUT_CMD:
+		mMainView->AnnotateSelection(kMarkupStrikeOut, 0xe53935);
+		break;
 	case CLOSE_FILE_CMD:
 		mMainView->WaitForPage(true);
 		PostMessage(B_QUIT_REQUESTED);
@@ -1467,7 +1530,7 @@ PDFWindow::MessageReceived(BMessage* message)
 			} else if (cmd.StartsWith("do_")) {
 				// any command of the window by name
 				static const struct { const char* name; uint32 what; } commands[] = {
-					{ "fileinfo", FILE_INFO_CMD }, { "preferences", PREFERENCES_FILE_CMD },
+					{ "fileinfo", FILE_INFO_CMD }, { "save", SAVE_FILE_CMD }, { "preferences", PREFERENCES_FILE_CMD },
 					{ "printsettings", PRINT_SETTINGS_CMD }, { "rotate", ROTATE_CLOCKWISE_CMD },
 					{ "fitwidth", FIT_TO_PAGE_WIDTH_CMD }, { "fitpage", FIT_TO_PAGE_CMD },
 					{ "back", HISTORY_BACK_CMD }, { "forward", HISTORY_FORWARD_CMD },
