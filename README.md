@@ -35,11 +35,11 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
 - Searching finds the text in the order of reading and continues after the previous hit (also backwards, Shift+G), and
   shows all hits on the page. A selection stays when you zoom or rotate.
 - Selected text can be highlighted, underlined or struck out (Edit menu or the menu of the secondary button, with a
-  choice of colors). The marks are real PDF annotations, other readers show them. A note can be added to a mark or
-  changed, and a mark can be deleted from the same menu; the note shows as a tooltip when the mouse rests on the mark.
+  choice of colors, each shown with a sample). The marks are real PDF annotations, other readers show them. From the
+  menu of an existing mark its color and its note can be changed, or the mark deleted; the note shows as a tooltip when the mouse rests on the mark.
   File > Save (Cmd+S) adds the changes to the end of the file, so its attributes stay as they are. For a file that
   cannot be written (system directory, the title says "read-only") or that MuPDF had to repair, Save and
-  File > Save as... write a copy, with the attributes of the original, and Tsundoku goes on with the copy. The
+  File > Save as… (Cmd+Shift+S) write a copy, with the attributes of the original, and Tsundoku goes on with the copy. The
   cursor becomes an I-beam while Option or Cmd is held, to show that dragging selects.
 - Other applications (SEN) can open a document at a quoted passage: send `B_REFS_RECEIVED` with the file and
   `SEN:quote` (the text; `bepdf:page_num` is a hint where to start looking and may be wrong). Tsundoku finds the

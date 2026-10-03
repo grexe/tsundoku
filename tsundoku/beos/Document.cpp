@@ -605,6 +605,8 @@ Document::LoadAnnotations(fz_page* page, std::vector<DocAnnotation>& annotations
 		contents[0] = author[0] = '\0';
 		int ok = 0;
 		pdf_annot* next = NULL;
+		int colorCount = 0;
+		float colorValue[4] = { 0, 0, 0, 0 };
 
 		fz_var(ok);
 		fz_try(fContext) {
@@ -622,6 +624,7 @@ Document::LoadAnnotations(fz_page* page, std::vector<DocAnnotation>& annotations
 				strlcpy(contents, text != NULL ? text : "", sizeof(contents));
 				const char* by = pdf_annot_author(fContext, annot);
 				strlcpy(author, by != NULL ? by : "", sizeof(author));
+				pdf_annot_color(fContext, annot, &colorCount, colorValue);
 				ok = 1;
 			}
 			next = pdf_next_annot(fContext, annot);
@@ -641,6 +644,25 @@ Document::LoadAnnotations(fz_page* page, std::vector<DocAnnotation>& annotations
 			entry.author = author;
 			entry.isMarkup = type == PDF_ANNOT_HIGHLIGHT || type == PDF_ANNOT_UNDERLINE
 				|| type == PDF_ANNOT_STRIKE_OUT || type == PDF_ANNOT_SQUIGGLY;
+			entry.hasColor = colorCount == 1 || colorCount == 3 || colorCount == 4;
+			entry.color = 0;
+			if (entry.hasColor) {
+				// gray, RGB or CMYK to RGB
+				float r, g, b;
+				if (colorCount == 1)
+					r = g = b = colorValue[0];
+				else if (colorCount == 3) {
+					r = colorValue[0];
+					g = colorValue[1];
+					b = colorValue[2];
+				} else {
+					r = (1 - colorValue[0]) * (1 - colorValue[3]);
+					g = (1 - colorValue[1]) * (1 - colorValue[3]);
+					b = (1 - colorValue[2]) * (1 - colorValue[3]);
+				}
+				entry.color = ((uint32)(r * 255 + 0.5f) << 16) | ((uint32)(g * 255 + 0.5f) << 8)
+					| (uint32)(b * 255 + 0.5f);
+			}
 			annotations.push_back(entry);
 		}
 		annot = next;
@@ -766,6 +788,42 @@ Document::SetAnnotationContents(int pageNo, int index, const char* text)
 	}
 	fz_catch(fContext) {
 		LogError(fContext, "cannot change annotation");
+		ok = 0;
+	}
+	if (ok)
+		fModified = true;
+	return ok != 0;
+}
+
+
+bool
+Document::SetAnnotationColor(int pageNo, int index, uint32 rgb)
+{
+	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
+		return false;
+
+	float color[3] = { ((rgb >> 16) & 0xff) / 255.0f, ((rgb >> 8) & 0xff) / 255.0f, (rgb & 0xff) / 255.0f };
+	DocumentLocker locker(this);
+	fz_page* page = NULL;
+	int ok = 0;
+
+	fz_var(page);
+	fz_try(fContext) {
+		page = fz_load_page(fContext, fDocument, pageNo - 1);
+		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
+		pdf_annot* annot = FindAnnotation(fContext, pdfPage, index);
+		if (annot != NULL) {
+			pdf_set_annot_color(fContext, annot, 3, color);
+			pdf_set_annot_modification_date(fContext, annot, (int64_t)time(NULL));
+			pdf_update_annot(fContext, annot);
+			ok = 1;
+		}
+	}
+	fz_always(fContext) {
+		fz_drop_page(fContext, page);
+	}
+	fz_catch(fContext) {
+		LogError(fContext, "cannot change the color of an annotation");
 		ok = 0;
 	}
 	if (ok)

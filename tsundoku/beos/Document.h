@@ -74,6 +74,8 @@ struct DocAnnotation {
 	BString contents;
 	BString author;
 	bool    isMarkup;
+	bool    hasColor;
+	uint32  color;        // 0xRRGGBB, if hasColor
 };
 
 // A document read by MuPDF (PDF, XPS, CBZ, images, ...).
@@ -134,6 +136,7 @@ public:
 	bool         AddMarkup(int page, MarkupType type, const fz_quad* quads, int count, const float color[3]);
 	bool         DeleteAnnotation(int page, int index);
 	bool         SetAnnotationContents(int page, int index, const char* text);
+	bool         SetAnnotationColor(int page, int index, uint32 rgb);
 
 	// Saving adds the changes to the end of the file (so that its attributes and the rest stay as they are).
 	bool         HasUnsavedChanges();

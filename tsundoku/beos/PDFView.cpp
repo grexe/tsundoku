@@ -89,15 +89,103 @@ static const int kZoomDPI[MAX_ZOOM - MIN_ZOOM + 1] = {
 #define DELETE_ANNOTATION_MSG          'dlan'
 #define EDIT_NOTE_MSG                  'ednt'
 #define NOTE_ENTERED_MSG               'ntnt'
+#define CHANGE_COLOR_MSG               'chcl'
 #define MODIFIERS_POLL_MSG             'mdfy'
 
 static bool SelectModifierDown();
 
 // the colors offered for marking text
 static const struct { const char* name; uint32 rgb; } kMarkerColors[] = {
-	{ "Yellow", 0xffeb3b }, { "Green", 0x96e678 }, { "Blue", 0x78beff }, { "Pink", 0xff96c8 },
-	{ "Orange", 0xffb95a }
+	{ B_TRANSLATE_MARK("Yellow"), 0xffeb3b }, { B_TRANSLATE_MARK("Green"), 0x96e678 },
+	{ B_TRANSLATE_MARK("Blue"), 0x78beff }, { B_TRANSLATE_MARK("Pink"), 0xff96c8 },
+	{ B_TRANSLATE_MARK("Orange"), 0xffb95a }, { B_TRANSLATE_MARK("Red"), 0xe53935 }
 };
+static const int kMarkerColorCount = sizeof(kMarkerColors) / sizeof(kMarkerColors[0]);
+
+// the color around the page, a little darker than the panels of the system
+static rgb_color
+DesktopColor()
+{
+	return tint_color(ui_color(B_PANEL_BACKGROUND_COLOR), B_DARKEN_3_TINT);
+}
+
+static const float kGap = 6;
+
+// A menu item with a box of a color in front of the label, to the right of the check mark.
+class ColorMenuItem : public BMenuItem {
+public:
+	ColorMenuItem(const char* label, uint32 rgb, BMessage* message)
+		:
+		BMenuItem(label, message),
+		fColor(rgb)
+	{
+	}
+
+	virtual void GetContentSize(float* width, float* height)
+	{
+		BMenuItem::GetContentSize(width, height);
+		*width += BoxWidth() + kGap;
+	}
+
+	virtual void DrawContent()
+	{
+		BMenu* menu = Menu();
+		BPoint origin = menu->PenLocation();
+		font_height fontHeight;
+		menu->GetFontHeight(&fontHeight);
+		float height = ceilf(fontHeight.ascent + fontHeight.descent);
+
+		BRect box(origin.x, origin.y + 1, origin.x + BoxWidth() - 1, origin.y + height - 2);
+		rgb_color color = { (uint8)(fColor >> 16), (uint8)(fColor >> 8), (uint8)fColor, 255 };
+		rgb_color saved = menu->HighColor();
+		menu->SetHighColor(color);
+		menu->FillRect(box);
+		menu->SetHighColor(tint_color(ui_color(B_MENU_BACKGROUND_COLOR), B_DARKEN_3_TINT));
+		menu->StrokeRect(box);
+		menu->SetHighColor(saved);
+
+		menu->MovePenTo(origin.x + BoxWidth() + kGap, origin.y);
+		BMenuItem::DrawContent();
+	}
+
+private:
+	float BoxWidth() const
+	{
+		return ceilf(be_plain_font->Size() * 1.6f);
+	}
+
+	uint32 fColor;
+};
+
+// the colors as a submenu, the one that is the current one has a check mark; the messages are copies of
+// the template with the color added
+static BMenu*
+BuildColorMenu(const char* title, const BMessage& message, BHandler* target, bool hasCurrent, uint32 current)
+{
+	BMenu* menu = new BMenu(title);
+	bool known = false;
+	for (int c = 0; c < kMarkerColorCount; c++) {
+		BMessage* copy = new BMessage(message);
+		copy->AddInt32("color", kMarkerColors[c].rgb);
+		ColorMenuItem* item = new ColorMenuItem(B_TRANSLATE_NOCOLLECT(kMarkerColors[c].name),
+			kMarkerColors[c].rgb, copy);
+		item->SetTarget(target);
+		if (hasCurrent && current == kMarkerColors[c].rgb) {
+			item->SetMarked(true);
+			known = true;
+		}
+		menu->AddItem(item);
+	}
+	if (hasCurrent && !known) {
+		// a color from another program: shown, so that it is clear what the mark has now
+		ColorMenuItem* item = new ColorMenuItem(B_TRANSLATE("Current"), current, new BMessage(message));
+		item->SetMarked(true);
+		item->SetEnabled(false);
+		menu->AddItem(item, 0);
+		menu->AddItem(new BSeparatorItem(), 1);
+	}
+	return menu;
+}
 
 // more quads than a page can have lines of text
 static const int kMaxQuads = 8192;
@@ -392,6 +480,15 @@ void PDFView::MessageReceived(BMessage *msg) {
 		AnnotateSelection((MarkupType)type, (uint32)rgb);
 		break;
 	}
+	case CHANGE_COLOR_MSG: {
+		int32 page = 0, index = -1, rgb = 0;
+		msg->FindInt32("page", &page);
+		msg->FindInt32("index", &index);
+		msg->FindInt32("color", &rgb);
+		if (ConfirmEditable() && mDoc->SetAnnotationColor(page, index, (uint32)rgb))
+			AnnotationsChanged();
+		break;
+	}
 	case DELETE_ANNOTATION_MSG: {
 		int32 page = 0, index = -1;
 		msg->FindInt32("page", &page);
@@ -456,11 +553,14 @@ PDFView::OnMouseWheelChanged(BMessage *msg) {
 	float dy, dx;
 	if (msg->FindFloat("be:wheel_delta_y", &dy) == B_OK && dy != 0.0) {
 		bool down = dy > 0;
-		// intelliMouse driver uses command key to simulate wheel_detla_x!
-		if ((modifiers() & (B_COMMAND_KEY | B_OPTION_KEY))) {
+		// as the guidelines say: Command zooms (Control as well, there is no font size to change), Option
+		// scrolls a full page; Shift goes to the next or previous page
+		int32 keys = modifiers();
+		if ((keys & (B_COMMAND_KEY | B_CONTROL_KEY))) {
 			Zoom(!down); // zoom in / out
-		} else if ((modifiers() & (B_SHIFT_KEY | B_CONTROL_KEY))) {
-			// next/previous page
+		} else if ((keys & B_OPTION_KEY)) {
+			ScrollVertical(down, 1.0);
+		} else if ((keys & B_SHIFT_KEY)) {
 			MoveToPage(mCurrentPage + (down ? 1 : -1));
 		} else {
 			ScrollVertical(down, 0.20);
@@ -492,7 +592,7 @@ PDFView::DrawBackground(BRect updateRect)
 {
 	BRect rect(Bounds());
 	float right = mLeft + mWidth - 1, bottom = mTop + mHeight - 1;
-	SetLowColor(128, 128, 128, 0);
+	SetLowColor(DesktopColor());
 	if (rect.left < mLeft) {
 		FillRect(BRect(rect.left, rect.top, mLeft - 2, rect.bottom), B_SOLID_LOW);
 	}
@@ -506,7 +606,7 @@ PDFView::DrawBackground(BRect updateRect)
 		FillRect(BRect(rect.left, bottom + 2, rect.right, rect.bottom), B_SOLID_LOW);
 	}
 
-	SetLowColor(0, 0, 0, 0);
+	SetLowColor(ui_color(B_SHADOW_COLOR));
 	StrokeRect(BRect(mLeft - 1, mTop - 1, right + 1, bottom + 1), B_SOLID_LOW);
 }
 
@@ -580,7 +680,8 @@ PDFView::DrawSelection(BRect updateRect)
 	if (mSelected == NOT_SELECTED)
 		return;
 
-	rgb_color fill_color = {0, 0, 255, 64}; // transparent blue
+	rgb_color fill_color = ui_color(B_CONTROL_HIGHLIGHT_COLOR);
+	fill_color.alpha = 70;
 	SetHighColor(fill_color); // fill color for selection
 	SetPenSize(1.0);
 
@@ -625,7 +726,7 @@ void
 PDFView::Draw(BRect updateRect)
 {
 	if (mLoading) {
-		SetLowColor(128, 128, 128, 0);
+		SetLowColor(DesktopColor());
 		FillRect(updateRect, B_SOLID_LOW);
 	} else {
 		DrawBackground(updateRect);
@@ -1283,33 +1384,34 @@ PDFView::ShowPopUpMenu(BPoint point, const DocLink* link, const DocAnnotation* a
 		menu->AddSeparatorItem();
 
 		if (HasTextSelection()) {
-			BMenu* colors = new BMenu(B_TRANSLATE("Highlight"));
-			for (size_t c = 0; c < sizeof(kMarkerColors) / sizeof(kMarkerColors[0]); c++) {
-				msg = new BMessage(ANNOTATE_MSG);
-				msg->AddInt32("type", kMarkupHighlight);
-				msg->AddInt32("color", kMarkerColors[c].rgb);
-				i = new BMenuItem(B_TRANSLATE_NOCOLLECT(kMarkerColors[c].name), msg);
-				i->SetTarget(this);
-				colors->AddItem(i);
-			}
-			menu->AddItem(colors);
+			BMessage highlight(ANNOTATE_MSG);
+			highlight.AddInt32("type", kMarkupHighlight);
+			menu->AddItem(BuildColorMenu(B_TRANSLATE("Highlight"), highlight, this, false, 0));
 
 			msg = new BMessage(ANNOTATE_MSG);
 			msg->AddInt32("type", kMarkupUnderline);
-			msg->AddInt32("color", 0xe53935);
+			msg->AddInt32("color", kMarkerColors[5].rgb);
 			i = new BMenuItem(B_TRANSLATE("Underline"), msg);
 			i->SetTarget(this);
 			menu->AddItem(i);
 
 			msg = new BMessage(ANNOTATE_MSG);
 			msg->AddInt32("type", kMarkupStrikeOut);
-			msg->AddInt32("color", 0xe53935);
+			msg->AddInt32("color", kMarkerColors[5].rgb);
 			i = new BMenuItem(B_TRANSLATE("Strike out"), msg);
 			i->SetTarget(this);
 			menu->AddItem(i);
 		}
 
 		if (annotation != NULL) {
+			if (annotation->isMarkup) {
+				BMessage change(CHANGE_COLOR_MSG);
+				change.AddInt32("page", mCurrentPage);
+				change.AddInt32("index", annotation->index);
+				menu->AddItem(BuildColorMenu(B_TRANSLATE("Color"), change, this, annotation->hasColor,
+					annotation->color));
+			}
+
 			msg = new BMessage(EDIT_NOTE_MSG);
 			msg->AddInt32("page", mCurrentPage);
 			msg->AddInt32("index", annotation->index);
@@ -2482,6 +2584,26 @@ PDFView::TestCommand(BMessage* message)
 		bool ok = AnnotateSelection(type, kind == "highlight" ? 0xffeb3b : 0xe53935);
 		TestLog("annotate %s: %s, unsaved changes: %d", kind.String(), ok ? "ok" : "failed",
 			(int)mDoc->HasUnsavedChanges());
+	} else if (cmd == "popup") {
+		// the context menu as a secondary click at (x1, y1) shows it (blocks until it is closed)
+		BPoint where(x1, y1);
+		ShowPopUpMenu(ConvertToScreen(where), OnLink(where), OnAnnotation(where));
+	} else if (cmd == "colormenu") {
+		// the items of the color submenu as a menu of their own, with "color" as the current one
+		BMessage change(CHANGE_COLOR_MSG);
+		BMenu* colors = BuildColorMenu("Color", change, this, true, (uint32)TestNumber(message, "color"));
+		BPopUpMenu* popup = new BPopUpMenu("colors");
+		popup->SetAsyncAutoDestruct(true);
+		while (BMenuItem* item = colors->RemoveItem((int32)0))
+			popup->AddItem(item);
+		delete colors;
+		popup->Go(ConvertToScreen(BPoint(x1, y1)), true, false, false);
+	} else if (cmd == "setcolor") {
+		bool ok = mDoc->SetAnnotationColor(mCurrentPage, (int)TestNumber(message, "which"),
+			(uint32)TestNumber(message, "color"));
+		if (ok)
+			AnnotationsChanged();
+		TestLog("setcolor: %s", ok ? "ok" : "failed");
 	} else if (cmd == "hover") {
 		// as if the mouse was at (x1, y1): cursor and tooltip
 		DisplayLink(BPoint(x1, y1));
@@ -2493,8 +2615,9 @@ PDFView::TestCommand(BMessage* message)
 		const std::vector<DocAnnotation>& list = mPage->mAnnotations;
 		TestLog("annots on page %d: %d", mCurrentPage, (int)list.size());
 		for (size_t i = 0; i < list.size(); i++) {
-			TestLog("  #%d type %d markup %d quads %d rect %g,%g-%g,%g author [%s] note [%s]", list[i].index,
-				list[i].type, (int)list[i].isMarkup, (int)list[i].quads.size(), list[i].rect.x0, list[i].rect.y0,
+			TestLog("  #%d type %d markup %d quads %d color %s%06x rect %g,%g-%g,%g author [%s] note [%s]", list[i].index,
+				list[i].type, (int)list[i].isMarkup, (int)list[i].quads.size(), list[i].hasColor ? "#" : "none ",
+				(unsigned)list[i].color, list[i].rect.x0, list[i].rect.y0,
 				list[i].rect.x1, list[i].rect.y1, list[i].author.String(), list[i].contents.String());
 		}
 		const DocAnnotation* under = OnAnnotation(BPoint(x1, y1));

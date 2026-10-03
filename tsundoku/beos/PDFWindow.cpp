@@ -685,12 +685,12 @@ BMenuBar* PDFWindow::BuildMenu()
 				B_TRANSLATE("Open in new window" B_UTF8_ELLIPSIS),
 				OPEN_IN_NEW_WINDOW_CMD))
 			.AddItem(B_TRANSLATE("Save"), SAVE_FILE_CMD, 'S')
-			.AddItem(B_TRANSLATE("Save as" B_UTF8_ELLIPSIS), SAVE_AS_FILE_CMD)
+			.AddItem(B_TRANSLATE("Save as" B_UTF8_ELLIPSIS), SAVE_AS_FILE_CMD, 'S', B_SHIFT_KEY)
 			.AddItem(B_TRANSLATE("Reload"), RELOAD_FILE_CMD, 'R')
 			.AddItem(mFileInfoItem = new BMenuItem(B_TRANSLATE("File info" B_UTF8_ELLIPSIS),
 				new BMessage(FILE_INFO_CMD), 'I'))
 			.AddSeparator()
-			.AddItem(B_TRANSLATE("Page setup" B_UTF8_ELLIPSIS), PAGESETUP_FILE_CMD, 'S', B_SHIFT_KEY)
+			.AddItem(B_TRANSLATE("Page setup" B_UTF8_ELLIPSIS), PAGESETUP_FILE_CMD)
 			.AddItem(B_TRANSLATE("Print" B_UTF8_ELLIPSIS), PRINT_SETTINGS_CMD, 'P')
 			.AddSeparator()
 			.AddItem(B_TRANSLATE("Close"), CLOSE_FILE_CMD, 'W')
@@ -698,7 +698,7 @@ BMenuBar* PDFWindow::BuildMenu()
 		.End()
 
 		.AddMenu(B_TRANSLATE("Edit"))
-			.AddItem(B_TRANSLATE("Copy selection"), COPY_SELECTION_CMD, 'C')
+			.AddItem(B_TRANSLATE("Copy"), COPY_SELECTION_CMD, 'C')
 			.AddSeparator()
 			.AddItem(B_TRANSLATE("Select all"), SELECT_ALL_CMD, 'A')
 			.AddItem(B_TRANSLATE("Select none"), SELECT_NONE_CMD, 'A', B_SHIFT_KEY)
@@ -707,7 +707,7 @@ BMenuBar* PDFWindow::BuildMenu()
 			.AddItem(B_TRANSLATE("Underline selection"), ANNOTATE_UNDERLINE_CMD, 'U', B_SHIFT_KEY)
 			.AddItem(B_TRANSLATE("Strike out selection"), ANNOTATE_STRIKEOUT_CMD, 'K', B_SHIFT_KEY)
 			.AddSeparator()
-			.AddItem(mPreferencesItem = new BMenuItem(B_TRANSLATE("Preferences" B_UTF8_ELLIPSIS),
+			.AddItem(mPreferencesItem = new BMenuItem(B_TRANSLATE("Settings" B_UTF8_ELLIPSIS),
 										new BMessage(PREFERENCES_FILE_CMD), ','))
 		.End()
 
