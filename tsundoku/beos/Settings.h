@@ -90,6 +90,8 @@
   do(bool,    Bool,   QuasiFullscreenMode,    quasiFullscreenMode,                            true) \
   do(bool,    Bool,   FilledSelection,        filledSelection,                                true) \
   do(int8,    Int8,   LeftPanel,              leftPanel,                                         0) \
+  do(int8,    Int8,   PageFlow,               pageFlow,                                          0) \
+  do(bool,    Bool,   TitlePageAlone,         titlePageAlone,                                 true) \
                                                                                                     \
   do(int8,    Int8,   PrintColorMode,	      printColorMode,                                    0) \
   do(int32,  Int32,   Workspace,              workspace,                                         1) \

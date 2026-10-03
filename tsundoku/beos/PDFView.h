@@ -34,6 +34,7 @@
 #include "Document.h"
 #include "History.h"
 #include "FindTextWindow.h"
+#include "PageLayout.h"
 #include "PageRenderer.h"
 #include "Settings.h"
 
@@ -53,6 +54,19 @@ inline float RealSize (float x, float zoomDPI)
 	return zoomDPI / 72 * x;
 }
 
+// A page that is shown: what is rendered of it, the thread that renders it and where it is.
+struct PageSlot {
+	PageSlot();
+	~PageSlot();
+
+	int           number;       // the page, 0 if the slot is free
+	CachedPage*   page;
+	PageRenderer* renderer;
+	thread_id     rendererId;   // -1 if it is not rendering
+	bool          rendering;
+	BPoint        origin;       // top left of the page in the coordinates of the view
+};
+
 class PDFView
 	: public BView
 {
@@ -61,11 +75,22 @@ private:
 	Document * mDoc;
 	bool mOk;
 	int mZoom;
+
+	// What is shown is a number of slots (one page, two, or those that are in view of a long run of pages), laid out
+	// by mLayout. One of them is the active page: all that works with a page (selecting, links, annotations, tools)
+	// works with it, and the mouse makes the page it is on the active one. mPage, mBitmap, mWidth, mHeight, mLeft
+	// and mTop are those of the active page.
+	PageLayout mLayout;
+	std::vector<PageSlot*> mSlots;       // in use, in the order of the pages
+	std::vector<PageSlot*> mFreeSlots;   // to be used again, with the memory of their bitmaps
+	PageSlot* mActive;
+	int mInteractionPage;                // the page that the selections and the like belong to
+	float mCanvasLeft, mCanvasTop;       // where the pages start in the view if they are smaller than the view
+	float mCanvasWidth, mCanvasHeight;   // what the view scrolls over
 	BBitmap * mBitmap;
 	CachedPage *mPage;
-	int mCurrentPage;
+	int mCurrentPage;                    // the page of the page box: the page, the left page of a spread, the page at the top
 	float mRotation;
-	PageRenderer mPageRenderer;
 	BString *mOwnerPassword;
 	BString *mUserPassword;
 
@@ -142,8 +167,7 @@ private:
 		MOUSE_WHEEL_THRESHHOLD = 2
 	};
 
-	thread_id mRendererID;
-	bool mRendering;
+	bool mRendering;                     // the active page is rendered
 
 	enum {
 		NOT_SELECTED = 0,
@@ -174,7 +198,6 @@ private:
 	bool mFindCaseSensitive;
 	// all hits of the search on the shown page (page space), shown until cleared
 	bool mFindHighlight;
-	std::vector<fz_quad> mFindQuads;
 	// the page that was last started to render, a selection stays as long as it is the same
 	int mRenderedPage;
 
@@ -219,7 +242,7 @@ public:
 	void DrawBackground(BRect updateRect);
 	void DrawSelection(BRect updateRect);
 	void DrawFindHits(BRect updateRect);
-	void UpdateFindQuads();
+	void UpdateFindQuadsOfAll();
 	void ClearFindHighlights();
 	virtual	void Draw (BRect updateRect);
 
@@ -247,6 +270,35 @@ public:
 	void ShowPopUpMenu(BPoint point, const DocLink* link, const DocAnnotation* annotation);
 	// shows the changed annotations, on another page if the change was there
 	void AnnotationsChanged(int page = 0);
+
+	// slots, layout and the active page
+	PageSlot* NewSlot();
+	void ReleaseSlot(PageSlot* slot);
+	void SetSlotsDocument(Document* document);
+	PageSlot* SlotForPage(int page) const;
+	PageSlot* SlotAt(BPoint point) const;
+	void SetActiveRaw(PageSlot* slot);   // only changes what the members stand for
+	void ActivateSlot(PageSlot* slot);   // the page of a click: its selections and what is of another page end
+	int ActivePage() const { return mActive != NULL && mActive->number > 0 ? mActive->number : mCurrentPage; }
+	bool PageShown(int page) const { return SlotForPage(page) != NULL; }
+	void Relayout();                     // sizes, canvas, places of the slots, scroll bars
+	void SyncSlots();                    // slots for the pages the layout needs
+	void StartRender(PageSlot* slot);
+	void UpdateVisibleSlots();           // after scrolling in a continuous flow
+	void NotifyPageChanged();
+	void ScrollToPage(int page, bool top);
+	void UpdateFindQuads(PageSlot* slot);
+
+	// Makes the slot the one the members stand for as long as it lives (hovering over another page, drawing it).
+	class SlotScope {
+	public:
+		SlotScope(PDFView* view, PageSlot* slot);
+		~SlotScope();
+	private:
+		PDFView* fView;
+		PageSlot* fSaved;
+	};
+	friend class SlotScope;
 	void BeginTool(BPoint point);
 	void FinishTool(BPoint point);
 	void CancelTool();
@@ -269,6 +321,16 @@ public:
 
 	void MoveToPage (int page, bool top = true);
 	int Page()      { return mCurrentPage; } ;
+
+	// how the pages are arranged: one, a spread, or all of them below each other
+	void SetFlow(PageFlow flow);
+	// the title page is shown alone, also when two pages or more are shown at a time
+	void SetTitlePageAlone(bool alone);
+	bool TitlePageAlone() const { return mLayout.FirstPageAlone(); }
+	PageFlow Flow() const { return mLayout.Flow(); }
+	// a step to the next or the previous page (a spread in the double flow)
+	void NextPage();
+	void PreviousPage();
 
 	// history
 	void BeginHistoryNavigation();
@@ -356,7 +418,6 @@ public:
 
 	Document* GetDocument() { return mDoc; }
 	CachedPage* GetPage() { return mPage; }
-	PageRenderer* GetPageRenderer() { return &mPageRenderer; }
 	bool HasSelection() { return mSelected == SELECTED; }
 
 	void UpdateSettings(GlobalSettings* settings);

@@ -98,6 +98,10 @@ protected:
 	fz_stext_page* mText;
 	std::vector<DocLink> mLinks;
 	std::vector<DocAnnotation> mAnnotations;
+
+public:
+	// where the text of the last search is on this page (page space), see PDFView::UpdateFindQuads()
+	std::vector<fz_quad> mFindQuads;
 };
 
 #endif

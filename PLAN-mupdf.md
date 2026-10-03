@@ -141,3 +141,17 @@ SEN has to be able to point at an annotation and to read or change it. What exis
   name (the id), on the document and per page.
 - **Change notices (later).** Observers (`StartWatching`) get a message when annotations were added, changed or
   removed, so that SEN can keep relations to annotations in step.
+
+## Page layouts (done, the basis for other formats)
+
+`PageLayout` computes where pages go (a grid of columns x rows per spread, the title page alone or not, or all
+spreads below each other); it takes page sizes from `Document::PageMatrix` and knows nothing about rendering.
+`PDFView` has a list of slots (a `CachedPage` and a renderer each) for the pages that are shown, one of them is the
+active page that the selecting, links, annotations and tools work with, and the mouse makes the page under it the
+active one (`SlotAt`, `ActivateSlot`, `SlotScope` for hovering). In the continuous flow the slots follow the scrolling:
+pages in view and some around them are rendered, the others are let go.
+
+For other formats this is what is needed: EPUB and other reflowable documents have pages that change size with the
+text width, so `SetPages` is run again on a resize and the page the reader is at is kept by a position instead of a
+number (`fz_bookmark`); comics (CBZ) are fixed pages and use the presets as they are (a double page spread and a
+right-to-left order would be two more switches of the layout, in the same table).

@@ -183,7 +183,7 @@ FindThread::Run() {
 		mMainView->mFindNeedle = mFindText;
 		mMainView->mFindCaseSensitive = mCaseSensitive;
 		mMainView->mFindHighlight = true;
-		mMainView->UpdateFindQuads();
+		mMainView->UpdateFindQuadsOfAll();
 		mMainView->SelectFound(hit.start, hit.end);
 		Window()->Unlock();
 	}
@@ -225,8 +225,7 @@ bool PDFView::ShowQuote(const char* quote, int page, bool annotate) {
 		SetPage(foundPage);
 		WaitForPage();
 	}
-	mFindHighlight = false;
-	mFindQuads.clear();
+	ClearFindHighlights();
 	SelectFound(hit.start, hit.end);
 	if (annotate)
 		AnnotateSelection(kMarkupHighlight, 0xffeb3b);

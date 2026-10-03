@@ -55,6 +55,11 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   text, selects it and scrolls to it. With `SEN:highlight` (bool) the passage is also marked with a highlight
   annotation, which is only saved when the user saves. With `SEN:annotation` (the id of an annotation, its `/NM`) the
   document goes to that annotation and selects it.
+- The pages can be shown one at a time, two side by side like the pages of a book ("Double-sided"; the title page can
+  stay alone, View > Title page alone), or all one below the other and scrolled through ("Continuous"). The buttons
+  next to the fit buttons and the View menu switch between them; next and previous page go by a spread. In the code
+  the arrangements are presets of a grid of columns and rows (`PageLayout`), so more of them (four pages at a time,
+  two columns of scrolling pages) are a line in a table; the four-fold one is in the table already, without a button.
 - The sidebar is switched with icon tabs (bookmarks, page list, attachments, annotations; the tooltip names them), which
   frees the toolbar. The annotations tab lists all annotations of the document in columns for page, type and the
   text they mark or hold; choosing one goes there and selects it. View > Hide sidebar (it reads Show sidebar when the sidebar is hidden)

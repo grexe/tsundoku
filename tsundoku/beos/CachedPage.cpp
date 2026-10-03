@@ -212,6 +212,7 @@ CachedPage::MakeEmpty()
 {
 	mLinks.clear();
 	mAnnotations.clear();
+	mFindQuads.clear();
 	if (mText != NULL && mDocument != NULL) {
 		DocumentLocker locker(mDocument);
 		fz_drop_stext_page(mDocument->Context(), mText);

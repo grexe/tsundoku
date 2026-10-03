@@ -45,6 +45,7 @@ SRCS = beos/AnnotationsView.cpp \
 	beos/LayoutUtils.cpp \
 	beos/NoteWindow.cpp \
 	beos/OutlinesWindow.cpp \
+	beos/PageLayout.cpp \
 	beos/PDFPrint.cpp \
 	beos/PDFSearch.cpp \
 	beos/PDFView.cpp \

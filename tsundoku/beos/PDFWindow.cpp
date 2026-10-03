@@ -618,6 +618,16 @@ void PDFWindow::UpdateInputEnabler()
 			->SetEnabled(mAttachmentsView != NULL && mAttachmentsView->Count() > 0);
 		fMenuBar->FindItem(SHOW_ATTACHMENTS_CMD)
 			->SetMarked(mShowLeftPanel && active == ATTACHMENTS_PANEL);
+		PageFlow flow = mMainView->Flow();
+		fMenuBar->FindItem(FLOW_SINGLE_CMD)->SetMarked(flow == kFlowSingle);
+		fMenuBar->FindItem(FLOW_DOUBLE_CMD)->SetMarked(flow == kFlowDouble);
+		fMenuBar->FindItem(FLOW_CONTINUOUS_CMD)->SetMarked(flow == kFlowContinuous);
+		// it matters if more than one page is shown at a time
+		fMenuBar->FindItem(TITLE_PAGE_ALONE_CMD)->SetMarked(mMainView->TitlePageAlone());
+		fMenuBar->FindItem(TITLE_PAGE_ALONE_CMD)->SetEnabled(flow == kFlowDouble || flow == kFlowFourFold);
+		mToolBar->SetActionPressed(FLOW_SINGLE_CMD, flow == kFlowSingle);
+		mToolBar->SetActionPressed(FLOW_DOUBLE_CMD, flow == kFlowDouble);
+		mToolBar->SetActionPressed(FLOW_CONTINUOUS_CMD, flow == kFlowContinuous);
 		fMenuBar->FindItem(SHOW_ANNOTATIONS_CMD)->SetEnabled(doc->IsPDF());
 		fMenuBar->FindItem(SHOW_ANNOTATIONS_CMD)
 			->SetMarked(mShowLeftPanel && active == ANNOTATIONS_PANEL);
@@ -689,6 +699,67 @@ void PDFWindow::UpdateWindowsMenu() {
 		mWindowsMenu->AddItem(new BMenuItem(s, NULL));
 	}
 */
+}
+
+
+// The icon of a page flow: one page, two side by side, or pages below each other that go on beyond the icon.
+static BBitmap*
+MakeFlowIcon(PageFlow flow, int size)
+{
+	BBitmap* bitmap = new BBitmap(BRect(0, 0, size - 1, size - 1), B_RGBA32, true);
+	BView* view = new BView(bitmap->Bounds(), "flow icon", B_FOLLOW_NONE, B_WILL_DRAW);
+	bitmap->AddChild(view);
+	bitmap->Lock();
+
+	view->SetDrawingMode(B_OP_COPY);
+	view->SetHighColor(0, 0, 0, 0);
+	view->FillRect(bitmap->Bounds());
+	view->SetDrawingMode(B_OP_ALPHA);
+
+	rgb_color paper = { 250, 250, 250, 255 };
+	rgb_color ink = tint_color(ui_color(B_PANEL_TEXT_COLOR), B_LIGHTEN_1_TINT);
+	float s = size - 1;
+	float pageWidth, pageHeight;
+	BRect pages[2];
+	int count = 1;
+	switch (flow) {
+		case kFlowDouble:
+			// the spread of a book
+			pageWidth = s * 0.40f;
+			pageHeight = s * 0.78f;
+			pages[0] = BRect(s * 0.08f, s * 0.11f, s * 0.08f + pageWidth, s * 0.11f + pageHeight);
+			pages[1] = BRect(s * 0.52f, s * 0.11f, s * 0.52f + pageWidth, s * 0.11f + pageHeight);
+			count = 2;
+			break;
+		case kFlowContinuous:
+			// the pages one below the other, the lower one is cut off
+			pageWidth = s * 0.54f;
+			pages[0] = BRect(s * 0.23f, -2, s * 0.23f + pageWidth, s * 0.50f);
+			pages[1] = BRect(s * 0.23f, s * 0.58f, s * 0.23f + pageWidth, s + 2);
+			count = 2;
+			break;
+		default:
+			pageWidth = s * 0.56f;
+			pageHeight = s * 0.80f;
+			pages[0] = BRect(s * 0.22f, s * 0.10f, s * 0.22f + pageWidth, s * 0.10f + pageHeight);
+			break;
+	}
+	for (int i = 0; i < count; i++) {
+		view->SetHighColor(paper);
+		view->FillRect(pages[i]);
+		view->SetHighColor(ink);
+		view->StrokeRect(pages[i]);
+		// a few lines of text
+		BRect lines = pages[i].InsetByCopy(2.5f, 3);
+		for (float y = lines.top + 2; y < lines.bottom - 1; y += 3)
+			view->StrokeLine(BPoint(lines.left, y), BPoint(lines.right - (((int)y) % 2) * 2, y));
+	}
+
+	view->Sync();
+	bitmap->Unlock();
+	bitmap->RemoveChild(view);
+	delete view;
+	return bitmap;
 }
 
 
@@ -769,6 +840,11 @@ BMenuBar* PDFWindow::BuildMenu()
 			.AddSeparator()
 			.AddItem(B_TRANSLATE("Fit to page width"), (FIT_TO_PAGE_WIDTH_CMD), '/')
 			.AddItem(B_TRANSLATE("Fit to page"), (FIT_TO_PAGE_CMD), '*')
+			.AddSeparator()
+			.AddItem(B_TRANSLATE("Single page"), FLOW_SINGLE_CMD)
+			.AddItem(B_TRANSLATE("Double-sided"), FLOW_DOUBLE_CMD)
+			.AddItem(B_TRANSLATE("Continuous"), FLOW_CONTINUOUS_CMD)
+			.AddItem(B_TRANSLATE("Title page alone"), TITLE_PAGE_ALONE_CMD)
 			.AddSeparator()
 			.AddItem(B_TRANSLATE("Zoom in"), (ZOOM_IN_CMD), '+')
 			.AddItem(B_TRANSLATE("Zoom out"), (ZOOM_OUT_CMD), '-')
@@ -927,6 +1003,16 @@ BToolBar* PDFWindow::BuildToolBar()
 		B_TRANSLATE("Fit to page width"));
 	mToolBar->AddAction(FIT_TO_PAGE_CMD, this, LoadVectorIcon("FIT_TO_PAGE"),
 		B_TRANSLATE("Fit to page"));
+
+	mToolBar->AddSeparator();
+
+	// how the pages are arranged
+	mToolBar->AddAction(FLOW_SINGLE_CMD, this, MakeFlowIcon(kFlowSingle, 21), B_TRANSLATE("Single page"),
+		NULL, true);
+	mToolBar->AddAction(FLOW_DOUBLE_CMD, this, MakeFlowIcon(kFlowDouble, 21), B_TRANSLATE("Double-sided"),
+		NULL, true);
+	mToolBar->AddAction(FLOW_CONTINUOUS_CMD, this, MakeFlowIcon(kFlowContinuous, 21),
+		B_TRANSLATE("Continuous"), NULL, true);
 
 	mToolBar->AddSeparator();
 
@@ -1265,16 +1351,14 @@ PDFWindow::MessageReceived(BMessage* message)
 		if (B_SHIFT_KEY & modifiers()) {
 			mMainView->ScrollVertical (false, 0.95);
 		} else {
-			page = mMainView->Page();
-			mMainView->MoveToPage (page - 1);
+			mMainView->PreviousPage();
 		}
 		break;
 	case NEXT_PAGE_CMD:
 		if (B_SHIFT_KEY & modifiers()) {
 			mMainView->ScrollVertical (true, 0.95);
 		} else {
-			page = mMainView->Page();
-			mMainView->MoveToPage (page + 1);
+			mMainView->NextPage();
 		}
 		break;
 	case LAST_PAGE_CMD:
@@ -1355,6 +1439,18 @@ PDFWindow::MessageReceived(BMessage* message)
 		break;
 	case FIT_TO_PAGE_WIDTH_CMD:
 		mMainView->FitToPageWidth();
+		break;
+	case TITLE_PAGE_ALONE_CMD:
+		mMainView->SetTitlePageAlone(!mMainView->TitlePageAlone());
+		break;
+	case FLOW_SINGLE_CMD:
+		mMainView->SetFlow(kFlowSingle);
+		break;
+	case FLOW_DOUBLE_CMD:
+		mMainView->SetFlow(kFlowDouble);
+		break;
+	case FLOW_CONTINUOUS_CMD:
+		mMainView->SetFlow(kFlowContinuous);
 		break;
 	case FIT_TO_PAGE_CMD:
 		mMainView->FitToPage();
@@ -1742,7 +1838,7 @@ PDFWindow::MessageReceived(BMessage* message)
 				static const struct { const char* name; uint32 what; } commands[] = {
 					{ "fileinfo", FILE_INFO_CMD }, { "undo", UNDO_CMD }, { "redo", REDO_CMD }, { "save", SAVE_FILE_CMD }, { "preferences", PREFERENCES_FILE_CMD },
 					{ "printsettings", PRINT_SETTINGS_CMD }, { "rotate", ROTATE_CLOCKWISE_CMD },
-					{ "fitwidth", FIT_TO_PAGE_WIDTH_CMD }, { "fitpage", FIT_TO_PAGE_CMD },
+					{ "flowsingle", FLOW_SINGLE_CMD }, { "flowdouble", FLOW_DOUBLE_CMD }, { "flowcontinuous", FLOW_CONTINUOUS_CMD }, { "fitwidth", FIT_TO_PAGE_WIDTH_CMD }, { "fitpage", FIT_TO_PAGE_CMD },
 					{ "back", HISTORY_BACK_CMD }, { "forward", HISTORY_FORWARD_CMD },
 					{ "pagelist", SHOW_PAGE_LIST_CMD }, { "attachments", SHOW_ATTACHMENTS_CMD }, { "annotations", SHOW_ANNOTATIONS_CMD }, { "sidebar", HIDE_LEFT_PANEL_CMD }, { "bookmarks", SHOW_BOOKMARKS_CMD },
 					{ "zoomin", ZOOM_IN_CMD }, { "zoomout", ZOOM_OUT_CMD }, { "next", NEXT_PAGE_CMD },

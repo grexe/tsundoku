@@ -28,6 +28,9 @@
 // BeOS
 #include <locale/Catalog.h>
 
+#include <algorithm>
+#include <math.h>
+
 #include <be/app/Application.h>
 #include <be/app/Clipboard.h>
 #include <be/app/Looper.h>
@@ -39,6 +42,7 @@
 #include <be/interface/ScrollBar.h>
 #include <be/interface/PrintJob.h>
 #include <be/interface/Alert.h>
+#include <be/interface/Region.h>
 #include <be/interface/StringView.h>
 #include <be/interface/PopUpMenu.h>
 #include <be/interface/MenuItem.h>
@@ -206,7 +210,16 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 	mOk = false;
 	mZoom = settings->GetZoom();
 	mBitmap = NULL;
-	mPage = new CachedPage();
+	mPage = NULL;
+	mActive = NULL;
+	mInteractionPage = 0;
+	mCanvasLeft = mCanvasTop = 0;
+	mCanvasWidth = mCanvasHeight = 100;
+	// the active page is there from the start, the slots are set up when a page is shown
+	SetActiveRaw(NewSlot());
+	mFreeSlots.push_back(mActive);
+	mLayout.SetFlow((PageFlow)settings->GetPageFlow());
+	mLayout.SetFirstPageAlone(settings->GetTitlePageAlone());
 	mCurrentPage = 0;
 	mRotation = settings->GetRotation(); // 0.0f;
 	mOwnerPassword = mUserPassword = NULL;
@@ -245,7 +258,6 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 
 	mMouseWheelDY = 0;
 
-	mRendererID = -1;
 	mRendering = false;
 
 	mSelected = NOT_SELECTED;
@@ -333,11 +345,10 @@ PDFView::OpenFile(entry_ref *ref, const char *ownerPassword, const char *userPas
 	UpdatePanelDirectory(&path);
 
 	// the page cache refers to the previous document
-	mPageRenderer.SetDocument(NULL);
-	mPage->MakeEmpty();
+	SetSlotsDocument(NULL);
 	delete mDoc;
 	mDoc = newDoc;
-	mPageRenderer.SetDocument(mDoc);
+	SetSlotsDocument(mDoc);
 	MakeTitleString(&path);
 	return true;
 }
@@ -426,7 +437,10 @@ PDFView::LoadFile(entry_ref *ref, FileAttributes *fileAttributes, const char *ow
 		mRenderedPage = 0;
 		mFindHighlight = false;
 		Redraw();
-		ScrollTo(left, top);
+		if (mLayout.IsContinuous())
+			ScrollToPage(mCurrentPage, true);
+		else
+			ScrollTo(left, top);
 		w->Unlock();
 	}
 
@@ -436,8 +450,11 @@ PDFView::LoadFile(entry_ref *ref, FileAttributes *fileAttributes, const char *ow
 ///////////////////////////////////////////////////////////////////////////
 PDFView::~PDFView()
 {
-	mPageRenderer.SetDocument(NULL);
-	delete mPage;	// refers to the document
+	SetSlotsDocument(NULL);
+	for (size_t i = 0; i < mSlots.size(); i++)
+		delete mSlots[i];
+	for (size_t i = 0; i < mFreeSlots.size(); i++)
+		delete mFreeSlots[i];	// they refer to the document
 	delete mDoc;
 	delete mModifierRunner;
 	delete mToolCursor;
@@ -605,7 +622,10 @@ PDFView::OnMouseWheelChanged(BMessage *msg) {
 		} else if ((keys & B_OPTION_KEY)) {
 			ScrollVertical(down, 1.0);
 		} else if ((keys & B_SHIFT_KEY)) {
-			MoveToPage(mCurrentPage + (down ? 1 : -1));
+			if (down)
+				NextPage();
+			else
+				PreviousPage();
 		} else {
 			ScrollVertical(down, 0.20);
 		}
@@ -617,6 +637,7 @@ PDFView::OnMouseWheelChanged(BMessage *msg) {
 }
 
 ///////////////////////////////////////////////////////////////////////////
+// the active page (see SlotScope) with its frame
 void
 PDFView::DrawPage(BRect updateRect)
 {
@@ -624,34 +645,28 @@ PDFView::DrawPage(BRect updateRect)
 #ifdef DEBUG
 		fprintf (stderr, "WARNING: PDFView::Draw() NULL bitmap\n");
 #endif
-	} else {
-		DrawBitmap(mBitmap, BRect(0, 0, mWidth - 1, mHeight - 1),
-			BRect(mLeft, mTop, mLeft + mWidth - 1, mTop + mHeight - 1));
+		return;
 	}
+
+	DrawBitmap(mBitmap, BRect(0, 0, mWidth - 1, mHeight - 1),
+		BRect(mLeft, mTop, mLeft + mWidth - 1, mTop + mHeight - 1));
+	SetLowColor(ui_color(B_SHADOW_COLOR));
+	StrokeRect(BRect(mLeft - 1, mTop - 1, mLeft + mWidth, mTop + mHeight), B_SOLID_LOW);
 }
 
 ///////////////////////////////////////////////////////////////////////////
+// what is around the pages
 void
 PDFView::DrawBackground(BRect updateRect)
 {
-	BRect rect(Bounds());
-	float right = mLeft + mWidth - 1, bottom = mTop + mHeight - 1;
-	SetLowColor(DesktopColor());
-	if (rect.left < mLeft) {
-		FillRect(BRect(rect.left, rect.top, mLeft - 2, rect.bottom), B_SOLID_LOW);
+	BRegion region(updateRect);
+	for (size_t i = 0; i < mSlots.size(); i++) {
+		const PageSlot* slot = mSlots[i];
+		region.Exclude(BRect(slot->origin.x - 1, slot->origin.y - 1, slot->origin.x + slot->page->GetWidth(),
+			slot->origin.y + slot->page->GetHeight()));
 	}
-	if (rect.top < mTop) {
-		FillRect(BRect(rect.left, rect.top, rect.right, mTop - 2), B_SOLID_LOW);
-	}
-	if (right < rect.right) {
-		FillRect(BRect(right + 2, rect.top, rect.right, rect.bottom), B_SOLID_LOW);
-	}
-	if (bottom < rect.bottom) {
-		FillRect(BRect(rect.left, bottom + 2, rect.right, rect.bottom), B_SOLID_LOW);
-	}
-
-	SetLowColor(ui_color(B_SHADOW_COLOR));
-	StrokeRect(BRect(mLeft - 1, mTop - 1, right + 1, bottom + 1), B_SOLID_LOW);
+	SetHighColor(DesktopColor());
+	FillRegion(&region);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -659,13 +674,13 @@ PDFView::DrawBackground(BRect updateRect)
 void
 PDFView::DrawFindHits(BRect updateRect)
 {
-	if (!mFindHighlight || mFindQuads.empty())
+	if (!mFindHighlight || mPage->mFindQuads.empty())
 		return;
 
 	SetHighColor(255, 200, 0, 110);
 	SetDrawingMode(B_OP_ALPHA);
-	for (size_t i = 0; i < mFindQuads.size(); i++) {
-		const fz_quad& q = mFindQuads[i];
+	for (size_t i = 0; i < mPage->mFindQuads.size(); i++) {
+		const fz_quad& q = mPage->mFindQuads[i];
 		BPoint polygon[4] = { mPage->PageToDev(q.ul), mPage->PageToDev(q.ur),
 			mPage->PageToDev(q.lr), mPage->PageToDev(q.ll) };
 		for (int j = 0; j < 4; j++)
@@ -686,12 +701,12 @@ CollectQuads(fz_context*, void* data, int numQuads, fz_quad* quads, int, int)
 }
 
 
-// Finds all hits of the last search on the shown page, once it has been rendered (the text is not there before).
+// Finds all hits of the last search on a page that is shown, once it has been rendered (the text is not there before).
 void
-PDFView::UpdateFindQuads()
+PDFView::UpdateFindQuads(PageSlot* slot)
 {
 	std::vector<fz_quad> quads;
-	fz_stext_page* text = mFindHighlight ? mPage->Text() : NULL;
+	fz_stext_page* text = mFindHighlight ? slot->page->Text() : NULL;
 	if (text != NULL) {
 		DocumentLocker locker(mDoc);
 		fz_context* context = mDoc->Context();
@@ -703,8 +718,16 @@ PDFView::UpdateFindQuads()
 			quads.clear();
 		}
 	}
-	mFindQuads.swap(quads);
+	slot->page->mFindQuads.swap(quads);
 	Invalidate();
+}
+
+
+void
+PDFView::UpdateFindQuadsOfAll()
+{
+	for (size_t i = 0; i < mSlots.size(); i++)
+		UpdateFindQuads(mSlots[i]);
 }
 
 
@@ -712,7 +735,8 @@ void
 PDFView::ClearFindHighlights()
 {
 	mFindHighlight = false;
-	mFindQuads.clear();
+	for (size_t i = 0; i < mSlots.size(); i++)
+		mSlots[i]->page->mFindQuads.clear();
 	Invalidate();
 }
 
@@ -774,15 +798,26 @@ PDFView::Draw(BRect updateRect)
 		FillRect(updateRect, B_SOLID_LOW);
 	} else {
 		DrawBackground(updateRect);
-		DrawPage(updateRect);
 		BRect rect(Bounds());
 		if (GetPDFWindow()) {
 			GetPDFWindow()->GetFileAttributes()->SetLeftTop(rect.left, rect.top);
 		}
-		DrawFindHits(updateRect);
-		DrawSelection(updateRect);
-		DrawToolPreview();
-		DrawAnnotationSelection();
+		for (size_t i = 0; i < mSlots.size(); i++) {
+			PageSlot* slot = mSlots[i];
+			BRect area(slot->origin.x - 1, slot->origin.y - 1, slot->origin.x + slot->page->GetWidth(),
+				slot->origin.y + slot->page->GetHeight());
+			if (!area.Intersects(updateRect))
+				continue;
+			// the members stand for this page while it is drawn
+			SlotScope scope(this, slot);
+			DrawPage(updateRect);
+			DrawFindHits(updateRect);
+			if (slot->number == mInteractionPage) {
+				DrawSelection(updateRect);
+				DrawToolPreview();
+				DrawAnnotationSelection();
+			}
+		}
 	}
 }
 
@@ -790,6 +825,7 @@ PDFView::Draw(BRect updateRect)
 void
 PDFView::ScrollTo (BPoint point) {
 	BView::ScrollTo(point);
+	UpdateVisibleSlots();	// pages that come into view
 	BPoint mouse; uint32 buttons;
 	GetMouse(&mouse, &buttons);
 	DisplayLink(mouse);
@@ -798,15 +834,15 @@ PDFView::ScrollTo (BPoint point) {
 void
 PDFView::ScrollTo(float x, float y) {
 	BRect bounds(Bounds());
-	float xMax = mWidth - bounds.Width();
-	float yMax = mHeight - bounds.Height();
+	float xMax = mCanvasWidth - bounds.Width();
+	float yMax = mCanvasHeight - bounds.Height();
 
-	if ((x < 0) || (mLeft > 0))
+	if ((x < 0) || (mCanvasLeft > 0))
 		x = 0;
 	else if ((xMax > 0) && (x > xMax))
 		x = xMax;
 
-	if ((y < 0) || (mTop > 0))
+	if ((y < 0) || (mCanvasTop > 0))
 		y = 0;
 	else if ((yMax > 0) && (y > yMax))
 		y = yMax;
@@ -828,7 +864,10 @@ PDFView::AttachedToWindow ()
 {
 	Window()->SetTitle (mTitle->String());
 	SetViewCursor(gApp->handCursor);
-	mPageRenderer.SetListener(Window(), this);
+	for (size_t i = 0; i < mSlots.size(); i++)
+		mSlots[i]->renderer->SetListener(Window(), this);
+	for (size_t i = 0; i < mFreeSlots.size(); i++)
+		mFreeSlots[i]->renderer->SetListener(Window(), this);
 
 	// there is no message when a key like Option is pressed while the mouse rests, so look from time to time
 	if (mModifierRunner == NULL) {
@@ -842,21 +881,21 @@ void
 PDFView::ScrollVertical (bool down, float by) {
 	BRect rect(Bounds ());
 	float scrollBy = (by > 0) ? rect.Height() * by : -by;
+	bool continuous = mLayout.IsContinuous();
 	if (down) {
-		if (rect.bottom < mHeight-1) {
+		if (rect.bottom < mCanvasHeight-1) {
 			ScrollBy (0, scrollBy);
-		} else {
-			if (mCurrentPage != mDoc->PageCount()) { // bottom of last page not reached
-				MoveToPage(mCurrentPage + 1, true);
-			}
+		} else if (!continuous) {
+			// the bottom of the page (the spread) has been reached, go to the next one
+			if (mLayout.NormalizePage(mCurrentPage + mLayout.PageStep()) != mCurrentPage)
+				MoveToPage(mCurrentPage + mLayout.PageStep(), true);
 		}
 	} else { // up
 		if (rect.top != 0) {
 			ScrollBy (0, -scrollBy);
-		} else {
-			if (mCurrentPage != 1) { // top of first page not reached
-				MoveToPage(mCurrentPage - 1, false);
-			}
+		} else if (!continuous) {
+			if (mLayout.NormalizePage(mCurrentPage - mLayout.PageStep()) != mCurrentPage)
+				MoveToPage(mCurrentPage - mLayout.PageStep(), false);
 		}
 	}
 }
@@ -867,7 +906,7 @@ PDFView::ScrollHorizontal (bool right, float by) {
 	BRect rect(Bounds());
 	float scrollBy = (by > 0) ? rect.Width() * by : -by;
 	if (right) {
-		if (rect.right < mWidth - 1) {
+		if (rect.right < mCanvasWidth - 1) {
 			ScrollBy (scrollBy, 0);
 		}
 	} else {
@@ -896,7 +935,7 @@ PDFView::KeyDown (const char * bytes, int32 numBytes)
 			BView::KeyDown(bytes, numBytes);
 		break;
 	case B_PAGE_UP:
-		MoveToPage (mCurrentPage - 1);
+		PreviousPage();
 		break;
 	case B_SPACE:
 	case B_ENTER:
@@ -912,7 +951,7 @@ PDFView::KeyDown (const char * bytes, int32 numBytes)
 		ScrollHorizontal(*bytes == B_RIGHT_ARROW, -20);
 		break;
 	case B_PAGE_DOWN:
-		MoveToPage (mCurrentPage + 1);
+		NextPage();
 		break;
 	case B_HOME:
 		MoveToPage (1);
@@ -1006,6 +1045,10 @@ PDFView::MouseDown (BPoint point) {
 	MakeFocus(true);
 	uint32 buttons = GetButtons();
 	screen = ConvertToScreen(point);
+
+	// the page that is clicked is the one that the click works with
+	if (PageSlot* clicked = SlotAt(point))
+		ActivateSlot(clicked);
 
 	int32 clicks = 1;
 	BMessage* current = Window()->CurrentMessage();
@@ -1590,14 +1633,14 @@ PDFView::ShowPopUpMenu(BPoint point, const DocLink* link, const DocAnnotation* a
 		if (annotation != NULL) {
 			if (annotation->hasColor && !annotation->isFreeText) {
 				BMessage change(CHANGE_COLOR_MSG);
-				change.AddInt32("page", mCurrentPage);
+				change.AddInt32("page", ActivePage());
 				change.AddInt32("index", annotation->index);
 				menu->AddItem(BuildColorMenu(B_TRANSLATE("Color"), change, this, annotation->hasColor,
 					annotation->color));
 			}
 
 			msg = new BMessage(EDIT_NOTE_MSG);
-			msg->AddInt32("page", mCurrentPage);
+			msg->AddInt32("page", ActivePage());
 			msg->AddInt32("index", annotation->index);
 			msg->AddString("text", annotation->contents);
 			i = new BMenuItem(annotation->isFreeText ? B_TRANSLATE("Edit text" B_UTF8_ELLIPSIS)
@@ -1606,7 +1649,7 @@ PDFView::ShowPopUpMenu(BPoint point, const DocLink* link, const DocAnnotation* a
 			menu->AddItem(i);
 
 			msg = new BMessage(DELETE_ANNOTATION_MSG);
-			msg->AddInt32("page", mCurrentPage);
+			msg->AddInt32("page", ActivePage());
 			msg->AddInt32("index", annotation->index);
 			i = new BMenuItem(B_TRANSLATE("Delete annotation"), msg);
 			i->SetTarget(this);
@@ -1711,6 +1754,8 @@ void
 PDFView::DisplayLink(BPoint point)
 {
 	BString str;
+	// the page the mouse is over, as the active one while this goes on
+	SlotScope hover(this, SlotAt(point));
 	if (mRendering || mDragStarted || (mDoc == NULL) || (mDoc->PageCount() == 0))
 		return;
 
@@ -1729,7 +1774,7 @@ PDFView::DisplayLink(BPoint point)
 
 	BPoint p = CorrectMousePos(point);
 	// over selection?
-	if (((mSelected == SELECTED) && InSelection(point)) ||
+	if (((mSelected == SELECTED) && mActive->number == mInteractionPage && InSelection(point)) ||
 		p.x < 0 || p.y < 0 || p.x >= mWidth || p.y >= mHeight) {
 		SetViewCursor((BCursor*)B_CURSOR_SYSTEM_DEFAULT);
 		return;
@@ -1786,6 +1831,258 @@ PDFView::DisplayLink(BPoint point)
 }
 
 ///////////////////////////////////////////////////////////////////////////
+// Slots: the pages that are shown
+
+PageSlot::PageSlot()
+	:
+	number(0),
+	page(new CachedPage()),
+	renderer(new PageRenderer()),
+	rendererId(-1),
+	rendering(false),
+	origin(0, 0)
+{
+}
+
+
+PageSlot::~PageSlot()
+{
+	renderer->Abort();
+	renderer->Wait();
+	delete renderer;
+	delete page;
+}
+
+
+PDFView::SlotScope::SlotScope(PDFView* view, PageSlot* slot)
+	:
+	fView(view),
+	fSaved(view->mActive)
+{
+	if (slot != NULL)
+		view->SetActiveRaw(slot);
+}
+
+
+PDFView::SlotScope::~SlotScope()
+{
+	fView->SetActiveRaw(fSaved);
+}
+
+
+// a slot for a page, one that is not in use if there is one (the active page may stand for it, that is no matter)
+PageSlot*
+PDFView::NewSlot()
+{
+	PageSlot* slot;
+	if (!mFreeSlots.empty()) {
+		slot = mFreeSlots.back();
+		mFreeSlots.pop_back();
+	} else
+		slot = new PageSlot();
+
+	if (Window() != NULL)
+		slot->renderer->SetListener(Window(), this);
+	slot->renderer->SetDocument(mDoc);
+	return slot;
+}
+
+
+// the page is not shown any more, the slot waits to be used again
+void
+PDFView::ReleaseSlot(PageSlot* slot)
+{
+	slot->renderer->Abort();
+	slot->renderer->Wait();
+	slot->page->MakeEmpty();
+	slot->number = 0;
+	slot->rendering = false;
+	slot->rendererId = -1;
+	for (size_t i = 0; i < mSlots.size(); i++) {
+		if (mSlots[i] == slot) {
+			mSlots.erase(mSlots.begin() + i);
+			break;
+		}
+	}
+	mFreeSlots.push_back(slot);
+}
+
+
+// the pages refer to the document, so every slot has to let go of it before it is deleted
+void
+PDFView::SetSlotsDocument(Document* document)
+{
+	for (size_t i = 0; i < mSlots.size(); i++) {
+		mSlots[i]->renderer->Abort();
+		mSlots[i]->renderer->Wait();
+		mSlots[i]->renderer->SetDocument(document);
+		if (document == NULL)
+			mSlots[i]->page->MakeEmpty();
+	}
+	for (size_t i = 0; i < mFreeSlots.size(); i++) {
+		mFreeSlots[i]->renderer->SetDocument(document);
+		if (document == NULL)
+			mFreeSlots[i]->page->MakeEmpty();
+	}
+	if (document == NULL) {
+		// nothing is shown of the document that goes away
+		while (!mSlots.empty())
+			ReleaseSlot(mSlots.back());
+		if (mActive != NULL)
+			mActive->page->MakeEmpty();
+	}
+}
+
+
+PageSlot*
+PDFView::SlotForPage(int page) const
+{
+	for (size_t i = 0; i < mSlots.size(); i++) {
+		if (mSlots[i]->number == page)
+			return mSlots[i];
+	}
+	return NULL;
+}
+
+
+// the page that is at the point (in the view), none if the point is beside the pages
+PageSlot*
+PDFView::SlotAt(BPoint point) const
+{
+	for (size_t i = 0; i < mSlots.size(); i++) {
+		const PageSlot* slot = mSlots[i];
+		BRect area(slot->origin.x, slot->origin.y, slot->origin.x + slot->page->GetWidth() - 1,
+			slot->origin.y + slot->page->GetHeight() - 1);
+		if (area.Contains(point))
+			return mSlots[i];
+	}
+	return NULL;
+}
+
+
+// what the members mPage, mBitmap and the others stand for
+void
+PDFView::SetActiveRaw(PageSlot* slot)
+{
+	mActive = slot;
+	mPage = slot->page;
+	mBitmap = slot->page->GetBitmap();
+	mWidth = slot->page->GetWidth();
+	mHeight = slot->page->GetHeight();
+	mLeft = slot->origin.x;
+	mTop = slot->origin.y;
+	mRendering = slot->rendering;
+}
+
+
+// the page of a click becomes the active one; the selections belong to the page they were made on
+void
+PDFView::ActivateSlot(PageSlot* slot)
+{
+	if (slot == NULL || (slot == mActive && slot->number == mInteractionPage))
+		return;
+
+	if (mActive != NULL && slot->number != mInteractionPage) {
+		// the old page is still the active one, the selections are taken away from it
+		if (mSelected != NOT_SELECTED)
+			SelectNone();
+		if (mAnnotationIndex >= 0)
+			SelectAnnotation(-1);
+	}
+	SetActiveRaw(slot);
+	mInteractionPage = slot->number;
+}
+
+
+void
+PDFView::StartRender(PageSlot* slot)
+{
+	slot->rendering = true;
+	slot->renderer->Start(slot->page, slot->number, GetZoomDPI(), mRotation, &slot->rendererId);
+}
+
+
+// Sizes of the pages for the zoom and the rotation, the canvas that is scrolled over and the places of the pages.
+void
+PDFView::Relayout()
+{
+	mLayout.SetPages(mDoc, mDoc != NULL ? mDoc->PageCount() : 0, GetZoomDPI(), (int)mRotation);
+	mCurrentPage = mLayout.NormalizePage(mCurrentPage);
+	mLayout.Arrange(mCurrentPage);
+	mCanvasWidth = mLayout.CanvasWidth();
+	mCanvasHeight = mLayout.CanvasHeight();
+}
+
+
+// Makes the slots those of the pages that are needed: the page or the spread, the pages that are in view and some
+// around them in a continuous flow. New slots are rendered. The pages go to the middle of the view if all of them
+// fit into it.
+void
+PDFView::SyncSlots()
+{
+	if (mDoc == NULL || mDoc->PageCount() < 1)
+		return;
+
+	BRect bounds(Bounds());
+	mCanvasLeft = bounds.Width() + 1 > mCanvasWidth ? floorf((bounds.Width() - mCanvasWidth) / 2) : 0;
+	mCanvasTop = bounds.Height() + 1 > mCanvasHeight ? floorf((bounds.Height() - mCanvasHeight) / 2) : 0;
+
+	std::vector<int> needed;
+	mLayout.NeededPages(bounds.top - mCanvasTop, bounds.bottom - mCanvasTop, bounds.Height(), needed);
+
+	// the page with a selection stays as long as it is selected
+	if (mLayout.IsContinuous() && mInteractionPage > 0
+		&& (mSelected != NOT_SELECTED || mAnnotationIndex >= 0)
+		&& std::find(needed.begin(), needed.end(), mInteractionPage) == needed.end())
+		needed.push_back(mInteractionPage);
+
+	// slots of pages that are not needed any more
+	for (int i = (int)mSlots.size() - 1; i >= 0; i--) {
+		if (std::find(needed.begin(), needed.end(), mSlots[i]->number) == needed.end())
+			ReleaseSlot(mSlots[i]);
+	}
+
+	// slots for the pages that are needed, in the order of the pages
+	for (size_t i = 0; i < needed.size(); i++) {
+		if (SlotForPage(needed[i]) != NULL)
+			continue;
+		PageSlot* slot = NewSlot();
+		slot->number = needed[i];
+		size_t at = 0;
+		while (at < mSlots.size() && mSlots[at]->number < slot->number)
+			at++;
+		mSlots.insert(mSlots.begin() + at, slot);
+		StartRender(slot);
+	}
+
+	for (size_t i = 0; i < mSlots.size(); i++) {
+		BRect rect = mLayout.PageRect(mSlots[i]->number);
+		mSlots[i]->origin = BPoint(mCanvasLeft + rect.left, mCanvasTop + rect.top);
+	}
+
+	// the active page is one of those that are shown: the one of the selections, the current one or the first
+	PageSlot* wanted = SlotForPage(mInteractionPage);
+	if (wanted == NULL)
+		wanted = SlotForPage(mCurrentPage);
+	if (wanted == NULL && !mSlots.empty())
+		wanted = mSlots.front();
+	if (wanted != NULL) {
+		if (mInteractionPage != wanted->number) {
+			// the page that the selections belong to is not shown any more
+			if (mSelected != NOT_SELECTED) {
+				mSelected = NOT_SELECTED;
+				mQuads.clear();
+			}
+			mAnnotationIndex = -1;
+			mInteractionPage = wanted->number;
+		}
+		SetActiveRaw(wanted);
+	}
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+// Shows everything anew: new sizes, canvas and places, and all pages that are shown are rendered again.
 void
 PDFView::Redraw()
 {
@@ -1795,46 +2092,63 @@ PDFView::Redraw()
 
 	// abort rendering process if neccesary and wait for it to finish
 	WaitForPage(true);
-	if (parentWin) {
-		parentWin->NewPage(mCurrentPage);
+
+	// in a continuous flow the page at the top stays at the top when the size of the pages changes
+	int anchorPage = 0;
+	float anchorFraction = 0;
+	if (mLayout.IsContinuous() && mDoc != NULL && !mSlots.empty()) {
+		anchorPage = mCurrentPage;
+		float width, height;
+		mLayout.PageSize(anchorPage, &width, &height);
+		if (height > 0)
+			anchorFraction = (Bounds().top - mCanvasTop - mLayout.PageTop(anchorPage)) / height;
 	}
-	mRendering = true;
+
+	Relayout();
+	if (parentWin)
+		parentWin->NewPage(mCurrentPage);
 
 	// A selection stays through zoom and rotation, it belongs to the page. Text is kept in page space, an
 	// area is converted to page space here and back to the new zoom below.
-	bool samePage = mRenderedPage == mCurrentPage;
-	bool keepSelection = samePage && mSelected == SELECTED;
+	PageSlot* selectionSlot = SlotForPage(mInteractionPage);
+	bool pageStays = mRenderedPage != 0 && selectionSlot != NULL && mLayout.PageRect(mInteractionPage).IsValid();
+	bool keepSelection = pageStays && mSelected == SELECTED;
 	bool keepArea = keepSelection && mSelectionKind == kSelectArea;
 	fz_rect areaOnPage = fz_empty_rect;
 	if (keepArea) {
-		fz_point a = mPage->DevToPage(mSelection.LeftTop());
-		fz_point b = mPage->DevToPage(mSelection.RightBottom());
+		fz_point a = selectionSlot->page->DevToPage(mSelection.LeftTop());
+		fz_point b = selectionSlot->page->DevToPage(mSelection.RightBottom());
 		areaOnPage = fz_make_rect(fminf(a.x, b.x), fminf(a.y, b.y), fmaxf(a.x, b.x), fmaxf(a.y, b.y));
 	}
 	if (!keepSelection) {
 		mSelected = NOT_SELECTED;
 		mQuads.clear();
 	}
-	if (!samePage) {
-		mFindQuads.clear();
+	if (!pageStays)
 		mAnnotationIndex = -1;
-	}
 	mRenderedPage = mCurrentPage;
 
-	mPageRenderer.Start(mPage, mCurrentPage, GetZoomDPI(), mRotation, &mRendererID);
+	// every page is rendered again, the slots keep their bitmaps
+	while (!mSlots.empty())
+		ReleaseSlot(mSlots.back());
 	mLink = NULL;
-	if (keepArea)
-		mSelection = mPage->PageToDev(areaOnPage);
+	SyncSlots();
+	if (keepArea) {
+		if (PageSlot* slot = SlotForPage(mInteractionPage))
+			mSelection = slot->page->PageToDev(areaOnPage);
+	}
 
-	mBitmap = mPage->GetBitmap();
-	mWidth = mPage->GetWidth(); mHeight = mPage->GetHeight();
-	CenterPage();
 	FixScrollbars();
+	if (anchorPage > 0) {
+		float width, height;
+		mLayout.PageSize(anchorPage, &width, &height);
+		ScrollTo(Bounds().left, mCanvasTop + mLayout.PageTop(anchorPage) + anchorFraction * height);
+	}
 
 	if (parentWin) {
 		parentWin->GetFileAttributes()->SetPage(mCurrentPage);
 		parentWin->SetPage (mCurrentPage);
-		parentWin->SetZoomSize (mWidth, mHeight);
+		parentWin->SetZoomSize (mCanvasWidth, mCanvasHeight);
 	}
 
 	Invalidate();
@@ -1858,110 +2172,177 @@ PDFView::FixScrollbars ()
 	float x, y;
 	float bigStep, smallStep;
 
-	x = mWidth - frame.Width();
+	x = mCanvasWidth - frame.Width();
 	if (x < 0.0) {
 		x = 0.0;
 	}
-	y = mHeight - frame.Height();
+	y = mCanvasHeight - frame.Height();
 	if (y < 0.0) {
 		y = 0.0;
 	}
 
 	scroll = ScrollBar (B_HORIZONTAL);
 	scroll->SetRange (0.0, x);
-	scroll->SetProportion ((mWidth - x) / mWidth);
+	scroll->SetProportion ((mCanvasWidth - x) / mCanvasWidth);
 	bigStep = frame.Width() - 2;
 	smallStep = bigStep / 10.;
 	scroll->SetSteps (smallStep, bigStep);
 
 	scroll = ScrollBar (B_VERTICAL);
 	scroll->SetRange (0.0, y);
-	scroll->SetProportion ((mHeight - y) / mHeight);
+	scroll->SetProportion ((mCanvasHeight - y) / mCanvasHeight);
 	bigStep = frame.Height() - 2;
 	smallStep = bigStep / 10.;
 	scroll->SetSteps (smallStep, bigStep);
 }
 
 ///////////////////////////////////////////////////////////////////////////
+// a page has been rendered
 void
 PDFView::PostRedraw(thread_id id, BBitmap *bitmap) {
-	// TODO
-	if (id != -1) {
-		mRendering = false;
-		mRendererID = -1;
-		UpdateFindQuads();
-		Invalidate();
-		BPoint mouse; uint32 buttons;
-		GetMouse(&mouse, &buttons);
-		DisplayLink(mouse);
+	if (id == -1)
+		return;
+
+	for (size_t i = 0; i < mSlots.size(); i++) {
+		PageSlot* slot = mSlots[i];
+		if (slot->rendererId != id)
+			continue;
+		slot->rendering = false;
+		slot->rendererId = -1;
+		if (slot == mActive)
+			mRendering = false;
+		UpdateFindQuads(slot);
+		Invalidate(BRect(slot->origin.x - 1, slot->origin.y - 1, slot->origin.x + slot->page->GetWidth(),
+			slot->origin.y + slot->page->GetHeight()));
+		break;
 	}
+
+	BPoint mouse; uint32 buttons;
+	GetMouse(&mouse, &buttons);
+	DisplayLink(mouse);
 }
 
 ///////////////////////////////////////////////////////////////////////////
 void
 PDFView::RedrawAborted(thread_id id, BBitmap *bitmap) {
-	if ((mRendererID == id) && (id != -1)) {
-		mRendering = false;
-		mRendererID = -1;
+	if (id == -1)
+		return;
+	for (size_t i = 0; i < mSlots.size(); i++) {
+		if (mSlots[i]->rendererId == id) {
+			mSlots[i]->rendering = false;
+			mSlots[i]->rendererId = -1;
+			if (mSlots[i] == mActive)
+				mRendering = false;
+			break;
+		}
 	}
 }
 
 ///////////////////////////////////////////////////////////////////////////
 void
 PDFView::WaitForPage(bool abort) {
-	if (abort) {
-		mPageRenderer.Abort();
+	for (size_t i = 0; i < mSlots.size(); i++) {
+		if (abort)
+			mSlots[i]->renderer->Abort();
+		mSlots[i]->renderer->Wait();
 	}
-	mPageRenderer.Wait();
+	if (abort) {
+		for (size_t i = 0; i < mSlots.size(); i++) {
+			mSlots[i]->rendering = false;
+			mSlots[i]->rendererId = -1;
+		}
+		mRendering = false;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////
+// the places of the pages (in the middle of the view if the view is larger)
 void
 PDFView::CenterPage() {
-	BRect bounds(Bounds());
-	if (bounds.Width() + 1 > mWidth) { // center page horizontally
-		mLeft = (bounds.Width() - mWidth) / 2;
-	} else {
-		mLeft = 0;
-	}
-
-	if (bounds.Height() + 1 > mHeight) { // center page vertically
-		mTop = (bounds.Height() - mHeight) / 2;
-	} else {
-		mTop = 0;
-	}
+	SyncSlots();
 }
 
 ///////////////////////////////////////////////////////////////////////////
 void
 PDFView::Resize() {
-	CenterPage();
+	SyncSlots();
 	FixScrollbars();
 	Invalidate();
+}
+
+///////////////////////////////////////////////////////////////////////////
+// What the page box shows has changed (in a continuous flow by scrolling).
+void
+PDFView::NotifyPageChanged()
+{
+	PDFWindow* parentWin = GetPDFWindow();
+	if (parentWin == NULL)
+		return;
+	parentWin->NewPage(mCurrentPage);
+	parentWin->GetFileAttributes()->SetPage(mCurrentPage);
+	parentWin->SetPage(mCurrentPage);
+}
+
+///////////////////////////////////////////////////////////////////////////
+// After scrolling in a continuous flow: the pages that come into view are rendered, the others are let go, and
+// the page at the top is the current one.
+void
+PDFView::UpdateVisibleSlots()
+{
+	if (!mLayout.IsContinuous() || mDoc == NULL || mDoc->PageCount() < 1)
+		return;
+
+	// the page at the top is the current one, which decides what the active page falls back to
+	int page = mLayout.PageAt(Bounds().top - mCanvasTop + 40);
+	bool changed = page != mCurrentPage;
+	mCurrentPage = page;
+	SyncSlots();
+	if (changed)
+		NotifyPageChanged();
+}
+
+///////////////////////////////////////////////////////////////////////////
+// continuous flow: the top (or the bottom) of the page is at the top of the view
+void
+PDFView::ScrollToPage(int page, bool top)
+{
+	float width, height;
+	mLayout.PageSize(page, &width, &height);
+	float y = mCanvasTop + mLayout.PageTop(page);
+	if (!top)
+		y += height - Bounds().Height();
+	ScrollTo(Bounds().left, y);
 }
 
 ///////////////////////////////////////////////////////////////////////////
 void
 PDFView::SetPage (int page)
 {
+	if (mDoc == NULL)
+		return;
+
 	mSelected = NOT_SELECTED;
 
-	int currentPage = mCurrentPage;
-	if (mCurrentPage != page) {
-		if (page < 1) {
-			mCurrentPage = 1;
-		}
-		else if (page > GetNumPages()) {
-			mCurrentPage = GetNumPages();
-		}
-		else {
-			mCurrentPage = page;
-		}
+	int requested = page;
+	if (requested < 1)
+		requested = 1;
+	else if (requested > GetNumPages())
+		requested = GetNumPages();
+	int target = mLayout.NormalizePage(requested);
 
-		if (currentPage != mCurrentPage) {
-			Redraw ();
-		}
+	if (mLayout.IsContinuous()) {
+		mCurrentPage = requested;
+		ScrollToPage(requested, true);
+		mCurrentPage = requested;	// whatever the scrolling made of it
+		NotifyPageChanged();
+	} else if (mCurrentPage != target) {
+		mCurrentPage = target;
+		Redraw ();
 	}
+
+	// the page that was asked for is the active one (in a spread it can be the right one)
+	if (PageSlot* slot = SlotForPage(requested))
+		ActivateSlot(slot);
 }
 
 //////////////////////////////////////////////////////////////////
@@ -1969,14 +2350,75 @@ void
 PDFView::MoveToPage(int page, bool top) {
 	if (page > GetNumPages()) page = GetNumPages();
 	if (page <= 0) page = 1;
-	bool notChanged = mCurrentPage == page;
+	bool notChanged = mCurrentPage == mLayout.NormalizePage(page);
 	if (notChanged) return;
 
 	RecordHistory();
 
+	if (mLayout.IsContinuous()) {
+		ScrollToPage(page, top);
+		mCurrentPage = page;
+		NotifyPageChanged();
+		return;
+	}
+
 	BRect bounds(Bounds());
-	ScrollTo(bounds.left, top ? 0 : mHeight);
+	ScrollTo(bounds.left, top ? 0 : mCanvasHeight);
 	SetPage(page);
+}
+
+//////////////////////////////////////////////////////////////////
+void
+PDFView::NextPage()
+{
+	MoveToPage(mCurrentPage + mLayout.PageStep());
+}
+
+//////////////////////////////////////////////////////////////////
+void
+PDFView::PreviousPage()
+{
+	MoveToPage(mCurrentPage - mLayout.PageStep());
+}
+
+//////////////////////////////////////////////////////////////////
+// The title page alone or with the page after it: the spreads change, the current page stays in view.
+void
+PDFView::SetTitlePageAlone(bool alone)
+{
+	if (alone == mLayout.FirstPageAlone() || mDoc == NULL)
+		return;
+
+	WaitForPage(true);
+	mLayout.SetFirstPageAlone(alone);
+	gApp->GetSettings()->SetTitlePageAlone(alone);
+	mRenderedPage = 0;
+	Redraw();
+	PDFWindow* w = GetPDFWindow();
+	if (w)
+		w->UpdateInputEnabler();
+}
+
+//////////////////////////////////////////////////////////////////
+// How the pages are arranged: the current page stays the current one.
+void
+PDFView::SetFlow(PageFlow flow)
+{
+	if (flow == mLayout.Flow() || mDoc == NULL)
+		return;
+
+	WaitForPage(true);
+	mLayout.SetFlow(flow);
+	gApp->GetSettings()->SetPageFlow((int)flow);
+	// the scroll position belonged to the other arrangement, which is not arranged for this one yet
+	BView::ScrollTo(BPoint(0, 0));
+	mRenderedPage = 0;
+	Redraw();
+	if (mLayout.IsContinuous())
+		ScrollToPage(mCurrentPage, true);
+	PDFWindow* w = GetPDFWindow();
+	if (w)
+		w->UpdateInputEnabler();
 }
 
 //////////////////////////////////////////////////////////////////
@@ -2108,7 +2550,7 @@ void
 PDFView::FitToPageWidth() {
 	BRect r(Bounds());
 	int32 zoomOld = GetZoomDPI();
-	int32 zoomNew = (int32)(r.Width() * zoomOld / mWidth);
+	int32 zoomNew = (int32)(r.Width() * zoomOld / mCanvasWidth);
 	if (zoomOld != zoomNew) {
 		SetZoom(-zoomNew);
 		PDFWindow* w = GetPDFWindow();
@@ -2121,8 +2563,12 @@ void
 PDFView::FitToPage() {
 	BRect r(Bounds());
 	int32 zoomOld = GetZoomDPI();
-	int32 zoomNewH = (int32)(r.Width() * zoomOld / mWidth);
-	int32 zoomNewV = (int32)(r.Height() * zoomOld / mHeight);
+	// the page, the spread; in a flow of all pages the page that is current
+	float fitWidth = mCanvasWidth, fitHeight = mCanvasHeight;
+	if (mLayout.IsContinuous())
+		mLayout.PageSize(mCurrentPage, &fitWidth, &fitHeight);
+	int32 zoomNewH = (int32)(r.Width() * zoomOld / fitWidth);
+	int32 zoomNewV = (int32)(r.Height() * zoomOld / fitHeight);
 	int32 zoomNew = (zoomNewH < zoomNewV) ? zoomNewH : zoomNewV;
 	if (zoomOld != zoomNew) {
 		SetZoom(-zoomNew);
@@ -2491,7 +2937,7 @@ PDFView::AnnotateSelection(MarkupType type, uint32 rgb)
 	float color[3] = { ((rgb >> 16) & 0xff) / 255.0f, ((rgb >> 8) & 0xff) / 255.0f, (rgb & 0xff) / 255.0f };
 	std::vector<fz_quad> quads = mQuads;
 	WaitForPage(true);
-	if (!mDoc->AddMarkup(mCurrentPage, type, &quads[0], (int)quads.size(), color))
+	if (!mDoc->AddMarkup(ActivePage(), type, &quads[0], (int)quads.size(), color))
 		return false;
 
 	SelectNone();
@@ -2532,7 +2978,7 @@ PDFView::AnnotationsChanged(int page)
 	int selected = mAnnotationIndex;
 	mRenderedPage = 0;
 	mNoteTip = 0;
-	if (page > 0 && page != mCurrentPage)
+	if (page > 0 && !PageShown(page))
 		SetPage(page);	// draws it
 	else
 		Redraw();
@@ -2659,25 +3105,25 @@ PDFView::FinishTool(BPoint)
 	bool ok = false;
 	switch (tool) {
 		case kToolRectangle:
-			ok = mDoc->AddShape(mCurrentPage, kShapeRectangle, from, to, kDrawingColor);
+			ok = mDoc->AddShape(ActivePage(), kShapeRectangle, from, to, kDrawingColor);
 			break;
 		case kToolEllipse:
-			ok = mDoc->AddShape(mCurrentPage, kShapeEllipse, from, to, kDrawingColor);
+			ok = mDoc->AddShape(ActivePage(), kShapeEllipse, from, to, kDrawingColor);
 			break;
 		case kToolLine:
-			ok = mDoc->AddShape(mCurrentPage, kShapeLine, from, to, kDrawingColor);
+			ok = mDoc->AddShape(ActivePage(), kShapeLine, from, to, kDrawingColor);
 			break;
 		case kToolArrow:
-			ok = mDoc->AddShape(mCurrentPage, kShapeArrow, from, to, kDrawingColor);
+			ok = mDoc->AddShape(ActivePage(), kShapeArrow, from, to, kDrawingColor);
 			break;
 		case kToolInk:
-			ok = mDoc->AddInk(mCurrentPage, &path[0], (int)path.size(), kDrawingColor);
+			ok = mDoc->AddInk(ActivePage(), &path[0], (int)path.size(), kDrawingColor);
 			break;
 		default:
 			break;
 	}
 	if (ok)
-		AnnotationsChanged(mCurrentPage);
+		AnnotationsChanged(ActivePage());
 	else
 		Redraw();
 }
@@ -2692,7 +3138,7 @@ PDFView::AskForText(PlacementTool tool, fz_point position)
 
 	BMessage message(CREATE_TEXT_MSG);
 	message.AddInt32("tool", tool);
-	message.AddInt32("page", mCurrentPage);
+	message.AddInt32("page", ActivePage());
 	message.AddFloat("x", position.x);
 	message.AddFloat("y", position.y);
 	new NoteWindow(Window(), BMessenger(this), message, "");
@@ -2754,6 +3200,8 @@ PDFView::SelectedAnnotation() const
 {
 	if (mAnnotationIndex < 0 || mDoc == NULL || !mDoc->CanEditAnnotations())
 		return NULL;
+	if (mActive == NULL || mActive->number != mInteractionPage)
+		return NULL;	// it is on another page
 	const DocAnnotation* annotation = mPage->AnnotationAt(mAnnotationIndex);
 	if (annotation != NULL && (annotation->kind == kAnnotMarkup || annotation->kind == kAnnotOther))
 		return NULL;
@@ -2895,8 +3343,8 @@ PDFView::FinishAnnotationDrag()
 
 	int index = annotation->index;
 	WaitForPage(true);
-	if (mDoc->SetAnnotationBounds(mCurrentPage, index, bounds, handle != kHandleMove))
-		AnnotationsChanged(mCurrentPage);	// the selection stays
+	if (mDoc->SetAnnotationBounds(ActivePage(), index, bounds, handle != kHandleMove))
+		AnnotationsChanged(ActivePage());	// the selection stays
 }
 
 
@@ -2906,9 +3354,11 @@ PDFView::ShowAnnotation(int page, int index)
 	if (mDoc == NULL || page < 1 || page > mDoc->PageCount())
 		return;
 
-	if (page != mCurrentPage)
+	if (!PageShown(page))
 		SetPage(page);
 	WaitForPage();
+	if (PageSlot* slot = SlotForPage(page))
+		ActivateSlot(slot);
 
 	const DocAnnotation* annotation = mPage->AnnotationAt(index);
 	if (annotation == NULL)
@@ -2944,8 +3394,8 @@ PDFView::DeleteSelectedAnnotation()
 	int index = annotation->index;
 	WaitForPage(true);
 	mAnnotationIndex = -1;
-	if (mDoc->DeleteAnnotation(mCurrentPage, index))
-		AnnotationsChanged(mCurrentPage);
+	if (mDoc->DeleteAnnotation(ActivePage(), index))
+		AnnotationsChanged(ActivePage());
 	else
 		Redraw();
 }
@@ -3220,6 +3670,12 @@ PDFView::TestCommand(BMessage* message)
 	float x2 = TestNumber(message, "x2"), y2 = TestNumber(message, "y2");
 	int32 page = (int32)TestNumber(message, "page");
 
+	// the page that a click at (x1, y1) would be on is the active one, as the mouse does it
+	if (message->HasString("x1") || message->HasFloat("x1") || message->HasInt32("x1")) {
+		if (PageSlot* slot = SlotAt(BPoint(x1, y1)))
+			ActivateSlot(slot);
+	}
+
 	if (cmd == "select" || cmd == "area") {
 		// as the secondary mouse button does it
 		SetAction(SELECT_ACTION);
@@ -3348,6 +3804,21 @@ PDFView::TestCommand(BMessage* message)
 		create.AddString("text", text);
 		MessageReceived(&create);
 		TestLog("addtext %s at page %g,%g", kind.String(), where.x, where.y);
+	} else if (cmd == "slots") {
+		BString numbers;
+		for (size_t i = 0; i < mSlots.size(); i++)
+			numbers << mSlots[i]->number << (mSlots[i]->rendering ? "* " : " ");
+		TestLog("slots %d: %s| current %d, active %d, interaction %d, scroll top %g", (int)mSlots.size(),
+			numbers.String(), mCurrentPage, ActivePage(), mInteractionPage, Bounds().top);
+	} else if (cmd == "titlealone") {
+		SetTitlePageAlone(TestNumber(message, "which") != 0);
+		TestLog("title page alone %d: page %d, canvas %gx%g", (int)TitlePageAlone(), mCurrentPage, mCanvasWidth,
+			mCanvasHeight);
+	} else if (cmd == "flow") {
+		// a flow by its number, also those that have no button
+		SetFlow((PageFlow)(int)TestNumber(message, "which"));
+		TestLog("flow %d: page %d, canvas %gx%g, %d slots", (int)mLayout.Flow(), mCurrentPage, mCanvasWidth,
+			mCanvasHeight, (int)mSlots.size());
 	} else if (cmd == "history") {
 		TestLog("history: undo %d [%s], redo %d [%s], unsaved %d, page %d", (int)mDoc->CanUndo(),
 			mDoc->UndoLabel().String(), (int)mDoc->CanRedo(), mDoc->RedoLabel().String(),
