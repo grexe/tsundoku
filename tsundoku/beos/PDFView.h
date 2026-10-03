@@ -335,6 +335,9 @@ public:
 	bool HasTool() const { return mTool != kToolNone; }
 	bool HasAnnotationSelected() const { return SelectedAnnotation() != NULL; }
 	void DeleteSelectedAnnotation();
+	// goes to the annotation (page and index as in DocAnnotation) and shows it: a mark on text is selected, the
+	// others get their handles. Runs in the thread of the window.
+	void ShowAnnotation(int page, int index);
 	// finds a quoted passage, selects it and shows it (see PDFSearch.cpp)
 	bool ShowQuote(const char* quote, int page, bool annotate);
 	void SetFilledSelection(bool filled);

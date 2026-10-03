@@ -702,6 +702,21 @@ Document::LoadAnnotations(fz_page* page, std::vector<DocAnnotation>& annotations
 				|| type == PDF_ANNOT_STRIKE_OUT || type == PDF_ANNOT_SQUIGGLY;
 			entry.isFreeText = type == PDF_ANNOT_FREE_TEXT;
 			switch (type) {
+				case PDF_ANNOT_HIGHLIGHT:  entry.label = B_TRANSLATE("Highlight"); break;
+				case PDF_ANNOT_UNDERLINE:  entry.label = B_TRANSLATE("Underline"); break;
+				case PDF_ANNOT_STRIKE_OUT: entry.label = B_TRANSLATE("Strike out"); break;
+				case PDF_ANNOT_SQUIGGLY:   entry.label = B_TRANSLATE("Squiggly line"); break;
+				case PDF_ANNOT_TEXT:       entry.label = B_TRANSLATE("Note"); break;
+				case PDF_ANNOT_FREE_TEXT:  entry.label = B_TRANSLATE("Text"); break;
+				case PDF_ANNOT_SQUARE:     entry.label = B_TRANSLATE("Rectangle"); break;
+				case PDF_ANNOT_CIRCLE:     entry.label = B_TRANSLATE("Ellipse"); break;
+				case PDF_ANNOT_LINE:       entry.label = B_TRANSLATE("Line"); break;
+				case PDF_ANNOT_INK:        entry.label = B_TRANSLATE("Drawing"); break;
+				case PDF_ANNOT_STAMP:      entry.label = B_TRANSLATE("Stamp"); break;
+				case PDF_ANNOT_FILE_ATTACHMENT: entry.label = B_TRANSLATE("File attachment"); break;
+				default:                   entry.label = B_TRANSLATE("Annotation"); break;
+			}
+			switch (type) {
 				case PDF_ANNOT_HIGHLIGHT:
 				case PDF_ANNOT_UNDERLINE:
 				case PDF_ANNOT_STRIKE_OUT:
@@ -1349,6 +1364,125 @@ Document::FindAnnotationById(const char* id, int* _page, int* _index)
 		}
 	}
 	return false;
+}
+
+
+// does the page have annotations that are listed, without loading the page: looks at the subtypes in the page
+// dictionary (most /Annots are only links)
+static bool
+PageHasListedAnnotation(fz_context* context, pdf_document* pdf, int pageIndex)
+{
+	int found = 0;
+	fz_var(found);
+	fz_try(context) {
+		pdf_obj* annots = pdf_dict_get(context, pdf_lookup_page_obj(context, pdf, pageIndex), PDF_NAME(Annots));
+		int count = pdf_array_len(context, annots);
+		for (int i = 0; i < count && !found; i++) {
+			pdf_obj* subtype = pdf_dict_get(context, pdf_array_get(context, annots, i), PDF_NAME(Subtype));
+			if (subtype != PDF_NAME(Link) && subtype != PDF_NAME(Popup) && subtype != PDF_NAME(Widget))
+				found = 1;
+		}
+	}
+	fz_catch(context) {
+		found = 0;
+	}
+	return found != 0;
+}
+
+
+// a line of the text that is under a mark, for the list
+static BString
+Excerpt(const DocAnnotation& annotation, const char* text)
+{
+	BString result;
+	if (annotation.isMarkup)
+		result = text;
+	else
+		result = annotation.contents;
+	// one line of reasonable length
+	result.ReplaceAll("\r", " ");
+	result.ReplaceAll("\n", " ");
+	while (result.FindFirst("  ") >= 0)
+		result.ReplaceAll("  ", " ");
+	result.Trim();
+	if (result.CountChars() > 90) {
+		result.TruncateChars(90);
+		result << "\xe2\x80\xa6";	// an ellipsis
+	}
+	return result;
+}
+
+
+bool
+Document::ListAnnotations(std::vector<DocAnnotationEntry>& entries, const volatile bool* cancel)
+{
+	if (!fIsPDF)
+		return false;
+
+	pdf_document* pdf;
+	{
+		DocumentLocker locker(this);
+		pdf = pdf_specifics(fContext, fDocument);
+	}
+
+	for (int pageNo = 1; pageNo <= fPageCount; pageNo++) {
+		if (cancel != NULL && *cancel)
+			return false;
+
+		DocumentLocker locker(this);
+		if (!PageHasListedAnnotation(fContext, pdf, pageNo - 1))
+			continue;
+
+		std::vector<DocAnnotation> annotations;
+		fz_page* page = NULL;
+		fz_stext_page* text = NULL;
+		std::vector<BString> excerpts;
+
+		fz_var(page);
+		fz_var(text);
+		int loaded = 0;
+		fz_try(fContext) {
+			page = fz_load_page(fContext, fDocument, pageNo - 1);
+			loaded = 1;
+		}
+		fz_catch(fContext) {
+			loaded = 0;
+		}
+		if (!loaded)
+			continue;
+
+		LoadAnnotations(page, annotations);
+
+		for (size_t i = 0; i < annotations.size(); i++) {
+			const DocAnnotation& annotation = annotations[i];
+			char* copied = NULL;
+			if (annotation.isMarkup && !annotation.quads.empty()) {
+				const fz_quad& first = annotation.quads.front();
+				const fz_quad& last = annotation.quads.back();
+				fz_point a = fz_make_point(first.ul.x + 0.5f, (first.ul.y + first.ll.y) / 2);
+				fz_point b = fz_make_point(last.ur.x - 0.5f, (last.ur.y + last.lr.y) / 2);
+				fz_var(copied);
+				fz_try(fContext) {
+					if (text == NULL)
+						text = fz_new_stext_page_from_page(fContext, page, NULL);
+					copied = fz_copy_selection(fContext, text, a, b, 0);
+				}
+				fz_catch(fContext) {
+					copied = NULL;
+				}
+			}
+			DocAnnotationEntry entry;
+			entry.page = pageNo;
+			entry.annotation = annotation;
+			entry.excerpt = Excerpt(annotation, copied != NULL ? copied : "");
+			fz_free(fContext, copied);
+			entries.push_back(entry);
+		}
+
+		fz_drop_stext_page(fContext, text);
+		fz_drop_page(fContext, page);
+	}
+	return true;
 }
 
 

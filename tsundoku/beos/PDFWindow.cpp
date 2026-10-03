@@ -57,6 +57,7 @@
 #include "FileInfoWindow.h"
 #include "FindTextWindow.h"
 #include "LayoutUtils.h"
+#include "AnnotationsView.h"
 #include "AttachmentsView.h"
 #include "OutlinesWindow.h"
 #include "PageRenderer.h"
@@ -139,6 +140,7 @@ PDFWindow::PDFWindow(entry_ref* ref, BRect frame, const char *ownerPassword,
 	mZoomMenu = mRotationMenu = NULL;
 	mLayerView = NULL;
 	mAttachmentsView = NULL;
+	mAnnotationsView = NULL;
 	mSavePanel = NULL;
 
 	mOWMessenger = NULL;
@@ -225,6 +227,11 @@ PDFWindow::~PDFWindow()
 	if (mPagesView) {
 		MakeEmpty(mPagesView);
 	}
+}
+
+void PDFWindow::AnnotationsChanged() {
+	if (mAnnotationsView != NULL)
+		mAnnotationsView->Refresh();
 }
 
 void PDFWindow::SetTotalPageNumber(int pages) {
@@ -360,6 +367,7 @@ bool PDFWindow::QuitRequested() {
 	if (!ConfirmDiscardChanges())
 		return false;
 	gApp->WindowClosed();
+	mAnnotationsView->Stop();
 	mMainView->WaitForPage(true);
 	StoreFileAttributes();
 	be_app->PostMessage(B_QUIT_REQUESTED);
@@ -494,6 +502,7 @@ bool PDFWindow::LoadFile(entry_ref *ref, const char *ownerPassword, const char *
 	if (mMainView != NULL) {
 		if (!ConfirmDiscardChanges())
 			return false;
+		mAnnotationsView->Stop();	// it reads the document that is replaced
 		StoreFileAttributes();
 		CleanUpBeforeLoad();
 		// load new file
@@ -610,7 +619,11 @@ void PDFWindow::UpdateInputEnabler()
 			->SetEnabled(mAttachmentsView != NULL && mAttachmentsView->Count() > 0);
 		fMenuBar->FindItem(SHOW_ATTACHMENTS_CMD)
 			->SetMarked(mShowLeftPanel && active == ATTACHMENTS_PANEL);
-		fMenuBar->FindItem(HIDE_LEFT_PANEL_CMD)->SetEnabled(mShowLeftPanel);
+		fMenuBar->FindItem(SHOW_ANNOTATIONS_CMD)->SetEnabled(doc->IsPDF());
+		fMenuBar->FindItem(SHOW_ANNOTATIONS_CMD)
+			->SetMarked(mShowLeftPanel && active == ANNOTATIONS_PANEL);
+		fMenuBar->FindItem(HIDE_LEFT_PANEL_CMD)
+			->SetLabel(mShowLeftPanel ? B_TRANSLATE("Hide sidebar") : B_TRANSLATE("Show sidebar"));
 
 		fMenuBar->FindItem(OPEN_FILE_CMD)->SetEnabled(!mFullScreen);
 		mToolBar->SetActionEnabled(OPEN_FILE_CMD, !mFullScreen);
@@ -748,8 +761,10 @@ BMenuBar* PDFWindow::BuildMenu()
 			.AddItem(B_TRANSLATE("Show bookmarks"), SHOW_BOOKMARKS_CMD, 'B')
 			.AddItem(B_TRANSLATE("Show page list"), SHOW_PAGE_LIST_CMD, 'L')
 			.AddItem(B_TRANSLATE("Show attachments"), SHOW_ATTACHMENTS_CMD)
-			.AddItem(B_TRANSLATE("Hide side bar"), HIDE_LEFT_PANEL_CMD, 'H')
+			.AddItem(B_TRANSLATE("Show annotations"), SHOW_ANNOTATIONS_CMD)
 			.AddSeparator()
+			// the window and what is around the page, the label says what the item does now
+			.AddItem(B_TRANSLATE("Hide sidebar"), HIDE_LEFT_PANEL_CMD, 'H')
 			.AddItem(mFullScreenItem = new BMenuItem(B_TRANSLATE("Fullscreen"),
 													new BMessage(FULL_SCREEN_CMD), B_RETURN))
 			.AddSeparator()
@@ -971,6 +986,9 @@ BCardView* PDFWindow::BuildLeftPanel()
 	layerView->CardLayout()->AddView(pageView);
 	layerView->CardLayout()->AddView(mAttachmentsView);
 
+	mAnnotationsView = new AnnotationsView(mMainView->GetDocument(), SHOW_ANNOTATION_CMD);
+	layerView->CardLayout()->AddView(mAnnotationsView);
+
 	return layerView;
 }
 
@@ -1081,6 +1099,7 @@ int16 i;
 void PDFWindow::NewDoc(Document *doc) {
 	mOutlinesView->SetDocument(doc, mFileAttributes.GetBookmarks());
 	mAttachmentsView->SetDocument(doc);
+	mAnnotationsView->SetDocument(doc);
 	if (mAttachmentsView->Count() == 0 && mLayerView->CardLayout()->VisibleIndex() == ATTACHMENTS_PANEL)
 		ShowLeftPanel(BOOKMARKS_PANEL);
 	ActivateOutlines();
@@ -1473,8 +1492,37 @@ PDFWindow::MessageReceived(BMessage* message)
 		else
 			ShowLeftPanel(ATTACHMENTS_PANEL);
 		break;
+	case SHOW_ANNOTATIONS_CMD:
+		if (mShowLeftPanel && mLayerView->CardLayout()->VisibleIndex() == ANNOTATIONS_PANEL)
+			HideLeftPanel();
+		else
+			ShowLeftPanel(ANNOTATIONS_PANEL);
+		break;
+	case SHOW_ANNOTATION_CMD: {
+		// from the list of annotations, or from another application with the id of the annotation
+		int32 page = 0, index = -1;
+		BString id;
+		if (message->FindString("id", &id) == B_OK && id.Length() > 0) {
+			int foundPage = 0, foundIndex = -1;
+			if (!mMainView->GetDocument()->FindAnnotationById(id.String(), &foundPage, &foundIndex)) {
+				beep();
+				break;
+			}
+			page = foundPage;
+			index = foundIndex;
+		} else {
+			message->FindInt32("page", &page);
+			message->FindInt32("index", &index);
+		}
+		mMainView->ShowAnnotation(page, index);
+		break;
+	}
 	case HIDE_LEFT_PANEL_CMD:
-		HideLeftPanel();
+		// the item reads "Show sidebar" when it is hidden
+		if (mShowLeftPanel)
+			HideLeftPanel();
+		else
+			ShowLeftPanel(mLayerView->CardLayout()->VisibleIndex());
 		break;
 	case FULL_SCREEN_CMD: OnFullScreen();
 		break;
@@ -1698,7 +1746,7 @@ PDFWindow::MessageReceived(BMessage* message)
 					{ "printsettings", PRINT_SETTINGS_CMD }, { "rotate", ROTATE_CLOCKWISE_CMD },
 					{ "fitwidth", FIT_TO_PAGE_WIDTH_CMD }, { "fitpage", FIT_TO_PAGE_CMD },
 					{ "back", HISTORY_BACK_CMD }, { "forward", HISTORY_FORWARD_CMD },
-					{ "pagelist", SHOW_PAGE_LIST_CMD }, { "attachments", SHOW_ATTACHMENTS_CMD }, { "bookmarks", SHOW_BOOKMARKS_CMD },
+					{ "pagelist", SHOW_PAGE_LIST_CMD }, { "attachments", SHOW_ATTACHMENTS_CMD }, { "annotations", SHOW_ANNOTATIONS_CMD }, { "sidebar", HIDE_LEFT_PANEL_CMD }, { "bookmarks", SHOW_BOOKMARKS_CMD },
 					{ "zoomin", ZOOM_IN_CMD }, { "zoomout", ZOOM_OUT_CMD }, { "next", NEXT_PAGE_CMD },
 					{ "previous", PREVIOUS_PAGE_CMD }, { "last", LAST_PAGE_CMD }, { "first", FIRST_PAGE_CMD },
 					{ "copy", COPY_SELECTION_CMD }, { "selectall", SELECT_ALL_CMD }, { "addbookmark", ADD_USER_BOOKMARK_CMD },

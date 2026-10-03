@@ -53,7 +53,11 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
 - Other applications (SEN) can open a document at a quoted passage: send `B_REFS_RECEIVED` with the file and
   `SEN:quote` (the text; `bepdf:page_num` is a hint where to start looking and may be wrong). Tsundoku finds the
   text, selects it and scrolls to it. With `SEN:highlight` (bool) the passage is also marked with a highlight
-  annotation, which is only saved when the user saves.
+  annotation, which is only saved when the user saves. With `SEN:annotation` (the id of an annotation, its `/NM`) the
+  document goes to that annotation and selects it.
+- View > Show annotations lists all annotations of the document with their page, kind and the text they mark or hold;
+  choosing one goes there and selects it. View > Hide sidebar (it reads Show sidebar when the sidebar is hidden)
+  sits with Fullscreen.
 - The files embedded in a PDF are listed in View > Show attachments and can be saved.
 - The outline follows the current page: the chapter a page belongs to is selected and scrolled into view, also after a
   jump from another application.
@@ -61,8 +65,7 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
 - Settings are stored in `~/config/settings/Tsundoku`, separate from BePDF. Everything else BePDF stores (bookmarks and
   the position per file in BFS attributes) is unchanged and compatible.
 
-Not there yet, and planned: line widths and fill colors, a list of all annotations, scripting of annotations from
-other programs, the fonts of a document in
+Not there yet, and planned: line widths and fill colors, scripting of annotations from other programs, the fonts of a document in
 the file info. See [PLAN-mupdf.md](PLAN-mupdf.md).
 
 ### Features

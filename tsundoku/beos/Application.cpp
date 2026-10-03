@@ -73,6 +73,8 @@ static const char *PAGE_NUM_MSG_KEY = "bepdf:page_num";
 // a passage to show, found by its text; with SEN:highlight it is also marked in the document (not saved)
 static const char *QUOTE_MSG_KEY = "SEN:quote";
 static const char *HIGHLIGHT_MSG_KEY = "SEN:highlight";
+// the id (the /NM of the PDF) of an annotation to show: the document goes to its page and selects it
+static const char *ANNOTATION_MSG_KEY = "SEN:annotation";
 
 static const char *settingsFilename = "Tsundoku";
 
@@ -522,6 +524,7 @@ void BepdfApplication::RefsReceived(BMessage *msg)
 	const char *user  = NULL;
     int32 pageNum = 0;
 	BString quote;
+	BString annotationId;
 	bool highlight = false;
 	entry_ref ref;
 
@@ -540,6 +543,7 @@ void BepdfApplication::RefsReceived(BMessage *msg)
 	}
 
 	msg->FindString(QUOTE_MSG_KEY, &quote);
+	msg->FindString(ANNOTATION_MSG_KEY, &annotationId);
 	msg->FindBool(HIGHLIGHT_MSG_KEY, &highlight);
 
 	Initialize();
@@ -587,6 +591,11 @@ void BepdfApplication::RefsReceived(BMessage *msg)
                 BMessage goToPageMsg(PDFWindow::GOTO_PAGE_CMD);
                 goToPageMsg.AddInt32("page", pageNum);
                 mWindow->MessageReceived(&goToPageMsg);
+            }
+            if (annotationId.Length() > 0 && mWindow != NULL) {
+                BMessage annotationMsg(PDFWindow::SHOW_ANNOTATION_CMD);
+                annotationMsg.AddString("id", annotationId);
+                mWindow->PostMessage(&annotationMsg);
             }
             if (quote.Length() > 0 && mWindow != NULL) {
                 BMessage quoteMsg(PDFWindow::SHOW_QUOTE_CMD);

@@ -39,6 +39,7 @@
 #include "PDFView.h"
 #include "ToolTip.h"
 
+class AnnotationsView;
 class AttachmentsView;
 class BFilePanel;
 class OutlinesView;
@@ -150,6 +151,8 @@ public:
 		SHOW_BOOKMARKS_CMD,
 		SHOW_PAGE_LIST_CMD,
 		SHOW_ATTACHMENTS_CMD,
+		SHOW_ANNOTATIONS_CMD,
+		SHOW_ANNOTATION_CMD,   // "page" and "index", or "id": goes to an annotation and selects it
 		HIDE_LEFT_PANEL_CMD,
 		// full screen
 		FULL_SCREEN_CMD,
@@ -165,6 +168,7 @@ public:
 		BOOKMARKS_PANEL = 0,
 		PAGE_LIST_PANEL,
 		ATTACHMENTS_PANEL,
+		ANNOTATIONS_PANEL,
 	};
 
 	// pending mask
@@ -190,6 +194,7 @@ private:
 	BListView      *mPagesView;
 	OutlinesView   *mOutlinesView;
 	AttachmentsView *mAttachmentsView;
+	AnnotationsView *mAnnotationsView;
 	BFilePanel     *mSavePanel;
 
 	BMessage       *mPrintSettings;
@@ -273,6 +278,8 @@ public:
 
 	const BEntry* CurrentFile() const { return &mCurrentFile; }
 	void UpdateInputEnabler();
+	// the annotations of the document have changed: the list of them is read again
+	void AnnotationsChanged();
 
 	void UpdateWindowsMenu();
 

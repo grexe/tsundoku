@@ -2538,6 +2538,8 @@ PDFView::AnnotationsChanged(int page)
 		Redraw();
 	mAnnotationIndex = selected;
 	SelectionChanged();
+	if (PDFWindow* window = GetPDFWindow())
+		window->AnnotationsChanged();
 }
 
 
@@ -2899,6 +2901,41 @@ PDFView::FinishAnnotationDrag()
 
 
 void
+PDFView::ShowAnnotation(int page, int index)
+{
+	if (mDoc == NULL || page < 1 || page > mDoc->PageCount())
+		return;
+
+	if (page != mCurrentPage)
+		SetPage(page);
+	WaitForPage();
+
+	const DocAnnotation* annotation = mPage->AnnotationAt(index);
+	if (annotation == NULL)
+		return;
+
+	if (mAnnotationIndex >= 0)
+		SelectAnnotation(-1);
+
+	if (annotation->kind == kAnnotMarkup && !annotation->quads.empty()) {
+		// the text it marks is selected, as a found text is
+		const fz_quad& first = annotation->quads.front();
+		const fz_quad& last = annotation->quads.back();
+		SelectFound(fz_make_point(first.ul.x + 0.5f, (first.ul.y + first.ll.y) / 2),
+			fz_make_point(last.ur.x - 0.5f, (last.ur.y + last.lr.y) / 2));
+		return;
+	}
+
+	SelectAnnotation(index);
+	// and into view
+	BRect r = AnnotationDeviceRect(annotation);
+	BRect shown = r.OffsetByCopy(mLeft, mTop), bounds(Bounds());
+	if (!bounds.Contains(shown))
+		ScrollTo(r.left - 40, r.top - 60);
+}
+
+
+void
 PDFView::DeleteSelectedAnnotation()
 {
 	const DocAnnotation* annotation = SelectedAnnotation();
@@ -3214,6 +3251,20 @@ PDFView::TestCommand(BMessage* message)
 		bool ok = AnnotateSelection(type, kind == "highlight" ? 0xffeb3b : 0xe53935);
 		TestLog("annotate %s: %s, unsaved changes: %d", kind.String(), ok ? "ok" : "failed",
 			(int)mDoc->HasUnsavedChanges());
+	} else if (cmd == "showannot") {
+		// what the list of annotations sends, or the id from outside (in "text")
+		BString id;
+		message->FindString("text", &id);
+		BMessage show(PDFWindow::SHOW_ANNOTATION_CMD);
+		if (id.Length() > 0)
+			show.AddString("id", id);
+		else {
+			show.AddInt32("page", (int32)TestNumber(message, "page"));
+			show.AddInt32("index", (int32)TestNumber(message, "which"));
+		}
+		GetPDFWindow()->MessageReceived(&show);
+		TestLog("showannot: page %d, annotation selected %d, text selected %d", mCurrentPage, mAnnotationIndex,
+			(int)HasTextSelection());
 	} else if (cmd == "findannot") {
 		BString id;
 		message->FindString("text", &id);

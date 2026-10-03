@@ -89,6 +89,7 @@ enum AnnotationKind {
 struct DocAnnotation {
 	int     type;         // pdf_annot_type
 	int     index;        // among the annotations of the page that are listed, to change or delete it
+	BString label;        // what to call its kind: Highlight, Note, Rectangle, ...
 	BString id;           // the name that stays with the annotation (the /NM of the PDF), empty if it has none
 	fz_rect rect;
 	std::vector<fz_quad> quads;   // for markup, the lines it covers
@@ -100,6 +101,13 @@ struct DocAnnotation {
 	bool    isFreeText;   // the contents are text on the page, not a note
 	bool    hasColor;
 	uint32  color;        // 0xRRGGBB, if hasColor
+};
+
+// An annotation with the page it is on, for a list of all of them.
+struct DocAnnotationEntry {
+	int           page;           // 1-based
+	DocAnnotation annotation;
+	BString       excerpt;        // the text a mark covers, or the note
 };
 
 // A document read by MuPDF (PDF, XPS, CBZ, images, ...).
@@ -161,6 +169,9 @@ public:
 	bool         DeleteAnnotation(int page, int index);
 	bool         SetAnnotationContents(int page, int index, const char* text);
 	bool         SetAnnotationColor(int page, int index, uint32 rgb);
+	// All annotations of the document in the order of the pages. Takes the lock page by page, so it can run beside
+	// the rendering; stops early when *cancel becomes true.
+	bool         ListAnnotations(std::vector<DocAnnotationEntry>& entries, const volatile bool* cancel);
 	// Where the annotation with this id is (page 1-based, index as in DocAnnotation); scans the document.
 	bool         FindAnnotationById(const char* id, int* page, int* index);
 	// Moves or resizes: the annotation is fitted into the new bounds (a note only follows the corner).
