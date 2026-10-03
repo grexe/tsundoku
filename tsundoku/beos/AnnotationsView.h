@@ -29,6 +29,7 @@
 
 #include "Document.h"
 
+struct AnnotationColumns;
 class BListView;
 class BStringView;
 
@@ -58,6 +59,7 @@ private:
 	Document*      fDocument;
 	uint32         fChosenMessage;
 	BListView*     fList;
+	AnnotationColumns* fColumns;
 	BStringView*   fStatus;
 	BMessenger     fMessenger;
 	thread_id      fThread;

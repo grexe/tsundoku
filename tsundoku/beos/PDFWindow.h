@@ -40,6 +40,7 @@
 #include "ToolTip.h"
 
 class AnnotationsView;
+class SidebarTabView;
 class AttachmentsView;
 class BFilePanel;
 class OutlinesView;
@@ -190,7 +191,7 @@ private:
 	BSplitView*		mSplitView;
 	PDFView*		mMainView;
 	BView*			fMainContainer;
-	BCardView*		mLayerView;
+	SidebarTabView*	mLayerView;
 	BListView      *mPagesView;
 	OutlinesView   *mOutlinesView;
 	AttachmentsView *mAttachmentsView;
@@ -235,7 +236,7 @@ public:
 	bool IsOk();
 	BMenuBar* BuildMenu();
 	BToolBar* BuildToolBar();
-	BCardView* BuildLeftPanel();
+	SidebarTabView* BuildLeftPanel();
 	void SetUpViews (entry_ref * ref, const char *ownerPassword, const char *userPassword, bool *encrypted);
 	void CleanUpBeforeLoad();
 	bool IsCurrentFile(entry_ref* ref) const;

@@ -52,6 +52,7 @@ SRCS = beos/AnnotationsView.cpp \
 	beos/PageRenderer.cpp \
 	beos/PasswordWindow.cpp \
 	beos/PreferencesWindow.cpp \
+	beos/SidebarTabView.cpp \
 	beos/PrintSettingsWindow.cpp \
 	beos/PrintingProgressWindow.cpp \
 	beos/Settings.cpp \

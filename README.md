@@ -55,8 +55,9 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   text, selects it and scrolls to it. With `SEN:highlight` (bool) the passage is also marked with a highlight
   annotation, which is only saved when the user saves. With `SEN:annotation` (the id of an annotation, its `/NM`) the
   document goes to that annotation and selects it.
-- View > Show annotations lists all annotations of the document with their page, kind and the text they mark or hold;
-  choosing one goes there and selects it. View > Hide sidebar (it reads Show sidebar when the sidebar is hidden)
+- The sidebar is switched with icon tabs (bookmarks, page list, attachments, annotations; the tooltip names them), which
+  frees the toolbar. The annotations tab lists all annotations of the document in columns for page, type and the
+  text they mark or hold; choosing one goes there and selects it. View > Hide sidebar (it reads Show sidebar when the sidebar is hidden)
   sits with Fullscreen.
 - The files embedded in a PDF are listed in View > Show attachments and can be saved.
 - The outline follows the current page: the chapter a page belongs to is selected and scrolled into view, also after a

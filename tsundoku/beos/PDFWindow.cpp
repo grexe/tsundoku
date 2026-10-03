@@ -59,6 +59,7 @@
 #include "LayoutUtils.h"
 #include "AnnotationsView.h"
 #include "AttachmentsView.h"
+#include "SidebarTabView.h"
 #include "OutlinesWindow.h"
 #include "PageRenderer.h"
 #include "PasswordWindow.h"
@@ -606,9 +607,7 @@ void PDFWindow::UpdateInputEnabler()
 
 		mToolBar->SetActionEnabled(FIND_NEXT_CMD, mFindText.Length() > 0);
 
-		int active = mLayerView->CardLayout()->VisibleIndex();
-		mToolBar->SetActionPressed(SHOW_PAGE_LIST_CMD, mShowLeftPanel && active == PAGE_LIST_PANEL);
-		mToolBar->SetActionPressed(SHOW_BOOKMARKS_CMD, mShowLeftPanel && active == BOOKMARKS_PANEL);
+		int active = mLayerView->Selection();
 		mToolBar->SetActionPressed(FULL_SCREEN_CMD, mFullScreen);
 
 		fMenuBar->FindItem(SHOW_PAGE_LIST_CMD)
@@ -871,17 +870,6 @@ BToolBar* PDFWindow::BuildToolBar()
 
 	mToolBar->AddSeparator();
 
-	mToolBar->AddAction(SHOW_BOOKMARKS_CMD, this, LoadVectorIcon("BOOKMARKS"),
-		B_TRANSLATE("Show bookmarks"), NULL, true);
-	mToolBar->AddAction(SHOW_PAGE_LIST_CMD, this,
-		LoadVectorIcon("SHOW_PAGE_LIST"), B_TRANSLATE("Show page list"), NULL,
-		true);
-	// mToolBar->AddAction(HIDE_LEFT_PANEL_CMD, this,
-	//	LoadVectorIcon("HIDE_PAGE_LIST"), B_TRANSLATE("Hide page list"),
-	//	NULL, true);
-
-	mToolBar->AddSeparator();
-
 	mToolBar->AddAction(FULL_SCREEN_CMD, this,
 		LoadVectorIcon("FULL_SCREEN"), B_TRANSLATE("Fullscreen mode"),
 		NULL, true);
@@ -963,16 +951,16 @@ BToolBar* PDFWindow::BuildToolBar()
 }
 
 
-BCardView* PDFWindow::BuildLeftPanel()
+SidebarTabView* PDFWindow::BuildLeftPanel()
 {
-	BCardView* layerView = new BCardView("layers");
+	SidebarTabView* layerView = new SidebarTabView("layers");
 
-	// PageList
+	// the bookmarks and the outline of the document
 	mOutlinesView = new OutlinesView(mMainView->GetDocument(),
 		mFileAttributes.GetBookmarks(), gApp->GetSettings(),
 		this, B_FRAME_EVENTS);
 
-	// LayerView contains the page numbers
+	// the page numbers
 	mPagesView = new BListView("pagesList", B_SINGLE_SELECTION_LIST,
 		B_WILL_DRAW | B_NAVIGABLE | B_FRAME_EVENTS);
 	mPagesView->SetSelectionMessage(new BMessage(PAGE_SELECTED_CMD));
@@ -981,13 +969,13 @@ BCardView* PDFWindow::BuildLeftPanel()
 		B_FRAME_EVENTS, true, true, B_FANCY_BORDER);
 
 	mAttachmentsView = new AttachmentsView(mMainView->GetDocument());
-
-	layerView->CardLayout()->AddView(mOutlinesView);
-	layerView->CardLayout()->AddView(pageView);
-	layerView->CardLayout()->AddView(mAttachmentsView);
-
 	mAnnotationsView = new AnnotationsView(mMainView->GetDocument(), SHOW_ANNOTATION_CMD);
-	layerView->CardLayout()->AddView(mAnnotationsView);
+
+	// the order is that of BOOKMARKS_PANEL and the others
+	layerView->AddPanel(mOutlinesView, B_TRANSLATE("Bookmarks"), LoadVectorIcon("BOOKMARKS", 18));
+	layerView->AddPanel(pageView, B_TRANSLATE("Page list"), LoadVectorIcon("SHOW_PAGE_LIST", 18));
+	layerView->AddPanel(mAttachmentsView, B_TRANSLATE("Attachments"), LoadVectorIcon("SHOW_ATTACHMENTS", 18));
+	layerView->AddPanel(mAnnotationsView, B_TRANSLATE("Annotations"), LoadVectorIcon("SHOW_ANNOT", 18));
 
 	return layerView;
 }
@@ -1100,7 +1088,7 @@ void PDFWindow::NewDoc(Document *doc) {
 	mOutlinesView->SetDocument(doc, mFileAttributes.GetBookmarks());
 	mAttachmentsView->SetDocument(doc);
 	mAnnotationsView->SetDocument(doc);
-	if (mAttachmentsView->Count() == 0 && mLayerView->CardLayout()->VisibleIndex() == ATTACHMENTS_PANEL)
+	if (mAttachmentsView->Count() == 0 && mLayerView->Selection() == ATTACHMENTS_PANEL)
 		ShowLeftPanel(BOOKMARKS_PANEL);
 	ActivateOutlines();
 	CollapseOutlinePanelIfEmpty();
@@ -1475,25 +1463,35 @@ PDFWindow::MessageReceived(BMessage* message)
 		}
 		break;
 	case SHOW_BOOKMARKS_CMD:
-		if (mShowLeftPanel && mLayerView->CardLayout()->VisibleIndex() == BOOKMARKS_PANEL)
+		if (mShowLeftPanel && mLayerView->Selection() == BOOKMARKS_PANEL)
 			HideLeftPanel();
 		else
 			ShowLeftPanel(BOOKMARKS_PANEL);
 		break;
 	case SHOW_PAGE_LIST_CMD:
-		if (mShowLeftPanel && mLayerView->CardLayout()->VisibleIndex() == PAGE_LIST_PANEL)
+		if (mShowLeftPanel && mLayerView->Selection() == PAGE_LIST_PANEL)
 			HideLeftPanel();
 		else
 			ShowLeftPanel(PAGE_LIST_PANEL);
 		break;
 	case SHOW_ATTACHMENTS_CMD:
-		if (mShowLeftPanel && mLayerView->CardLayout()->VisibleIndex() == ATTACHMENTS_PANEL)
+		if (mShowLeftPanel && mLayerView->Selection() == ATTACHMENTS_PANEL)
 			HideLeftPanel();
 		else
 			ShowLeftPanel(ATTACHMENTS_PANEL);
 		break;
+	case SidebarTabView::kPanelSelected: {
+		// the user chose a tab (ShowLeftPanel() selects it itself)
+		int32 panel = BOOKMARKS_PANEL;
+		message->FindInt32("panel", &panel);
+		gApp->GetSettings()->SetLeftPanel(panel);
+		if (panel == BOOKMARKS_PANEL)
+			ActivateOutlines();
+		UpdateInputEnabler();
+		break;
+	}
 	case SHOW_ANNOTATIONS_CMD:
-		if (mShowLeftPanel && mLayerView->CardLayout()->VisibleIndex() == ANNOTATIONS_PANEL)
+		if (mShowLeftPanel && mLayerView->Selection() == ANNOTATIONS_PANEL)
 			HideLeftPanel();
 		else
 			ShowLeftPanel(ANNOTATIONS_PANEL);
@@ -1522,7 +1520,7 @@ PDFWindow::MessageReceived(BMessage* message)
 		if (mShowLeftPanel)
 			HideLeftPanel();
 		else
-			ShowLeftPanel(mLayerView->CardLayout()->VisibleIndex());
+			ShowLeftPanel(mLayerView->Selection());
 		break;
 	case FULL_SCREEN_CMD: OnFullScreen();
 		break;
@@ -1895,7 +1893,7 @@ void
 PDFWindow::ActivateOutlines()
 {
 	// mMainView->WaitForPage();
-	if (mLayerView->CardLayout()->VisibleIndex() == BOOKMARKS_PANEL &&
+	if (mLayerView->Selection() == BOOKMARKS_PANEL &&
 		mShowLeftPanel) {
 		mMainView->WaitForPage();
 		mOutlinesView->Activate();
@@ -1906,7 +1904,7 @@ PDFWindow::ActivateOutlines()
 void
 PDFWindow::CollapseOutlinePanelIfEmpty()
 {
-	if (mLayerView->CardLayout()->VisibleIndex() != BOOKMARKS_PANEL)
+	if (mLayerView->Selection() != BOOKMARKS_PANEL)
 		return;
 	// hidden by the user: leave it alone
 	if (!mShowLeftPanel && !mOutlineAutoCollapsed)
@@ -1937,9 +1935,9 @@ PDFWindow::ShowLeftPanel(int panel)
 	if (!mShowLeftPanel) {
 		ToggleLeftPanel();
 	}
-	if (mLayerView->CardLayout()->VisibleIndex() != panel) {
+	if (mLayerView->Selection() != panel) {
 		gApp->GetSettings()->SetLeftPanel(panel);
-		mLayerView->CardLayout()->SetVisibleItem(panel);
+		mLayerView->Select(panel);
 	}
 	if (panel == BOOKMARKS_PANEL) {
 		ActivateOutlines();
