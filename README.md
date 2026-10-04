@@ -60,7 +60,10 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   clipboard as JSON-LD. The marks of an EPUB are stored in this form (the attribute `SEN:annotations`); the
   annotations of a PDF file stay PDF annotations in the file; they are described in this form when they are handed on, and when the file
   is saved or a copy is made they are written to `SEN:annotations` of the file too (with `SEN:annotationCount`), so that they can be found
-  and used without opening the PDF file.
+  and used without opening the PDF file. If SEN knows the file (it has a `SEN:ID`, its identifier in the personal knowledge graph), that
+  identifier is the `oa:hasSource` of the targets, both in the attribute and when an annotation is handed on; otherwise the
+  attribute has no source (the annotations are about the file that they are stored with) and a handed-on annotation has the
+  `file:` IRI.
   Other applications (SEN) open a document at a place with `B_REFS_RECEIVED`: the file in `refs`, and
   `oa:hasTarget` (a message with `oa:hasSelector` entries as in the model, any of the selectors above that the document
   understands; an EPUB CFI is found in whatever layout the book has, the words are searched for from the page that

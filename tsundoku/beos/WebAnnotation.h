@@ -100,6 +100,12 @@ BString IdentifierUuid(const char* iri);
 // the IRI of a file: file:///boot/home/a%20book.epub
 BString FileIri(const char* path);
 
+// The identifier that SEN has given the file (its attribute SEN:ID, a TSID), empty if it has none: every object in the
+// personal knowledge graph has one, and it is what the annotations of the file are about.
+BString SenId(const char* path);
+// the source of the target of an annotation (oa:hasSource); replaces the one that is there
+void SetSource(BMessage* annotation, const char* source);
+
 // time as in JSON-LD (2026-10-04T10:00:00Z) and back
 BString TimeToIso(int64 time);
 int64   IsoToTime(const char* iso);

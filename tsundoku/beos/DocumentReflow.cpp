@@ -405,6 +405,8 @@ Document::WriteStore(const char* path)
 		return true;
 	}
 
+	// if SEN knows the file, its identifier is what the annotations are about
+	BString source = WebAnnotation::SenId(path);
 	BMessage archive;
 	archive.AddInt32("version", kStoreVersion);
 	for (size_t i = 0; i < fStore.size(); i++) {
@@ -412,6 +414,8 @@ Document::WriteStore(const char* path)
 		ToMark(fStore[i], &mark);
 		BMessage item;
 		WebAnnotation::ArchiveMark(mark, &item);
+		if (!source.IsEmpty())
+			WebAnnotation::SetSource(&item, source.String());
 		archive.AddMessage(WebAnnotation::kAnnotation, &item);
 	}
 
@@ -1115,11 +1119,10 @@ Document::StoreWebAnnotation(int pageNo, int index, BMessage* annotation)
 	ToMark(fStore[at], &mark);
 	WebAnnotation::ArchiveMark(mark, annotation);
 
-	BMessage target;
-	if (annotation->FindMessage("oa:hasTarget", &target) == B_OK) {
-		target.AddString("oa:hasSource", WebAnnotation::FileIri(fPath.String()));
-		annotation->ReplaceMessage("oa:hasTarget", &target);
-	}
+	// the identifier that SEN gave the file, or else its IRI
+	BString source = WebAnnotation::SenId(fPath.String());
+	WebAnnotation::SetSource(annotation, source.IsEmpty() ? WebAnnotation::FileIri(fPath.String()).String()
+		: source.String());
 	return true;
 }
 

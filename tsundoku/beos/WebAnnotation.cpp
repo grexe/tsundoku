@@ -24,6 +24,7 @@
 #include <string.h>
 #include <time.h>
 
+#include <Node.h>
 #include <TypeConstants.h>
 
 namespace WebAnnotation {
@@ -90,6 +91,32 @@ IsoToTime(const char* iso)
 
 
 // ---- identifiers and colors
+
+BString
+SenId(const char* path)
+{
+	BNode node(path);
+	char buffer[128];
+	ssize_t size = node.InitCheck() == B_OK ? node.ReadAttr("SEN:ID", B_STRING_TYPE, 0, buffer, sizeof(buffer) - 1) : -1;
+	if (size <= 0)
+		return BString();
+	buffer[size] = '\0';
+	return BString(buffer);
+}
+
+
+void
+SetSource(BMessage* annotation, const char* source)
+{
+	BMessage target;
+	if (annotation->FindMessage("oa:hasTarget", &target) != B_OK)
+		return;
+	if (target.HasString("oa:hasSource"))
+		target.ReplaceString("oa:hasSource", source);
+	else
+		target.AddString("oa:hasSource", source);
+	annotation->ReplaceMessage("oa:hasTarget", &target);
+}
 
 BString
 FileIri(const char* path)

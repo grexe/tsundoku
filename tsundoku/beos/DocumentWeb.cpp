@@ -126,11 +126,12 @@ ShapeSvg(const DocAnnotation& annotation, const fz_rect& bounds)
 }
 
 
-// A PDF annotation of a page as a Web Annotation. The text of the page is made when a mark needs it. If the source is not
-// wanted (the annotation is stored with the file that it is about), the target has none.
+// A PDF annotation of a page as a Web Annotation. The text of the page is made when a mark needs it. The source of the
+// target is what the annotation is about: the identifier that SEN gave the file, or its IRI, or none if it is stored with
+// the file and SEN does not know it.
 static void
 BuildPdfAnnotation(Document* document, int pageNo, fz_page* page, fz_stext_page** text, const DocAnnotation& a,
-	const fz_rect& bounds, bool withSource, BMessage* annotation)
+	const fz_rect& bounds, const char* source, BMessage* annotation)
 {
 	BString motivation = kHighlighting;
 	switch (a.type) {
@@ -162,8 +163,8 @@ BuildPdfAnnotation(Document* document, int pageNo, fz_page* page, fz_stext_page*
 
 	// the target: the page of the file, and then where on it
 	BMessage target;
-	if (withSource)
-		target.AddString("oa:hasSource", FileIri(document->Path()));
+	if (source != NULL && source[0] != '\0')
+		target.AddString("oa:hasSource", source);
 	BMessage pageSelector;
 	char pageValue[24];
 	snprintf(pageValue, sizeof(pageValue), "page=%d", pageNo);
@@ -235,7 +236,10 @@ Document::WebAnnotationOf(int pageNo, int index, BMessage* annotation)
 	if (ok) {
 		fz_rect bounds = fz_empty_rect;
 		PageBounds(pageNo, &bounds);
-		BuildPdfAnnotation(this, pageNo, page, &text, list[index], bounds, true, annotation);
+		// the identifier that SEN gave the file, or else its IRI
+		BString senId = SenId(fPath.String());
+		BString source = senId.IsEmpty() ? FileIri(fPath.String()) : senId;
+		BuildPdfAnnotation(this, pageNo, page, &text, list[index], bounds, source.String(), annotation);
 	}
 	fz_drop_stext_page(fContext, text);
 	fz_drop_page(fContext, page);
@@ -257,6 +261,7 @@ Document::WriteWebAnnotations(const char* path)
 		return false;
 
 	DocumentLocker locker(this);
+	BString source = SenId(path);	// (if SEN knows the file)
 	BMessage archive;
 	archive.AddInt32("version", 2);
 	int count = 0;
@@ -283,7 +288,7 @@ Document::WriteWebAnnotations(const char* path)
 		fz_stext_page* text = NULL;
 		for (size_t i = 0; i < list.size(); i++) {
 			BMessage annotation;
-			BuildPdfAnnotation(this, pageNo, page, &text, list[i], bounds, false, &annotation);
+			BuildPdfAnnotation(this, pageNo, page, &text, list[i], bounds, source.String(), &annotation);
 			archive.AddMessage(kAnnotation, &annotation);
 			count++;
 		}
