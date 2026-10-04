@@ -159,7 +159,7 @@ right-to-left order would be two more switches of the layout, in the same table)
 
 **What there is.** MuPDF reads no DjVu. HaikuPorts has `djvu` (DjVuLibre 3.5.29, library `lib:libdjvulibre`, package
 `djvu_devel`, tools `djvu_tools` with `c44`, `cjb2`, `djvm`, `djvused`, `djvutxt`), a Haiku translator (`djvutranslator`, by
-3dEyes, which hands out a page as a bitmap) and two viewers (`djvuviewer`, `djview`). The library's license is GPL version 2
+3dEyes; a translator hands out a bitmap, which page it can give was not looked at) and two viewers (`djvuviewer`, `djview`). The library's license is GPL version 2
 **or any later version** (stated in the headers, the recipe only says "GPL v2"), so it can be combined with the AGPL version
 3 of Tsundoku. DjVu files have a real mark (`AT&TFORM` and `DJVU` or `DJVM` at offset 12), so the type (`image/vnd.djvu`,
 extensions `djvu`, `djv`) gets a plain sniffer rule.
@@ -168,8 +168,7 @@ extensions `djvu`, `djv`) gets a plain sniffer rule.
 public (`fz_register_document_handler`, `fz_new_derived_document`, `fz_new_derived_page`), as the comic work showed for
 archives. A handler `DjvuDocument.cpp` that implements the callbacks on `ddjvu_*` makes DjVu look like any fixed-layout
 document to everything above it (`Document`, `PageLayout`, rendering, search, selection, outline, links, deep links,
-printing), so none of that is written twice. The translator cannot be used: it has one bitmap and no text, no outline, no
-links. A command line tool (`ddjvu`) is out of the question for speed and text.
+printing), so none of that is written twice. The translator is not enough: the Translation Kit gives a bitmap, not a text layer, an outline or links. A command line tool (`ddjvu`) is out of the question for speed and text.
 
 **What the handler does** (the `ddjvu` API, `ddjvuapi.h`):
 - *Pages and size:* `ddjvu_document_get_pagenum`, `ddjvu_document_get_pageinfo` (width, height, dpi, rotation); the page is
@@ -211,4 +210,4 @@ and links), and small files made with the tools (`c44` for a photo page, `cjb2` 
 
 **To decide:** (1) that the handler is the way (this plan), and that the GPL 2-or-later library is a dependency of the
 package; (2) whether text marks for DjVu are wanted at once or after the shapes; (3) the name of the type: `image/vnd.djvu`
-is the registered one, Haiku's translator has registered its own for the format, to be looked at on the VM when starting.
+is the registered one; which type the translator accepts is to be looked at on the VM when starting.
