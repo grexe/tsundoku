@@ -16,7 +16,11 @@ resource app_signature "application/x-vnd.sen-labs.Tsundoku";
 
 resource file_types message {
 	"types" = "application/pdf",
-	"types" = "application/epub+zip"
+	"types" = "application/epub+zip",
+	"types" = "application/vnd.comicbook+zip",
+	"types" = "application/vnd.comicbook-rar",
+	"types" = "application/x-cb7",
+	"types" = "application/x-cbt"
 };
 
 resource(86, "NOTE_ANNOT") #'BBMP' archive BBitmap {

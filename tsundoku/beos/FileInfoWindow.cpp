@@ -39,7 +39,9 @@
 #include <TabView.h>
 #include <TranslationUtils.h>
 
+#include "ComicInfo.h"
 #include "EpubInfo.h"
+#include "PageRenderer.h"
 #include "Globals.h"
 #include "FileInfoWindow.h"
 #include "LayoutUtils.h"
@@ -253,6 +255,60 @@ void FileInfoWindow::Refresh(BEntry *file, Document *doc) {
 			BMemoryIO io(&data[0], data.size());
 			if (BBitmap* bitmap = BTranslationUtils::GetBitmap(&io))
 				cover = new CoverView(bitmap);
+		}
+	} else if (doc->IsComic()) {
+		// what ComicInfo.xml says, if the archive has it
+		struct Row { const char* title; BString value; };
+		if (const ComicInfo* comic = doc->Comic()) {
+			BString series = comic->series;
+			if (series.Length() > 0 && comic->number.Length() > 0) {
+				series << " #" << comic->number;
+				if (comic->count > 0)
+					series << " / " << comic->count;
+			}
+			Row rows[] = {
+				{ B_TRANSLATE("Title:"), comic->title },
+				{ B_TRANSLATE("Series:"), series },
+				{ B_TRANSLATE("Author:"), comic->Authors() },
+				{ B_TRANSLATE("Artists:"), comic->Artists() },
+				{ B_TRANSLATE("Language:"), comic->language },
+				{ B_TRANSLATE("Publisher:"), comic->publisher },
+				{ B_TRANSLATE("Published:"), comic->Date() },
+				{ B_TRANSLATE("Keywords:"), comic->Keywords() },
+				{ B_TRANSLATE("Age rating:"), comic->ageRating },
+				{ B_TRANSLATE("Reading:"), comic->rightToLeft ? B_TRANSLATE("right to left") : "" },
+				{ B_TRANSLATE("Description:"), comic->summary },
+				{ B_TRANSLATE("Web:"), comic->web }
+			};
+			for (size_t i = 0; i < sizeof(rows) / sizeof(rows[0]); i++) {
+				if (rows[i].value.Length() == 0)
+					continue;
+				BString shown(rows[i].value);
+				if (shown.CountChars() > 120) {
+					shown.TruncateChars(120);
+					shown << "\xe2\x80\xa6";
+				}
+				AddPair(document, new BStringView("", rows[i].title), new BStringView("", shown.String()));
+			}
+		}
+
+		// the cover is the page that ComicInfo.xml marks as such, else the first
+		int cover_page = doc->Comic() != NULL ? doc->Comic()->CoverPage() + 1 : 1;
+		if (cover_page < 1 || cover_page > doc->PageCount())
+			cover_page = 1;
+		fz_matrix matrix;
+		int width = 0, height = 0;
+		fz_rect bounds;
+		if (doc->PageBounds(cover_page, &bounds) && bounds.y1 > bounds.y0) {
+			float dpi = 72 * 440 / (bounds.y1 - bounds.y0);
+			if (doc->PageMatrix(cover_page, dpi, 0, &matrix, &width, &height) && width > 0 && height > 0) {
+				BBitmap* bitmap = new BBitmap(BRect(0, 0, width - 1, height - 1), B_RGB32);
+				if (bitmap->InitCheck() == B_OK
+					&& PageRenderer::RenderToBitmap(doc, cover_page, matrix, bitmap, width, height, NULL))
+					cover = new CoverView(bitmap);
+				else
+					delete bitmap;
+			}
 		}
 	} else {
 		CreateProperty(document, doc, titleKey, B_TRANSLATE("Title:"));

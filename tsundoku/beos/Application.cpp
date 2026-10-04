@@ -56,6 +56,7 @@
 #include "Globals.h"
 #include "TraceWindow.h"
 #include "Document.h"
+#include "ComicInfo.h"
 #include "EpubInfo.h"
 #include "FileInfoWindow.h"
 
@@ -168,6 +169,15 @@ static const size_t kBookAttributeCount = sizeof(kBookAttributes) / sizeof(kBook
 static const char* const kAnnotationCountAttribute = "SEN:annotationCount";
 
 
+static const struct { const char* type; const char* extension; const char* description; } kComicTypes[] = {
+	{ "application/vnd.comicbook+zip", "cbz", B_TRANSLATE_MARK("Comic book (ZIP)") },
+	{ "application/vnd.comicbook-rar", "cbr", B_TRANSLATE_MARK("Comic book (RAR)") },
+	{ "application/x-cb7", "cb7", B_TRANSLATE_MARK("Comic book (7z)") },
+	{ "application/x-cbt", "cbt", B_TRANSLATE_MARK("Comic book (TAR)") }
+};
+static const size_t kComicTypeCount = sizeof(kComicTypes) / sizeof(kComicTypes[0]);
+
+
 static void
 AddAttrInfo(BMessage* info, const char* name, const char* label, int32 type, int32 width)
 {
@@ -266,23 +276,45 @@ InstallMimeTypes(const entry_ref* application)
 	if (epub.GetSnifferRule(&rule) != B_OK || rule.Length() == 0)
 		epub.SetSnifferRule("1.0 [30] ('mimetypeapplication/epub+zip')");
 
+	// Comic books are archives of images with the same attributes as books. Their names, as the freedesktop.org
+	// database has them (Haiku knows nothing of them, they would be ZIP, RAR or TAR files).
+	for (size_t i = 0; i < kComicTypeCount; i++) {
+		BMimeType comic(kComicTypes[i].type);
+		if (comic.InitCheck() != B_OK)
+			continue;
+		if (!comic.IsInstalled()) {
+			if (comic.Install() != B_OK)
+				continue;
+			comic.SetShortDescription(B_TRANSLATE_NOCOLLECT(kComicTypes[i].description));
+			comic.SetLongDescription(B_TRANSLATE_NOCOLLECT(kComicTypes[i].description));
+			BMessage extensions;
+			extensions.AddString("extensions", kComicTypes[i].extension);
+			comic.SetFileExtensions(&extensions);
+		}
+		comic.SetAttrInfo(&epubInfo);
+	}
+
 	// The database knows what an application supports from the entry of its signature, which is only made
 	// when the application is entered (mimeset -a). Nobody does that for an application that comes in a package
 	// or is built, so the entry is out of date after a new type has been added: Tsundoku would not be offered for
 	// EPUB files (Open with...). It is entered here, if it is not a supporting application of a type it names.
-	BMessage apps;
-	bool listed = false;
-	if (application != NULL && epub.GetSupportingApps(&apps) == B_OK) {
-		const char* signature;
-		for (int32 i = 0; apps.FindString("applications", i, &signature) == B_OK; i++) {
-			if (strcasecmp(signature, BEPDF_APP_SIG) == 0)
-				listed = true;
+	bool listed = true;
+	for (size_t i = 0; application != NULL && i <= kComicTypeCount && listed; i++) {
+		BMimeType type(i == 0 ? "application/epub+zip" : kComicTypes[i - 1].type);
+		BMessage apps;
+		listed = false;
+		if (type.GetSupportingApps(&apps) == B_OK) {
+			const char* signature;
+			for (int32 k = 0; apps.FindString("applications", k, &signature) == B_OK; k++) {
+				if (strcasecmp(signature, BEPDF_APP_SIG) == 0)
+					listed = true;
+			}
 		}
-		if (!listed) {
-			BPath path(application);
-			if (path.InitCheck() == B_OK)
-				create_app_meta_mime(path.Path(), false, true, true);
-		}
+	}
+	if (application != NULL && !listed) {
+		BPath path(application);
+		if (path.InitCheck() == B_OK)
+			create_app_meta_mime(path.Path(), false, true, true);
 	}
 }
 
@@ -920,6 +952,25 @@ BepdfApplication::UpdateAttr(BNode &node, const char *name, type_code type, off_
 
 
 ///////////////////////////////////////////////////////////
+// the date as far as it is given: 2026, 2026-09 or 2026-09-01
+void
+BepdfApplication::UpdatePublished(BNode &node, const char *text) {
+	int year = 0, month = 1, day = 1;
+	if (sscanf(text, "%d-%d-%d", &year, &month, &day) >= 1 && year > 0) {
+		struct tm date;
+		memset(&date, 0, sizeof(date));
+		date.tm_year = year - 1900;
+		date.tm_mon = month >= 1 && month <= 12 ? month - 1 : 0;
+		date.tm_mday = day >= 1 && day <= 31 ? day : 1;
+		date.tm_hour = 12;
+		time_t published = mktime(&date);
+		if (published != (time_t)-1)
+			UpdateAttr(node, "dc:date", B_TIME_TYPE, 0, &published, sizeof(published));
+	}
+}
+
+
+///////////////////////////////////////////////////////////
 void
 BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 	BNode node(ref);
@@ -974,19 +1025,23 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 			double position = atof(epub->seriesIndex.String());
 			UpdateAttr(node, "schema:position", B_DOUBLE_TYPE, 0, &position, sizeof(position));
 		}
-		// the date as far as it is given: 2026, 2026-09 or 2026-09-01
-		int year = 0, month = 1, day = 1;
-		if (sscanf(epub->date.String(), "%d-%d-%d", &year, &month, &day) >= 1 && year > 0) {
-			struct tm date;
-			memset(&date, 0, sizeof(date));
-			date.tm_year = year - 1900;
-			date.tm_mon = month >= 1 && month <= 12 ? month - 1 : 0;
-			date.tm_mday = day >= 1 && day <= 31 ? day : 1;
-			date.tm_hour = 12;
-			time_t published = mktime(&date);
-			if (published != (time_t)-1)
-				UpdateAttr(node, "dc:date", B_TIME_TYPE, 0, &published, sizeof(published));
+		UpdatePublished(node, epub->date.String());
+	} else if (const ComicInfo* comic = doc->Comic()) {
+		// the comic book managers write ComicInfo.xml, which maps to the same attributes
+		struct { const char* name; const BString value; } strings[] = {
+			{ "dc:description", comic->summary }, { "dc:publisher", comic->publisher },
+			{ "dc:language", comic->language }, { "dcterms:isPartOf", comic->series }
+		};
+		for (size_t i = 0; i < sizeof(strings) / sizeof(strings[0]); i++) {
+			if (strings[i].value.Length() > 0)
+				UpdateAttr(node, strings[i].name, B_STRING_TYPE, 0, (void*)strings[i].value.String(),
+					strings[i].value.Length() + 1);
 		}
+		if (comic->number.Length() > 0) {
+			double position = atof(comic->number.String());
+			UpdateAttr(node, "schema:position", B_DOUBLE_TYPE, 0, &position, sizeof(position));
+		}
+		UpdatePublished(node, comic->Date().String());
 	}
 
 	// how many annotations it has (for a book also the ones that are only in the attribute)

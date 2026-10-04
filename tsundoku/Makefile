@@ -40,6 +40,8 @@ SRCS = beos/AnnotationsView.cpp \
 	beos/DocumentReflow.cpp \
 	beos/DocumentWeb.cpp \
 	beos/EntryChangedMonitor.cpp \
+	beos/ComicArchive.cpp \
+	beos/ComicInfo.cpp \
 	beos/EpubCfi.cpp \
 	beos/EpubInfo.cpp \
 	beos/FileInfoWindow.cpp \
@@ -93,7 +95,7 @@ RSRCS =
 #	- 	if your library does not follow the standard library naming scheme,
 #		you need to specify the path to the library and it's name.
 #		(e.g. for mylib.a, specify "mylib.a" or "path/mylib.a")
-LIBS = shared be textencoding columnlistview tracker translation localestub xml2 zip $(STDCPPLIBS)
+LIBS = shared be textencoding columnlistview tracker translation localestub xml2 zip archive $(STDCPPLIBS)
 ifdef MUPDF_DIR
 LIBS += $(MUPDF_DIR)/build/release/libmupdf.a $(MUPDF_DIR)/build/release/libmupdf-third.a \
 	freetype harfbuzz openjp2 jbig2dec brotlidec brotlienc brotlicommon jpeg z

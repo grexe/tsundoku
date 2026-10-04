@@ -20,6 +20,8 @@
 #include "Document.h"
 #include "Globals.h"
 
+#include "ComicArchive.h"
+#include "ComicInfo.h"
 #include "EpubInfo.h"
 
 #include <math.h>
@@ -28,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #include <File.h>
 #include <Catalog.h>
@@ -82,6 +85,50 @@ LogError(fz_context* context, const char* what)
 }
 
 
+// A zipped FictionBook (.fbz, .fb2.zip) is the first .fb2 file of the archive, which MuPDF reads once it is
+// taken out.
+static bool
+IsZippedFictionBook(const char* path)
+{
+	size_t length = strlen(path);
+	return (length > 4 && strcasecmp(path + length - 4, ".fbz") == 0)
+		|| (length > 8 && strcasecmp(path + length - 8, ".fb2.zip") == 0);
+}
+
+
+static fz_document*
+OpenZippedFictionBook(fz_context* context, const char* path)
+{
+	fz_archive* archive = fz_open_archive(context, path);
+	fz_buffer* buffer = NULL;
+	fz_document* document = NULL;
+	fz_var(buffer);
+	fz_var(document);
+	fz_try(context) {
+		const char* name = NULL;
+		int count = fz_count_archive_entries(context, archive);
+		for (int i = 0; i < count && name == NULL; i++) {
+			const char* entry = fz_list_archive_entry(context, archive, i);
+			size_t length = entry != NULL ? strlen(entry) : 0;
+			if (length > 4 && strcasecmp(entry + length - 4, ".fb2") == 0)
+				name = entry;
+		}
+		if (name == NULL)
+			fz_throw(context, FZ_ERROR_FORMAT, "no FictionBook in the archive");
+		buffer = fz_read_archive_entry(context, archive, name);
+		document = fz_open_document_with_buffer(context, name, buffer);
+	}
+	fz_always(context) {
+		fz_drop_buffer(context, buffer);
+		fz_drop_archive(context, archive);
+	}
+	fz_catch(context) {
+		fz_rethrow(context);
+	}
+	return document;
+}
+
+
 Document::OpenResult
 Document::Open(const char* path, const char* password, Document** _document, float textSize)
 {
@@ -96,10 +143,32 @@ Document::Open(const char* path, const char* password, Document** _document, flo
 	bool needsPassword = false;
 	bool failed = false;
 
+	// the metadata of a comic book comes out of its archive
+	ComicInfo* comic = NULL;
+	bool isComic = ComicArchive::IsComicFile(path);
+
 	fz_var(document);
+	fz_var(comic);
 	fz_try(context) {
 		fz_register_document_handlers(context);
-		document = fz_open_document(context, path);
+		ComicArchive::RegisterHandlers(context);
+		if (isComic) {
+			// MuPDF reads the pages from the archive without what file managers put into it
+			fz_archive* archive = ComicArchive::Open(context, path);
+			fz_try(context) {
+				document = fz_open_document_with_stream_and_dir(context, path, NULL, archive);
+				comic = ComicInfo::Read(context, archive);
+			}
+			fz_always(context) {
+				fz_drop_archive(context, archive);
+			}
+			fz_catch(context) {
+				fz_rethrow(context);
+			}
+		} else if (IsZippedFictionBook(path))
+			document = OpenZippedFictionBook(context, path);
+		else
+			document = fz_open_document(context, path);
 		if (fz_needs_password(context, document)) {
 			if (password == NULL || password[0] == '\0'
 				|| !fz_authenticate_password(context, document, password))
@@ -112,12 +181,15 @@ Document::Open(const char* path, const char* password, Document** _document, flo
 	}
 
 	if (failed || needsPassword) {
+		delete comic;
 		fz_drop_document(context, document);
 		fz_drop_context(context);
 		return failed ? kFailed : kNeedsPassword;
 	}
 
 	Document* result = new Document(context, document, path, textSize);
+	result->fIsComic = isComic;
+	result->fComic = comic;
 	if (result->fPageCount <= 0) {
 		result->Release();
 		return kFailed;
@@ -145,6 +217,8 @@ Document::Document(fz_context* context, fz_document* document, const char* path,
 	fReflowable(false),
 	fTextSize(kDefaultTextSize),
 	fEpub(NULL),
+	fComic(NULL),
+	fIsComic(false),
 	fAbortLayout(false),
 	fKeptBookmark(0),
 	fKeptPage(0),
@@ -225,6 +299,7 @@ Document::~Document()
 {
 	fLock.Lock();
 	delete fEpub;
+	delete fComic;
 	fz_drop_document(fContext, fDocument);
 	fz_drop_context(fContext);
 	fLock.Unlock();
@@ -346,6 +421,18 @@ Document::Metadata(const char* key)
 			value = fEpub->Authors();
 		else if (strcmp(key, FZ_META_INFO_KEYWORDS) == 0)
 			value = fEpub->Subjects();
+		if (value.Length() > 0)
+			return value;
+	}
+
+	if (fComic != NULL) {
+		BString value;
+		if (strcmp(key, FZ_META_INFO_TITLE) == 0)
+			value = fComic->title;
+		else if (strcmp(key, FZ_META_INFO_AUTHOR) == 0)
+			value = fComic->Authors();
+		else if (strcmp(key, FZ_META_INFO_KEYWORDS) == 0)
+			value = fComic->Keywords();
 		if (value.Length() > 0)
 			return value;
 	}

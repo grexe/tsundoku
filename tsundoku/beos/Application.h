@@ -89,6 +89,7 @@ public:
 	void WindowClosed()       { mWindow = NULL; }
 	
 	static void UpdateAttr(BNode &node, const char* name, type_code type, off_t offset, void* buffer, size_t length);
+	static void UpdatePublished(BNode &node, const char* date);
 	static void UpdateFileAttributes(Document* doc, entry_ref* ref);
 	
 private:

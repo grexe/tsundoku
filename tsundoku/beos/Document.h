@@ -117,6 +117,7 @@ struct DocAnnotationEntry {
 };
 
 class BMessage;
+class ComicInfo;
 class EpubInfo;
 
 // Where a deep link leads (see ResolveTarget): the page, the words to look for, a region on the page.
@@ -215,6 +216,9 @@ public:
 	void         AbortLayout() { fAbortLayout = true; }
 	// what an EPUB says about itself, NULL for other documents
 	const EpubInfo* Epub() const { return fEpub; }
+	// What a comic book archive says about itself, NULL if it is not one or has no ComicInfo.xml.
+	const ComicInfo* Comic() const { return fComic; }
+	bool         IsComic() const { return fIsComic; }
 	static const float kReflowWidth, kReflowHeight, kDefaultTextSize, kMinTextSize, kMaxTextSize;
 	bool         IsEncrypted() const { return fEncrypted; }
 
@@ -377,6 +381,8 @@ private:
 	bool            fReflowable;
 	float           fTextSize;
 	EpubInfo*       fEpub;
+	ComicInfo*      fComic;
+	bool            fIsComic;
 	volatile bool   fAbortLayout;
 	fz_bookmark     fKeptBookmark;   // where the reader was before the text size changed, for the next change
 	int             fKeptPage;       // the page it led to, 0 if none

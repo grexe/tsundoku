@@ -82,6 +82,15 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   lists all annotations of the document in columns for page, type and the text they mark or hold, sorted by clicking a
   title; choosing one goes there and selects it. View > Hide sidebar (it reads Show sidebar when the sidebar is hidden)
   sits with Fullscreen.
+- Comic books open like PDF files: CBZ (ZIP), CBR (RAR), CB7 (7z) and CBT (TAR, also compressed with gzip, xz or
+  bzip2). MuPDF reads ZIP and TAR and draws the pages; RAR, 7z and compressed TAR come from libarchive, which is
+  added to MuPDF as an archive handler. What file managers put into an archive (`__MACOSX`, `._*`, `.DS_Store`,
+  `Thumbs.db`) is not taken for pages, and pages in WebP or AVIF, which MuPDF cannot read, are converted by the
+  translators of Haiku when they are shown. The metadata of `ComicInfo.xml` (ComicRack, ComicTagger, Calibre,
+  Komga: title, series and number, writers, artists, publisher, date, genres, language, summary) is written to the
+  same attributes as for books, and File info shows it with the cover (the page marked as such, else the first).
+  Haiku sniffs the content before it looks at the extension, so a `.cbz` is a ZIP file and a `.cbr` a RAR file to
+  Tracker; `.cb7` and `.cbt` have their own types. Zipped FictionBooks (`.fbz`, `.fb2.zip`) open as well.
 - EPUB books open like PDF files. A book has no fixed pages, so it is laid out as pages of 6 by 9 inches for a text
   size (View > Larger text, Smaller text, Cmd+T and Cmd+Shift+T); the reader stays where the text was, and the
   text size is kept in the settings. MuPDF lays out and draws the book; its metadata is read from the package
@@ -164,12 +173,12 @@ Each release on GitHub also has the package as a file.
 
 ## Building
 
-With the repository above added, `pkgman install mupdf1.28_devel libzip_devel libxml2_devel freetype_devel` is all that is needed, and
+With the repository above added, `pkgman install mupdf1.28_devel libarchive_devel libzip_devel libxml2_devel freetype_devel` is all that is needed, and
 `./build.sh` uses it. Without it, the build gets MuPDF itself, and the development packages of the libraries MuPDF
 uses are taken from the system:
 
 ```
-pkgman install libzip_devel libxml2_devel freetype_devel harfbuzz_devel openjpeg_devel jbig2dec_devel brotli_devel libjpeg_turbo_devel
+pkgman install libarchive_devel libzip_devel libxml2_devel freetype_devel harfbuzz_devel openjpeg_devel jbig2dec_devel brotli_devel libjpeg_turbo_devel
 git clone https://github.com/grexe/tsundoku
 cd tsundoku
 ./build.sh

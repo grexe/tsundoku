@@ -29,7 +29,7 @@ jobs:
           # fetching the repository fails now and then ("Failed to open repository file"), so it is tried again
           for attempt in 1 2 3 4; do
             pkgman add-repo https://kiri.sen-labs.org/x86_64 || true
-            if pkgman install -y mupdf1.28_devel libzip_devel libxml2_devel freetype_devel cmd:gcc gcc_syslibs_devel cmd:make cmd:pkg_config; then
+            if pkgman install -y mupdf1.28_devel libarchive_devel libzip_devel libxml2_devel freetype_devel cmd:gcc gcc_syslibs_devel cmd:make cmd:pkg_config; then
               exit 0
             fi
             echo "attempt $attempt failed"

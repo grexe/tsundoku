@@ -2063,6 +2063,8 @@ PDFWindow::MessageReceived(BMessage* message)
 			} else if (cmd == "chooseannot") {
 				// a line of the list of annotations as it is shown (sorted), counted from 0
 				mAnnotationsView->TestChoose((int)TestInt(message, "which", 0));
+			} else if (cmd == "info") {
+				PostMessage(FILE_INFO_CMD);
 			} else if (cmd == "savecopy") {
 				// as the file panel does, with the path in "text"
 				BString text;
