@@ -187,10 +187,13 @@ public:
 	// text size (in points); a change of the text size changes the pages.
 	bool         IsReflowable() const { return fReflowable; }
 	float        TextSize() const { return fTextSize; }
-	// lays out for the text size (when opened)
-	void         Layout(float textSize);
-	// lays out again; returns the page that the one that was shown is on now
+	// Lays out again for the text size, a chapter at a time, and holds the lock only for one at a time, so that the
+	// document can be used meanwhile. Returns false if AbortLayout() was called: the document is as it was.
+	bool         Layout(float textSize);
+	// lays out again; returns the page that the one that was shown is on now (the same page if aborted)
 	int          ChangeTextSize(float textSize, int currentPage);
+	// stops a layout that is in progress (from any thread), the chapter that is laid out is finished first
+	void         AbortLayout() { fAbortLayout = true; }
 	// what an EPUB says about itself, NULL for other documents
 	const EpubInfo* Epub() const { return fEpub; }
 	static const float kReflowWidth, kReflowHeight, kDefaultTextSize, kMinTextSize, kMaxTextSize;
@@ -273,10 +276,10 @@ public:
 	bool         MakeAnchor(int page, TextAnchor* anchor);
 	int          PageOfAnchor(const TextAnchor& anchor);
 
-	// Whether the document has annotations, and the attribute META:annotated (1, or none if it has none) of the file
-	// that says so for queries; written when it is opened and saved.
-	bool         HasAnnotations();
-	void         SyncAnnotatedAttribute(const char* path);
+	// How many annotations the document has, and the attribute SEN:annotationCount of the file that says so for queries
+	// (not there if it has none); written when it is opened and saved. Counting does not load the pages.
+	int          AnnotationCount();
+	void         SyncAnnotationCount(const char* path);
 
 	bool         HasUnsavedChanges();
 	bool         CanSave();
@@ -343,6 +346,7 @@ private:
 	bool            fReflowable;
 	float           fTextSize;
 	EpubInfo*       fEpub;
+	volatile bool   fAbortLayout;
 	fz_bookmark     fKeptBookmark;   // where the reader was before the text size changed, for the next change
 	int             fKeptPage;       // the page it led to, 0 if none
 	std::vector<StoredAnnotation>       fStore;

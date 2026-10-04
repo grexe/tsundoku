@@ -73,31 +73,34 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   an EPUB is not taken for a web page; which application opens it is left to you.
   The page list of a book is an outline: chapters, with the pages of the chapter that is read below it. The text
   size is changed in a thread of its own, so the window does not freeze; if it takes more than a moment a small
-  window with a barber pole says that the book is laid out. What a book says about itself is written to separate
-  BFS attributes of the file, and nothing is invented for books: the names are the properties of
-  [schema.org](https://schema.org/Book) with the prefix `META:` (as in Haiku's own document attributes), and where
-  the attributes of `application/pdf` exist they are the same: `META:title` (dc:title), `META:author` (dc:creator,
-  schema:author), `META:keyw` (dc:subject, schema:keywords), `META:pages`, and `META:description` (dc:description),
-  `META:publisher`, `META:inLanguage` (dc:language), `META:datePublished` (dc:date), `META:identifier`, `META:isbn`,
-  `META:isPartOf` (the series, schema:CreativeWorkSeries) and `META:position` (its number in the series). They are
+  window with a barber pole says that the book is laid out. Quitting or opening another file gives the layout up
+  (after the chapter that is being laid out); only what works with the pages of this book waits. What a book says about itself is written to separate
+  BFS attributes of the file, and nothing is invented for books: the names are the properties of the established
+  ontologies with the prefix that is commonly used for each: `dc:` (Dublin Core: `dc:description`, `dc:publisher`,
+  `dc:language`, `dc:date`, `dc:identifier`), `dcterms:` (`dcterms:isPartOf`, the series) and `schema:`
+  ([schema.org/Book](https://schema.org/Book): `schema:isbn`, `schema:position`, the number in the series); other
+  prefixes such as `foaf:` come the same way when they are needed. The attributes of `application/pdf` stay as they
+  are (`META:title`, `META:author`, `META:keyw`, `META:pages`, they are dc:title, dc:creator, dc:subject and
+  schema:numberOfPages) and are written for books as well, so that a column or a query works for both. They are
   defined for the type (so Tracker offers them as columns), and the indices are made on the volume. `META:pages` is
   the number of pages in the standard configuration (6 by 9 inches, the default text size), an estimate that stays
   the same for inventory and citations, as the shops give it for an e-book; it is not written when the book is first
-  opened at another text size. `META:annotated` (1, or not there) says for any PDF or EPUB file that it has
-  annotations.
+  opened at another text size. `SEN:annotationCount` (the number of annotations, not there if there are none; an
+  integer, so that it can be indexed) says for any PDF or EPUB file how many it has. The prefix `META:` is only kept for
+  the attributes that exist already, those of PDF files.
   Places in a book are anchors in the manner of the W3C Web Annotation model, and not page numbers, which change with
   the text size: the words at the place (a text quote), its [EPUB CFI](https://idpf.org/epub/linking/cfi/) (the
   standard path through the package and the content document, e.g. `epubcfi(/6/4[chap01]!/4/10,/1:3,/3:12)`, which
   other reading systems understand), and where it was (chapter, place in the chapter) to look there first. A mark
-  keeps its anchor in `META:annotations`, a bookmark of yours in an extra `a` entry of `bepdf:bookmarks` (BePDF
+  keeps its anchor in `SEN:annotations`, a bookmark of yours in an extra `a` entry of `bepdf:bookmarks` (BePDF
   ignores it), and the place where you stopped reading in `bepdf:anchor`; they find their page again for the text
   size the book is shown at. If the words are not found any more (another version of the book), the CFI, which names
   a chapter by the id of its entry in the reading order, leads to the words that are there now.
   Text can be highlighted, underlined and struck out in books as well (the other kinds of annotations are for
   pages that stay as they are). A mark is tied to the text, not to a page: the chapter, where on the page it was and
   the words it covers. So it is found again when the pages change with the text size, and a mark that runs over a
-  page break is drawn on both pages. The marks are kept in the attribute `META:annotations` of the EPUB file itself (a standard message that other applications can use for
-  the same purpose; the name `tsundoku:annotations` of early versions is still read),
+  page break is drawn on both pages. The marks are kept in the attribute `SEN:annotations` of the EPUB file itself (a standard message that other applications can use for
+  the same purpose; the names `META:annotations` and `tsundoku:annotations` of early versions are still read),
   like the styles of StyledEdit are, and not in a file of their own: they go along when the file is copied in
   Tracker, and File > Save as… copies them with the book. Save, Undo and Redo work as for PDF files; a book on a
   read-only volume is saved as a copy.

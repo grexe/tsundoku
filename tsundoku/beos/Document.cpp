@@ -144,6 +144,7 @@ Document::Document(fz_context* context, fz_document* document, const char* path,
 	fReflowable(false),
 	fTextSize(kDefaultTextSize),
 	fEpub(NULL),
+	fAbortLayout(false),
 	fKeptBookmark(0),
 	fKeptPage(0),
 	fStoreSavedDepth(0),
@@ -1744,26 +1745,46 @@ Document::ForgetHistory()
 }
 
 
-bool
-Document::HasAnnotations()
+// how many annotations that are listed a page has, from its dictionary (no page is loaded)
+static int
+CountListedAnnotations(fz_context* context, pdf_document* pdf, int pageIndex)
+{
+	int count = 0;
+	fz_var(count);
+	fz_try(context) {
+		pdf_obj* annots = pdf_dict_get(context, pdf_lookup_page_obj(context, pdf, pageIndex), PDF_NAME(Annots));
+		int length = pdf_array_len(context, annots);
+		for (int i = 0; i < length; i++) {
+			pdf_obj* subtype = pdf_dict_get(context, pdf_array_get(context, annots, i), PDF_NAME(Subtype));
+			if (subtype != PDF_NAME(Link) && subtype != PDF_NAME(Popup) && subtype != PDF_NAME(Widget))
+				count++;
+		}
+	}
+	fz_catch(context) {
+	}
+	return count;
+}
+
+
+int
+Document::AnnotationCount()
 {
 	DocumentLocker locker(this);
 	if (UsesStore())
-		return !fStore.empty();
+		return (int)fStore.size();
 	if (!fIsPDF)
-		return false;
+		return 0;
 
 	pdf_document* pdf = pdf_specifics(fContext, fDocument);
-	for (int i = 0; i < fPageCount; i++) {
-		if (PageHasListedAnnotation(fContext, pdf, i))
-			return true;
-	}
-	return false;
+	int count = 0;
+	for (int i = 0; i < fPageCount; i++)
+		count += CountListedAnnotations(fContext, pdf, i);
+	return count;
 }
 
 
 void
-Document::SyncAnnotatedAttribute(const char* path)
+Document::SyncAnnotationCount(const char* path)
 {
 	if (!fIsPDF && !fReflowable)
 		return;
@@ -1772,14 +1793,16 @@ Document::SyncAnnotatedAttribute(const char* path)
 	if (node.InitCheck() != B_OK)
 		return;
 
-	bool annotated = HasAnnotations();
+	// (the first versions of Tsundoku wrote a flag with another name)
+	node.RemoveAttr("META:annotated");
+
+	int32 count = AnnotationCount();
 	int32 value = 0;
-	bool present = node.ReadAttr("META:annotated", B_INT32_TYPE, 0, &value, sizeof(value)) == sizeof(value);
-	if (annotated && (!present || value != 1)) {
-		int32 yes = 1;
-		node.WriteAttr("META:annotated", B_INT32_TYPE, 0, &yes, sizeof(yes));
-	} else if (!annotated && present)
-		node.RemoveAttr("META:annotated");
+	bool present = node.ReadAttr("SEN:annotationCount", B_INT32_TYPE, 0, &value, sizeof(value)) == sizeof(value);
+	if (count > 0 && (!present || value != count))
+		node.WriteAttr("SEN:annotationCount", B_INT32_TYPE, 0, &count, sizeof(count));
+	else if (count == 0 && present)
+		node.RemoveAttr("SEN:annotationCount");
 }
 
 
@@ -1807,7 +1830,7 @@ Document::Save()
 			return false;
 		fModified = false;
 		fStoreSavedDepth = fStoreUndo.size();
-		SyncAnnotatedAttribute(fPath.String());
+		SyncAnnotationCount(fPath.String());
 		return true;
 	}
 	if (!fIsPDF)
@@ -1828,7 +1851,7 @@ Document::Save()
 	if (ok) {
 		fModified = false;
 		ForgetHistory();
-		SyncAnnotatedAttribute(fPath.String());
+		SyncAnnotationCount(fPath.String());
 	}
 	return ok != 0;
 }
@@ -1883,7 +1906,7 @@ Document::SaveCopy(const char* path)
 		CopyAttributes(fPath.String(), path);
 		fModified = false;
 		ForgetHistory();
-		SyncAnnotatedAttribute(path);
+		SyncAnnotationCount(path);
 	}
 	return ok != 0;
 }

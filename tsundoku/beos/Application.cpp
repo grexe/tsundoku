@@ -134,11 +134,12 @@ int main()
 
 
 
-// What a book says about itself, as BFS attributes. Nothing is invented for books: the names are the properties of
-// schema.org (Book, CreativeWork) with the prefix META: that Haiku's own attributes for documents have, and where
-// they exist the attributes of application/pdf are used as they are (META:title, META:author, META:keyw,
-// META:subject, META:creator, META:pages), so that the same attribute means the same for every kind of document.
-// The comments give the equivalent of Dublin Core (dc:) and schema.org (schema:).
+// What a book says about itself, as BFS attributes. Nothing is invented for books: the names are the properties of the
+// ontologies that are in use everywhere, with the prefix that is commonly used for each of them: dc: (Dublin Core
+// elements), dcterms: (Dublin Core terms) and schema: (schema.org); foaf: and others come the same way when they are
+// needed. The attributes of application/pdf are left as they are, since the files and Tracker know them (META:title,
+// META:author, META:keyw, META:pages are the same as dc:title, dc:creator, dc:subject, schema:numberOfPages); they are
+// written for books as well, so that a column or a query works for both.
 struct BookAttribute {
 	const char* name;
 	const char* label;
@@ -147,19 +148,20 @@ struct BookAttribute {
 };
 
 static const BookAttribute kBookAttributes[] = {
-	{ "META:description", B_TRANSLATE_MARK("Description"), B_STRING_TYPE, 200 },	// dc:description, schema:description
-	{ "META:publisher", B_TRANSLATE_MARK("Publisher"), B_STRING_TYPE, 150 },		// dc:publisher, schema:publisher
-	{ "META:inLanguage", B_TRANSLATE_MARK("Language"), B_STRING_TYPE, 60 },		// dc:language, schema:inLanguage
-	{ "META:datePublished", B_TRANSLATE_MARK("Published"), B_TIME_TYPE, 100 },	// dc:date, schema:datePublished
-	{ "META:identifier", B_TRANSLATE_MARK("Identifier"), B_STRING_TYPE, 200 },	// dc:identifier, schema:identifier
-	{ "META:isbn", B_TRANSLATE_MARK("ISBN"), B_STRING_TYPE, 110 },				// schema:isbn
-	{ "META:isPartOf", B_TRANSLATE_MARK("Series"), B_STRING_TYPE, 150 },			// dcterms:isPartOf, schema:isPartOf
-	{ "META:position", B_TRANSLATE_MARK("Series number"), B_DOUBLE_TYPE, 60 }		// schema:position
+	{ "dc:description", B_TRANSLATE_MARK("Description"), B_STRING_TYPE, 200 },
+	{ "dc:publisher", B_TRANSLATE_MARK("Publisher"), B_STRING_TYPE, 150 },
+	{ "dc:language", B_TRANSLATE_MARK("Language"), B_STRING_TYPE, 60 },
+	{ "dc:date", B_TRANSLATE_MARK("Published"), B_TIME_TYPE, 100 },
+	{ "dc:identifier", B_TRANSLATE_MARK("Identifier"), B_STRING_TYPE, 200 },
+	{ "schema:isbn", B_TRANSLATE_MARK("ISBN"), B_STRING_TYPE, 110 },
+	{ "dcterms:isPartOf", B_TRANSLATE_MARK("Series"), B_STRING_TYPE, 150 },	// the series the book belongs to
+	{ "schema:position", B_TRANSLATE_MARK("Series number"), B_DOUBLE_TYPE, 60 }
 };
 static const size_t kBookAttributeCount = sizeof(kBookAttributes) / sizeof(kBookAttributes[0]);
 
-// whether the document has annotations (any kind of document); the annotations of a book are in META:annotations
-static const char* const kAnnotatedAttribute = "META:annotated";
+// how many annotations the document has (any kind of document), for queries; the annotations of a book are in
+// SEN:annotations. Nothing in the ontologies is made for either, so they have the prefix of SEN.
+static const char* const kAnnotationCountAttribute = "SEN:annotationCount";
 
 
 static void
@@ -234,24 +236,24 @@ InstallMimeTypes(const entry_ref* application)
 	for (size_t i = 0; i < kBookAttributeCount; i++)
 		AddAttrInfo(&epubInfo, kBookAttributes[i].name, kBookAttributes[i].label, kBookAttributes[i].type,
 			kBookAttributes[i].width);
-	AddAttrInfo(&epubInfo, kAnnotatedAttribute, B_TRANSLATE_MARK("Annotated"), B_INT32_TYPE, 60);
+	AddAttrInfo(&epubInfo, kAnnotationCountAttribute, B_TRANSLATE_MARK("Annotations"), B_INT32_TYPE, 70);
 	epub.SetAttrInfo(&epubInfo);
 
-	// "annotated" is the same attribute for PDF files
+	// the number of annotations is the same attribute for PDF files
 	{
 		bool known = false;
 		const char* name;
 		for (int32 i = 0; pdfInfo.FindString("attr:name", i, &name) == B_OK; i++) {
-			if (strcmp(name, kAnnotatedAttribute) == 0)
+			if (strcmp(name, kAnnotationCountAttribute) == 0)
 				known = true;
 		}
 		if (!known && pdfInfo.HasString("attr:name")) {
-			pdfInfo.AddString("attr:name", kAnnotatedAttribute);
-			pdfInfo.AddString("attr:public_name", B_TRANSLATE("Annotated"));
+			pdfInfo.AddString("attr:name", kAnnotationCountAttribute);
+			pdfInfo.AddString("attr:public_name", B_TRANSLATE("Annotations"));
 			pdfInfo.AddInt32("attr:type", B_INT32_TYPE);
 			pdfInfo.AddBool("attr:viewable", true);
 			pdfInfo.AddBool("attr:editable", false);
-			pdfInfo.AddInt32("attr:width", 60);
+			pdfInfo.AddInt32("attr:width", 70);
 			pdf.SetAttrInfo(&pdfInfo);
 		}
 	}
@@ -878,10 +880,10 @@ EnsureIndices(dev_t device)
 	static const struct { const char* name; uint32 type; } kIndices[] = {
 		{ "META:title", B_STRING_TYPE }, { "META:author", B_STRING_TYPE }, { "META:subject", B_STRING_TYPE },
 		{ "META:creator", B_STRING_TYPE }, { "META:keyw", B_STRING_TYPE }, { "META:pages", B_INT32_TYPE },
-		{ "META:description", B_STRING_TYPE }, { "META:publisher", B_STRING_TYPE },
-		{ "META:inLanguage", B_STRING_TYPE }, { "META:identifier", B_STRING_TYPE }, { "META:isbn", B_STRING_TYPE },
-		{ "META:isPartOf", B_STRING_TYPE }, { "META:position", B_DOUBLE_TYPE },
-		{ "META:datePublished", B_INT64_TYPE }, { "META:annotated", B_INT32_TYPE },
+		{ "dc:description", B_STRING_TYPE }, { "dc:publisher", B_STRING_TYPE },
+		{ "dc:language", B_STRING_TYPE }, { "dc:identifier", B_STRING_TYPE }, { "schema:isbn", B_STRING_TYPE },
+		{ "dcterms:isPartOf", B_STRING_TYPE }, { "schema:position", B_DOUBLE_TYPE },
+		{ "dc:date", B_INT64_TYPE }, { "SEN:annotationCount", B_INT32_TYPE },
 		{ "PDF:created", B_INT64_TYPE }, { "PDF:modified", B_INT64_TYPE }
 	};
 	static dev_t sDone[16];
@@ -959,9 +961,9 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 			node.RemoveAttr(kOld[i]);
 
 		struct { const char* name; const BString* value; } strings[] = {
-			{ "META:description", &epub->description }, { "META:publisher", &epub->publisher },
-			{ "META:inLanguage", &epub->language }, { "META:identifier", &epub->identifier },
-			{ "META:isbn", &epub->isbn }, { "META:isPartOf", &epub->series }
+			{ "dc:description", &epub->description }, { "dc:publisher", &epub->publisher },
+			{ "dc:language", &epub->language }, { "dc:identifier", &epub->identifier },
+			{ "schema:isbn", &epub->isbn }, { "dcterms:isPartOf", &epub->series }
 		};
 		for (size_t i = 0; i < sizeof(strings) / sizeof(strings[0]); i++) {
 			if (strings[i].value->Length() > 0)
@@ -970,7 +972,7 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 		}
 		if (epub->seriesIndex.Length() > 0) {
 			double position = atof(epub->seriesIndex.String());
-			UpdateAttr(node, "META:position", B_DOUBLE_TYPE, 0, &position, sizeof(position));
+			UpdateAttr(node, "schema:position", B_DOUBLE_TYPE, 0, &position, sizeof(position));
 		}
 		// the date as far as it is given: 2026, 2026-09 or 2026-09-01
 		int year = 0, month = 1, day = 1;
@@ -983,14 +985,14 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 			date.tm_hour = 12;
 			time_t published = mktime(&date);
 			if (published != (time_t)-1)
-				UpdateAttr(node, "META:datePublished", B_TIME_TYPE, 0, &published, sizeof(published));
+				UpdateAttr(node, "dc:date", B_TIME_TYPE, 0, &published, sizeof(published));
 		}
 	}
 
-	// whether it has annotations (for a book also the ones that are only in the attribute)
-	BPath annotatedPath(ref);
-	if (annotatedPath.InitCheck() == B_OK)
-		doc->SyncAnnotatedAttribute(annotatedPath.Path());
+	// how many annotations it has (for a book also the ones that are only in the attribute)
+	BPath countPath(ref);
+	if (countPath.InitCheck() == B_OK)
+		doc->SyncAnnotationCount(countPath.Path());
 }
 
 

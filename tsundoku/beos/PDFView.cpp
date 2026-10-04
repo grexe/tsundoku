@@ -2049,6 +2049,11 @@ PDFView::ActivateSlot(PageSlot* slot)
 void
 PDFView::StartRender(PageSlot* slot, bool keepImage)
 {
+	// (while a book is laid out again the pages are not what they will be; they are rendered when it is done)
+	if (mLayingOut) {
+		slot->rendering = false;
+		return;
+	}
 	slot->rendering = true;
 	slot->dpi = GetZoomDPI();
 	slot->rotation = mRotation;
@@ -3158,6 +3163,9 @@ void
 PDFView::WaitForLayout()
 {
 	if (mLayoutThread >= 0) {
+		// the layout is given up (the chapter that is laid out is finished first), not waited for to its end
+		if (mDoc != NULL)
+			mDoc->AbortLayout();
 		status_t result;
 		wait_for_thread(mLayoutThread, &result);
 		mLayoutThread = -1;

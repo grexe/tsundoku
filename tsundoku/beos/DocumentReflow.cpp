@@ -58,9 +58,10 @@ const float Document::kMinTextSize = 6;
 const float Document::kMaxTextSize = 40;
 
 // The annotations of a book are kept in this attribute of its file (a standard message, which other applications
-// can use for the same purpose), the older name is still read.
-static const char* kStoreAttribute = "META:annotations";
-static const char* kLegacyStoreAttribute = "tsundoku:annotations";
+// can use for the same purpose). Nothing in the ontologies is made for it, so it has the prefix of SEN, whose standard
+// it is; the names of the first versions are still read.
+static const char* kStoreAttribute = "SEN:annotations";
+static const char* const kLegacyStoreAttributes[] = { "META:annotations", "tsundoku:annotations", NULL };
 static const int32 kStoreVersion = 1;
 static const int kMaxUndo = 100;
 static const int kMaxQuoteLength = 4000;
@@ -76,29 +77,69 @@ LogReflowError(fz_context* context, const char* what)
 ///////////////////////////////////////////////////////////////////////////
 // Layout
 
-void
+bool
 Document::Layout(float textSize)
 {
 	if (!fReflowable)
-		return;
+		return true;
 
 	if (textSize < kMinTextSize)
 		textSize = kMinTextSize;
 	if (textSize > kMaxTextSize)
 		textSize = kMaxTextSize;
 
+	fAbortLayout = false;
+	float previous = fTextSize;
+	int chapters = 0;
+	{
+		DocumentLocker locker(this);
+		fz_try(fContext) {
+			fz_layout_document(fContext, fDocument, kReflowWidth, kReflowHeight, textSize);
+			chapters = fz_count_chapters(fContext, fDocument);
+		}
+		fz_catch(fContext) {
+			LogReflowError(fContext, "cannot lay out the document");
+			chapters = 0;
+		}
+	}
+
+	// the chapters are laid out one by one (that is what counting their pages does), the lock is let go between them
+	bool aborted = false;
+	for (int chapter = 0; chapter < chapters; chapter++) {
+		if (fAbortLayout) {
+			aborted = true;
+			break;
+		}
+		DocumentLocker locker(this);
+		fz_try(fContext) {
+			fz_count_chapter_pages(fContext, fDocument, chapter);
+		}
+		fz_catch(fContext) {
+			LogReflowError(fContext, "cannot lay out a chapter");
+		}
+	}
+
 	DocumentLocker locker(this);
+	if (aborted) {
+		// as it was (the chapters are laid out again when they are needed)
+		fz_try(fContext) {
+			fz_layout_document(fContext, fDocument, kReflowWidth, kReflowHeight, previous);
+		}
+		fz_catch(fContext) {
+		}
+		return false;
+	}
+
 	int pages = 0;
 	fz_try(fContext) {
-		fz_layout_document(fContext, fDocument, kReflowWidth, kReflowHeight, textSize);
 		pages = fz_count_pages(fContext, fDocument);
 	}
 	fz_catch(fContext) {
-		LogReflowError(fContext, "cannot lay out the document");
+		LogReflowError(fContext, "cannot count the pages");
 		pages = 0;
 	}
 	if (pages <= 0)
-		return;
+		return true;
 
 	fTextSize = textSize;
 	fPageCount = pages;
@@ -108,6 +149,7 @@ Document::Layout(float textSize)
 	// the marks are somewhere else on the new pages
 	fResolvedKnown.assign(fStore.size(), 0);
 	fOutlineCached = false;
+	return true;
 }
 
 
@@ -117,29 +159,33 @@ Document::ChangeTextSize(float textSize, int currentPage)
 	if (!fReflowable)
 		return currentPage;
 
-	DocumentLocker locker(this);
 	// the page stays the page at its beginning: a bookmark is where the page starts in the text
 	// (if the reader has not moved since the last change the same place is used again, so that a larger text
 	// and then a smaller one lead back to the same page)
 	fz_bookmark bookmark = 0;
 	int marked = 0;
 	fz_var(marked);
-	if (fKeptPage != 0 && fKeptPage == currentPage) {
-		bookmark = fKeptBookmark;
-		marked = 1;
-	} else {
-		fz_try(fContext) {
-			bookmark = fz_make_bookmark(fContext, fDocument,
-				fz_location_from_page_number(fContext, fDocument, currentPage - 1));
+	{
+		DocumentLocker locker(this);
+		if (fKeptPage != 0 && fKeptPage == currentPage) {
+			bookmark = fKeptBookmark;
 			marked = 1;
-		}
-		fz_catch(fContext) {
-			marked = 0;
+		} else {
+			fz_try(fContext) {
+				bookmark = fz_make_bookmark(fContext, fDocument,
+					fz_location_from_page_number(fContext, fDocument, currentPage - 1));
+				marked = 1;
+			}
+			fz_catch(fContext) {
+				marked = 0;
+			}
 		}
 	}
 
-	Layout(textSize);
+	if (!Layout(textSize))
+		return currentPage;
 
+	DocumentLocker locker(this);
 	int page = currentPage;
 	if (marked) {
 		fz_try(fContext) {
@@ -264,8 +310,12 @@ Document::LoadStore()
 	if (node.InitCheck() != B_OK)
 		return;
 	if (node.GetAttrInfo(attribute, &info) != B_OK) {
-		attribute = kLegacyStoreAttribute;
-		if (node.GetAttrInfo(attribute, &info) != B_OK)
+		attribute = NULL;
+		for (int i = 0; kLegacyStoreAttributes[i] != NULL && attribute == NULL; i++) {
+			if (node.GetAttrInfo(kLegacyStoreAttributes[i], &info) == B_OK)
+				attribute = kLegacyStoreAttributes[i];
+		}
+		if (attribute == NULL)
 			return;
 	}
 	if (info.size <= 0 || info.size > 16 * 1024 * 1024)
@@ -312,7 +362,8 @@ Document::WriteStore(const char* path)
 	if (node.InitCheck() != B_OK)
 		return false;
 
-	node.RemoveAttr(kLegacyStoreAttribute);
+	for (int i = 0; kLegacyStoreAttributes[i] != NULL; i++)
+		node.RemoveAttr(kLegacyStoreAttributes[i]);
 	if (fStore.empty()) {
 		node.RemoveAttr(kStoreAttribute);
 		return true;
@@ -371,7 +422,7 @@ Document::StoreSaveCopy(const char* path)
 		return false;
 	fModified = false;
 	fStoreSavedDepth = fStoreUndo.size();
-	SyncAnnotatedAttribute(path);
+	SyncAnnotationCount(path);
 	return true;
 }
 

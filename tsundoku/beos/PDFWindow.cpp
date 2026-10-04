@@ -664,7 +664,6 @@ bool PDFWindow::CancelCommand(BMessage* msg) {
 	// While a book is laid out again, nothing that works with its pages can be done.
 	if (mMainView != NULL && mMainView->IsLayingOut()) {
 		switch (msg->what) {
-			case OPEN_FILE_CMD:
 			case RELOAD_FILE_CMD:
 			case SAVE_FILE_CMD:
 			case SAVE_AS_FILE_CMD:
