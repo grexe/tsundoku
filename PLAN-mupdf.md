@@ -211,3 +211,32 @@ and links), and small files made with the tools (`c44` for a photo page, `cjb2` 
 **To decide:** (1) that the handler is the way (this plan), and that the GPL 2-or-later library is a dependency of the
 package; (2) whether text marks for DjVu are wanted at once or after the shapes; (3) the name of the type: `image/vnd.djvu`
 is the registered one; which type the translator accepts is to be looked at on the VM when starting.
+
+## Advanced Comic Book Format, ACBF (assessed 2026-10-04, not started)
+
+**What it is.** An XML format ([spec and schema](https://github.com/ACBF-Advanced-Comic-Book-Format/ACBF), version 1.1 is the newest
+schema, GPL-3.0, little activity since 2025) that goes into a CBZ next to the pages (one `.acbf` file) or stands alone with the
+pictures embedded (base64). It has: richer **metadata** than ComicInfo.xml (authors with an activity and language, titles
+and annotations in several languages, genres with a match percentage, characters, sequences, content rating, publisher,
+ISBN, license); in the body for each page its picture, **frames** (the panels, polygons in pixels of the picture, in
+reading order), and **text layers** (the speech balloons as polygons with the text, one layer per language, so a
+translation can be switched); references (footnotes) and data (embedded pictures, fonts). Readers: ACBF Viewer (Linux,
+Windows, Android) and ACBF Editor, Peruse (KDE) is working on it. Far fewer files exist than with `ComicInfo.xml`, which
+Calibre, ComicTagger, Komga and Kavita write.
+
+**Value for Tsundoku and SEN, by part:**
+- *Metadata:* low to moderate, cheap. An `.acbf` entry in the archive is parsed with libxml2 into the same `ComicInfo`
+  structure (`ComicInfo::FromAcbf`, like `FromBbf`), so the attributes, File info and the cover come for free. Half a day,
+  with a test file from the specification's sample ("Craphound"). Worth doing when an ACBF file turns up.
+- *Text layers:* the part with real value, since it is the only way to get **text from a comic** (search, copy, marks on
+  words, quotes for SEN as `oa:TextQuoteSelector`, a translation to switch to). It is the same machinery as the hidden text
+  of DjVu (an invisible `fz_text` per text area, stretched to its box), so it should follow the DjVu handler, which writes
+  that part once. It needs a document of our own around the CBZ pages (a handler or a wrapper that adds the text to
+  `fz_run_page`), so it is bigger than the metadata: about 2 days after DjVu, with a language switch in the View menu.
+- *Frames:* a guided view (panel by panel: the next key zooms to the next frame in reading order) is a feature of the
+  view and of `PageLayout`, and worth having for small screens; on a desktop it is a nicety. Not tied to ACBF (it only
+  supplies the polygons), so it can wait until someone wants it.
+- *Embedded pictures, fonts, references:* no. Standalone `.acbf` files are rare.
+
+**Recommendation:** not now. Do the metadata step when a file needs it, and plan text layers together with DjVu.
+
