@@ -166,9 +166,9 @@ bool FileAttributes::Read(entry_ref *ref, GlobalSettings *s) {
 	BNode node(ref);
 	reading = -1;
 	if (node.InitCheck() == B_OK) {
-		// epub:pageProgressionDirection: rtl, ltr or default (what the document itself says)
+		// readingProgression: rtl, ltr or default (what the document itself says)
 		char direction[16];
-		ssize_t got = node.ReadAttr("epub:pageProgressionDirection", B_STRING_TYPE, 0, direction, sizeof(direction) - 1);
+		ssize_t got = node.ReadAttr("readingProgression", B_STRING_TYPE, 0, direction, sizeof(direction) - 1);
 		if (got > 0) {
 			direction[got] = '\0';
 			if (strcasecmp(direction, "rtl") == 0)
@@ -289,7 +289,7 @@ bool FileAttributes::Write(entry_ref *ref, GlobalSettings *s) {
 		}
 		if (reading >= 0) {
 			const char* direction = reading == 1 ? "rtl" : "ltr";
-			node.WriteAttr("epub:pageProgressionDirection", B_STRING_TYPE, 0, direction, strlen(direction) + 1);
+			node.WriteAttr("readingProgression", B_STRING_TYPE, 0, direction, strlen(direction) + 1);
 		}
 		if (anchor.IsEmpty()) {
 			node.RemoveAttr("bepdf:anchor");
