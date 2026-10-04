@@ -83,6 +83,7 @@ class OutlineListItem : public BListItem {
 	int           mPageNum;
 	OutlineStyle *mStyle;
 	int           mResolvedPage;     // page this entry points to, 0 if unknown
+	BMessage*     mAnchor;           // a bookmark in a book: its place in the text (TextAnchor), NULL if none
 
 public:
 	OutlineListItem(const char *string, uint32 level, bool expanded, OutlineStyle* style);
@@ -92,6 +93,9 @@ public:
 	void SetDest(int page, float x, float y, bool hasPosition);
 	void SetLink(const char* link);
 	void SetPageNum(int pageNum);
+	// the place in the text that a bookmark in a book stands for, it is found again when the pages change
+	void SetAnchor(const BMessage* anchor);
+	const BMessage* Anchor() const { return mAnchor; }
 
 	void DrawItem(BView* owner, BRect frame, bool complete);
 
@@ -143,10 +147,13 @@ public:
 	void MessageReceived(BMessage *msg);
 
 	void SetDocument(Document *document, BMessage* bookmarks);
+	// the pages of the document have changed (a book with another text size): the entries are made again, the
+	// bookmarks of a book find their places in the text
+	void Reload(BMessage* bookmarks);
 	bool HasUserBookmark(int pageNum);
 	bool IsUserBMSelected();
 	const char *GetUserBMLabel(int pageNum);
-	void AddUserBookmark(int pageNum, const char *label);
+	void AddUserBookmark(int pageNum, const char *label, const BMessage* anchor = NULL);
 	void RemoveUserBookmark(int pageNum);
 	// fills BMessage with bookmarks to be stored in FileAttributes
 	bool GetBookmarks(BMessage *bookmarks);

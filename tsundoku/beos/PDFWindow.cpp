@@ -249,8 +249,10 @@ void PDFWindow::TextSizeChanged() {
 	TimingMark("text size: page list filled");
 	UpdatePageList();
 	TimingMark("text size: page list updated");
-	// the entries of the outline point to other pages now
-	mOutlinesView->SetDocument(doc, mFileAttributes.GetBookmarks());
+	// the entries of the outline point to other pages now, and the bookmarks find their places in the text
+	SaveUserBookmarks();
+	mOutlinesView->Reload(mFileAttributes.GetBookmarks());
+	ActivateOutlines();
 	TimingMark("text size: outline loaded");
 	mAnnotationsView->Refresh();
 	SetPage(mMainView->Page());
@@ -456,6 +458,14 @@ void PDFWindow::StoreFileAttributes() {
 		entry_ref cur_ref;
 		if (mCurrentFile.InitCheck() == B_OK) {
 			mCurrentFile.GetRef(&cur_ref);
+			// in a book, where the reader stopped is a place in the text
+			Document* doc = mMainView->GetDocument();
+			BMessage anchorMessage;
+			TextAnchor anchor;
+			if (doc != NULL && doc->IsReflowable() && !mMainView->IsLayingOut()
+				&& doc->MakeAnchor(mMainView->Page(), &anchor))
+				anchor.Archive(&anchorMessage);
+			mFileAttributes.SetAnchor(anchorMessage.IsEmpty() ? NULL : &anchorMessage);
 			mFileAttributes.Write(&cur_ref, gApp->GetSettings());
 		}
 		Unlock();
@@ -1998,7 +2008,13 @@ PDFWindow::MessageReceived(BMessage* message)
 		int32  pageNum;
 			if (message->FindString("label", &label) == B_OK &&
 			    message->FindInt32("pageNum", &pageNum) == B_OK) {
-				mOutlinesView->AddUserBookmark(pageNum, label.String());
+				// in a book the bookmark is a place in the text, the page changes with the text size
+				BMessage anchorMessage;
+				TextAnchor anchor;
+				Document* doc = mMainView->GetDocument();
+				if (doc != NULL && doc->IsReflowable() && doc->MakeAnchor(pageNum, &anchor))
+					anchor.Archive(&anchorMessage);
+				mOutlinesView->AddUserBookmark(pageNum, label.String(), anchorMessage.IsEmpty() ? NULL : &anchorMessage);
 				SaveUserBookmarks();
 				UpdateInputEnabler();
 			}
@@ -2076,19 +2092,14 @@ PDFWindow::MessageReceived(BMessage* message)
 				start.AddBool("ignoreCase", ignoreCase != 0);
 				start.AddBool("backward", backward != 0);
 				MessageReceived(&start);
-			} else if (cmd == "savecopy") {
-				// what the file panel sends when a name is chosen (in "text": the path)
+			} else if (cmd == "bookmark") {
+				// what the window for a bookmark sends (the page and, in "text", the label)
 				BString text;
 				message->FindString("text", &text);
-				BPath path(text.String());
-				BPath parent;
-				path.GetParent(&parent);
-				entry_ref directory;
-				get_ref_for_path(parent.Path(), &directory);
-				BMessage saved(B_SAVE_REQUESTED);
-				saved.AddRef("directory", &directory);
-				saved.AddString("name", path.Leaf());
-				MessageReceived(&saved);
+				BMessage entered(BookmarkWindow::BOOKMARK_ENTERED_NOTIFY);
+				entered.AddString("label", text);
+				entered.AddInt32("pageNum", TestInt(message, "page", 1));
+				MessageReceived(&entered);
 			} else if (cmd == "splitinfo") {
 				FILE* out = fopen("/tmp/ts_test.out", "a");
 				if (out != NULL) {

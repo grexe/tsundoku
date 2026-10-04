@@ -39,6 +39,7 @@ SRCS = beos/AnnotationsView.cpp \
 	beos/Document.cpp \
 	beos/DocumentReflow.cpp \
 	beos/EntryChangedMonitor.cpp \
+	beos/EpubCfi.cpp \
 	beos/EpubInfo.cpp \
 	beos/FileInfoWindow.cpp \
 	beos/FindTextWindow.cpp \

@@ -24,6 +24,8 @@
 // of a fz_try() block.
 
 #include "Document.h"
+#include "EpubCfi.h"
+#include "EpubInfo.h"
 #include "Globals.h"
 
 #include <math.h>
@@ -289,6 +291,7 @@ Document::LoadStore()
 			item.FindFloat("fraction", &a.fraction);
 			item.FindFloat("ypos", &a.ypos);
 			item.FindString("quote", &a.quote);
+			item.FindString("cfi", &a.cfi);
 			a.markup = markup;
 			a.color = color;
 			a.created = created;
@@ -330,6 +333,7 @@ Document::WriteStore(const char* path)
 		item.AddFloat("fraction", a.fraction);
 		item.AddFloat("ypos", a.ypos);
 		item.AddString("quote", a.quote);
+		item.AddString("cfi", a.cfi);
 		archive.AddMessage("annotation", &item);
 	}
 
@@ -534,9 +538,9 @@ FindQuote(Document* document, std::map<int, fz_stext_page*>& cache, int firstPag
 }
 
 
-// Where an annotation is now, into parts: if the text is not found, there is one part without quads.
-static void
-ResolveAnnotation(Document* document, std::map<int, fz_stext_page*>& cache, const StoredAnnotation& a,
+// Where an annotation is now, into parts; false if the words are not found.
+static bool
+ResolveByWords(Document* document, std::map<int, fz_stext_page*>& cache, const StoredAnnotation& a,
 	std::vector<StoredPart>* parts)
 {
 	fz_context* context = document->Context();
@@ -550,20 +554,14 @@ ResolveAnnotation(Document* document, std::map<int, fz_stext_page*>& cache, cons
 		count = 0;
 	}
 
-	StoredPart orphan;
-	orphan.page = 1;
-	if (count <= 0) {
-		parts->push_back(orphan);
-		return;
-	}
+	if (count <= 0)
+		return false;
 
 	int hint = (int)(a.fraction * count);
 	if (hint < 0)
 		hint = 0;
 	if (hint >= count)
 		hint = count - 1;
-	orphan.page = firstPage + hint + 1;
-
 	// the words on one page
 	int index = 0;
 	std::vector<fz_quad> quads;
@@ -573,7 +571,7 @@ ResolveAnnotation(Document* document, std::map<int, fz_stext_page*>& cache, cons
 		part.page = firstPage + index + 1;
 		part.quads = quads;
 		parts->push_back(part);
-		return;
+		return true;
 	}
 
 	// or over a page break: the first words end a page and the others begin the next one. Where the break is,
@@ -616,7 +614,58 @@ ResolveAnnotation(Document* document, std::map<int, fz_stext_page*>& cache, cons
 		two.quads = tailQuads;
 		parts->push_back(one);
 		parts->push_back(two);
+		return true;
+	}
+	return false;
+}
+
+
+// Where an annotation is now: by its words and where they were; if they are not there (the book is another
+// version), by its CFI, which names the chapter by the id of its itemref and leads to the words that are there now.
+// If nothing is found, there is one part without quads, on the page where it should be.
+static void
+ResolveAnnotation(Document* document, std::map<int, fz_stext_page*>& cache, const StoredAnnotation& a,
+	std::vector<StoredPart>* parts)
+{
+	if (ResolveByWords(document, cache, a, parts))
 		return;
+
+	if (!a.cfi.IsEmpty() && document->Epub() != NULL) {
+		StoredAnnotation moved = a;
+		int spine = 0;
+		BString words;
+		float fraction = 0;
+		if (EpubCfi::Resolve(document->Path(), *document->Epub(), a.cfi.String(), &spine, &words, &fraction)
+			&& !words.IsEmpty()) {
+			moved.chapter = spine;
+			moved.fraction = fraction;
+			moved.quote = words;
+			parts->clear();
+			if (ResolveByWords(document, cache, moved, parts))
+				return;
+		}
+	}
+
+	parts->clear();
+	StoredPart orphan;
+	orphan.page = 1;
+	fz_context* context = document->Context();
+	int firstPage = 0, count = 0;
+	fz_var(count);
+	fz_try(context) {
+		count = fz_count_chapter_pages(context, document->Doc(), a.chapter);
+		firstPage = fz_page_number_from_location(context, document->Doc(), fz_make_location(a.chapter, 0));
+	}
+	fz_catch(context) {
+		count = 0;
+	}
+	if (count > 0) {
+		int hint = (int)(a.fraction * count);
+		if (hint < 0)
+			hint = 0;
+		if (hint >= count)
+			hint = count - 1;
+		orphan.page = firstPage + hint + 1;
 	}
 	parts->push_back(orphan);
 }
@@ -719,6 +768,7 @@ Document::StoreAnnotationsOnPage(int pageNo, std::vector<DocAnnotation>& annotat
 			entry.hasColor = true;
 			entry.color = a.color;
 			entry.quote = a.quote;
+			entry.cfi = a.cfi;
 			entry.continued = k > 0;
 			annotations.push_back(entry);
 		}
@@ -742,6 +792,124 @@ Document::StoreIndexFor(int pageNo, int index, int* storeIndex)
 		}
 	}
 	return false;
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+// Anchors: places in a book that stay where they are when the pages change
+
+void
+TextAnchor::Archive(BMessage* into) const
+{
+	into->AddInt32("chapter", chapter);
+	into->AddFloat("fraction", fraction);
+	into->AddFloat("ypos", ypos);
+	into->AddString("quote", quote);
+	if (!cfi.IsEmpty())
+		into->AddString("cfi", cfi);
+}
+
+
+bool
+TextAnchor::Unarchive(const BMessage* from)
+{
+	if (from == NULL || from->FindString("quote", &quote) != B_OK || quote.IsEmpty())
+		return false;
+	from->FindInt32("chapter", &chapter);
+	from->FindFloat("fraction", &fraction);
+	from->FindFloat("ypos", &ypos);
+	cfi = "";
+	from->FindString("cfi", &cfi);
+	return true;
+}
+
+
+// The anchor of the beginning of a page: its first words.
+bool
+Document::MakeAnchor(int page, TextAnchor* anchor)
+{
+	if (!fReflowable || page < 1 || page > fPageCount)
+		return false;
+
+	DocumentLocker locker(this);
+	std::map<int, fz_stext_page*> cache;
+	fz_stext_page* text = TextOfPage(this, cache, page - 1);
+	char* copied = NULL;
+	if (text != NULL) {
+		fz_var(copied);
+		fz_try(fContext) {
+			copied = fz_copy_selection(fContext, text, fz_make_point(-10000, -10000), fz_make_point(10000, 10000),
+				0);
+		}
+		fz_catch(fContext) {
+			copied = NULL;
+		}
+	}
+	BString words(copied != NULL ? copied : "");
+	fz_free(fContext, copied);
+	if (text != NULL)
+		fz_drop_stext_page(fContext, text);
+
+	words.ReplaceAll("\r", " ");
+	words.ReplaceAll("\n", " ");
+	while (words.FindFirst("  ") >= 0)
+		words.ReplaceAll("  ", " ");
+	words.Trim();
+	// about a line, ending at a word
+	if (words.Length() > 80) {
+		int32 at = words.FindLast(' ', 80);
+		words.Truncate(at > 20 ? at : 80);
+	}
+	if (words.IsEmpty())
+		return false;
+
+	int chapter = 0, inChapter = 0, chapterPages = 1;
+	fz_try(fContext) {
+		fz_location location = fz_location_from_page_number(fContext, fDocument, page - 1);
+		chapter = location.chapter;
+		inChapter = location.page;
+		chapterPages = fz_count_chapter_pages(fContext, fDocument, chapter);
+	}
+	fz_catch(fContext) {
+		return false;
+	}
+	if (chapterPages < 1)
+		chapterPages = 1;
+
+	anchor->chapter = chapter;
+	anchor->fraction = (inChapter + 0.5f) / chapterPages;
+	anchor->ypos = 0;
+	anchor->quote = words;
+	anchor->cfi = "";
+	if (fEpub != NULL)
+		EpubCfi::Create(fPath.String(), *fEpub, chapter, words.String(), anchor->fraction, &anchor->cfi);
+	return true;
+}
+
+
+// The page of an anchor: where its words are now, or if they are not found where its chapter is.
+int
+Document::PageOfAnchor(const TextAnchor& anchor)
+{
+	if (!fReflowable)
+		return 0;
+
+	DocumentLocker locker(this);
+	StoredAnnotation mark;
+	mark.chapter = anchor.chapter;
+	mark.fraction = anchor.fraction;
+	mark.ypos = anchor.ypos;
+	mark.quote = anchor.quote;
+	mark.cfi = anchor.cfi;
+
+	std::map<int, fz_stext_page*> cache;
+	std::vector<StoredPart> parts;
+	ResolveAnnotation(this, cache, mark, &parts);
+	for (std::map<int, fz_stext_page*>::iterator it = cache.begin(); it != cache.end(); ++it) {
+		if (it->second != NULL)
+			fz_drop_stext_page(fContext, it->second);
+	}
+	return parts.empty() ? 0 : parts[0].page;
 }
 
 
@@ -838,6 +1006,10 @@ Document::StoreAddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int 
 	a.ypos = 0;
 	if (PageBounds(pageNo, &bounds) && bounds.y1 > bounds.y0)
 		a.ypos = (quads[0].ul.y - bounds.y0) / (bounds.y1 - bounds.y0);
+
+	// where it is in the book, in a form that other programs know
+	if (fEpub != NULL)
+		EpubCfi::Create(fPath.String(), *fEpub, chapter, quote.String(), a.fraction, &a.cfi);
 
 	const char* names[] = { B_TRANSLATE("Add highlight"), B_TRANSLATE("Add underline"),
 		B_TRANSLATE("Add strike out"), B_TRANSLATE("Add squiggly line") };

@@ -98,7 +98,8 @@ OutlineListItem::OutlineListItem(const char *string, uint32 level, bool expanded
 	mType(linkUndefined),
 	mPageNum(0),
 	mStyle(style),
-	mResolvedPage(0)
+	mResolvedPage(0),
+	mAnchor(NULL)
 {
 	mDest.page = 0;
 	mDest.x = mDest.y = 0;
@@ -106,6 +107,13 @@ OutlineListItem::OutlineListItem(const char *string, uint32 level, bool expanded
 }
 
 OutlineListItem::~OutlineListItem() {
+	delete mAnchor;
+}
+
+
+void OutlineListItem::SetAnchor(const BMessage* anchor) {
+	delete mAnchor;
+	mAnchor = anchor != NULL ? new BMessage(*anchor) : NULL;
 }
 
 
@@ -259,6 +267,13 @@ void OutlinesView::SetDocument(Document *document, BMessage *bookmarks) {
 	}
 }
 
+void OutlinesView::Reload(BMessage *bookmarks) {
+	mBookmarks   = bookmarks;
+	mNeedsUpdate = true;
+	mHasDocumentOutline = false;
+	InitUserBookmarks(true);
+}
+
 void OutlinesView::Activate() {
 	if (mNeedsUpdate) {
 		mNeedsUpdate = false;
@@ -354,10 +369,22 @@ void OutlinesView::InitUserBookmarks(bool initOnly) {
 		int32   pageNum, i = 0;
 		while (B_OK == mBookmarks->FindString("l", i, &label) &&
 		       B_OK == mBookmarks->FindInt32 ("p", i, &pageNum)) {
+			// a bookmark in a book knows its place in the text: the page it is on now
+			BMessage anchorMessage;
+			TextAnchor anchor;
+			bool anchored = mDocument != NULL && mDocument->IsReflowable()
+				&& mBookmarks->FindMessage("a", i, &anchorMessage) == B_OK && anchor.Unarchive(&anchorMessage);
+			if (anchored) {
+				int page = mDocument->PageOfAnchor(anchor);
+				if (page > 0)
+					pageNum = page;
+			}
 	    	mBookmark.Set(pageNum, true);
 		    if (!initOnly) {
 		    	OutlineListItem *item = new OutlineListItem(label.String(), 1, true, GetDefaultStyle());
 		    	item->SetPageNum(pageNum);
+		    	if (anchored)
+		    		item->SetAnchor(&anchorMessage);
 				mList->AddItem(item);
 			}
 			i ++;
@@ -371,6 +398,9 @@ static BListItem* store_bookmarks(BListItem *i, void *d) {
 	if (item->isPageNum()) {
 		bm->AddString("l", item->Text());
 		bm->AddInt32 ("p", item->getPageNum());
+		// (the array stays as long as the others; BePDF does not read it)
+		BMessage none;
+		bm->AddMessage("a", item->Anchor() != NULL ? item->Anchor() : &none);
 	}
 	return NULL;
 }
@@ -411,7 +441,7 @@ bool OutlinesView::IsUserBMSelected() {
 	return false;
 }
 
-void OutlinesView::AddUserBookmark(int pageNum, const char *label) {
+void OutlinesView::AddUserBookmark(int pageNum, const char *label, const BMessage* anchor) {
 	RemoveUserBookmark(pageNum);
 	if (mList->CountItemsUnder(mUserDefined, true) == 1) {
 		mList->RemoveItem(mEmptyUserBM);
@@ -431,6 +461,8 @@ void OutlinesView::AddUserBookmark(int pageNum, const char *label) {
 	index += i;
 	OutlineListItem *n = new OutlineListItem(label, 1, true, GetDefaultStyle());
 	n->SetPageNum(pageNum);
+	if (anchor != NULL && !anchor->IsEmpty())
+		n->SetAnchor(anchor);
 	mList->AddItem(n, index);
 	mBookmark.Set(pageNum, true);
 }

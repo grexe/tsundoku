@@ -239,8 +239,33 @@ EpubInfo::Read(const char* path)
 	std::vector<Item> items;
 	BString firstIdentifier;
 
+	struct ItemRef {
+		BString idref;
+		bool    linear;
+		int32   step;
+	};
+	std::vector<ItemRef> itemrefs;
+	int32 packageElements = 0;
+
 	for (xmlNode* section = root->children; section != NULL; section = section->next) {
-		if (IsElement(section, "metadata")) {
+		if (section->type == XML_ELEMENT_NODE)
+			packageElements++;
+		if (IsElement(section, "spine")) {
+			info->spineStep = 2 * packageElements;
+			int32 spineElements = 0;
+			for (xmlNode* node = section->children; node != NULL; node = node->next) {
+				if (node->type != XML_ELEMENT_NODE)
+					continue;
+				spineElements++;
+				if (!IsElement(node, "itemref"))
+					continue;
+				ItemRef ref;
+				ref.idref = Attribute(node, "idref");
+				ref.linear = Attribute(node, "linear") != "no";
+				ref.step = 2 * spineElements;
+				itemrefs.push_back(ref);
+			}
+		} else if (IsElement(section, "metadata")) {
 			for (xmlNode* node = section->children; node != NULL; node = node->next) {
 				if (node->type != XML_ELEMENT_NODE)
 					continue;
@@ -312,6 +337,20 @@ EpubInfo::Read(const char* path)
 		}
 	}
 	xmlFreeDoc(package);
+
+	for (size_t i = 0; i < itemrefs.size(); i++) {
+		for (size_t k = 0; k < items.size(); k++) {
+			if (items[k].id != itemrefs[i].idref)
+				continue;
+			SpineItem item;
+			item.idref = itemrefs[i].idref;
+			item.path = Resolve(base, items[k].href);
+			item.step = itemrefs[i].step;
+			item.linear = itemrefs[i].linear;
+			info->spine.push_back(item);
+			break;
+		}
+	}
 
 	if (info->identifier.Length() == 0)
 		info->identifier = firstIdentifier;

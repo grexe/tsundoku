@@ -46,6 +46,17 @@ public:
 	BString              seriesIndex;     // its position in it, if given
 	BString              version;         // of the EPUB standard, e.g. 3.0
 
+	// The reading order: the files of the book (in the container) with the steps that a CFI takes to them: <spine> is
+	// the child element number spineStep / 2 of <package>, an itemref the number step / 2 of <spine>.
+	struct SpineItem {
+		BString idref;
+		BString path;      // of the content document in the container
+		int32   step;
+		bool    linear;
+	};
+	std::vector<SpineItem> spine;
+	int32                  spineStep;
+
 	// The cover image: the file inside the container and its type, empty if there is none.
 	BString              coverMember;
 	BString              coverType;
@@ -57,7 +68,7 @@ public:
 	static bool          ReadMember(const char* path, const char* member, std::vector<uint8>* data);
 
 private:
-	EpubInfo() {}
+	EpubInfo() : spineStep(0) {}
 };
 
 #endif

@@ -85,6 +85,14 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   the same for inventory and citations, as the shops give it for an e-book; it is not written when the book is first
   opened at another text size. `META:annotated` (1, or not there) says for any PDF or EPUB file that it has
   annotations.
+  Places in a book are anchors in the manner of the W3C Web Annotation model, and not page numbers, which change with
+  the text size: the words at the place (a text quote), its [EPUB CFI](https://idpf.org/epub/linking/cfi/) (the
+  standard path through the package and the content document, e.g. `epubcfi(/6/4[chap01]!/4/10,/1:3,/3:12)`, which
+  other reading systems understand), and where it was (chapter, place in the chapter) to look there first. A mark
+  keeps its anchor in `META:annotations`, a bookmark of yours in an extra `a` entry of `bepdf:bookmarks` (BePDF
+  ignores it), and the place where you stopped reading in `bepdf:anchor`; they find their page again for the text
+  size the book is shown at. If the words are not found any more (another version of the book), the CFI, which names
+  a chapter by the id of its entry in the reading order, leads to the words that are there now.
   Text can be highlighted, underlined and struck out in books as well (the other kinds of annotations are for
   pages that stay as they are). A mark is tied to the text, not to a page: the chapter, where on the page it was and
   the words it covers. So it is found again when the pages change with the text size, and a mark that runs over a

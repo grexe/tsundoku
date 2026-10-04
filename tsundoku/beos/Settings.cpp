@@ -25,6 +25,7 @@
 #include <FindDirectory.h>
 #include <Path.h>
 #include <File.h>
+#include <fs_attr.h>
 #include <malloc.h>
 
 
@@ -225,6 +226,18 @@ bool FileAttributes::Read(entry_ref *ref, GlobalSettings *s) {
 			bookmarks.Unflatten(buffer);
 		}
 		if (buffer) free(buffer);
+
+		// where the reader stopped in a book
+		anchor.MakeEmpty();
+		attr_info info;
+		if (node.GetAttrInfo("bepdf:anchor", &info) == B_OK && info.size > 0 && info.size < 65536) {
+			char* data = (char*)malloc(info.size);
+			if (data != NULL) {
+				if (node.ReadAttr("bepdf:anchor", B_MESSAGE_TYPE, 0, data, info.size) == info.size)
+					anchor.Unflatten(data);
+				free(data);
+			}
+		}
 		return true;
 	}
 	return false;
@@ -261,6 +274,15 @@ bool FileAttributes::Write(entry_ref *ref, GlobalSettings *s) {
 			if (buffer && B_OK == bookmarks.Flatten(buffer, size)) {
 				node.WriteAttr("bepdf:bookmarks", B_MESSAGE_TYPE, 0, buffer, size);
 			}
+			delete []buffer;
+		}
+		if (anchor.IsEmpty()) {
+			node.RemoveAttr("bepdf:anchor");
+		} else {
+			ssize_t size = anchor.FlattenedSize();
+			char *buffer = new char[size];
+			if (buffer && B_OK == anchor.Flatten(buffer, size))
+				node.WriteAttr("bepdf:anchor", B_MESSAGE_TYPE, 0, buffer, size);
 			delete []buffer;
 		}
 		return true;

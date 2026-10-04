@@ -70,6 +70,8 @@
 #include "PageRenderer.h"
 #include "PDFWindow.h"
 #include "BusyWindow.h"
+#include "EpubCfi.h"
+#include "EpubInfo.h"
 #include "PDFView.h"
 #include "PrintingProgressWindow.h"
 #include "ResourceLoader.h"
@@ -370,13 +372,23 @@ PDFView::OpenFile(entry_ref *ref, const char *ownerPassword, const char *userPas
 void
 PDFView::LoadFileSettings(entry_ref* ref, FileAttributes* fileAttributes, float& left, float& top) {
 	GlobalSettings *s = gApp->GetSettings();
-	if (fileAttributes->Read(ref, s) && s->GetRestorePageNumber()) {
+	bool readOk = fileAttributes->Read(ref, s);
+	if (readOk && s->GetRestorePageNumber()) {
 		mCurrentPage = fileAttributes->GetPage();
 		if (mCurrentPage > mDoc->PageCount()) {
 			mCurrentPage = mDoc->PageCount();
 		}
 		if (mCurrentPage < 1) {
 			mCurrentPage = 1;
+		}
+		// in a book the page number is only right for the text size it was made at: the place is found by its words
+		TextAnchor anchor;
+		if (mDoc->IsReflowable() && anchor.Unarchive(fileAttributes->GetAnchor())) {
+			int page = mDoc->PageOfAnchor(anchor);
+			if (page > 0) {
+				mCurrentPage = page;
+				fileAttributes->SetPage(page);
+			}
 		}
 		mZoom = s->GetZoom();
 		mRotation = s->GetRotation();
@@ -4045,14 +4057,34 @@ PDFView::TestCommand(BMessage* message)
 				entries[i].annotation.label.String(), (int)entries[i].annotation.quads.size(),
 				entries[i].excerpt.String());
 		}
+	} else if (cmd == "cfiresolve") {
+		// where a CFI leads (in "text")
+		BString text;
+		message->FindString("text", &text);
+		int spine = -1;
+		BString words;
+		float fraction = 0;
+		bool ok = mDoc->Epub() != NULL
+			&& EpubCfi::Resolve(mDoc->Path(), *mDoc->Epub(), text.String(), &spine, &words, &fraction);
+		TestLog("cfiresolve [%s]: %s spine %d fraction %g words [%s]", text.String(), ok ? "ok" : "failed", spine,
+			fraction, words.String());
+	} else if (cmd == "anchor") {
+		// the anchor of a page, and the page it leads to
+		TextAnchor anchor;
+		int pageNo = (int)TestNumber(message, "page");
+		bool ok = mDoc->MakeAnchor(pageNo, &anchor);
+		int back = ok ? mDoc->PageOfAnchor(anchor) : 0;
+		TestLog("anchor of page %d: %s chapter %d fraction %g quote [%s] cfi [%s] -> page %d", pageNo,
+			ok ? "ok" : "failed", (int)anchor.chapter, anchor.fraction, anchor.quote.String(), anchor.cfi.String(),
+			back);
 	} else if (cmd == "annots") {
 		// what the page has, and what is under a point (x1, y1)
 		WaitForPage();
 		const std::vector<DocAnnotation>& list = mPage->mAnnotations;
 		TestLog("annots on page %d: %d", mCurrentPage, (int)list.size());
 		for (size_t i = 0; i < list.size(); i++) {
-			TestLog("  #%d id [%s] type %d markup %d quads %d color %s%06x rect %g,%g-%g,%g author [%s] note [%s]", list[i].index,
-				list[i].id.String(),
+			TestLog("  #%d id [%s] cfi [%s] type %d markup %d quads %d color %s%06x rect %g,%g-%g,%g author [%s] note [%s]", list[i].index,
+				list[i].id.String(), list[i].cfi.String(),
 				list[i].type, (int)list[i].isMarkup, (int)list[i].quads.size(), list[i].hasColor ? "#" : "none ",
 				(unsigned)list[i].color, list[i].rect.x0, list[i].rect.y0,
 				list[i].rect.x1, list[i].rect.y1, list[i].author.String(), list[i].contents.String());

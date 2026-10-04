@@ -821,14 +821,12 @@ BepdfApplication::ArgvReceived (int32 argc, char **argv)
 		fprintf(stderr, "usage: %s [<file> [<page>]]\n", argv[0]);
 		exit(1);
 	}
-	if (argc == 3) {
-		pg = atoi(argv[2]);
-	} else {
-		pg = 1;
-	}
+	// without a page the document opens where it was left, as it does from Tracker
+	pg = argc == 3 ? atoi(argv[2]) : 0;
 
 	BMessage msg(B_REFS_RECEIVED);
-	msg.AddInt32 (PAGE_NUM_MSG_KEY, pg);
+	if (pg != 0)
+		msg.AddInt32 (PAGE_NUM_MSG_KEY, pg);
 	get_ref_for_path (argv[1], &fileToOpen);
 	msg.AddRef ("refs", &fileToOpen);
 	PostMessage (&msg);

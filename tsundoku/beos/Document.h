@@ -104,6 +104,7 @@ struct DocAnnotation {
 	bool    hasColor;
 	uint32  color;        // 0xRRGGBB, if hasColor
 	BString quote;        // reflowable documents: the words that are marked
+	BString cfi;          // and the EPUB CFI of them
 	bool    continued = false;   // the part of a mark that runs over a page break, on the page after the first
 };
 
@@ -114,13 +115,30 @@ struct DocAnnotationEntry {
 	BString       excerpt;        // the text a mark covers, or the note
 };
 
+class BMessage;
 class EpubInfo;
+
+// A place in a book that stays the same when the pages change: the words at it (a quote, as W3C Web Annotations call
+// it), the EPUB CFI of those words, and where it was (chapter, place in the chapter) to find it quickly. Used for
+// marks, bookmarks and the position where the reader stopped.
+struct TextAnchor {
+	int32   chapter;
+	float   fraction;     // the page in the chapter (0 to 1)
+	float   ypos;         // the place on the page (0 to 1)
+	BString quote;
+	BString cfi;
+
+	TextAnchor() : chapter(0), fraction(0), ypos(0) {}
+	void Archive(BMessage* into) const;
+	bool Unarchive(const BMessage* from);	// false if it is not an anchor
+};
 
 // An annotation of a reflowable document (EPUB). Such a document has no fixed pages to attach an annotation to, so
 // it is tied to the text: the chapter, where in it the page was, and the words it covers. It is found again after
 // the pages have changed (another text size). The annotations are kept in an attribute of the file itself.
 struct StoredAnnotation {
 	BString id;
+	BString cfi;          // the EPUB CFI of the words: where they are in the book, whatever the layout
 	int     markup;       // MarkupType
 	uint32  color;        // 0xRRGGBB
 	BString contents;     // the note, may be empty
@@ -250,6 +268,10 @@ public:
 	BString      RedoLabel() const;
 	int          Undo();
 	int          Redo();
+
+	// The anchor of the beginning of a page (a book), and the page that an anchor leads to in the layout as it is.
+	bool         MakeAnchor(int page, TextAnchor* anchor);
+	int          PageOfAnchor(const TextAnchor& anchor);
 
 	// Whether the document has annotations, and the attribute META:annotated (1, or none if it has none) of the file
 	// that says so for queries; written when it is opened and saved.
