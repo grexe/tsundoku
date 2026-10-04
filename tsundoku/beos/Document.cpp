@@ -188,7 +188,6 @@ Document::Open(const char* path, const char* password, Document** _document, flo
 	}
 
 	Document* result = new Document(context, document, path, textSize);
-	result->fIsComic = isComic;
 	result->fComic = comic;
 	if (result->fPageCount <= 0) {
 		result->Release();
@@ -218,7 +217,7 @@ Document::Document(fz_context* context, fz_document* document, const char* path,
 	fTextSize(kDefaultTextSize),
 	fEpub(NULL),
 	fComic(NULL),
-	fIsComic(false),
+	fIsComic(ComicArchive::IsComicFile(path)),
 	fAbortLayout(false),
 	fKeptBookmark(0),
 	fKeptPage(0),
@@ -276,6 +275,10 @@ Document::Document(fz_context* context, fz_document* document, const char* path,
 		fCanSave = true;
 		LoadStore();
 		fEpub = EpubInfo::Read(path);
+	} else if (fIsComic) {
+		// the annotations of a comic book are kept in an attribute of the file, too
+		fCanSave = true;
+		LoadStore();
 	}
 }
 
@@ -775,14 +778,14 @@ IsListedAnnotation(int type)
 bool
 Document::CanEditAnnotations()
 {
-	return (fIsPDF || fReflowable) && CanAnnotate();
+	return (fIsPDF || fReflowable || fIsComic) && CanAnnotate();
 }
 
 
 bool
 Document::CanDrawAnnotations()
 {
-	return fIsPDF && CanAnnotate();
+	return (fIsPDF || fIsComic) && CanAnnotate();
 }
 
 
@@ -1212,6 +1215,8 @@ static const float kShapeLineWidth = 2;
 bool
 Document::AddNote(int pageNo, fz_point where, const char* text)
 {
+	if (fIsComic)
+		return StoreAddNote(pageNo, where, text);
 	if (!CanDrawAnnotations() || pageNo < 1 || pageNo > fPageCount)
 		return false;
 
@@ -1262,6 +1267,8 @@ Document::AddNote(int pageNo, fz_point where, const char* text)
 bool
 Document::AddFreeText(int pageNo, fz_point where, const char* text)
 {
+	if (fIsComic)
+		return StoreAddFreeText(pageNo, where, text);
 	if (!CanDrawAnnotations() || pageNo < 1 || pageNo > fPageCount)
 		return false;
 
@@ -1320,6 +1327,8 @@ Document::AddFreeText(int pageNo, fz_point where, const char* text)
 bool
 Document::AddShape(int pageNo, ShapeType type, fz_point from, fz_point to, uint32 rgb)
 {
+	if (fIsComic)
+		return StoreAddShape(pageNo, type, from, to, rgb);
 	if (!CanDrawAnnotations() || pageNo < 1 || pageNo > fPageCount)
 		return false;
 
@@ -1379,6 +1388,8 @@ Document::AddShape(int pageNo, ShapeType type, fz_point from, fz_point to, uint3
 bool
 Document::AddInk(int pageNo, const fz_point* points, int count, uint32 rgb)
 {
+	if (fIsComic)
+		return StoreAddInk(pageNo, points, count, rgb);
 	if (!CanDrawAnnotations() || pageNo < 1 || pageNo > fPageCount || count < 2)
 		return false;
 
@@ -1436,6 +1447,8 @@ MapPoint(fz_point p, fz_rect from, fz_rect to, float scaleX, float scaleY)
 bool
 Document::SetAnnotationBounds(int pageNo, int index, fz_rect bounds, bool resize)
 {
+	if (fIsComic)
+		return StoreSetBounds(pageNo, index, bounds, resize);
 	if (!CanDrawAnnotations() || pageNo < 1 || pageNo > fPageCount)
 		return false;
 
@@ -1899,7 +1912,7 @@ Document::AnnotationCount()
 void
 Document::SyncAnnotationCount(const char* path)
 {
-	if (!fIsPDF && !fReflowable)
+	if (!fIsPDF && !UsesStore())
 		return;
 
 	BNode node(path);

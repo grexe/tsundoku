@@ -20,6 +20,8 @@
 
 #include "WebAnnotation.h"
 
+#include <math.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -238,6 +240,189 @@ MakeFragmentSelector(BMessage* selector, const char* conformsTo, const char* val
 }
 
 
+// ---- drawn annotations on a page
+
+static BString
+Percent(float fraction)
+{
+	char buffer[32];
+	snprintf(buffer, sizeof(buffer), "%.3f", fraction * 100);
+	return BString(buffer);
+}
+
+
+// a shape that is told by a rectangle: the others have an SVG
+static bool
+HasRectangleSelector(const BString& shape)
+{
+	return shape == "rectangle" || shape == "note" || shape == "text";
+}
+
+
+static BString
+ShapeSvg(const Mark& mark)
+{
+	BString svg("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" preserveAspectRatio=\"none\">");
+	if (mark.shape == "ellipse") {
+		svg << "<ellipse cx=\"" << Percent((mark.box[0] + mark.box[2]) / 2) << "\" cy=\""
+			<< Percent((mark.box[1] + mark.box[3]) / 2) << "\" rx=\"" << Percent((mark.box[2] - mark.box[0]) / 2)
+			<< "\" ry=\"" << Percent((mark.box[3] - mark.box[1]) / 2) << "\"/>";
+	} else {
+		if (mark.shape == "arrow")
+			svg << "<defs><marker id=\"head\" markerWidth=\"4\" markerHeight=\"4\" refX=\"3\" refY=\"2\" orient=\"auto\">"
+				<< "<polygon points=\"0,0 4,2 0,4\"/></marker></defs>";
+		for (size_t i = 0; i < mark.paths.size(); i++) {
+			const std::vector<float>& path = mark.paths[i];
+			if (path.size() < 4)
+				continue;
+			svg << "<path d=\"";
+			for (size_t k = 0; k + 1 < path.size(); k += 2)
+				svg << (k == 0 ? "M " : " L ") << Percent(path[k]) << " " << Percent(path[k + 1]);
+			svg << "\"" << (mark.shape == "arrow" ? " marker-end=\"url(#head)\"" : "") << "/>";
+		}
+	}
+	svg << "</svg>";
+	return svg;
+}
+
+
+// the number after name=" in the SVG, false if there is none
+static bool
+SvgNumber(const char* svg, const char* name, float* value)
+{
+	BString key(" ");
+	key << name << "=\"";
+	const char* at = strstr(svg, key.String());
+	if (at == NULL)
+		return false;
+	*value = (float)atof(at + key.Length());
+	return true;
+}
+
+
+// reads the shapes of an SVG that ShapeSvg() wrote (percent of the page) into the mark
+static bool
+ReadSvg(const char* svg, Mark* mark)
+{
+	float cx, cy, rx, ry;
+	if (strstr(svg, "<ellipse") != NULL && SvgNumber(svg, "cx", &cx) && SvgNumber(svg, "cy", &cy)
+		&& SvgNumber(svg, "rx", &rx) && SvgNumber(svg, "ry", &ry)) {
+		mark->shape = "ellipse";
+		mark->box[0] = (cx - rx) / 100;
+		mark->box[1] = (cy - ry) / 100;
+		mark->box[2] = (cx + rx) / 100;
+		mark->box[3] = (cy + ry) / 100;
+		return true;
+	}
+
+	mark->paths.clear();
+	for (const char* at = strstr(svg, "<path"); at != NULL; at = strstr(at + 5, "<path")) {
+		const char* d = strstr(at, " d=\"");
+		if (d == NULL)
+			continue;
+		d += 4;
+		std::vector<float> path;
+		while (*d != '\0' && *d != '"') {
+			if ((*d >= '0' && *d <= '9') || *d == '-' || *d == '.') {
+				char* end;
+				path.push_back((float)strtod(d, &end) / 100);
+				d = end;
+			} else
+				d++;
+		}
+		if (path.size() >= 4)
+			mark->paths.push_back(path);
+	}
+	if (mark->paths.empty())
+		return false;
+	if (mark->shape != "line" && mark->shape != "arrow" && mark->shape != "ink")
+		mark->shape = strstr(svg, "marker-end") != NULL ? "arrow" : mark->paths.size() == 1
+			&& mark->paths[0].size() == 4 ? "line" : "ink";
+	// the box is what the points span
+	float x0 = 2, y0 = 2, x1 = -1, y1 = -1;
+	for (size_t i = 0; i < mark->paths.size(); i++) {
+		for (size_t k = 0; k + 1 < mark->paths[i].size(); k += 2) {
+			x0 = fminf(x0, mark->paths[i][k]);
+			x1 = fmaxf(x1, mark->paths[i][k]);
+			y0 = fminf(y0, mark->paths[i][k + 1]);
+			y1 = fmaxf(y1, mark->paths[i][k + 1]);
+		}
+	}
+	mark->box[0] = x0;
+	mark->box[1] = y0;
+	mark->box[2] = x1;
+	mark->box[3] = y1;
+	return true;
+}
+
+
+static void
+ArchiveDrawn(const Mark& mark, BMessage* annotation)
+{
+	annotation->AddString("sen:shape", mark.shape);
+
+	BMessage target;
+	BMessage pageSelector;
+	char pageValue[24];
+	snprintf(pageValue, sizeof(pageValue), "page=%d", (int)mark.page);
+	MakeFragmentSelector(&pageSelector, kConformsToPdf, pageValue);
+
+	BMessage refinement;
+	if (HasRectangleSelector(mark.shape)) {
+		BString region("xywh=percent:");
+		region << Percent(mark.box[0]) << "," << Percent(mark.box[1]) << "," << Percent(mark.box[2] - mark.box[0])
+			<< "," << Percent(mark.box[3] - mark.box[1]);
+		MakeFragmentSelector(&refinement, kConformsToMediaFragments, region.String());
+	} else {
+		refinement.AddString("type", kSvgSelector);
+		refinement.AddString("rdf:value", ShapeSvg(mark));
+	}
+	pageSelector.AddMessage("oa:refinedBy", &refinement);
+	target.AddMessage("oa:hasSelector", &pageSelector);
+	annotation->AddMessage("oa:hasTarget", &target);
+}
+
+
+// the page, shape and place that a target says; false if it is not an annotation on a page
+static bool
+UnarchiveDrawn(const BMessage& annotation, const BMessage& target, Mark* mark)
+{
+	BMessage selector;
+	for (int32 i = 0; target.FindMessage("oa:hasSelector", i, &selector) == B_OK; i++) {
+		BString type, value;
+		selector.FindString("type", &type);
+		if (type != kFragmentSelector || selector.FindString("rdf:value", &value) != B_OK
+			|| value.IFindFirst("page=") != 0)
+			continue;
+		mark->page = atoi(value.String() + 5);
+
+		BMessage refinement;
+		if (mark->page < 1 || selector.FindMessage("oa:refinedBy", &refinement) != B_OK)
+			return false;
+		annotation.FindString("sen:shape", &mark->shape);
+		refinement.FindString("type", &type);
+		if (refinement.FindString("rdf:value", &value) != B_OK)
+			return false;
+		if (type == kSvgSelector)
+			return ReadSvg(value.String(), mark);
+
+		// xywh=percent:x,y,w,h
+		float x, y, w, h;
+		if (value.IFindFirst("xywh=percent:") != 0
+			|| sscanf(value.String() + 13, "%f,%f,%f,%f", &x, &y, &w, &h) != 4)
+			return false;
+		mark->box[0] = x / 100;
+		mark->box[1] = y / 100;
+		mark->box[2] = (x + w) / 100;
+		mark->box[3] = (y + h) / 100;
+		if (!HasRectangleSelector(mark->shape))
+			mark->shape = "rectangle";
+		return true;
+	}
+	return false;
+}
+
+
 void
 ArchiveMark(const Mark& mark, BMessage* annotation)
 {
@@ -247,8 +432,22 @@ ArchiveMark(const Mark& mark, BMessage* annotation)
 	AddCreator(annotation, mark.creator.String(), mark.created);
 	if (mark.body.Length() > 0)
 		AddTextualBody(annotation, mark.body.String());
-	if (mark.hasColor)
-		AddCssStyle(annotation, ColorStyle(mark.motivation.String(), mark.color).String());
+	if (mark.hasColor) {
+		BString css = ColorStyle(mark.motivation.String(), mark.color);
+		if (mark.page > 0 && mark.shape != "note" && mark.shape != "text") {
+			// a line that is drawn, as in an SVG
+			char hex[16];
+			snprintf(hex, sizeof(hex), "#%06x", (unsigned)(mark.color & 0xffffff));
+			css = "stroke: ";
+			css << hex << "; fill: none;";
+		}
+		AddCssStyle(annotation, css.String());
+	}
+
+	if (mark.page > 0) {
+		ArchiveDrawn(mark, annotation);
+		return;
+	}
 
 	// the target is the document that the annotation is stored with, so there is no source in it
 	BMessage target;
@@ -304,6 +503,11 @@ UnarchiveMark(const BMessage& annotation, Mark* mark)
 	BMessage target;
 	if (annotation.FindMessage("oa:hasTarget", &target) != B_OK)
 		return false;
+	mark->page = 0;
+	if (UnarchiveDrawn(annotation, target, mark))
+		return true;
+	if (mark->page > 0)
+		return false;	// a page, but no place on it
 	target.FindInt32("sen:chapter", &mark->chapter);
 	target.FindFloat("sen:fraction", &mark->fraction);
 	target.FindFloat("sen:ypos", &mark->ypos);

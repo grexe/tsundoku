@@ -150,6 +150,9 @@ struct TextAnchor {
 // An annotation of a reflowable document (EPUB). Such a document has no fixed pages to attach an annotation to, so
 // it is tied to the text: the chapter, where in it the page was, and the words it covers. It is found again after
 // the pages have changed (another text size). The annotations are kept in an attribute of the file itself.
+//
+// A comic book has no text, and its pages stay as they are. Its annotations are drawn on a page (a note, text, a rectangle,
+// an ellipse, a line, an arrow, a drawing) and told by the page and where on it, in fractions of the page.
 struct StoredAnnotation {
 	BString id;
 	BString cfi;          // the EPUB CFI of the words: where they are in the book, whatever the layout
@@ -164,6 +167,16 @@ struct StoredAnnotation {
 	BString quote;        // the words, in one line
 	BString prefix;       // some of the text before and after them, to tell equal words apart
 	BString suffix;
+	// drawn on a page (a comic book), see WebAnnotation::Mark
+	int     kind;         // AnnotationKind, kAnnotMarkup for a mark on words
+	int     page;         // 1-based, 0 for a mark on words
+	fz_rect box;          // fractions of the page, from the top left corner
+	std::vector<std::vector<fz_point> > paths;   // of a line (one path) and of a drawing, fractions of the page
+	bool    arrow;
+
+	StoredAnnotation()
+		: markup(0), color(0), created(0), chapter(0), fraction(0), ypos(0), kind(kAnnotMarkup), page(0),
+		box(fz_empty_rect), arrow(false) {}
 };
 
 // Where a stored annotation is now: on one page, or two if it runs over a page break.
@@ -286,9 +299,9 @@ public:
 	// Saving adds the changes to the end of the file (so that its attributes and the rest stay as they are).
 	// Undo and redo of the edits above. They return the page (1-based) that changed, 0 if there was nothing to do.
 	// The history is not kept over a save.
-	bool         CanUndo() const { return fReflowable && !fIsPDF ? !fStoreUndo.empty() : fHistoryPosition > 0; }
+	bool         CanUndo() const { return UsesStore() ? !fStoreUndo.empty() : fHistoryPosition > 0; }
 	bool         CanRedo() const {
-		return fReflowable && !fIsPDF ? !fStoreRedo.empty() : fHistoryPosition < (int)fHistory.size();
+		return UsesStore() ? !fStoreRedo.empty() : fHistoryPosition < (int)fHistory.size();
 	}
 	BString      UndoLabel() const;
 	BString      RedoLabel() const;
@@ -333,8 +346,9 @@ private:
 	Document(fz_context* context, fz_document* document, const char* path, float textSize);
 	void ListPage(int pageNo, std::vector<DocAnnotationEntry>& entries);
 
-	// the marks of a reflowable document (see DocumentReflow.cpp)
-	bool UsesStore() const { return fReflowable && !fIsPDF; }
+	// the marks of a reflowable document (see DocumentReflow.cpp) and the annotations of a comic book (DocumentDraw.cpp)
+	// are kept in an attribute of the file, not in the file
+	bool UsesStore() const { return fIsComic || (fReflowable && !fIsPDF); }
 	void LoadStore();
 	bool WriteStore(const char* path);
 	void ResolveStore();
@@ -344,6 +358,16 @@ private:
 	void PushStoreUndo(const char* name, int page);
 	bool StoreWebAnnotation(int pageNo, int index, BMessage* annotation);
 	bool StoreAddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int count, const float color[3]);
+	// drawn on a page (comic books), positions in page space
+	bool StoreAddNote(int pageNo, fz_point where, const char* text);
+	bool StoreAddFreeText(int pageNo, fz_point where, const char* text);
+	bool StoreAddShape(int pageNo, ShapeType type, fz_point from, fz_point to, uint32 rgb);
+	bool StoreAddInk(int pageNo, const fz_point* points, int count, uint32 rgb);
+	bool StoreSetBounds(int pageNo, int index, fz_rect bounds, bool resize);
+	// one drawn annotation as it is on its page, in page space
+	void StoreDrawnOnPage(const StoredAnnotation& annotation, int index, DocAnnotation* entry);
+	void PaintDrawn(const StoredAnnotation& annotation, fz_device* device, fz_matrix ctm, const fz_rect& bounds);
+	bool StoreAddDrawn(int pageNo, StoredAnnotation* annotation, const char* operation);
 	bool StoreDelete(int pageNo, int index);
 	bool StoreSetContents(int pageNo, int index, const char* text);
 	bool StoreSetColor(int pageNo, int index, uint32 rgb);

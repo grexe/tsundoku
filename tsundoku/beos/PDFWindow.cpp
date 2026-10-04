@@ -508,7 +508,7 @@ void PDFWindow::SaveDocument() {
 // Asks where to write a copy of the document with its changes.
 void PDFWindow::SaveDocumentAs() {
 	Document* doc = mMainView->GetDocument();
-	if (!doc->IsPDF() && !doc->IsReflowable())
+	if (!doc->IsPDF() && !doc->IsReflowable() && !doc->IsComic())
 		return;
 
 	if (mSavePanel == NULL) {
@@ -810,7 +810,7 @@ void PDFWindow::UpdateInputEnabler()
 		mToolBar->SetActionPressed(FLOW_SINGLE_CMD, flow == kFlowSingle);
 		mToolBar->SetActionPressed(FLOW_DOUBLE_CMD, flow == kFlowDouble);
 		mToolBar->SetActionPressed(FLOW_CONTINUOUS_CMD, flow == kFlowContinuous);
-		fMenuBar->FindItem(SHOW_ANNOTATIONS_CMD)->SetEnabled(doc->IsPDF());
+		fMenuBar->FindItem(SHOW_ANNOTATIONS_CMD)->SetEnabled(doc->CanEditAnnotations());
 		fMenuBar->FindItem(SHOW_ANNOTATIONS_CMD)
 			->SetMarked(mShowLeftPanel && active == ANNOTATIONS_PANEL);
 		mToolBar->SetActionPressed(HIDE_LEFT_PANEL_CMD, mShowLeftPanel);
@@ -848,7 +848,7 @@ void PDFWindow::UpdateInputEnabler()
 		fMenuBar->FindItem(UNDO_CMD)->SetEnabled(doc->CanUndo());
 		fMenuBar->FindItem(REDO_CMD)->SetLabel(redo.String());
 		fMenuBar->FindItem(REDO_CMD)->SetEnabled(doc->CanRedo());
-		fMenuBar->FindItem(SAVE_AS_FILE_CMD)->SetEnabled(doc->IsPDF() || doc->IsReflowable());
+		fMenuBar->FindItem(SAVE_AS_FILE_CMD)->SetEnabled(doc->IsPDF() || doc->IsReflowable() || doc->IsComic());
 		// shapes, notes and drawings are for pages that stay as they are
 		fMenuBar->FindItem(B_TRANSLATE("Add"))->SetEnabled(doc->CanDrawAnnotations());
 		fMenuBar->FindItem(TEXT_LARGER_CMD)->SetEnabled(doc->IsReflowable() && doc->TextSize() < Document::kMaxTextSize);

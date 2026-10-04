@@ -37,6 +37,7 @@ SRCS = beos/AnnotationsView.cpp \
 	beos/BusyWindow.cpp \
 	beos/CachedPage.cpp \
 	beos/Document.cpp \
+	beos/DocumentDraw.cpp \
 	beos/DocumentReflow.cpp \
 	beos/DocumentWeb.cpp \
 	beos/EntryChangedMonitor.cpp \

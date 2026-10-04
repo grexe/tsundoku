@@ -319,6 +319,38 @@ MarkupOf(const BString& motivation)
 }
 
 
+// what a drawn annotation is called in the attribute (sen:shape)
+static const char*
+ShapeName(const StoredAnnotation& a)
+{
+	switch (a.kind) {
+		case kAnnotNote:		return "note";
+		case kAnnotText:		return "text";
+		case kAnnotEllipse:		return "ellipse";
+		case kAnnotLine:		return a.arrow ? "arrow" : "line";
+		case kAnnotInk:			return "ink";
+		default:				return "rectangle";
+	}
+}
+
+
+static int
+KindOfShape(const BString& shape)
+{
+	if (shape == "note")
+		return kAnnotNote;
+	if (shape == "text")
+		return kAnnotText;
+	if (shape == "ellipse")
+		return kAnnotEllipse;
+	if (shape == "line" || shape == "arrow")
+		return kAnnotLine;
+	if (shape == "ink")
+		return kAnnotInk;
+	return kAnnotRectangle;
+}
+
+
 static void
 ToMark(const StoredAnnotation& a, WebAnnotation::Mark* mark)
 {
@@ -336,6 +368,27 @@ ToMark(const StoredAnnotation& a, WebAnnotation::Mark* mark)
 	mark->chapter = a.chapter;
 	mark->fraction = a.fraction;
 	mark->ypos = a.ypos;
+
+	mark->page = a.page;
+	if (a.page > 0) {
+		// drawn on a page
+		mark->shape = ShapeName(a);
+		mark->motivation = a.kind == kAnnotNote || a.kind == kAnnotText ? WebAnnotation::kCommenting
+			: WebAnnotation::kHighlighting;
+		mark->box[0] = a.box.x0;
+		mark->box[1] = a.box.y0;
+		mark->box[2] = a.box.x1;
+		mark->box[3] = a.box.y1;
+		mark->paths.clear();
+		for (size_t i = 0; i < a.paths.size(); i++) {
+			std::vector<float> path;
+			for (size_t k = 0; k < a.paths[i].size(); k++) {
+				path.push_back(a.paths[i][k].x);
+				path.push_back(a.paths[i][k].y);
+			}
+			mark->paths.push_back(path);
+		}
+	}
 }
 
 
@@ -355,6 +408,20 @@ FromMark(const WebAnnotation::Mark& mark, StoredAnnotation* a)
 	a->chapter = mark.chapter;
 	a->fraction = mark.fraction;
 	a->ypos = mark.ypos;
+
+	a->page = mark.page;
+	if (mark.page > 0) {
+		a->kind = KindOfShape(mark.shape);
+		a->arrow = mark.shape == "arrow";
+		a->box = fz_make_rect(mark.box[0], mark.box[1], mark.box[2], mark.box[3]);
+		a->paths.clear();
+		for (size_t i = 0; i < mark.paths.size(); i++) {
+			std::vector<fz_point> path;
+			for (size_t k = 0; k + 1 < mark.paths[i].size(); k += 2)
+				path.push_back(fz_make_point(mark.paths[i][k], mark.paths[i][k + 1]));
+			a->paths.push_back(path);
+		}
+	}
 }
 
 
@@ -777,7 +844,13 @@ Document::ResolveStore()
 		if (fResolvedKnown[i])
 			continue;
 		fResolved[i].clear();
-		ResolveAnnotation(this, cache, fStore[i], &fResolved[i]);
+		if (fStore[i].page > 0) {
+			// drawn on a page: it is on that page, whatever else
+			StoredPart part;
+			part.page = fStore[i].page;
+			fResolved[i].push_back(part);
+		} else
+			ResolveAnnotation(this, cache, fStore[i], &fResolved[i]);
 		fResolvedKnown[i] = 1;
 	}
 
@@ -830,6 +903,11 @@ Document::StoreAnnotationsOnPage(int pageNo, std::vector<DocAnnotation>& annotat
 				continue;
 
 			DocAnnotation entry;
+			if (a.page > 0) {
+				StoreDrawnOnPage(a, index++, &entry);
+				annotations.push_back(entry);
+				continue;
+			}
 			static const int types[] = { PDF_ANNOT_HIGHLIGHT, PDF_ANNOT_UNDERLINE, PDF_ANNOT_STRIKE_OUT,
 				PDF_ANNOT_SQUIGGLY };
 			entry.type = types[a.markup >= 0 && a.markup <= kMarkupSquiggly ? a.markup : 0];
@@ -1257,6 +1335,14 @@ Document::PaintStoredAnnotations(int pageNo, fz_device* device, fz_matrix ctm)
 		const StoredAnnotation& a = fStore[i];
 		float rgb[3] = { ((a.color >> 16) & 0xff) / 255.0f, ((a.color >> 8) & 0xff) / 255.0f,
 			(a.color & 0xff) / 255.0f };
+		if (a.page > 0) {
+			if (a.page == pageNo) {
+				fz_rect bounds;
+				if (PageBounds(pageNo, &bounds))
+					PaintDrawn(a, device, ctm, bounds);
+			}
+			continue;
+		}
 		for (size_t k = 0; k < fResolved[i].size(); k++) {
 			const StoredPart& part = fResolved[i][k];
 			if (part.page != pageNo)

@@ -93,6 +93,13 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   RAR file), so the comic types have a sniffer rule: the first file of the archive is a page (or ComicInfo.xml), which
   its header near the start of the file tells. A ZIP that starts with an image is a comic to Tracker, too. CB7 has no
   such place, it is known by its extension. Zipped FictionBooks (`.fbz`, `.fb2.zip`) open as well.
+  Comics are annotated with the same tools as PDF files (Add: note, text, rectangle, ellipse, line, arrow, drawing; move,
+  resize, undo, the list of annotations), for there is no text to mark. A comic archive cannot take annotations, so they
+  are kept in the attribute `SEN:annotations` of the file, as Web Annotations: the target is the page (`page=3`, an
+  `oa:FragmentSelector`) refined by a rectangle as a media fragment (`xywh=percent:10,20,30,40`) or, for ellipses, lines,
+  arrows and drawings, by an `oa:SvgSelector` whose `viewBox` is the page in percent (`0 0 100 100`,
+  `preserveAspectRatio="none"`), so that it fits the page at any size. `sen:shape` says what was drawn, notes and text
+  have the motivation `oa:commenting` and the note as the body. Save a copy writes them to the copy as well.
 - EPUB books open like PDF files. A book has no fixed pages, so it is laid out as pages of 6 by 9 inches for a text
   size (View > Larger text, Smaller text, Cmd+T and Cmd+Shift+T); the reader stays where the text was, and the
   text size is kept in the settings. MuPDF lays out and draws the book; its metadata is read from the package

@@ -24,6 +24,8 @@
 #include <Message.h>
 #include <String.h>
 
+#include <vector>
+
 // The W3C Web Annotation Data Model (https://www.w3.org/TR/annotation-model/) is how Tsundoku and SEN describe
 // annotations and places in documents: for PDF files, EPUB books and what comes later. An annotation has a target (the
 // document, and selectors that say where in it) and perhaps a body (the note); the motivation says what it is for.
@@ -75,10 +77,23 @@ struct Mark {
 	float   fraction;
 	float   ypos;
 
-	Mark() : color(0), hasColor(false), created(0), chapter(0), fraction(0), ypos(0) {}
+	// A drawn annotation on a page that stays as it is (a comic book), instead of words: the page, what it is (sen:shape:
+	// rectangle, ellipse, line, arrow, ink, note or text) and where on the page, in fractions of it (0 to 1, from the top
+	// left corner). It is written as a page selector (page=3) that is refined by a media fragment (xywh=percent:...) or, for
+	// what has no rectangle, by an SVG whose viewBox is the page in percent (0 0 100 100, preserveAspectRatio none), so
+	// that it fits the page whatever size the page is shown in.
+	int32   page;				// 1-based, 0 for a mark on words
+	BString shape;
+	float   box[4];				// left, top, right, bottom
+	std::vector<std::vector<float> > paths;	// x and y, one after the other, of the points of a line or a drawing
+
+	Mark() : color(0), hasColor(false), created(0), chapter(0), fraction(0), ypos(0), page(0)
+	{
+		box[0] = box[1] = box[2] = box[3] = 0;
+	}
 };
 
-// The annotation as a message in the model, and back; false if it is not an annotation of a text.
+// The annotation as a message in the model, and back; false if it is not an annotation of a text or on a page.
 void ArchiveMark(const Mark& mark, BMessage* annotation);
 bool UnarchiveMark(const BMessage& annotation, Mark* mark);
 
