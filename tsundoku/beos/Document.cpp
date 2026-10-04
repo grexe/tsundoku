@@ -20,6 +20,7 @@
 #include "Document.h"
 #include "Globals.h"
 
+#include "BbfInfo.h"
 #include "ComicArchive.h"
 #include "ComicInfo.h"
 #include "EpubInfo.h"
@@ -145,10 +146,12 @@ Document::Open(const char* path, const char* password, Document** _document, flo
 
 	// the metadata of a comic book comes out of its archive
 	ComicInfo* comic = NULL;
+	BbfInfo* bbf = NULL;
 	bool isComic = ComicArchive::IsComicFile(path);
 
 	fz_var(document);
 	fz_var(comic);
+	fz_var(bbf);
 	fz_try(context) {
 		fz_register_document_handlers(context);
 		ComicArchive::RegisterHandlers(context);
@@ -158,6 +161,10 @@ Document::Open(const char* path, const char* password, Document** _document, flo
 			fz_try(context) {
 				document = fz_open_document_with_stream_and_dir(context, path, NULL, archive);
 				comic = ComicInfo::Read(context, archive);
+				// a file in the Bound Book Format has its own metadata and sections
+				bbf = BbfInfo::Read(path);
+				if (comic == NULL && bbf != NULL)
+					comic = ComicInfo::FromBbf(*bbf);
 			}
 			fz_always(context) {
 				fz_drop_archive(context, archive);
@@ -182,6 +189,7 @@ Document::Open(const char* path, const char* password, Document** _document, flo
 
 	if (failed || needsPassword) {
 		delete comic;
+		delete bbf;
 		fz_drop_document(context, document);
 		fz_drop_context(context);
 		return failed ? kFailed : kNeedsPassword;
@@ -189,6 +197,7 @@ Document::Open(const char* path, const char* password, Document** _document, flo
 
 	Document* result = new Document(context, document, path, textSize);
 	result->fComic = comic;
+	result->fBbf = bbf;
 	if (result->fPageCount <= 0) {
 		result->Release();
 		return kFailed;
@@ -217,6 +226,7 @@ Document::Document(fz_context* context, fz_document* document, const char* path,
 	fTextSize(kDefaultTextSize),
 	fEpub(NULL),
 	fComic(NULL),
+	fBbf(NULL),
 	fIsComic(ComicArchive::IsComicFile(path)),
 	fAbortLayout(false),
 	fKeptBookmark(0),
@@ -303,6 +313,7 @@ Document::~Document()
 	fLock.Lock();
 	delete fEpub;
 	delete fComic;
+	delete fBbf;
 	fz_drop_document(fContext, fDocument);
 	fz_drop_context(fContext);
 	fLock.Unlock();
@@ -338,6 +349,25 @@ Document::CanAnnotate()
 {
 	DocumentLocker locker(this);
 	return fz_has_permission(fContext, fDocument, FZ_PERMISSION_ANNOTATE) != 0;
+}
+
+
+bool
+Document::IsWidePage(int page)
+{
+	if (!fIsComic || page < 1 || page > fPageCount)
+		return false;
+	if (fComic != NULL) {
+		for (size_t i = 0; i < fComic->pages.size(); i++) {
+			if (fComic->pages[i].image == page - 1 && fComic->pages[i].doublePage)
+				return true;
+		}
+	}
+	fz_rect bounds;
+	if (!PageBounds(page, &bounds))
+		return false;
+	float width = bounds.x1 - bounds.x0, height = bounds.y1 - bounds.y0;
+	return height > 0 && width > height * 1.15f;
 }
 
 
@@ -552,6 +582,35 @@ bool
 Document::LoadOutline(std::vector<DocOutlineEntry>& entries)
 {
 	DocumentLocker locker(this);
+	if (fBbf != NULL && !fBbf->sections.empty()) {
+		// the sections of the book, nested as they say
+		for (size_t i = 0; i < fBbf->sections.size(); i++) {
+			const BbfInfo::Section& section = fBbf->sections[i];
+			DocOutlineEntry entry;
+			entry.title = section.title;
+			entry.level = 0;
+			BString parent = section.parent;
+			while (!parent.IsEmpty() && entry.level < 8) {
+				entry.level++;
+				BString next;
+				for (size_t k = 0; k < fBbf->sections.size(); k++) {
+					if (fBbf->sections[k].title == parent) {
+						next = fBbf->sections[k].parent;
+						break;
+					}
+				}
+				parent = next;
+			}
+			entry.open = true;
+			entry.page = (int)(section.firstPage < (uint64)fPageCount ? section.firstPage + 1 : fPageCount);
+			entry.x = entry.y = 0;
+			entry.hasPosition = false;
+			entry.bold = entry.italic = entry.hasColor = false;
+			entry.red = entry.green = entry.blue = 0;
+			entries.push_back(entry);
+		}
+		return !entries.empty();
+	}
 	// to find where the entries of a book lead, its chapters are looked into: that is done once per layout
 	if (fReflowable && fOutlineCached) {
 		entries = fOutlineCache;

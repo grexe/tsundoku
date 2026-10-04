@@ -183,7 +183,9 @@ static const struct {
 	{ "application/vnd.comicbook+zip", "cbz", B_TRANSLATE_MARK("Comic book (ZIP)"), "\"PK\\003\\004\"", "[30:300]" },
 	{ "application/vnd.comicbook-rar", "cbr", B_TRANSLATE_MARK("Comic book (RAR)"), "\"Rar!\"", "[7:400]" },
 	{ "application/x-cb7", "cb7", B_TRANSLATE_MARK("Comic book (7z)"), NULL, NULL },
-	{ "application/x-cbt", "cbt", B_TRANSLATE_MARK("Comic book (TAR)"), "[257] \"ustar\"", "[0:100]" }
+	{ "application/x-cbt", "cbt", B_TRANSLATE_MARK("Comic book (TAR)"), "[257] \"ustar\"", "[0:100]" },
+	// the Bound Book Format has a mark of its own, at the start of the file
+	{ "application/x-bbf", "bbf", B_TRANSLATE_MARK("Comic book (BBF)"), "\"BBF3\"", NULL }
 };
 static const size_t kComicTypeCount = sizeof(kComicTypes) / sizeof(kComicTypes[0]);
 
@@ -191,6 +193,8 @@ static const size_t kComicTypeCount = sizeof(kComicTypes) / sizeof(kComicTypes[0
 static BString
 ComicSnifferRule(const char* signature, const char* range)
 {
+	if (range == NULL)
+		return BString("1.0 (") << signature << ")";	// a mark of its own
 	static const char* const kNames[] = { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".bmp", ".tif", ".tiff",
 		"comicinfo.xml", NULL };
 	BString rule("0.60 (");

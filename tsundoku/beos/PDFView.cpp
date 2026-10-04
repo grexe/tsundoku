@@ -70,6 +70,7 @@
 #include "PageRenderer.h"
 #include "PDFWindow.h"
 #include "BusyWindow.h"
+#include "ComicInfo.h"
 #include "EpubCfi.h"
 #include "WebAnnotation.h"
 #include "EpubInfo.h"
@@ -103,6 +104,7 @@ static const int kZoomDPI[MAX_ZOOM - MIN_ZOOM + 1] = {
 #define CREATE_TEXT_MSG                'crtx'
 #define MODIFIERS_POLL_MSG             'mdfy'
 #define SHOW_BUSY_MSG                  'busy'
+#define TARGET_DONE_MSG                'tgtD'
 #define LAYOUT_DONE_MSG                'lyDn'
 
 static bool SelectModifierDown();
@@ -261,6 +263,9 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 	mLayoutSize = 0;
 	mLayoutFromPage = mLayoutToPage = 1;
 	mBusyRunner = NULL;
+	mTargetPage = 0;
+	mTargetRegion = fz_empty_rect;
+	mTargetRunner = NULL;
 	mBusyWindow = NULL;
 	mNavigationState = kNotInHistory;
 
@@ -403,6 +408,12 @@ PDFView::LoadFileSettings(entry_ref* ref, FileAttributes* fileAttributes, float&
 		fileAttributes->SetPage(mCurrentPage);
 		fileAttributes->SetLeftTop(left, top);
 	}
+
+	// the direction of reading: what the reader chose for this file, else what a manga says about itself
+	int reading = fileAttributes->GetReading();
+	if (reading < 0 && mDoc->Comic() != NULL)
+		reading = mDoc->Comic()->rightToLeft ? 1 : 0;
+	mLayout.SetRightToLeft(reading == 1);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -490,6 +501,7 @@ PDFView::~PDFView()
 	if (mDoc != NULL)
 		mDoc->Release();
 	delete mModifierRunner;
+	delete mTargetRunner;
 	delete mToolCursor;
 	for (int h = 0; h < kHandleCount; h++)
 		delete mHandleCursors[h];
@@ -526,6 +538,9 @@ void PDFView::MessageReceived(BMessage *msg) {
 		break;
 	case SELECT_ALL_MSG:
 		SelectAll();
+		break;
+	case TARGET_DONE_MSG:
+		ClearTargetRegion();
 		break;
 	case SHOW_BUSY_MSG:
 		// the layout takes a while
@@ -722,6 +737,39 @@ PDFView::DrawBackground(BRect updateRect)
 }
 
 ///////////////////////////////////////////////////////////////////////////
+// the region that a deep link has led to
+void
+PDFView::DrawTargetRegion()
+{
+	BPoint a = mPage->PageToDev(fz_make_point(mTargetRegion.x0, mTargetRegion.y0));
+	BPoint b = mPage->PageToDev(fz_make_point(mTargetRegion.x1, mTargetRegion.y1));
+	BRect rect(fminf(a.x, b.x) + mLeft, fminf(a.y, b.y) + mTop, fmaxf(a.x, b.x) + mLeft, fmaxf(a.y, b.y) + mTop);
+	if (rect.Width() < 6 || rect.Height() < 6)
+		rect.InsetBy(-6, -6);	// a point is a spot
+	SetDrawingMode(B_OP_ALPHA);
+	SetHighColor(255, 160, 0, 60);
+	FillRect(rect);
+	SetDrawingMode(B_OP_COPY);
+	SetHighColor(255, 140, 0);
+	SetPenSize(2);
+	StrokeRect(rect);
+	SetPenSize(1);
+}
+
+
+void
+PDFView::ClearTargetRegion()
+{
+	delete mTargetRunner;
+	mTargetRunner = NULL;
+	if (mTargetPage != 0) {
+		mTargetPage = 0;
+		Invalidate();
+	}
+}
+
+
+///////////////////////////////////////////////////////////////////////////
 // the places where the search text has been found on this page
 void
 PDFView::DrawFindHits(BRect updateRect)
@@ -864,6 +912,8 @@ PDFView::Draw(BRect updateRect)
 			SlotScope scope(this, slot);
 			DrawPage(updateRect);
 			DrawFindHits(updateRect);
+			if (slot->number == mTargetPage)
+				DrawTargetRegion();
 			if (slot->number == mInteractionPage) {
 				DrawSelection(updateRect);
 				DrawToolPreview();
@@ -939,15 +989,17 @@ PDFView::ScrollVertical (bool down, float by) {
 			ScrollBy (0, scrollBy);
 		} else if (!continuous) {
 			// the bottom of the page (the spread) has been reached, go to the next one
-			if (mLayout.NormalizePage(mCurrentPage + mLayout.PageStep()) != mCurrentPage)
-				MoveToPage(mCurrentPage + mLayout.PageStep(), true);
+			int next = mLayout.NextSpreadPage(mCurrentPage);
+			if (next != mCurrentPage)
+				MoveToPage(next, true);
 		}
 	} else { // up
 		if (rect.top != 0) {
 			ScrollBy (0, -scrollBy);
 		} else if (!continuous) {
-			if (mLayout.NormalizePage(mCurrentPage - mLayout.PageStep()) != mCurrentPage)
-				MoveToPage(mCurrentPage - mLayout.PageStep(), false);
+			int previous = mLayout.PreviousSpreadPage(mCurrentPage);
+			if (previous != mCurrentPage)
+				MoveToPage(previous, false);
 		}
 	}
 }
@@ -2492,14 +2544,14 @@ PDFView::MoveToPage(int page, bool top) {
 void
 PDFView::NextPage()
 {
-	MoveToPage(mCurrentPage + mLayout.PageStep());
+	MoveToPage(mLayout.NextSpreadPage(mCurrentPage));
 }
 
 //////////////////////////////////////////////////////////////////
 void
 PDFView::PreviousPage()
 {
-	MoveToPage(mCurrentPage - mLayout.PageStep());
+	MoveToPage(mLayout.PreviousSpreadPage(mCurrentPage));
 }
 
 //////////////////////////////////////////////////////////////////
@@ -2519,6 +2571,26 @@ PDFView::SetTitlePageAlone(bool alone)
 	if (w)
 		w->UpdateInputEnabler();
 }
+
+//////////////////////////////////////////////////////////////////
+// Read from the right to the left (a manga): the spreads are mirrored, the current page stays in view. The choice is
+// kept with the file.
+void
+PDFView::SetRightToLeft(bool rightToLeft)
+{
+	if (rightToLeft == mLayout.RightToLeft() || mDoc == NULL)
+		return;
+
+	WaitForPage(true);
+	mLayout.SetRightToLeft(rightToLeft);
+	if (PDFWindow* w = GetPDFWindow())
+		w->GetFileAttributes()->SetReading(rightToLeft ? 1 : 0);
+	mRenderedPage = 0;
+	Redraw(true);
+	if (PDFWindow* w = GetPDFWindow())
+		w->UpdateInputEnabler();
+}
+
 
 //////////////////////////////////////////////////////////////////
 // How the pages are arranged: the current page stays the current one.
@@ -3665,6 +3737,13 @@ PDFView::ShowTarget(const BMessage& target, bool annotate)
 	MoveToPage(where.page);
 	if (where.hasRegion) {
 		WaitForPage();
+		// the place is marked for a moment
+		ClearTargetRegion();
+		mTargetPage = where.page;
+		mTargetRegion = where.region;
+		BMessage done(TARGET_DONE_MSG);
+		mTargetRunner = new BMessageRunner(BMessenger(this), &done, 3000000, 1);
+		Invalidate();
 		BPoint corner = mPage->PageToDev(fz_make_point(where.region.x0, where.region.y0));
 		BRect shown(corner.x + mLeft, corner.y + mTop, corner.x + mLeft + 10, corner.y + mTop + 10), bounds(Bounds());
 		if (!bounds.Contains(shown))

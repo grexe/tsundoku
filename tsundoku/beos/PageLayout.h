@@ -52,8 +52,12 @@ public:
 	PageFlow Flow() const { return fFlow; }
 	bool     IsContinuous() const { return fContinuous; }
 	// the title page is a spread of its own (only matters if a spread has more than one page)
-	void     SetFirstPageAlone(bool alone) { fFirstAlone = alone; }
+	void     SetFirstPageAlone(bool alone);
 	bool     FirstPageAlone() const { return fFirstAlone; }
+	// Read from the right to the left, like a manga: the first page of a spread is the one on the right, and the title
+	// page alone is on the left.
+	void     SetRightToLeft(bool rightToLeft);
+	bool     RightToLeft() const { return fRightToLeft; }
 
 	// the document and the size of its pages in pixels, anything measured before is forgotten
 	void     SetPages(Document* document, int pageCount, float dpi, int rotation);
@@ -61,8 +65,11 @@ public:
 	// The page that a request for this page leads to: a spread starts with its first page (the first spread is
 	// page 1 even if it has blank cells), with one page per spread it is the page itself.
 	int      NormalizePage(int page) const;
-	// how many pages a step forward or backward goes: the pages of a spread
-	int      PageStep() const { return fColumns * fRows; }
+	// The first page of the spread after the one that has the page, and of the spread before it (the page itself if there
+	// is none): where a step forward or backward goes. A spread has the pages of the cells, but a page that is wider than
+	// high in a comic book (a double page) is a spread of its own, and the page before it too if it has no partner.
+	int      NextSpreadPage(int page) const;
+	int      PreviousSpreadPage(int page) const;
 
 	// Arranges the pages around the current one: the spread or the whole document. After that the canvas
 	// size and the rectangles are valid.
@@ -93,11 +100,20 @@ private:
 	// the spread that has the page (0 for the first), and the first page of a spread
 	int      SpreadOf(int page) const;
 	int      FirstPageOfSpread(int spread) const;
+	// how many pages the spread has
+	int      PagesInSpread(int spread) const;
+	// whether a page is a double page that has a spread to itself (the pages of a comic book that are wider than high)
+	bool     IsWide(int page) const;
+	// the spreads as far as they are needed; a spread starts at a page that is not known before the ones before it are
+	void     ExtendSpreads(int upToPage) const;
+	void     ForgetSpreads();
 
 	PageFlow  fFlow;
 	int       fColumns, fRows;
 	bool      fContinuous;
 	bool      fFirstAlone;
+	bool      fRightToLeft;
+	bool      fWideAlone;     // pages that are wider than high have a spread to themselves (comic books, two columns)
 	Document* fDocument;
 	int       fPageCount;
 	float     fDpi;
@@ -105,6 +121,9 @@ private:
 	// sizes in pixels, 0 if not measured
 	mutable std::vector<float> fWidths, fHeights;
 	mutable float fReferenceWidth, fReferenceHeight;
+	// the first page of each spread, as far as they are known, and the first page that is not in one yet
+	mutable std::vector<int> fSpreads;
+	mutable int fNextStart;
 
 	float     fCanvasWidth, fCanvasHeight;
 	int       fCurrent;

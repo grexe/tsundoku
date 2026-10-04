@@ -19,6 +19,8 @@
 
 #include "ComicInfo.h"
 
+#include "BbfInfo.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -267,4 +269,53 @@ ComicInfo::CoverPage() const
 			return pages[i].image;
 	}
 	return 0;
+}
+
+
+// BBF has no names for its metadata, only key and value; these are the keys that people use (and bbfmux examples).
+ComicInfo*
+ComicInfo::FromBbf(const BbfInfo& bbf)
+{
+	static const char* const kTitle[] = { "Title", "Name", NULL };
+	static const char* const kSeries[] = { "Series", "Collection", NULL };
+	static const char* const kNumber[] = { "Number", "Issue", "Volume", "Index", NULL };
+	static const char* const kAuthor[] = { "Author", "Authors", "Writer", "Creator", NULL };
+	static const char* const kArtist[] = { "Artist", "Penciller", "Illustrator", NULL };
+	static const char* const kPublisher[] = { "Publisher", NULL };
+	static const char* const kLanguage[] = { "Language", "Lang", NULL };
+	static const char* const kSummary[] = { "Description", "Summary", NULL };
+	static const char* const kGenre[] = { "Genre", "Genres", NULL };
+	static const char* const kTags[] = { "Tags", "Keywords", "Subject", NULL };
+	static const char* const kDate[] = { "Date", "Published", "Year", NULL };
+	static const char* const kWeb[] = { "URL", "Web", "Source", NULL };
+	static const char* const kRating[] = { "AgeRating", "Rating", NULL };
+	static const char* const kDirection[] = { "Direction", "ReadingDirection", "Manga", NULL };
+
+	ComicInfo* info = new ComicInfo();
+	info->title = bbf.Value(kTitle);
+	info->series = bbf.Value(kSeries);
+	info->number = bbf.Value(kNumber);
+	AddList(&info->writers, bbf.Value(kAuthor));
+	AddList(&info->pencillers, bbf.Value(kArtist));
+	info->publisher = bbf.Value(kPublisher);
+	info->language = bbf.Value(kLanguage);
+	info->summary = bbf.Value(kSummary);
+	AddList(&info->genres, bbf.Value(kGenre));
+	AddList(&info->tags, bbf.Value(kTags));
+	info->web = bbf.Value(kWeb);
+	info->ageRating = bbf.Value(kRating);
+	BString date = bbf.Value(kDate);
+	sscanf(date.String(), "%d-%d-%d", (int*)&info->year, (int*)&info->month, (int*)&info->day);
+	BString direction = bbf.Value(kDirection);
+	info->rightToLeft = direction.IFindFirst("righttoleft") >= 0 || direction.IFindFirst("rtl") >= 0
+		|| direction.IFindFirst("right-to-left") >= 0 || direction.IFindFirst("right to left") >= 0
+		|| direction.IFindFirst("yes") >= 0;
+	info->pageCount = (int32)bbf.pages.size();
+
+	if (info->title.IsEmpty() && info->series.IsEmpty() && info->writers.empty() && info->summary.IsEmpty()
+		&& info->publisher.IsEmpty() && !info->rightToLeft) {
+		delete info;
+		return NULL;
+	}
+	return info;
 }

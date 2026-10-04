@@ -104,6 +104,12 @@ void AddCreator(BMessage* annotation, const char* name, int64 created);
 // a selector message of the type, with its properties (rdf:value and so on are added by the caller)
 void MakeFragmentSelector(BMessage* selector, const char* conformsTo, const char* value);
 
+// The bounding box of the shapes in an SVG (from an oa:SvgSelector): rect, circle, ellipse, line, polygon, polyline and the
+// absolute coordinates of a path. box is left, top, right, bottom in the units of the SVG; viewBox is x, y, width, height
+// if the SVG has one (*hasViewBox), which says what the units are relative to: the target as a whole. False if there
+// is no shape in it.
+bool    SvgBoundingBox(const char* svg, float box[4], float viewBox[4], bool* hasViewBox);
+
 // the CSS for the color of a mark of a motivation, and the color in some CSS (the first #rrggbb)
 BString ColorStyle(const char* motivation, uint32 color);
 bool    ColorOfStyle(const char* css, uint32* color);

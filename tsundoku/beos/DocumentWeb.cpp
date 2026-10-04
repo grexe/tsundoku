@@ -351,6 +351,22 @@ ReadSelector(const BMessage& selector, DocTarget* result)
 				start = end + 1;
 			}
 		}
+	} else if (type == kSvgSelector) {
+		// the place that the shapes of an SVG cover; its viewBox says what its numbers are relative to: the whole page
+		float box[4], viewBox[4];
+		bool hasViewBox;
+		if (SvgBoundingBox(value.String(), box, viewBox, &hasViewBox)) {
+			result->hasRegion = true;
+			if (hasViewBox && viewBox[2] > 0 && viewBox[3] > 0) {
+				result->regionPercent = true;
+				result->region = fz_make_rect((box[0] - viewBox[0]) / viewBox[2] * 100,
+					(box[1] - viewBox[1]) / viewBox[3] * 100, (box[2] - viewBox[0]) / viewBox[2] * 100,
+					(box[3] - viewBox[1]) / viewBox[3] * 100);
+			} else {
+				result->regionPercent = false;
+				result->region = fz_make_rect(box[0], box[1], box[2], box[3]);
+			}
+		}
 	}
 
 	BMessage refinement;

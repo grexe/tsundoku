@@ -356,6 +356,122 @@ ReadSvg(const char* svg, Mark* mark)
 }
 
 
+// ---- the bounds of any SVG
+
+static void
+Grow(float box[4], bool* any, float x, float y)
+{
+	if (!*any) {
+		box[0] = box[2] = x;
+		box[1] = box[3] = y;
+		*any = true;
+		return;
+	}
+	box[0] = fminf(box[0], x);
+	box[1] = fminf(box[1], y);
+	box[2] = fmaxf(box[2], x);
+	box[3] = fmaxf(box[3], y);
+}
+
+
+// the numbers of a list (a path or points), two at a time are points
+static void
+GrowByNumbers(float box[4], bool* any, const char* text)
+{
+	float first = 0;
+	bool haveFirst = false;
+	while (*text != '\0' && *text != '"') {
+		if ((*text >= '0' && *text <= '9') || *text == '-' || *text == '.' || *text == '+') {
+			char* end;
+			float value = (float)strtod(text, &end);
+			if (end == text) {
+				text++;
+				continue;
+			}
+			text = end;
+			if (haveFirst) {
+				Grow(box, any, first, value);
+				haveFirst = false;
+			} else {
+				first = value;
+				haveFirst = true;
+			}
+		} else
+			text++;
+	}
+}
+
+
+static bool
+SvgAttributeNumber(const char* from, const char* name, float* value)
+{
+	// only inside the tag that starts at from
+	const char* close = strchr(from, '>');
+	BString key(" ");
+	key << name << "=\"";
+	const char* at = strstr(from, key.String());
+	if (at == NULL || (close != NULL && at > close))
+		return false;
+	*value = (float)atof(at + key.Length());
+	return true;
+}
+
+
+bool
+SvgBoundingBox(const char* svg, float box[4], float viewBox[4], bool* hasViewBox)
+{
+	*hasViewBox = false;
+	const char* vb = strstr(svg, "viewBox=\"");
+	if (vb != NULL) {
+		float values[4];
+		if (sscanf(vb + 9, "%f%*[ ,]%f%*[ ,]%f%*[ ,]%f", &values[0], &values[1], &values[2], &values[3]) == 4) {
+			memcpy(viewBox, values, sizeof(values));
+			*hasViewBox = true;
+		}
+	}
+
+	bool any = false;
+	for (const char* at = strchr(svg, '<'); at != NULL; at = strchr(at + 1, '<')) {
+		float a, b, c, d;
+		if (strncmp(at, "<rect", 5) == 0) {
+			if (SvgAttributeNumber(at, "width", &c) && SvgAttributeNumber(at, "height", &d)) {
+				a = b = 0;
+				SvgAttributeNumber(at, "x", &a);
+				SvgAttributeNumber(at, "y", &b);
+				Grow(box, &any, a, b);
+				Grow(box, &any, a + c, b + d);
+			}
+		} else if (strncmp(at, "<ellipse", 8) == 0) {
+			if (SvgAttributeNumber(at, "cx", &a) && SvgAttributeNumber(at, "cy", &b) && SvgAttributeNumber(at, "rx", &c)
+				&& SvgAttributeNumber(at, "ry", &d)) {
+				Grow(box, &any, a - c, b - d);
+				Grow(box, &any, a + c, b + d);
+			}
+		} else if (strncmp(at, "<circle", 7) == 0) {
+			if (SvgAttributeNumber(at, "cx", &a) && SvgAttributeNumber(at, "cy", &b) && SvgAttributeNumber(at, "r", &c)) {
+				Grow(box, &any, a - c, b - c);
+				Grow(box, &any, a + c, b + c);
+			}
+		} else if (strncmp(at, "<line", 5) == 0) {
+			if (SvgAttributeNumber(at, "x1", &a) && SvgAttributeNumber(at, "y1", &b) && SvgAttributeNumber(at, "x2", &c)
+				&& SvgAttributeNumber(at, "y2", &d)) {
+				Grow(box, &any, a, b);
+				Grow(box, &any, c, d);
+			}
+		} else if (strncmp(at, "<polygon", 8) == 0 || strncmp(at, "<polyline", 9) == 0) {
+			const char* points = strstr(at, " points=\"");
+			if (points != NULL)
+				GrowByNumbers(box, &any, points + 9);
+		} else if (strncmp(at, "<path", 5) == 0) {
+			const char* d = strstr(at, " d=\"");
+			if (d != NULL)
+				GrowByNumbers(box, &any, d + 4);
+		}
+	}
+	return any;
+}
+
+
 static void
 ArchiveDrawn(const Mark& mark, BMessage* annotation)
 {

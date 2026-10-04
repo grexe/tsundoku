@@ -100,6 +100,19 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   arrows and drawings, by an `oa:SvgSelector` whose `viewBox` is the page in percent (`0 0 100 100`,
   `preserveAspectRatio="none"`), so that it fits the page at any size. `sen:shape` says what was drawn, notes and text
   have the motivation `oa:commenting` and the note as the body. Save a copy writes them to the copy as well.
+  Comics in the double-sided flow follow how comics are made: a page that is wider than high (or marked `DoublePage`
+  in `ComicInfo.xml`) is a spread of its own and fills the view, and the page before it stands alone if it has no
+  partner. View > Right to left reads a manga the other way: only the places of the pages in a spread are swapped (the
+  first page on the right, the title page alone on the left), the pages themselves are not mirrored. A manga says so in
+  `ComicInfo.xml` (`Manga`), and the choice is kept with the file (`bepdf:rtl`).
+- The Bound Book Format (`.bbf`, version 3, [libbbf](https://github.com/ef1500/libbbf)) is read as a comic book, too.
+  It has the pages in a table in reading order, so one is found without reading the file; it is a MuPDF archive handler
+  of its own (the format is small, and only its index is parsed: `BbfInfo`, which does not depend on MuPDF). The sections
+  of the file are the outline of the document, its metadata (Title, Author, Series, Publisher, Language, Year,
+  Description, ...) goes to the same attributes as the metadata of `ComicInfo.xml`. The hashes are not checked. The type
+  `application/x-bbf` has the mark of the format as its sniffer rule.
+- A deep link to a place on a page (`xywh=` or an `oa:SvgSelector`, whose bounding box is taken, in the units of its `viewBox`
+  relative to the page) goes to the page and marks the place for a moment.
 - EPUB books open like PDF files. A book has no fixed pages, so it is laid out as pages of 6 by 9 inches for a text
   size (View > Larger text, Smaller text, Cmd+T and Cmd+Shift+T); the reader stays where the text was, and the
   text size is kept in the settings. MuPDF lays out and draws the book; its metadata is read from the package

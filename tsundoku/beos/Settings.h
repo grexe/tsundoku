@@ -197,6 +197,7 @@ class FileAttributes {
 	float    left, top;
 	BMessage bookmarks;
 	BMessage anchor;		// where the reader stopped in a book (TextAnchor), as the page changes with the text size
+	int32    reading = -1;	// the direction of reading that the reader chose: 0 left to right, 1 right to left, -1 not chosen
 
 public:
 	void SetPage(int32 page);
@@ -207,6 +208,8 @@ public:
 	BMessage *GetBookmarks()               { return &bookmarks; }
 	void SetAnchor(const BMessage* a)      { anchor = a != NULL ? *a : BMessage(); }
 	const BMessage* GetAnchor() const      { return &anchor; }
+	void SetReading(int32 direction)       { reading = direction; }
+	int32 GetReading() const               { return reading; }
 
 	// read/write settings from/to attributes
 	bool Read(entry_ref *ref, GlobalSettings *s);

@@ -19,6 +19,8 @@
 
 #include "ComicArchive.h"
 
+#include "BbfInfo.h"
+
 #include <Bitmap.h>
 #include <BitmapStream.h>
 #include <DataIO.h>
@@ -28,6 +30,7 @@
 #include <archive.h>
 #include <archive_entry.h>
 #include <pthread.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -402,6 +405,208 @@ const fz_archive_handler kLibArchiveHandler = { LibRecognize, LibOpen };
 
 
 // ------------------------------------------------------------------------------------------------------------
+// Bound Book Format: the pages are what the page table says, in the order that it says, and are found by their offset
+
+class StreamSource : public BbfSource {
+public:
+	StreamSource(fz_context* context, fz_stream* file) : fContext(context), fFile(file), fSize(0)
+	{
+		fz_var(fSize);
+		fz_try(fContext) {
+			fz_seek(fContext, fFile, 0, SEEK_END);
+			fSize = (uint64)fz_tell(fContext, fFile);
+		}
+		fz_catch(fContext) {
+			fSize = 0;
+		}
+	}
+
+	virtual uint64 Size() { return fSize; }
+
+	virtual bool Read(uint64 offset, void* buffer, size_t size)
+	{
+		bool ok = true;
+		fz_var(ok);
+		fz_try(fContext) {
+			fz_seek(fContext, fFile, (int64_t)offset, SEEK_SET);
+			ok = fz_read(fContext, fFile, (unsigned char*)buffer, size) == size;
+		}
+		fz_catch(fContext) {
+			ok = false;
+		}
+		return ok;
+	}
+
+private:
+	fz_context* fContext;
+	fz_stream*  fFile;
+	uint64      fSize;
+};
+
+
+struct BbfArchive {
+	fz_archive super;
+	pthread_mutex_t lock;
+	BbfInfo* info;
+	std::vector<std::string> names;		// page00001.png, ...
+	std::vector<size_t> pageOf;			// the page of the table that the name stands for
+	std::map<std::string, size_t> index;
+};
+
+
+void
+BbfDrop(fz_context*, fz_archive* archive)
+{
+	BbfArchive* arch = (BbfArchive*)archive;
+	delete arch->info;
+	pthread_mutex_destroy(&arch->lock);
+	arch->names.~vector();
+	arch->pageOf.~vector();
+	arch->index.~map();
+}
+
+
+int
+BbfCount(fz_context*, fz_archive* archive)
+{
+	return (int)((BbfArchive*)archive)->names.size();
+}
+
+
+const char*
+BbfList(fz_context*, fz_archive* archive, int i)
+{
+	BbfArchive* arch = (BbfArchive*)archive;
+	if (i < 0 || (size_t)i >= arch->names.size())
+		return NULL;
+	return arch->names[i].c_str();
+}
+
+
+int
+BbfHas(fz_context*, fz_archive* archive, const char* name)
+{
+	BbfArchive* arch = (BbfArchive*)archive;
+	return arch->index.find(name) != arch->index.end();
+}
+
+
+fz_buffer*
+BbfReadEntry(fz_context* context, fz_archive* archive, const char* name)
+{
+	BbfArchive* arch = (BbfArchive*)archive;
+	std::map<std::string, size_t>::const_iterator found = arch->index.find(name);
+	if (found == arch->index.end())
+		return NULL;
+	const BbfInfo::Page& page = arch->info->pages[arch->pageOf[found->second]];
+	if (page.size > ((uint64)1 << 29))
+		fz_throw(context, FZ_ERROR_FORMAT, "page %s is too large", name);
+
+	size_t size = (size_t)page.size;
+	unsigned char* data = (unsigned char*)fz_malloc(context, size > 0 ? size : 1);
+	fz_try(context) {
+		pthread_mutex_lock(&arch->lock);
+		fz_seek(context, arch->super.file, (int64_t)page.offset, SEEK_SET);
+		if (fz_read(context, arch->super.file, data, size) != size)
+			fz_throw(context, FZ_ERROR_FORMAT, "page %s is cut off", name);
+	}
+	fz_always(context) {
+		pthread_mutex_unlock(&arch->lock);
+	}
+	fz_catch(context) {
+		fz_free(context, data);
+		fz_rethrow(context);
+	}
+	return fz_new_buffer_from_data(context, data, size);	// the buffer owns the data
+}
+
+
+fz_stream*
+BbfOpenEntry(fz_context* context, fz_archive* archive, const char* name)
+{
+	fz_buffer* buffer = BbfReadEntry(context, archive, name);
+	if (buffer == NULL)
+		return NULL;
+	fz_stream* stream = NULL;
+	fz_var(stream);
+	fz_try(context) {
+		stream = fz_open_buffer(context, buffer);
+	}
+	fz_always(context) {
+		fz_drop_buffer(context, buffer);
+	}
+	fz_catch(context) {
+		fz_rethrow(context);
+	}
+	return stream;
+}
+
+
+int
+BbfRecognize(fz_context* context, fz_stream* file)
+{
+	unsigned char magic[4];
+	return fz_read(context, file, magic, sizeof(magic)) == sizeof(magic) && memcmp(magic, "BBF3", 4) == 0;
+}
+
+
+fz_archive*
+BbfOpen(fz_context* context, fz_stream* file)
+{
+	StreamSource source(context, file);
+	BbfInfo* info = BbfInfo::Parse(source);
+	if (info == NULL)
+		fz_throw(context, FZ_ERROR_FORMAT, "not a BBF file, or its index is damaged");
+
+	BbfArchive* arch = NULL;
+	fz_var(arch);
+	fz_try(context) {
+		arch = fz_new_derived_archive(context, file, BbfArchive);
+	}
+	fz_catch(context) {
+		delete info;
+		fz_rethrow(context);
+	}
+	// constructed by hand, the memory is zeroed
+	pthread_mutex_init(&arch->lock, NULL);
+	new (&arch->names) std::vector<std::string>();
+	new (&arch->pageOf) std::vector<size_t>();
+	new (&arch->index) std::map<std::string, size_t>();
+	arch->info = info;
+	arch->super.format = "bbf";
+	arch->super.drop_archive = BbfDrop;
+	arch->super.count_entries = BbfCount;
+	arch->super.list_entry = BbfList;
+	arch->super.has_entry = BbfHas;
+	arch->super.read_entry = BbfReadEntry;
+	arch->super.open_entry = BbfOpenEntry;
+
+	// a name for each page, in the order of the table: the extension tells what picture it is (from the type of the
+	// asset, or the first bytes of it if the type is not known)
+	for (size_t i = 0; i < info->pages.size(); i++) {
+		const char* extension = BbfInfo::ExtensionOf(info->pages[i].type);
+		if (extension == NULL) {
+			uint8 head[16];
+			size_t length = info->pages[i].size < sizeof(head) ? (size_t)info->pages[i].size : sizeof(head);
+			if (source.Read(info->pages[i].offset, head, length))
+				extension = BbfInfo::ExtensionOfData(head, length);
+		}
+		if (extension == NULL)
+			continue;
+		char name[48];
+		snprintf(name, sizeof(name), "page%05d.%s", (int)i + 1, extension);
+		arch->index[name] = arch->names.size();
+		arch->pageOf.push_back(i);
+		arch->names.push_back(name);
+	}
+	return &arch->super;
+}
+
+
+const fz_archive_handler kBbfHandler = { BbfRecognize, BbfOpen };
+
+
+// ------------------------------------------------------------------------------------------------------------
 // An archive as it is without the junk, and with the pages that MuPDF cannot read as PNG files, converted by the
 // translators of Haiku (WebP, AVIF) when they are asked for
 
@@ -602,6 +807,7 @@ void
 RegisterHandlers(fz_context* context)
 {
 	fz_register_archive_handler(context, &kLibArchiveHandler);
+	fz_register_archive_handler(context, &kBbfHandler);
 }
 
 
@@ -612,7 +818,8 @@ IsComicFile(const char* path)
 	if (extension == NULL)
 		return false;
 	return strcasecmp(extension, ".cbz") == 0 || strcasecmp(extension, ".cbr") == 0
-		|| strcasecmp(extension, ".cb7") == 0 || strcasecmp(extension, ".cbt") == 0;
+		|| strcasecmp(extension, ".cb7") == 0 || strcasecmp(extension, ".cbt") == 0
+		|| strcasecmp(extension, ".bbf") == 0;
 }
 
 

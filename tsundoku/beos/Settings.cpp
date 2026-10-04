@@ -164,7 +164,11 @@ void FileAttributes::GetLeftTop(float &left, float &top) {
 
 bool FileAttributes::Read(entry_ref *ref, GlobalSettings *s) {
 	BNode node(ref);
+	reading = -1;
 	if (node.InitCheck() == B_OK) {
+		int32 direction;
+		if (sizeof(direction) == node.ReadAttr("bepdf:rtl", B_INT32_TYPE, 0, &direction, sizeof(direction)))
+			reading = direction != 0 ? 1 : 0;
 		int16 zoom;
 		if (sizeof(zoom) != node.ReadAttr("bepdf:zoom", B_INT16_TYPE, 0, &zoom, sizeof(zoom))) {
 			zoom = s->GetZoom();
@@ -275,6 +279,10 @@ bool FileAttributes::Write(entry_ref *ref, GlobalSettings *s) {
 				node.WriteAttr("bepdf:bookmarks", B_MESSAGE_TYPE, 0, buffer, size);
 			}
 			delete []buffer;
+		}
+		if (reading >= 0) {
+			int32 direction = reading;
+			node.WriteAttr("bepdf:rtl", B_INT32_TYPE, 0, &direction, sizeof(direction));
 		}
 		if (anchor.IsEmpty()) {
 			node.RemoveAttr("bepdf:anchor");

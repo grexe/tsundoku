@@ -21,6 +21,8 @@
 
 #include <math.h>
 
+#include <algorithm>
+
 const float PageLayout::kPageGap = 8;
 const float PageLayout::kSpreadGap = 4;
 
@@ -46,12 +48,15 @@ PageLayout::PageLayout()
 	fRows(1),
 	fContinuous(false),
 	fFirstAlone(true),
+	fRightToLeft(false),
+	fWideAlone(false),
 	fDocument(NULL),
 	fPageCount(0),
 	fDpi(72),
 	fRotation(0),
 	fReferenceWidth(100),
 	fReferenceHeight(100),
+	fNextStart(1),
 	fCanvasWidth(100),
 	fCanvasHeight(100),
 	fCurrent(1)
@@ -71,16 +76,21 @@ PageLayout::SetFlow(PageFlow flow)
 	fColumns = kPresets[flow].columns;
 	fRows = kPresets[flow].rows;
 	fContinuous = kPresets[flow].continuous;
+	ForgetSpreads();
 }
 
 
 void
 PageLayout::SetPages(Document* document, int pageCount, float dpi, int rotation)
 {
+	// the spreads do not depend on the size of the pages, they stay if it is the same document
+	if (document != fDocument || pageCount != fPageCount)
+		ForgetSpreads();
 	fDocument = document;
 	fPageCount = pageCount;
 	fDpi = dpi;
 	fRotation = rotation;
+	fWideAlone = document != NULL && document->IsComic();
 	fWidths.assign(pageCount + 1, 0);
 	fHeights.assign(pageCount + 1, 0);
 	fReferenceWidth = fReferenceHeight = 0;
@@ -124,24 +134,125 @@ PageLayout::PageSize(int page, float* width, float* height) const
 }
 
 
-// the spread that has the page: with the title page alone it is spread 0 and the others have a spread each
+void
+PageLayout::SetFirstPageAlone(bool alone)
+{
+	if (alone != fFirstAlone)
+		ForgetSpreads();
+	fFirstAlone = alone;
+}
+
+
+void
+PageLayout::SetRightToLeft(bool rightToLeft)
+{
+	fRightToLeft = rightToLeft;
+	fShownPages.clear();
+	fShownRects.clear();
+}
+
+
+void
+PageLayout::ForgetSpreads()
+{
+	fSpreads.clear();
+	fNextStart = 1;
+	fTops.clear();
+	fShownPages.clear();
+	fShownRects.clear();
+}
+
+
+// a double page: wider than high as the page itself is (not turned by the reader), or marked as one in the file
+bool
+PageLayout::IsWide(int page) const
+{
+	return fWideAlone && fColumns == 2 && fRows == 1 && fDocument != NULL && fDocument->IsWidePage(page);
+}
+
+
+// The spreads: with the title page alone it is the first one, and the others have as many pages as the cells; a double
+// page is alone, and so is a page that is followed by one (it has no partner then). Only the pages that are needed are
+// looked at, so a comic book is not read from end to end to show its first page.
+void
+PageLayout::ExtendSpreads(int upToPage) const
+{
+	int perSpread = fColumns * fRows;
+	if (fSpreads.empty() && fNextStart == 1 && fFirstAlone && perSpread > 1 && fPageCount >= 1) {
+		fSpreads.push_back(1);
+		fNextStart = 2;
+	}
+	while (fNextStart <= upToPage && fNextStart <= fPageCount) {
+		int start = fNextStart;
+		fSpreads.push_back(start);
+		if (fColumns == 2 && fRows == 1) {
+			if (IsWide(start) || start + 1 > fPageCount || IsWide(start + 1))
+				fNextStart = start + 1;
+			else
+				fNextStart = start + 2;
+		} else
+			fNextStart = start + perSpread;
+	}
+}
+
+
 int
 PageLayout::SpreadOf(int page) const
 {
-	int perSpread = fColumns * fRows;
-	if (fFirstAlone)
-		return page <= 1 ? 0 : 1 + (page - 2) / perSpread;
-	return (page - 1) / perSpread;
+	ExtendSpreads(page);
+	int low = 0, high = (int)fSpreads.size() - 1;
+	if (high < 0)
+		return 0;
+	while (low < high) {
+		int middle = (low + high + 1) / 2;
+		if (fSpreads[middle] <= page)
+			low = middle;
+		else
+			high = middle - 1;
+	}
+	return low;
 }
 
 
 int
 PageLayout::FirstPageOfSpread(int spread) const
 {
-	int perSpread = fColumns * fRows;
-	if (fFirstAlone)
-		return spread == 0 ? 1 : 2 + (spread - 1) * perSpread;
-	return 1 + spread * perSpread;
+	while ((int)fSpreads.size() <= spread && fNextStart <= fPageCount)
+		ExtendSpreads(fNextStart);
+	if (spread < 0)
+		spread = 0;
+	if (spread >= (int)fSpreads.size())
+		return fSpreads.empty() ? 1 : fPageCount + 1;	// there is none
+	return fSpreads[spread];
+}
+
+
+int
+PageLayout::PagesInSpread(int spread) const
+{
+	return FirstPageOfSpread(spread + 1) - FirstPageOfSpread(spread);
+}
+
+
+int
+PageLayout::NextSpreadPage(int page) const
+{
+	if (page < 1)
+		return 1;
+	if (fContinuous)
+		return page < fPageCount ? page + 1 : fPageCount;
+	int next = FirstPageOfSpread(SpreadOf(page) + 1);
+	return next <= fPageCount ? next : FirstPageOfSpread(SpreadOf(page));
+}
+
+
+int
+PageLayout::PreviousSpreadPage(int page) const
+{
+	if (fContinuous)
+		return page > 1 ? page - 1 : 1;
+	int spread = SpreadOf(page);
+	return spread > 0 ? FirstPageOfSpread(spread - 1) : FirstPageOfSpread(0);
 }
 
 
@@ -185,19 +296,53 @@ PageLayout::Arrange(int current)
 	// a spread: the cells are filled row by row, a column is as wide and a row as high as its widest and highest page
 	int cells = fColumns * fRows;
 	int spread = SpreadOf(fCurrent);
+	int first = FirstPageOfSpread(spread);
+	int count = PagesInSpread(spread);
 	std::vector<int> pages(cells, 0);
+	if (fColumns == 2 && fRows == 1) {
+		if (count == 1 && IsWide(first)) {
+			// a double page is all there is: its size is the size of the canvas
+			float width, height;
+			PageSize(first, &width, &height);
+			fCanvasWidth = width;
+			fCanvasHeight = height;
+			fShownPages.push_back(first);
+			fShownRects.push_back(BRect(0, 0, width, height));
+			return;
+		}
+		if (count >= 2) {
+			pages[fRightToLeft ? 1 : 0] = first;
+			pages[fRightToLeft ? 0 : 1] = first + 1;
+		} else {
+			// a page alone: the title page is on the right in a book (on the left if it is read the other way), the
+			// last one on the left
+			bool title = fFirstAlone && spread == 0;
+			pages[title != fRightToLeft ? 1 : 0] = first;
+		}
+	} else {
+		for (int cell = 0; cell < cells; cell++) {
+			// the title page alone sits in the cell at the right end of the first row
+			int page;
+			if (fFirstAlone && spread == 0)
+				page = cell == fColumns - 1 ? 1 : 0;
+			else
+				page = first + cell;
+			pages[cell] = page;
+		}
+		if (fRightToLeft && fColumns > 1) {
+			for (int row = 0; row < fRows; row++)
+				std::reverse(pages.begin() + row * fColumns, pages.begin() + (row + 1) * fColumns);
+		}
+	}
+
 	std::vector<float> columnWidth(fColumns, 0), rowHeight(fRows, 0);
 	float anyWidth = 0, anyHeight = 0;
 	for (int cell = 0; cell < cells; cell++) {
-		// the title page alone sits in the cell at the right end of the first row
-		int page;
-		if (fFirstAlone && spread == 0)
-			page = cell == fColumns - 1 ? 1 : 0;
-		else
-			page = FirstPageOfSpread(spread) + cell;
-		if (page < 1 || page > fPageCount)
+		int page = pages[cell];
+		if (page < 1 || page > fPageCount) {
+			pages[cell] = 0;
 			continue;
-		pages[cell] = page;
+		}
 		float width, height;
 		PageSize(page, &width, &height);
 		columnWidth[cell % fColumns] = fmaxf(columnWidth[cell % fColumns], width);

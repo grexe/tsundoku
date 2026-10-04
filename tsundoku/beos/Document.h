@@ -117,6 +117,7 @@ struct DocAnnotationEntry {
 };
 
 class BMessage;
+class BbfInfo;
 class ComicInfo;
 class EpubInfo;
 
@@ -232,6 +233,11 @@ public:
 	// What a comic book archive says about itself, NULL if it is not one or has no ComicInfo.xml.
 	const ComicInfo* Comic() const { return fComic; }
 	bool         IsComic() const { return fIsComic; }
+	// Whether a page (1-based) of a comic book is a double page: marked as one in its ComicInfo.xml, or wider than high.
+	// Always false for other documents. Measures the page, if it is not known.
+	bool         IsWidePage(int page);
+	// The index of a comic book in the Bound Book Format (its sections are the outline), NULL for other documents.
+	const BbfInfo* Bbf() const { return fBbf; }
 	static const float kReflowWidth, kReflowHeight, kDefaultTextSize, kMinTextSize, kMaxTextSize;
 	bool         IsEncrypted() const { return fEncrypted; }
 
@@ -406,6 +412,7 @@ private:
 	float           fTextSize;
 	EpubInfo*       fEpub;
 	ComicInfo*      fComic;
+	BbfInfo*        fBbf;
 	bool            fIsComic;
 	volatile bool   fAbortLayout;
 	fz_bookmark     fKeptBookmark;   // where the reader was before the text size changed, for the next change

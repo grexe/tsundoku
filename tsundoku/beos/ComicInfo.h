@@ -27,12 +27,16 @@
 
 #include <mupdf/fitz.h>
 
+class BbfInfo;
+
 // What a comic book archive says about itself in ComicInfo.xml, the metadata that ComicRack introduced and that
 // the comic managers and taggers (ComicTagger, Calibre, Komga, ...) write. The pages are left to MuPDF.
 class ComicInfo {
 public:
 	// Reads the metadata from the archive, NULL if it has no ComicInfo.xml.
 	static ComicInfo* Read(fz_context* context, fz_archive* archive);
+	// The same from the metadata of a BBF file (Title, Author, Series, ...), NULL if it has none that is known.
+	static ComicInfo* FromBbf(const BbfInfo& bbf);
 
 	BString              title;
 	BString              series;

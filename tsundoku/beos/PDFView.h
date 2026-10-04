@@ -113,6 +113,13 @@ private:
 	bool mReadOnlyWarned;      // the user knows that changes cannot be saved to the file itself
 	BMessageRunner* mModifierRunner;  // watches the keys for the cursor
 
+	// The place that a deep link leads to is marked for a moment (the region of the target, in page space).
+	int             mTargetPage;
+	fz_rect         mTargetRegion;
+	BMessageRunner* mTargetRunner;
+	void            DrawTargetRegion();
+	void            ClearTargetRegion();
+
 	// A book is laid out again for another text size in a thread of its own, which can take a while. The window
 	// stays as it is, and tells that it is busy if it takes longer than a moment.
 	bool            mLayingOut;
@@ -347,6 +354,8 @@ public:
 	// the title page is shown alone, also when two pages or more are shown at a time
 	void SetTitlePageAlone(bool alone);
 	bool TitlePageAlone() const { return mLayout.FirstPageAlone(); }
+	void SetRightToLeft(bool rightToLeft);
+	bool RightToLeft() const { return mLayout.RightToLeft(); }
 	PageFlow Flow() const { return mLayout.Flow(); }
 	// a step to the next or the previous page (a spread in the double flow)
 	void NextPage();
