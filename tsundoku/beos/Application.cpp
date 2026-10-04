@@ -169,13 +169,40 @@ static const size_t kBookAttributeCount = sizeof(kBookAttributes) / sizeof(kBook
 static const char* const kAnnotationCountAttribute = "SEN:annotationCount";
 
 
-static const struct { const char* type; const char* extension; const char* description; } kComicTypes[] = {
-	{ "application/vnd.comicbook+zip", "cbz", B_TRANSLATE_MARK("Comic book (ZIP)") },
-	{ "application/vnd.comicbook-rar", "cbr", B_TRANSLATE_MARK("Comic book (RAR)") },
-	{ "application/x-cb7", "cb7", B_TRANSLATE_MARK("Comic book (7z)") },
-	{ "application/x-cbt", "cbt", B_TRANSLATE_MARK("Comic book (TAR)") }
+// CBZ, CBR and CBT are ZIP, RAR and TAR files without a mark of their own. What they have in common is that the first
+// file in the archive is a page (or ComicInfo.xml): its name, with the extension of an image, is near the start of
+// the file, where the header of the first entry is. The sniffer rule says that, in a priority above the one of the
+// archive types (ZIP 0.4, RAR 0.5). 7z has its headers at the end and no mark, so CB7 is known by its extension.
+static const struct {
+	const char* type;
+	const char* extension;
+	const char* description;
+	const char* signature;		// of the archive, in the sniffer rule syntax; NULL if the type has no rule
+	const char* range;			// where the name of the first file is
+} kComicTypes[] = {
+	{ "application/vnd.comicbook+zip", "cbz", B_TRANSLATE_MARK("Comic book (ZIP)"), "\"PK\\003\\004\"", "[30:300]" },
+	{ "application/vnd.comicbook-rar", "cbr", B_TRANSLATE_MARK("Comic book (RAR)"), "\"Rar!\"", "[7:400]" },
+	{ "application/x-cb7", "cb7", B_TRANSLATE_MARK("Comic book (7z)"), NULL, NULL },
+	{ "application/x-cbt", "cbt", B_TRANSLATE_MARK("Comic book (TAR)"), "[257] \"ustar\"", "[0:100]" }
 };
 static const size_t kComicTypeCount = sizeof(kComicTypes) / sizeof(kComicTypes[0]);
+
+
+static BString
+ComicSnifferRule(const char* signature, const char* range)
+{
+	static const char* const kNames[] = { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".bmp", ".tif", ".tiff",
+		"comicinfo.xml", NULL };
+	BString rule("0.60 (");
+	rule << signature << ") (-i ";
+	for (int i = 0; kNames[i] != NULL; i++) {
+		if (i > 0)
+			rule << " | ";
+		rule << range << " \"" << kNames[i] << "\"";
+	}
+	rule << ")";
+	return rule;
+}
 
 
 static void
@@ -292,6 +319,13 @@ InstallMimeTypes(const entry_ref* application)
 			comic.SetFileExtensions(&extensions);
 		}
 		comic.SetAttrInfo(&epubInfo);
+
+		if (kComicTypes[i].signature != NULL) {
+			BString rule = ComicSnifferRule(kComicTypes[i].signature, kComicTypes[i].range);
+			BString current;
+			if (comic.GetSnifferRule(&current) != B_OK || current != rule)
+				comic.SetSnifferRule(rule.String());
+		}
 	}
 
 	// The database knows what an application supports from the entry of its signature, which is only made

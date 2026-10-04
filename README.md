@@ -89,8 +89,10 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   translators of Haiku when they are shown. The metadata of `ComicInfo.xml` (ComicRack, ComicTagger, Calibre,
   Komga: title, series and number, writers, artists, publisher, date, genres, language, summary) is written to the
   same attributes as for books, and File info shows it with the cover (the page marked as such, else the first).
-  Haiku sniffs the content before it looks at the extension, so a `.cbz` is a ZIP file and a `.cbr` a RAR file to
-  Tracker; `.cb7` and `.cbt` have their own types. Zipped FictionBooks (`.fbz`, `.fb2.zip`) open as well.
+  Haiku sniffs the content before it looks at the extension, and a CBZ or CBR has no mark of its own (it is a ZIP or
+  RAR file), so the comic types have a sniffer rule: the first file of the archive is a page (or ComicInfo.xml), which
+  its header near the start of the file tells. A ZIP that starts with an image is a comic to Tracker, too. CB7 has no
+  such place, it is known by its extension. Zipped FictionBooks (`.fbz`, `.fb2.zip`) open as well.
 - EPUB books open like PDF files. A book has no fixed pages, so it is laid out as pages of 6 by 9 inches for a text
   size (View > Larger text, Smaller text, Cmd+T and Cmd+Shift+T); the reader stays where the text was, and the
   text size is kept in the settings. MuPDF lays out and draws the book; its metadata is read from the package
