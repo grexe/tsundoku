@@ -165,6 +165,7 @@ void FileAttributes::GetLeftTop(float &left, float &top) {
 bool FileAttributes::Read(entry_ref *ref, GlobalSettings *s) {
 	BNode node(ref);
 	reading = -1;
+	hasZoom = false;
 	if (node.InitCheck() == B_OK) {
 		// readingProgression: rtl, ltr or default (what the document itself says)
 		char direction[16];
@@ -175,9 +176,12 @@ bool FileAttributes::Read(entry_ref *ref, GlobalSettings *s) {
 				reading = 1;
 			else if (strcasecmp(direction, "ltr") == 0)
 				reading = 0;
+			else if (strcasecmp(direction, "ttb") == 0)
+				reading = 2;
 		}
 		int16 zoom;
-		if (sizeof(zoom) != node.ReadAttr("bepdf:zoom", B_INT16_TYPE, 0, &zoom, sizeof(zoom))) {
+		hasZoom = sizeof(zoom) == node.ReadAttr("bepdf:zoom", B_INT16_TYPE, 0, &zoom, sizeof(zoom));
+		if (!hasZoom) {
 			zoom = s->GetZoom();
 		}
 		int32 rotation, pos_x, pos_y, width, height;
@@ -288,7 +292,7 @@ bool FileAttributes::Write(entry_ref *ref, GlobalSettings *s) {
 			delete []buffer;
 		}
 		if (reading >= 0) {
-			const char* direction = reading == 1 ? "rtl" : "ltr";
+			const char* direction = reading == 1 ? "rtl" : reading == 2 ? "ttb" : "ltr";
 			node.WriteAttr("readingProgression", B_STRING_TYPE, 0, direction, strlen(direction) + 1);
 		}
 		if (anchor.IsEmpty()) {

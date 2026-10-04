@@ -357,15 +357,32 @@ Document::CanAnnotate()
 
 
 int
-Document::DeclaredReading() const
+Document::DeclaredReading()
 {
 	if (fComic != NULL && fComic->rightToLeft)
 		return 1;
+	if (fComic != NULL && fComic->topToBottom)
+		return 2;
 	if (fEpub != NULL) {
 		if (fEpub->pageProgression.ICompare("rtl") == 0)
 			return 1;
 		if (fEpub->pageProgression.ICompare("ltr") == 0)
 			return 0;
+	}
+	if (fIsComic && fPageCount >= 1) {
+		// pages that are three times as high as they are wide (at least) are not pages of a book: a strip that is read by scrolling
+		int sampled = 0;
+		for (int page = 1; page <= fPageCount && page <= 5; page++) {
+			fz_rect bounds;
+			if (!PageBounds(page, &bounds))
+				return -1;
+			float width = bounds.x1 - bounds.x0, height = bounds.y1 - bounds.y0;
+			if (width <= 0 || height < 3 * width)
+				return -1;
+			sampled++;
+		}
+		if (sampled > 0)
+			return 2;
 	}
 	return -1;
 }

@@ -114,6 +114,7 @@ private:
 	BMessageRunner* mModifierRunner;  // watches the keys for the cursor
 
 	// The place that a deep link leads to is marked for a moment (the region of the target, in page space).
+	bool            mFitWidthPending;   // the pages are to be as wide as the window when it is known
 	int             mTargetPage;
 	fz_rect         mTargetRegion;
 	BMessageRunner* mTargetRunner;
@@ -356,6 +357,9 @@ public:
 	bool TitlePageAlone() const { return mLayout.FirstPageAlone(); }
 	void SetRightToLeft(bool rightToLeft);
 	bool RightToLeft() const { return mLayout.RightToLeft(); }
+	// a webtoon: the pages are one below the other without a gap, as wide as the window
+	void SetTopToBottom(bool topToBottom);
+	bool TopToBottom() const { return mLayout.TopToBottom(); }
 	PageFlow Flow() const { return mLayout.Flow(); }
 	// a step to the next or the previous page (a spread in the double flow)
 	void NextPage();

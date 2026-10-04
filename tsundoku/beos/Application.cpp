@@ -1090,10 +1090,11 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 
 	// a document that says it is read from the right to the left (a manga, an EPUB) says so in the attribute, so that it
 	// can be found; what the reader chose for the file is written when it is closed and is not changed here
-	if (doc->DeclaredReading() == 1) {
+	int declared = doc->DeclaredReading();
+	if (declared == 1 || declared == 2) {
 		attr_info info;
 		if (node.GetAttrInfo("readingProgression", &info) != B_OK)
-			UpdateAttr(node, "readingProgression", B_STRING_TYPE, 0, (void*)"rtl", 4);
+			UpdateAttr(node, "readingProgression", B_STRING_TYPE, 0, (void*)(declared == 1 ? "rtl" : "ttb"), 4);
 	}
 
 	// how many annotations it has (for a book also the ones that are only in the attribute)

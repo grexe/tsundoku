@@ -107,7 +107,11 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   `ComicInfo.xml` (`Manga`) and an EPUB says so in its spine (`page-progression-direction`), and the choice is kept with
   the file in the attribute `readingProgression` (the name of the W3C Publication Manifest property; `rtl`, `ltr` or
   `default`, which is what the document says;
-  a document that says `rtl` has the attribute, so that it can be found).
+  a document that says `rtl` has the attribute, so that it can be found). A webtoon or a manhua that is a strip is read
+  from the top to the bottom (`ttb`, also a value of that property): a comic with `Webtoon` as its format, genre or tag in
+  `ComicInfo.xml`, or whose first pages are all at least three times as high as they are wide, opens in the continuous flow with
+  its strips one against the next and as wide as the window, without changing the flow that is set for other documents;
+  View > Top to bottom switches it for a file.
 - The Bound Book Format (`.bbf`, version 3, [libbbf](https://github.com/ef1500/libbbf)) is read as a comic book, too.
   It has the pages in a table in reading order, so one is found without reading the file; it is a MuPDF archive handler
   of its own (the format is small, and only its index is parsed: `BbfInfo`, which does not depend on MuPDF). The sections

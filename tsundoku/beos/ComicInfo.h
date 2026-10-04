@@ -60,6 +60,7 @@ public:
 	BString              web;
 	int32                pageCount;
 	bool                 rightToLeft;      // a manga, to be read from the right to the left
+	bool                 topToBottom;      // a webtoon, to be read by scrolling down
 
 	struct Page {
 		int32   image;       // number of the page, from 0
@@ -76,7 +77,7 @@ public:
 
 private:
 	ComicInfo()
-		: count(0), volume(0), year(0), month(0), day(0), pageCount(0), rightToLeft(false) {}
+		: count(0), volume(0), year(0), month(0), day(0), pageCount(0), rightToLeft(false), topToBottom(false) {}
 };
 
 #endif

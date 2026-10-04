@@ -263,6 +263,7 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 	mLayoutSize = 0;
 	mLayoutFromPage = mLayoutToPage = 1;
 	mBusyRunner = NULL;
+	mFitWidthPending = false;
 	mTargetPage = 0;
 	mTargetRegion = fz_empty_rect;
 	mTargetRunner = NULL;
@@ -414,6 +415,12 @@ PDFView::LoadFileSettings(entry_ref* ref, FileAttributes* fileAttributes, float&
 	if (reading < 0)
 		reading = mDoc->DeclaredReading();
 	mLayout.SetRightToLeft(reading == 1);
+	// a webtoon is read by scrolling: its pages are one below the other, as wide as the window (unless the reader has chosen
+	// the size for this file). The flow that the reader chose for other documents is not changed.
+	bool strips = reading == 2;
+	mLayout.SetTopToBottom(strips);
+	mLayout.SetFlow(strips ? kFlowContinuous : (PageFlow)s->GetPageFlow());
+	mFitWidthPending = strips && !fileAttributes->HasZoom();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -2271,6 +2278,17 @@ PDFView::Redraw(bool keepRendered)
 	}
 
 	Relayout();
+	if (mFitWidthPending && Window() != NULL && Bounds().Width() > 100 && mCanvasWidth > 0) {
+		mFitWidthPending = false;
+		int32 zoomOld = GetZoomDPI();
+		int32 zoomNew = (int32)(Bounds().Width() * zoomOld / mCanvasWidth);
+		if (zoomNew != zoomOld && zoomNew >= ZOOM_DPI_MIN && zoomNew <= ZOOM_DPI_MAX) {
+			mZoom = -zoomNew;
+			if (parentWin)
+				parentWin->SetZoom(-zoomNew);
+			Relayout();
+		}
+	}
 	if (parentWin)
 		parentWin->NewPage(mCurrentPage);
 
@@ -2587,6 +2605,33 @@ PDFView::SetRightToLeft(bool rightToLeft)
 		w->GetFileAttributes()->SetReading(rightToLeft ? 1 : 0);
 	mRenderedPage = 0;
 	Redraw(true);
+	if (PDFWindow* w = GetPDFWindow())
+		w->UpdateInputEnabler();
+}
+
+
+//////////////////////////////////////////////////////////////////
+// A webtoon is read from the top to the bottom: all pages below each other, no gap between them, as wide as the window. Off, the
+// flow that the reader chose is back. The choice is kept with the file.
+void
+PDFView::SetTopToBottom(bool topToBottom)
+{
+	if (topToBottom == mLayout.TopToBottom() || mDoc == NULL)
+		return;
+
+	WaitForPage(true);
+	mLayout.SetTopToBottom(topToBottom);
+	mLayout.SetFlow(topToBottom ? kFlowContinuous : (PageFlow)gApp->GetSettings()->GetPageFlow());
+	if (mLayout.RightToLeft() && topToBottom)
+		mLayout.SetRightToLeft(false);
+	if (PDFWindow* w = GetPDFWindow())
+		w->GetFileAttributes()->SetReading(topToBottom ? 2 : 0);
+	mFitWidthPending = topToBottom;
+	BView::ScrollTo(BPoint(0, 0));
+	mRenderedPage = 0;
+	Redraw(true);
+	if (mLayout.IsContinuous())
+		ScrollToPage(mCurrentPage, true);
 	if (PDFWindow* w = GetPDFWindow())
 		w->UpdateInputEnabler();
 }
@@ -4191,6 +4236,12 @@ PDFView::TestCommand(BMessage* message)
 			numbers << mSlots[i]->number << (mSlots[i]->rendering ? "* " : " ");
 		TestLog("slots %d: %s| current %d, active %d, interaction %d, scroll top %g", (int)mSlots.size(),
 			numbers.String(), mCurrentPage, ActivePage(), mInteractionPage, Bounds().top);
+		TestLog("  canvas %gx%g, flow %d, gap %s, zoom %d dpi", mCanvasWidth, mCanvasHeight, (int)mLayout.Flow(),
+			mLayout.TopToBottom() ? "none" : "page gap", (int)GetZoomDPI());
+		for (int page = 1; page <= GetNumPages() && page <= 3; page++) {
+			BRect r = mLayout.PageRect(page);
+			TestLog("  page %d: top %g bottom %g", page, r.top, r.bottom);
+		}
 	} else if (cmd == "titlealone") {
 		SetTitlePageAlone(TestNumber(message, "which") != 0);
 		TestLog("title page alone %d: page %d, canvas %gx%g", (int)TitlePageAlone(), mCurrentPage, mCanvasWidth,

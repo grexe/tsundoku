@@ -49,6 +49,8 @@ PageLayout::PageLayout()
 	fContinuous(false),
 	fFirstAlone(true),
 	fRightToLeft(false),
+	fTopToBottom(false),
+	fPageGap(kPageGap),
 	fWideAlone(false),
 	fDocument(NULL),
 	fPageCount(0),
@@ -147,6 +149,17 @@ void
 PageLayout::SetRightToLeft(bool rightToLeft)
 {
 	fRightToLeft = rightToLeft;
+	fShownPages.clear();
+	fShownRects.clear();
+}
+
+
+void
+PageLayout::SetTopToBottom(bool topToBottom)
+{
+	fTopToBottom = topToBottom;
+	fPageGap = topToBottom ? 0 : kPageGap;
+	fTops.clear();
 	fShownPages.clear();
 	fShownRects.clear();
 }
@@ -284,12 +297,12 @@ PageLayout::Arrange(int current)
 			float width, height;
 			PageSize(page, &width, &height);
 			fTops[page] = y;
-			y += height + kPageGap;
+			y += height + fPageGap;
 			widest = fmaxf(widest, width);
 		}
 		fTops[fPageCount + 1] = y;
 		fCanvasWidth = widest;
-		fCanvasHeight = fmaxf(1, y - kPageGap);
+		fCanvasHeight = fmaxf(1, y - fPageGap);
 		return;
 	}
 

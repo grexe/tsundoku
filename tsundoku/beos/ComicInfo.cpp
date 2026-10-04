@@ -195,8 +195,14 @@ ComicInfo::Read(fz_context* context, fz_archive* archive)
 		else if (strcmp(name, "Web") == 0) info->web = value;
 		else if (strcmp(name, "PageCount") == 0) info->pageCount = atoi(value.String());
 		else if (strcmp(name, "Manga") == 0) info->rightToLeft = value.IFindFirst("RightToLeft") >= 0;
+		else if (strcmp(name, "Format") == 0) info->topToBottom = info->topToBottom || value.IFindFirst("webtoon") >= 0;
 	}
 	xmlFreeDoc(doc);
+	// a webtoon says so in its format, or in its genres and tags
+	for (size_t i = 0; i < info->genres.size(); i++)
+		info->topToBottom = info->topToBottom || info->genres[i].IFindFirst("webtoon") >= 0;
+	for (size_t i = 0; i < info->tags.size(); i++)
+		info->topToBottom = info->topToBottom || info->tags[i].IFindFirst("webtoon") >= 0;
 	return info;
 }
 
@@ -311,9 +317,11 @@ ComicInfo::FromBbf(const BbfInfo& bbf)
 		|| direction.IFindFirst("right-to-left") >= 0 || direction.IFindFirst("right to left") >= 0
 		|| direction.IFindFirst("yes") >= 0;
 	info->pageCount = (int32)bbf.pages.size();
+	info->topToBottom = direction.IFindFirst("ttb") >= 0 || direction.IFindFirst("webtoon") >= 0
+		|| direction.IFindFirst("vertical") >= 0 || direction.IFindFirst("top to bottom") >= 0;
 
 	if (info->title.IsEmpty() && info->series.IsEmpty() && info->writers.empty() && info->summary.IsEmpty()
-		&& info->publisher.IsEmpty() && !info->rightToLeft) {
+		&& info->publisher.IsEmpty() && !info->rightToLeft && !info->topToBottom) {
 		delete info;
 		return NULL;
 	}

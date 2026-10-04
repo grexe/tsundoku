@@ -58,6 +58,10 @@ public:
 	// page alone is on the left.
 	void     SetRightToLeft(bool rightToLeft);
 	bool     RightToLeft() const { return fRightToLeft; }
+	// Read from the top to the bottom, like a webtoon (a strip as high as the story is long, cut into pages): in the continuous flow
+	// the pages are one against the next without a gap.
+	void     SetTopToBottom(bool topToBottom);
+	bool     TopToBottom() const { return fTopToBottom; }
 
 	// the document and the size of its pages in pixels, anything measured before is forgotten
 	void     SetPages(Document* document, int pageCount, float dpi, int rotation);
@@ -113,6 +117,8 @@ private:
 	bool      fContinuous;
 	bool      fFirstAlone;
 	bool      fRightToLeft;
+	bool      fTopToBottom;
+	float     fPageGap;       // between the pages of the continuous flow
 	bool      fWideAlone;     // pages that are wider than high have a spread to themselves (comic books, two columns)
 	Document* fDocument;
 	int       fPageCount;

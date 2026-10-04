@@ -197,7 +197,8 @@ class FileAttributes {
 	float    left, top;
 	BMessage bookmarks;
 	BMessage anchor;		// where the reader stopped in a book (TextAnchor), as the page changes with the text size
-	int32    reading = -1;	// the direction of reading that the reader chose: 0 left to right, 1 right to left, -1 not chosen
+	int32    reading = -1;	// the direction of reading that the reader chose: 0 left to right, 1 right to left, 2 top to bottom, -1 not chosen
+	bool     hasZoom = false;	// the file has a zoom of its own
 
 public:
 	void SetPage(int32 page);
@@ -210,6 +211,7 @@ public:
 	const BMessage* GetAnchor() const      { return &anchor; }
 	void SetReading(int32 direction)       { reading = direction; }
 	int32 GetReading() const               { return reading; }
+	bool HasZoom() const                   { return hasZoom; }
 
 	// read/write settings from/to attributes
 	bool Read(entry_ref *ref, GlobalSettings *s);

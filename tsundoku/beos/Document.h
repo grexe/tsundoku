@@ -235,8 +235,9 @@ public:
 	bool         IsComic() const { return fIsComic; }
 	bool         IsDjvu() const { return fIsDjvu; }
 	// The direction of reading that the document itself declares (ComicInfo.xml says a manga is read from the right to the
-	// left, an EPUB has the page progression of its spine): 1 right to left, 0 left to right, -1 not said.
-	int          DeclaredReading() const;
+	// left, an EPUB has the page progression of its spine; a comic book whose pages are strips, much higher than wide, is a
+	// webtoon): 1 right to left, 0 left to right, 2 top to bottom, -1 not said.
+	int          DeclaredReading();
 	// Whether a page (1-based) of a comic book is a double page: marked as one in its ComicInfo.xml, or wider than high.
 	// Always false for other documents. Measures the page, if it is not known.
 	bool         IsWidePage(int page);

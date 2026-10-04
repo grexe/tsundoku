@@ -690,6 +690,7 @@ bool PDFWindow::CancelCommand(BMessage* msg) {
 			case FLOW_CONTINUOUS_CMD:
 			case TITLE_PAGE_ALONE_CMD:
 			case RIGHT_TO_LEFT_CMD:
+			case TOP_TO_BOTTOM_CMD:
 			case TEXT_LARGER_CMD:
 			case TEXT_SMALLER_CMD:
 			case FIRST_PAGE_CMD:
@@ -810,7 +811,9 @@ void PDFWindow::UpdateInputEnabler()
 		fMenuBar->FindItem(TITLE_PAGE_ALONE_CMD)->SetEnabled(flow == kFlowDouble || flow == kFlowFourFold);
 		// the direction of reading is for comic books
 		fMenuBar->FindItem(RIGHT_TO_LEFT_CMD)->SetMarked(mMainView->RightToLeft());
-		fMenuBar->FindItem(RIGHT_TO_LEFT_CMD)->SetEnabled(doc->IsComic());
+		fMenuBar->FindItem(RIGHT_TO_LEFT_CMD)->SetEnabled(doc->IsComic() && !mMainView->TopToBottom());
+		fMenuBar->FindItem(TOP_TO_BOTTOM_CMD)->SetMarked(mMainView->TopToBottom());
+		fMenuBar->FindItem(TOP_TO_BOTTOM_CMD)->SetEnabled(doc->IsComic());
 		mToolBar->SetActionPressed(FLOW_SINGLE_CMD, flow == kFlowSingle);
 		mToolBar->SetActionPressed(FLOW_DOUBLE_CMD, flow == kFlowDouble);
 		mToolBar->SetActionPressed(FLOW_CONTINUOUS_CMD, flow == kFlowContinuous);
@@ -1079,6 +1082,7 @@ BMenuBar* PDFWindow::BuildMenu()
 			.AddItem(B_TRANSLATE("Continuous"), FLOW_CONTINUOUS_CMD)
 			.AddItem(B_TRANSLATE("Title page alone"), TITLE_PAGE_ALONE_CMD)
 			.AddItem(B_TRANSLATE("Right to left"), RIGHT_TO_LEFT_CMD)
+			.AddItem(B_TRANSLATE("Top to bottom"), TOP_TO_BOTTOM_CMD)
 			.AddSeparator()
 			.AddItem(B_TRANSLATE("Zoom in"), (ZOOM_IN_CMD), '+')
 			.AddItem(B_TRANSLATE("Zoom out"), (ZOOM_OUT_CMD), '-')
@@ -1698,6 +1702,9 @@ PDFWindow::MessageReceived(BMessage* message)
 	case RIGHT_TO_LEFT_CMD:
 		mMainView->SetRightToLeft(!mMainView->RightToLeft());
 		break;
+	case TOP_TO_BOTTOM_CMD:
+		mMainView->SetTopToBottom(!mMainView->TopToBottom());
+		break;
 	case FLOW_SINGLE_CMD:
 		mMainView->SetFlow(kFlowSingle);
 		break;
@@ -2191,7 +2198,7 @@ PDFWindow::MessageReceived(BMessage* message)
 			} else if (cmd.StartsWith("do_")) {
 				// any command of the window by name
 				static const struct { const char* name; uint32 what; } commands[] = {
-					{ "fileinfo", FILE_INFO_CMD }, { "righttoleft", RIGHT_TO_LEFT_CMD }, { "undo", UNDO_CMD }, { "redo", REDO_CMD }, { "save", SAVE_FILE_CMD }, { "preferences", PREFERENCES_FILE_CMD },
+					{ "fileinfo", FILE_INFO_CMD }, { "righttoleft", RIGHT_TO_LEFT_CMD }, { "toptobottom", TOP_TO_BOTTOM_CMD }, { "undo", UNDO_CMD }, { "redo", REDO_CMD }, { "save", SAVE_FILE_CMD }, { "preferences", PREFERENCES_FILE_CMD },
 					{ "printsettings", PRINT_SETTINGS_CMD }, { "rotate", ROTATE_CLOCKWISE_CMD },
 					{ "flowsingle", FLOW_SINGLE_CMD }, { "flowdouble", FLOW_DOUBLE_CMD }, { "flowcontinuous", FLOW_CONTINUOUS_CMD }, { "fitwidth", FIT_TO_PAGE_WIDTH_CMD }, { "fitpage", FIT_TO_PAGE_CMD },
 					{ "back", HISTORY_BACK_CMD }, { "forward", HISTORY_FORWARD_CMD },
