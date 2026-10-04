@@ -1696,7 +1696,7 @@ PDFView::ShowPopUpMenu(BPoint point, const DocLink* link, const DocAnnotation* a
 	if (mDoc->CanEditAnnotations()) {
 		menu->AddSeparatorItem();
 
-		if (HasTextSelection()) {
+		if (HasTextSelection() && mDoc->CanMarkText()) {
 			BMessage highlight(ANNOTATE_MSG);
 			highlight.AddInt32("type", kMarkupHighlight);
 			menu->AddItem(BuildColorMenu(B_TRANSLATE("Highlight"), highlight, this, false, 0));
@@ -3123,7 +3123,7 @@ void PDFView::SetFilledSelection(bool filled) {
 bool
 PDFView::AnnotateSelection(MarkupType type, uint32 rgb)
 {
-	if (!HasTextSelection() || mQuads.empty() || !mDoc->CanEditAnnotations()) {
+	if (!HasTextSelection() || mQuads.empty() || !mDoc->CanMarkText()) {
 		beep();
 		return false;
 	}

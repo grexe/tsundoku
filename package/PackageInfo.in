@@ -31,6 +31,7 @@ requires		{
 	lib:libfreetype
 	lib:libmupdf1.28 >= 1.28
 	lib:libarchive
+	lib:libdjvulibre
 	lib:libxml2
 	lib:libzip
 }

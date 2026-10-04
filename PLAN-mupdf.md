@@ -155,7 +155,7 @@ text width, so `SetPages` is run again on a resize and the page the reader is at
 number (`fz_bookmark`); comics (CBZ) are fixed pages and use the presets as they are (a double page spread and a
 right-to-left order would be two more switches of the layout, in the same table).
 
-## DjVu (assessed 2026-10-04, not started)
+## DjVu (assessed 2026-10-04, done in 0.8.0)
 
 **What there is.** MuPDF reads no DjVu. HaikuPorts has `djvu` (DjVuLibre 3.5.29, library `lib:libdjvulibre`, package
 `djvu_devel`, tools `djvu_tools` with `c44`, `cjb2`, `djvm`, `djvused`, `djvutxt`), a Haiku translator (`djvutranslator`, by
@@ -239,4 +239,24 @@ Calibre, ComicTagger, Komga and Kavita write.
 - *Embedded pictures, fonts, references:* no. Standalone `.acbf` files are rare.
 
 **Recommendation:** not now. Do the metadata step when a file needs it, and plan text layers together with DjVu.
+
+### DjVu as it was done (2026-10-04)
+
+`DjvuDocument.cpp`, about 650 lines, as planned: pages and size, drawing, the text layer, outline, links and metadata, with
+notes and shapes from the store. What was different from the plan and what was learned:
+- *The file is handed over as bytes*, not by name (`ddjvu_document_create` and `ddjvu_stream_write`): DjVuLibre opens the file
+  again whenever it needs data and converts its name with `wcrtomb()`, which crashed in libroot's ICU code in the threads that draw.
+  So a file is in memory while it is open, and indirect documents (files next to an index) do not work. Streaming from our own
+  reader on request (`DDJVU_NEWSTREAM`) would fix both and is the next step if big files or such documents matter.
+- *A bug of DjVuLibre on Haiku*: `miniexp.cpp` creates the key for its thread-specific data through a zero-initialised static
+  `pthread_once_t`, but Haiku's `PTHREAD_ONCE_INIT` is -1, so the key is never created and stays 0, and every thread that makes an
+  s-expression stores its data under the key 0 of the process (here: the ICU locale data of libroot). That showed as three
+  different crashes (in the garbage collector, in `wcrtomb`, at the end of a thread). The handler keeps the value of the key 0
+  around every call that makes s-expressions (`KeyGuard`), switches the collector off, and asks for text, links, outline and metadata
+  once and keeps them in its own structures. The proper fix is in the recipe: a patch to `miniexp.cpp` (`pthread_once_t
+  gctls_once = PTHREAD_ONCE_INIT;`), to be sent to HaikuPorts and upstream (to ask the user first).
+- Not done: text of turned pages (its coordinates are those of the page as stored), the dates of the metadata (`year`) as `dc:date`,
+  text marks (highlight, underline) on DjVu, which need `ResolveAnnotation` to find words on fixed pages.
+- Test files: `djvulibre-book-en.djvu` (57 pages, outline, text), with links and metadata added by `djvused`
+  (`select 3; set-ant file`, `set-meta file`).
 

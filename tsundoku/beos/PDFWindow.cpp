@@ -836,7 +836,7 @@ void PDFWindow::UpdateInputEnabler()
 		fMenuBar->FindItem(SELECT_ALL_CMD)->SetEnabled(okToCopy);
 		fMenuBar->FindItem(SELECT_NONE_CMD)->SetEnabled(okToCopy);
 
-		bool canMark = doc->CanEditAnnotations() && mMainView->HasTextSelection();
+		bool canMark = doc->CanMarkText() && mMainView->HasTextSelection();
 		fMenuBar->FindItem(ANNOTATE_HIGHLIGHT_CMD)->SetEnabled(canMark);
 		fMenuBar->FindItem(ANNOTATE_UNDERLINE_CMD)->SetEnabled(canMark);
 		fMenuBar->FindItem(ANNOTATE_STRIKEOUT_CMD)->SetEnabled(canMark);

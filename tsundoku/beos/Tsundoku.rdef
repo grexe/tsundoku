@@ -21,7 +21,8 @@ resource file_types message {
 	"types" = "application/vnd.comicbook-rar",
 	"types" = "application/x-cb7",
 	"types" = "application/x-cbt",
-	"types" = "application/x-bbf"
+	"types" = "application/x-bbf",
+	"types" = "image/vnd.djvu"
 };
 
 resource(86, "NOTE_ANNOT") #'BBMP' archive BBitmap {

@@ -233,6 +233,7 @@ public:
 	// What a comic book archive says about itself, NULL if it is not one or has no ComicInfo.xml.
 	const ComicInfo* Comic() const { return fComic; }
 	bool         IsComic() const { return fIsComic; }
+	bool         IsDjvu() const { return fIsDjvu; }
 	// The direction of reading that the document itself declares (ComicInfo.xml says a manga is read from the right to the
 	// left, an EPUB has the page progression of its spine): 1 right to left, 0 left to right, -1 not said.
 	int          DeclaredReading() const;
@@ -280,6 +281,9 @@ public:
 	// LoadAnnotations() needs the page to be loaded and the lock to be held.
 	// marks on text (and notes to them): PDF and reflowable documents
 	bool         CanEditAnnotations();
+	// marks on text (highlight, underline, strike out, squiggly): PDF files and books; the text of a scan has no place that
+	// stays when the pages change, nor is it a part of the file
+	bool         CanMarkText();
 	// shapes, free text, notes and drawings on the page: PDF only
 	bool         CanDrawAnnotations();
 	bool         LoadAnnotations(int pageNo, fz_page* page, std::vector<DocAnnotation>& annotations);
@@ -357,7 +361,10 @@ private:
 
 	// the marks of a reflowable document (see DocumentReflow.cpp) and the annotations of a comic book (DocumentDraw.cpp)
 	// are kept in an attribute of the file, not in the file
-	bool UsesStore() const { return fIsComic || (fReflowable && !fIsPDF); }
+	bool UsesStore() const { return fIsComic || fIsDjvu || (fReflowable && !fIsPDF); }
+	// the documents with pages that stay as they are and no place in the file for annotations: what is drawn on them (notes,
+	// text, shapes) is in the store
+	bool FixedStore() const { return fIsComic || fIsDjvu; }
 	void LoadStore();
 	bool WriteStore(const char* path);
 	void ResolveStore();
@@ -417,6 +424,7 @@ private:
 	ComicInfo*      fComic;
 	BbfInfo*        fBbf;
 	bool            fIsComic;
+	bool            fIsDjvu;
 	volatile bool   fAbortLayout;
 	fz_bookmark     fKeptBookmark;   // where the reader was before the text size changed, for the next change
 	int             fKeptPage;       // the page it led to, 0 if none

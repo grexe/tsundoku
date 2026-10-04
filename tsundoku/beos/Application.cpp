@@ -188,7 +188,9 @@ static const struct {
 	{ "application/x-cb7", "cb7", B_TRANSLATE_MARK("Comic book (7z)"), NULL, NULL },
 	{ "application/x-cbt", "cbt", B_TRANSLATE_MARK("Comic book (TAR)"), "[257] \"ustar\"", "[0:100]" },
 	// the Bound Book Format has a mark of its own, at the start of the file
-	{ "application/x-bbf", "bbf", B_TRANSLATE_MARK("Comic book (BBF)"), "\"BBF3\"", NULL }
+	{ "application/x-bbf", "bbf", B_TRANSLATE_MARK("Comic book (BBF)"), "\"BBF3\"", NULL },
+	// DjVu is known to Haiku (type, extension, mark); it is here so that the attributes are defined and Tsundoku is offered
+	{ "image/vnd.djvu", "djvu", B_TRANSLATE_MARK("DjVu document"), NULL, NULL }
 };
 static const size_t kComicTypeCount = sizeof(kComicTypes) / sizeof(kComicTypes[0]);
 

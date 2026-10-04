@@ -116,6 +116,14 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   `application/x-bbf` has the mark of the format as its sniffer rule.
 - A deep link to a place on a page (`xywh=` or an `oa:SvgSelector`, whose bounding box is taken, in the units of its `viewBox`
   relative to the page) goes to the page and marks the place for a moment.
+- DjVu files open like PDF files. DjVuLibre draws the pages at the size that is asked for (as a document handler for MuPDF,
+  `DjvuDocument.cpp`, so everything above it works as it does for other documents): the hidden text layer is put into the
+  page as invisible text, so search, selection and copy work; the outline, the hyperlinks (also those that lead to another
+  page of the file) and the metadata (title, author, keywords) are those of the file; notes, text, shapes and drawings
+  are annotations of the same kind as those of comics. The file is read into memory when it is opened, and a document that is in
+  several files (an index with files next to it) is not supported yet; text is not found on pages that are turned.
+  DjVuLibre has a bug on Haiku that this works around (see the note in `DjvuDocument.cpp`): a once-only initialisation that
+  does not happen, so that it stores its data of a thread under a key that belongs to someone else.
 - EPUB books open like PDF files. A book has no fixed pages, so it is laid out as pages of 6 by 9 inches for a text
   size (View > Larger text, Smaller text, Cmd+T and Cmd+Shift+T); the reader stays where the text was, and the
   text size is kept in the settings. MuPDF lays out and draws the book; its metadata is read from the package
@@ -198,12 +206,12 @@ Each release on GitHub also has the package as a file.
 
 ## Building
 
-With the repository above added, `pkgman install mupdf1.28_devel libarchive_devel libzip_devel libxml2_devel freetype_devel` is all that is needed, and
+With the repository above added, `pkgman install mupdf1.28_devel libarchive_devel djvu_devel libzip_devel libxml2_devel freetype_devel` is all that is needed, and
 `./build.sh` uses it. Without it, the build gets MuPDF itself, and the development packages of the libraries MuPDF
 uses are taken from the system:
 
 ```
-pkgman install libarchive_devel libzip_devel libxml2_devel freetype_devel harfbuzz_devel openjpeg_devel jbig2dec_devel brotli_devel libjpeg_turbo_devel
+pkgman install libarchive_devel djvu_devel libzip_devel libxml2_devel freetype_devel harfbuzz_devel openjpeg_devel jbig2dec_devel brotli_devel libjpeg_turbo_devel
 git clone https://github.com/grexe/tsundoku
 cd tsundoku
 ./build.sh
