@@ -134,6 +134,48 @@ int main()
 
 
 
+// What a book says about itself, as BFS attributes. Nothing is invented for books: the names are the properties of
+// schema.org (Book, CreativeWork) with the prefix META: that Haiku's own attributes for documents have, and where
+// they exist the attributes of application/pdf are used as they are (META:title, META:author, META:keyw,
+// META:subject, META:creator, META:pages), so that the same attribute means the same for every kind of document.
+// The comments give the equivalent of Dublin Core (dc:) and schema.org (schema:).
+struct BookAttribute {
+	const char* name;
+	const char* label;
+	int32       type;
+	int32       width;
+};
+
+static const BookAttribute kBookAttributes[] = {
+	{ "META:description", B_TRANSLATE_MARK("Description"), B_STRING_TYPE, 200 },	// dc:description, schema:description
+	{ "META:publisher", B_TRANSLATE_MARK("Publisher"), B_STRING_TYPE, 150 },		// dc:publisher, schema:publisher
+	{ "META:inLanguage", B_TRANSLATE_MARK("Language"), B_STRING_TYPE, 60 },		// dc:language, schema:inLanguage
+	{ "META:datePublished", B_TRANSLATE_MARK("Published"), B_TIME_TYPE, 100 },	// dc:date, schema:datePublished
+	{ "META:identifier", B_TRANSLATE_MARK("Identifier"), B_STRING_TYPE, 200 },	// dc:identifier, schema:identifier
+	{ "META:isbn", B_TRANSLATE_MARK("ISBN"), B_STRING_TYPE, 110 },				// schema:isbn
+	{ "META:isPartOf", B_TRANSLATE_MARK("Series"), B_STRING_TYPE, 150 },			// dcterms:isPartOf, schema:isPartOf
+	{ "META:position", B_TRANSLATE_MARK("Series number"), B_DOUBLE_TYPE, 60 }		// schema:position
+};
+static const size_t kBookAttributeCount = sizeof(kBookAttributes) / sizeof(kBookAttributes[0]);
+
+// whether the document has annotations (any kind of document); the annotations of a book are in META:annotations
+static const char* const kAnnotatedAttribute = "META:annotated";
+
+
+static void
+AddAttrInfo(BMessage* info, const char* name, const char* label, int32 type, int32 width)
+{
+	info->AddString("attr:name", name);
+	info->AddString("attr:public_name", B_TRANSLATE_NOCOLLECT(label));
+	info->AddInt32("attr:type", type);
+	info->AddInt32("attr:width", width);
+	info->AddInt32("attr:alignment", B_ALIGN_LEFT);
+	info->AddBool("attr:viewable", true);
+	info->AddBool("attr:editable", false);
+	info->AddBool("attr:extra", false);
+}
+
+
 // Haiku does not know EPUB files (one that is not compressed would be taken for a web page), so the type is made
 // known, by its extension and by the name of the first file of the container. Which application opens them is
 // left to the user.
@@ -159,7 +201,7 @@ InstallMimeTypes(const entry_ref* application)
 	BMessage pdfInfo, epubInfo;
 	if (pdf.GetAttrInfo(&pdfInfo) == B_OK) {
 		static const char* const shared[] = { "META:title", "META:author", "META:subject", "META:creator",
-			"META:keyw", NULL };
+			"META:keyw", "META:pages", NULL };
 		const char* name;
 		for (int32 i = 0; pdfInfo.FindString("attr:name", i, &name) == B_OK; i++) {
 			bool wanted = false;
@@ -189,26 +231,30 @@ InstallMimeTypes(const entry_ref* application)
 			epubInfo.AddBool("attr:extra", extra);
 		}
 	}
-	static const struct { const char* name; const char* label; int32 type; int32 width; } kBookAttributes[] = {
-		{ "EPUB:language", B_TRANSLATE_MARK("Language"), B_STRING_TYPE, 60 },
-		{ "EPUB:publisher", B_TRANSLATE_MARK("Publisher"), B_STRING_TYPE, 150 },
-		{ "EPUB:published", B_TRANSLATE_MARK("Published"), B_TIME_TYPE, 100 },
-		{ "EPUB:identifier", B_TRANSLATE_MARK("Identifier"), B_STRING_TYPE, 200 },
-		{ "EPUB:series", B_TRANSLATE_MARK("Series"), B_STRING_TYPE, 150 },
-		{ "EPUB:series_index", B_TRANSLATE_MARK("Series number"), B_DOUBLE_TYPE, 60 },
-		{ "EPUB:version", B_TRANSLATE_MARK("EPUB version"), B_DOUBLE_TYPE, 60 }
-	};
-	for (size_t i = 0; i < sizeof(kBookAttributes) / sizeof(kBookAttributes[0]); i++) {
-		epubInfo.AddString("attr:name", kBookAttributes[i].name);
-		epubInfo.AddString("attr:public_name", B_TRANSLATE_NOCOLLECT(kBookAttributes[i].label));
-		epubInfo.AddInt32("attr:type", kBookAttributes[i].type);
-		epubInfo.AddInt32("attr:width", kBookAttributes[i].width);
-		epubInfo.AddInt32("attr:alignment", B_ALIGN_LEFT);
-		epubInfo.AddBool("attr:viewable", true);
-		epubInfo.AddBool("attr:editable", false);
-		epubInfo.AddBool("attr:extra", false);
-	}
+	for (size_t i = 0; i < kBookAttributeCount; i++)
+		AddAttrInfo(&epubInfo, kBookAttributes[i].name, kBookAttributes[i].label, kBookAttributes[i].type,
+			kBookAttributes[i].width);
+	AddAttrInfo(&epubInfo, kAnnotatedAttribute, B_TRANSLATE_MARK("Annotated"), B_INT32_TYPE, 60);
 	epub.SetAttrInfo(&epubInfo);
+
+	// "annotated" is the same attribute for PDF files
+	{
+		bool known = false;
+		const char* name;
+		for (int32 i = 0; pdfInfo.FindString("attr:name", i, &name) == B_OK; i++) {
+			if (strcmp(name, kAnnotatedAttribute) == 0)
+				known = true;
+		}
+		if (!known && pdfInfo.HasString("attr:name")) {
+			pdfInfo.AddString("attr:name", kAnnotatedAttribute);
+			pdfInfo.AddString("attr:public_name", B_TRANSLATE("Annotated"));
+			pdfInfo.AddInt32("attr:type", B_INT32_TYPE);
+			pdfInfo.AddBool("attr:viewable", true);
+			pdfInfo.AddBool("attr:editable", false);
+			pdfInfo.AddInt32("attr:width", 60);
+			pdf.SetAttrInfo(&pdfInfo);
+		}
+	}
 
 	BString rule;
 	if (epub.GetSnifferRule(&rule) != B_OK || rule.Length() == 0)
@@ -834,10 +880,11 @@ EnsureIndices(dev_t device)
 	static const struct { const char* name; uint32 type; } kIndices[] = {
 		{ "META:title", B_STRING_TYPE }, { "META:author", B_STRING_TYPE }, { "META:subject", B_STRING_TYPE },
 		{ "META:creator", B_STRING_TYPE }, { "META:keyw", B_STRING_TYPE }, { "META:pages", B_INT32_TYPE },
-		{ "EPUB:language", B_STRING_TYPE }, { "EPUB:publisher", B_STRING_TYPE },
-		{ "EPUB:identifier", B_STRING_TYPE }, { "EPUB:series", B_STRING_TYPE },
-		{ "EPUB:series_index", B_DOUBLE_TYPE }, { "EPUB:version", B_DOUBLE_TYPE },
-		{ "EPUB:published", B_INT64_TYPE }, { "PDF:created", B_INT64_TYPE }, { "PDF:modified", B_INT64_TYPE }
+		{ "META:description", B_STRING_TYPE }, { "META:publisher", B_STRING_TYPE },
+		{ "META:inLanguage", B_STRING_TYPE }, { "META:identifier", B_STRING_TYPE }, { "META:isbn", B_STRING_TYPE },
+		{ "META:isPartOf", B_STRING_TYPE }, { "META:position", B_DOUBLE_TYPE },
+		{ "META:datePublished", B_INT64_TYPE }, { "META:annotated", B_INT32_TYPE },
+		{ "PDF:created", B_INT64_TYPE }, { "PDF:modified", B_INT64_TYPE }
 	};
 	static dev_t sDone[16];
 	static int sDoneCount = 0;
@@ -881,8 +928,10 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 		}
 	}
 
-	// the number of pages of a book depends on the text size, it says nothing about the book
-	if (!doc->IsReflowable()) {
+	// The number of pages of a book is what it has in the standard configuration (6 x 9 inches, the default text
+	// size): an estimate that stays the same for inventory and citations, like the page count that shops give for
+	// an e-book. A book that is read at another text size says nothing about it.
+	if (!doc->IsReflowable() || doc->TextSize() == Document::kDefaultTextSize) {
 		int32 pages = (int32)doc->PageCount();
 		UpdateAttr(node, "META:pages", B_INT32_TYPE, 0, &pages, sizeof(int32));
 	}
@@ -905,9 +954,16 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 
 	// what only a book says, one attribute for each (so they can be shown in Tracker and queried)
 	if (const EpubInfo* epub = doc->Epub()) {
+		// (those of the first versions of Tsundoku had names of their own)
+		static const char* const kOld[] = { "EPUB:language", "EPUB:publisher", "EPUB:published", "EPUB:identifier",
+			"EPUB:series", "EPUB:series_index", "EPUB:version", NULL };
+		for (int i = 0; kOld[i] != NULL; i++)
+			node.RemoveAttr(kOld[i]);
+
 		struct { const char* name; const BString* value; } strings[] = {
-			{ "EPUB:language", &epub->language }, { "EPUB:publisher", &epub->publisher },
-			{ "EPUB:identifier", &epub->identifier }, { "EPUB:series", &epub->series }
+			{ "META:description", &epub->description }, { "META:publisher", &epub->publisher },
+			{ "META:inLanguage", &epub->language }, { "META:identifier", &epub->identifier },
+			{ "META:isbn", &epub->isbn }, { "META:isPartOf", &epub->series }
 		};
 		for (size_t i = 0; i < sizeof(strings) / sizeof(strings[0]); i++) {
 			if (strings[i].value->Length() > 0)
@@ -915,12 +971,8 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 					strings[i].value->Length() + 1);
 		}
 		if (epub->seriesIndex.Length() > 0) {
-			double index = atof(epub->seriesIndex.String());
-			UpdateAttr(node, "EPUB:series_index", B_DOUBLE_TYPE, 0, &index, sizeof(index));
-		}
-		if (epub->version.Length() > 0) {
-			double version = atof(epub->version.String());
-			UpdateAttr(node, "EPUB:version", B_DOUBLE_TYPE, 0, &version, sizeof(version));
+			double position = atof(epub->seriesIndex.String());
+			UpdateAttr(node, "META:position", B_DOUBLE_TYPE, 0, &position, sizeof(position));
 		}
 		// the date as far as it is given: 2026, 2026-09 or 2026-09-01
 		int year = 0, month = 1, day = 1;
@@ -933,9 +985,14 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 			date.tm_hour = 12;
 			time_t published = mktime(&date);
 			if (published != (time_t)-1)
-				UpdateAttr(node, "EPUB:published", B_TIME_TYPE, 0, &published, sizeof(published));
+				UpdateAttr(node, "META:datePublished", B_TIME_TYPE, 0, &published, sizeof(published));
 		}
 	}
+
+	// whether it has annotations (for a book also the ones that are only in the attribute)
+	BPath annotatedPath(ref);
+	if (annotatedPath.InitCheck() == B_OK)
+		doc->SyncAnnotatedAttribute(annotatedPath.Path());
 }
 
 

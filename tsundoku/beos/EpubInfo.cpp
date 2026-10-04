@@ -268,6 +268,21 @@ EpubInfo::Read(const char* path)
 					if (text.Length() > 0)
 						info->subjects.push_back(text);
 				} else if (name == "identifier") {
+					// an ISBN is one of the identifiers: urn:isbn:... or marked with the ISBN scheme
+					BString lower(text);
+					lower.ToLower();
+					BString scheme = Attribute(node, "scheme");
+					scheme.ToLower();
+					if (info->isbn.Length() == 0) {
+						if (lower.FindFirst("urn:isbn:") == 0)
+							text.CopyInto(info->isbn, 9, text.Length() - 9);
+						else if (lower.FindFirst("isbn:") == 0)
+							text.CopyInto(info->isbn, 5, text.Length() - 5);
+						else if (scheme == "isbn")
+							info->isbn = text;
+						info->isbn.RemoveAll("-");
+						info->isbn.Trim();
+					}
 					if (firstIdentifier.Length() == 0)
 						firstIdentifier = text;
 					if (uniqueId.Length() > 0 && Attribute(node, "id") == uniqueId)

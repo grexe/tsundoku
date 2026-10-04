@@ -55,6 +55,8 @@ inline float RealSize (float x, float zoomDPI)
 }
 
 // A page that is shown: what is rendered of it, the thread that renders it and where it is.
+class BusyWindow;
+
 struct PageSlot {
 	PageSlot();
 	~PageSlot();
@@ -108,6 +110,19 @@ private:
 	bool mSelectKeyDown;       // the key for selecting was down when the cursor was set last
 	bool mReadOnlyWarned;      // the user knows that changes cannot be saved to the file itself
 	BMessageRunner* mModifierRunner;  // watches the keys for the cursor
+
+	// A book is laid out again for another text size in a thread of its own, which can take a while. The window
+	// stays as it is, and tells that it is busy if it takes longer than a moment.
+	bool            mLayingOut;
+	thread_id       mLayoutThread;
+	float           mLayoutSize;
+	int             mLayoutFromPage;
+	int             mLayoutToPage;
+	BMessageRunner* mBusyRunner;      // waits before the busy window is shown
+	BusyWindow*     mBusyWindow;
+	static int32    LayoutThread(void* data);
+	void            FinishTextSize();
+	void            StopBusy();
 	History mHistory;
 	enum {
 		kNotInHistory, kInHistory
@@ -396,6 +411,9 @@ public:
 	void Undo();
 	// reflowable documents: the pages are made for another text size
 	void ChangeTextSize(bool larger);
+	bool IsLayingOut() const { return mLayingOut; }
+	// waits for the layout in the other thread (before the document goes away); its result is dropped
+	void WaitForLayout();
 	void Redo();
 	// Prepares to create an annotation. A note or text goes to the position if there is one (page space), a
 	// shape is drawn with the next drag.

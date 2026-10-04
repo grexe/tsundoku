@@ -32,6 +32,7 @@
 #include <File.h>
 #include <Catalog.h>
 #include <Node.h>
+#include <TypeConstants.h>
 #include <fs_attr.h>
 
 extern "C" {
@@ -326,8 +327,6 @@ Document::Metadata(const char* key)
 			value = fEpub->title;
 		else if (strcmp(key, FZ_META_INFO_AUTHOR) == 0)
 			value = fEpub->Authors();
-		else if (strcmp(key, FZ_META_INFO_SUBJECT) == 0)
-			value = fEpub->description;
 		else if (strcmp(key, FZ_META_INFO_KEYWORDS) == 0)
 			value = fEpub->Subjects();
 		if (value.Length() > 0)
@@ -1745,6 +1744,45 @@ Document::ForgetHistory()
 }
 
 
+bool
+Document::HasAnnotations()
+{
+	DocumentLocker locker(this);
+	if (UsesStore())
+		return !fStore.empty();
+	if (!fIsPDF)
+		return false;
+
+	pdf_document* pdf = pdf_specifics(fContext, fDocument);
+	for (int i = 0; i < fPageCount; i++) {
+		if (PageHasListedAnnotation(fContext, pdf, i))
+			return true;
+	}
+	return false;
+}
+
+
+void
+Document::SyncAnnotatedAttribute(const char* path)
+{
+	if (!fIsPDF && !fReflowable)
+		return;
+
+	BNode node(path);
+	if (node.InitCheck() != B_OK)
+		return;
+
+	bool annotated = HasAnnotations();
+	int32 value = 0;
+	bool present = node.ReadAttr("META:annotated", B_INT32_TYPE, 0, &value, sizeof(value)) == sizeof(value);
+	if (annotated && (!present || value != 1)) {
+		int32 yes = 1;
+		node.WriteAttr("META:annotated", B_INT32_TYPE, 0, &yes, sizeof(yes));
+	} else if (!annotated && present)
+		node.RemoveAttr("META:annotated");
+}
+
+
 // no lock, the window asks this all the time while a page is rendered
 bool
 Document::HasUnsavedChanges()
@@ -1769,6 +1807,7 @@ Document::Save()
 			return false;
 		fModified = false;
 		fStoreSavedDepth = fStoreUndo.size();
+		SyncAnnotatedAttribute(fPath.String());
 		return true;
 	}
 	if (!fIsPDF)
@@ -1789,6 +1828,7 @@ Document::Save()
 	if (ok) {
 		fModified = false;
 		ForgetHistory();
+		SyncAnnotatedAttribute(fPath.String());
 	}
 	return ok != 0;
 }
@@ -1843,6 +1883,7 @@ Document::SaveCopy(const char* path)
 		CopyAttributes(fPath.String(), path);
 		fModified = false;
 		ForgetHistory();
+		SyncAnnotatedAttribute(path);
 	}
 	return ok != 0;
 }

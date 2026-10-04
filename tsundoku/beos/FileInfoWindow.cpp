@@ -231,6 +231,7 @@ void FileInfoWindow::Refresh(BEntry *file, Document *doc) {
 			{ B_TRANSLATE("Publisher:"), epub->publisher },
 			{ B_TRANSLATE("Published:"), epub->date },
 			{ B_TRANSLATE("Identifier:"), epub->identifier },
+			{ B_TRANSLATE("ISBN:"), epub->isbn },
 			{ B_TRANSLATE("Subjects:"), epub->Subjects() },
 			{ B_TRANSLATE("Description:"), epub->description },
 			{ B_TRANSLATE("EPUB version:"), epub->version }

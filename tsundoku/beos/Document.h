@@ -251,6 +251,11 @@ public:
 	int          Undo();
 	int          Redo();
 
+	// Whether the document has annotations, and the attribute META:annotated (1, or none if it has none) of the file
+	// that says so for queries; written when it is opened and saved.
+	bool         HasAnnotations();
+	void         SyncAnnotatedAttribute(const char* path);
+
 	bool         HasUnsavedChanges();
 	bool         CanSave();
 	// false if the file is on a read-only volume or not writable for the user

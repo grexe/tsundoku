@@ -34,6 +34,7 @@ APP_MIME_SIG = application/x-vnd.sen-labs.Tsundoku
 #	Also note that spaces in folder names do not work well with this Makefile.
 SRCS = beos/AnnotationsView.cpp \
 	beos/AttachmentsView.cpp \
+	beos/BusyWindow.cpp \
 	beos/CachedPage.cpp \
 	beos/Document.cpp \
 	beos/DocumentReflow.cpp \

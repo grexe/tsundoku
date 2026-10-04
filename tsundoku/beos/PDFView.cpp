@@ -69,6 +69,7 @@
 #include "NoteWindow.h"
 #include "PageRenderer.h"
 #include "PDFWindow.h"
+#include "BusyWindow.h"
 #include "PDFView.h"
 #include "PrintingProgressWindow.h"
 #include "ResourceLoader.h"
@@ -97,6 +98,8 @@ static const int kZoomDPI[MAX_ZOOM - MIN_ZOOM + 1] = {
 #define ADD_TOOL_MSG                   'adtl'
 #define CREATE_TEXT_MSG                'crtx'
 #define MODIFIERS_POLL_MSG             'mdfy'
+#define SHOW_BUSY_MSG                  'busy'
+#define LAYOUT_DONE_MSG                'lyDn'
 
 static bool SelectModifierDown();
 
@@ -249,6 +252,12 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 	for (int h = 0; h < kHandleCount; h++)
 		mHandleCursors[h] = new BCursor(kHandleCursorIds[h]);
 	mModifierRunner = NULL;
+	mLayingOut = false;
+	mLayoutThread = -1;
+	mLayoutSize = 0;
+	mLayoutFromPage = mLayoutToPage = 1;
+	mBusyRunner = NULL;
+	mBusyWindow = NULL;
 	mNavigationState = kNotInHistory;
 
 	mViewCursor = NULL;
@@ -400,6 +409,8 @@ PDFView::LoadFile(entry_ref *ref, FileAttributes *fileAttributes, const char *ow
 	s += ref->name;
 	ShowLoadProgressStatusWindow statusWindow(s.String());
 	EndDoc();
+	WaitForLayout();
+	StopBusy();
 
 	SetPassword(ownerPassword, userPassword);
 	WaitForPage(true);
@@ -454,6 +465,8 @@ PDFView::LoadFile(entry_ref *ref, FileAttributes *fileAttributes, const char *ow
 ///////////////////////////////////////////////////////////////////////////
 PDFView::~PDFView()
 {
+	WaitForLayout();
+	StopBusy();
 	SetSlotsDocument(NULL);
 	for (size_t i = 0; i < mSlots.size(); i++)
 		delete mSlots[i];
@@ -497,6 +510,18 @@ void PDFView::MessageReceived(BMessage *msg) {
 		break;
 	case SELECT_ALL_MSG:
 		SelectAll();
+		break;
+	case SHOW_BUSY_MSG:
+		// the layout takes a while
+		if (mLayingOut) {
+			if (mBusyWindow == NULL)
+				mBusyWindow = new BusyWindow(Window(), B_TRANSLATE("Laying out the book" B_UTF8_ELLIPSIS));
+			mBusyWindow->Appear();
+		}
+		break;
+	case LAYOUT_DONE_MSG:
+		if (mLayingOut)
+			FinishTextSize();
 		break;
 	case MODIFIERS_POLL_MSG: {
 		// the cursor shows the selecting mode as soon as the key is down
@@ -923,6 +948,8 @@ PDFView::ScrollHorizontal (bool right, float by) {
 void
 PDFView::KeyDown (const char * bytes, int32 numBytes)
 {
+	if (mLayingOut)
+		return;
 	switch (*bytes) {
 	case B_ESCAPE:
 		if (mTool != kToolNone)
@@ -1045,6 +1072,10 @@ PDFView::BeginSelection(BPoint point, bool rectangle) {
 void
 PDFView::MouseDown (BPoint point) {
 	BPoint screen;
+
+	// (the document is being laid out, nothing can be done with it)
+	if (mLayingOut)
+		return;
 
 	MakeFocus(true);
 	uint32 buttons = GetButtons();
@@ -3062,18 +3093,78 @@ PDFView::ChangeTextSize(bool larger)
 			}
 		}
 	}
-	if (size == current)
+	if (size == current || mLayingOut)
 		return;
 
 	TimingStart();
 	WaitForPage(true);
 	SelectNone();
 	mAnnotationIndex = -1;
-	int page = mDoc->ChangeTextSize(size, mCurrentPage);
+
+	mLayingOut = true;
+	mLayoutSize = size;
+	mLayoutFromPage = mCurrentPage;
+	// the busy window only comes if the layout is not done after a moment
+	BMessage show(SHOW_BUSY_MSG);
+	mBusyRunner = new BMessageRunner(BMessenger(this), &show, 400000, 1);
+	mLayoutThread = spawn_thread(LayoutThread, "layout", B_NORMAL_PRIORITY, this);
+	if (mLayoutThread < 0) {
+		mLayoutThread = -1;
+		mLayingOut = false;
+		StopBusy();
+		return;
+	}
+	resume_thread(mLayoutThread);
+}
+
+
+int32
+PDFView::LayoutThread(void* data)
+{
+	PDFView* view = (PDFView*)data;
+	view->mLayoutToPage = view->mDoc->ChangeTextSize(view->mLayoutSize, view->mLayoutFromPage);
+	BMessenger(view).SendMessage(LAYOUT_DONE_MSG);
+	return 0;
+}
+
+
+void
+PDFView::StopBusy()
+{
+	delete mBusyRunner;
+	mBusyRunner = NULL;
+	if (mBusyWindow != NULL) {
+		mBusyWindow->Disappear();
+		if (mBusyWindow->Lock())
+			mBusyWindow->Quit();
+		mBusyWindow = NULL;
+	}
+}
+
+
+void
+PDFView::WaitForLayout()
+{
+	if (mLayoutThread >= 0) {
+		status_t result;
+		wait_for_thread(mLayoutThread, &result);
+		mLayoutThread = -1;
+	}
+	mLayingOut = false;
+}
+
+
+// The pages are made for the new text size: what is shown is made anew.
+void
+PDFView::FinishTextSize()
+{
+	WaitForLayout();
+	StopBusy();
 	TimingMark("text size: laid out");
+
 	gApp->GetSettings()->SetTextSize(mDoc->TextSize());
-	mCurrentPage = page;
-	mInteractionPage = page;
+	mCurrentPage = mLayoutToPage;
+	mInteractionPage = mLayoutToPage;
 	mRenderedPage = 0;
 	mFindHighlight = false;
 	Redraw();

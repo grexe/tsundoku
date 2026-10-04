@@ -38,6 +38,7 @@ public:
 	BString              language;
 	BString              publisher;
 	BString              identifier;
+	BString              isbn;            // if one of the identifiers is an ISBN (urn:isbn: or the ISBN scheme)
 	BString              date;            // as written: 2026, 2026-09 or 2026-09-01
 	BString              description;
 	std::vector<BString> subjects;

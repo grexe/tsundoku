@@ -55,7 +55,10 @@ const float Document::kDefaultTextSize = 12;
 const float Document::kMinTextSize = 6;
 const float Document::kMaxTextSize = 40;
 
-static const char* kStoreAttribute = "tsundoku:annotations";
+// The annotations of a book are kept in this attribute of its file (a standard message, which other applications
+// can use for the same purpose), the older name is still read.
+static const char* kStoreAttribute = "META:annotations";
+static const char* kLegacyStoreAttribute = "tsundoku:annotations";
 static const int32 kStoreVersion = 1;
 static const int kMaxUndo = 100;
 static const int kMaxQuoteLength = 4000;
@@ -255,12 +258,19 @@ Document::LoadStore()
 
 	BNode node(fPath.String());
 	attr_info info;
-	if (node.InitCheck() != B_OK || node.GetAttrInfo(kStoreAttribute, &info) != B_OK || info.size <= 0
-		|| info.size > 16 * 1024 * 1024)
+	const char* attribute = kStoreAttribute;
+	if (node.InitCheck() != B_OK)
+		return;
+	if (node.GetAttrInfo(attribute, &info) != B_OK) {
+		attribute = kLegacyStoreAttribute;
+		if (node.GetAttrInfo(attribute, &info) != B_OK)
+			return;
+	}
+	if (info.size <= 0 || info.size > 16 * 1024 * 1024)
 		return;
 
 	char* buffer = new char[info.size];
-	ssize_t size = node.ReadAttr(kStoreAttribute, info.type, 0, buffer, info.size);
+	ssize_t size = node.ReadAttr(attribute, info.type, 0, buffer, info.size);
 	BMessage archive;
 	if (size == info.size && archive.Unflatten(buffer) == B_OK) {
 		BMessage item;
@@ -299,6 +309,7 @@ Document::WriteStore(const char* path)
 	if (node.InitCheck() != B_OK)
 		return false;
 
+	node.RemoveAttr(kLegacyStoreAttribute);
 	if (fStore.empty()) {
 		node.RemoveAttr(kStoreAttribute);
 		return true;
@@ -356,6 +367,7 @@ Document::StoreSaveCopy(const char* path)
 		return false;
 	fModified = false;
 	fStoreSavedDepth = fStoreUndo.size();
+	SyncAnnotatedAttribute(path);
 	return true;
 }
 

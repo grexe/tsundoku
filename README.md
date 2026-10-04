@@ -71,15 +71,25 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   document with libzip and libxml2 (title, authors, series, language, publisher, date, identifier, subjects, the
   description and the cover show in File info). The EPUB type is made known to Haiku by its first file, so that
   an EPUB is not taken for a web page; which application opens it is left to you.
-  The page list of a book is an outline: chapters, with the pages of the chapter that is read below it. What a book
-  says about itself is written to separate BFS attributes of the file, those of the `application/pdf` type where they
-  fit (`META:title`, `META:author`, `META:subject`, `META:keyw`, `META:creator`) and `EPUB:language`, `EPUB:publisher`,
-  `EPUB:published`, `EPUB:identifier`, `EPUB:series`, `EPUB:series_index` and `EPUB:version` besides; they are defined for
-  the type (so Tracker offers them as columns) and their indices are made on the volume, so a query finds books by them.
+  The page list of a book is an outline: chapters, with the pages of the chapter that is read below it. The text
+  size is changed in a thread of its own, so the window does not freeze; if it takes more than a moment a small
+  window with a barber pole says that the book is laid out. What a book says about itself is written to separate
+  BFS attributes of the file, and nothing is invented for books: the names are the properties of
+  [schema.org](https://schema.org/Book) with the prefix `META:` (as in Haiku's own document attributes), and where
+  the attributes of `application/pdf` exist they are the same: `META:title` (dc:title), `META:author` (dc:creator,
+  schema:author), `META:keyw` (dc:subject, schema:keywords), `META:pages`, and `META:description` (dc:description),
+  `META:publisher`, `META:inLanguage` (dc:language), `META:datePublished` (dc:date), `META:identifier`, `META:isbn`,
+  `META:isPartOf` (the series, schema:CreativeWorkSeries) and `META:position` (its number in the series). They are
+  defined for the type (so Tracker offers them as columns), and the indices are made on the volume. `META:pages` is
+  the number of pages in the standard configuration (6 by 9 inches, the default text size), an estimate that stays
+  the same for inventory and citations, as the shops give it for an e-book; it is not written when the book is first
+  opened at another text size. `META:annotated` (1, or not there) says for any PDF or EPUB file that it has
+  annotations.
   Text can be highlighted, underlined and struck out in books as well (the other kinds of annotations are for
   pages that stay as they are). A mark is tied to the text, not to a page: the chapter, where on the page it was and
   the words it covers. So it is found again when the pages change with the text size, and a mark that runs over a
-  page break is drawn on both pages. The marks are kept in the attribute `tsundoku:annotations` of the EPUB file itself,
+  page break is drawn on both pages. The marks are kept in the attribute `META:annotations` of the EPUB file itself (a standard message that other applications can use for
+  the same purpose; the name `tsundoku:annotations` of early versions is still read),
   like the styles of StyledEdit are, and not in a file of their own: they go along when the file is copied in
   Tracker, and File > Save as… copies them with the book. Save, Undo and Redo work as for PDF files; a book on a
   read-only volume is saved as a copy.

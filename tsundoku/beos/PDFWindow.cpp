@@ -468,6 +468,7 @@ bool PDFWindow::QuitRequested() {
 		return false;
 	gApp->WindowClosed();
 	mAnnotationsView->Stop();
+	mMainView->WaitForLayout();
 	mMainView->WaitForPage(true);
 	StoreFileAttributes();
 	be_app->PostMessage(B_QUIT_REQUESTED);
@@ -650,6 +651,61 @@ void PDFWindow::EntryChanged() {
 
 ///////////////////////////////////////////////////////////
 bool PDFWindow::CancelCommand(BMessage* msg) {
+	// While a book is laid out again, nothing that works with its pages can be done.
+	if (mMainView != NULL && mMainView->IsLayingOut()) {
+		switch (msg->what) {
+			case OPEN_FILE_CMD:
+			case RELOAD_FILE_CMD:
+			case SAVE_FILE_CMD:
+			case SAVE_AS_FILE_CMD:
+			case UNDO_CMD:
+			case REDO_CMD:
+			case ANNOTATE_HIGHLIGHT_CMD:
+			case ANNOTATE_UNDERLINE_CMD:
+			case ANNOTATE_STRIKEOUT_CMD:
+			case ADD_ANNOTATION_CMD:
+			case PRINT_SETTINGS_CMD:
+			case PAGESETUP_FILE_CMD:
+			case COPY_SELECTION_CMD:
+			case SELECT_ALL_CMD:
+			case SELECT_NONE_CMD:
+			case SET_ZOOM_VALUE_CMD:
+			case SET_CUSTOM_ZOOM_FACTOR_CMD:
+			case ZOOM_IN_CMD:
+			case ZOOM_OUT_CMD:
+			case FIT_TO_PAGE_WIDTH_CMD:
+			case FIT_TO_PAGE_CMD:
+			case FLOW_SINGLE_CMD:
+			case FLOW_DOUBLE_CMD:
+			case FLOW_CONTINUOUS_CMD:
+			case TITLE_PAGE_ALONE_CMD:
+			case TEXT_LARGER_CMD:
+			case TEXT_SMALLER_CMD:
+			case FIRST_PAGE_CMD:
+			case NEXT_N_PAGE_CMD:
+			case NEXT_PAGE_CMD:
+			case PREVIOUS_PAGE_CMD:
+			case PREVIOUS_N_PAGE_CMD:
+			case LAST_PAGE_CMD:
+			case GOTO_PAGE_CMD:
+			case SHOW_QUOTE_CMD:
+			case HISTORY_BACK_CMD:
+			case HISTORY_FORWARD_CMD:
+			case PAGE_SELECTED_CMD:
+			case SET_ROTATE_VALUE_CMD:
+			case ROTATE_CLOCKWISE_CMD:
+			case ROTATE_ANTI_CLOCKWISE_CMD:
+			case FIND_CMD:
+			case FIND_NEXT_CMD:
+			case FIND_PREVIOUS_CMD:
+			case ADD_USER_BOOKMARK_CMD:
+			case DELETE_USER_BOOKMARK_CMD:
+			case EDIT_USER_BOOKMARK_CMD:
+				beep();
+				return true;
+		}
+	}
+
 	// This is a work around:
 	// This commands aren't allowed in fullscreen mode, otherwise
 	// the windows opened by this commands would be behind the
