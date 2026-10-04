@@ -33,6 +33,7 @@
 #include <be/app/Roster.h>
 #include <be/interface/Screen.h>
 #include <be/StorageKit.h>
+#include <fs_attr.h>
 #include <Deskbar.h>
 #include <be/interface/Alert.h>
 #include <Bitmap.h>
@@ -160,7 +161,9 @@ static const BookAttribute kBookAttributes[] = {
 	{ "dc:identifier", B_TRANSLATE_MARK("Identifier"), B_STRING_TYPE, 200 },
 	{ "schema:isbn", B_TRANSLATE_MARK("ISBN"), B_STRING_TYPE, 110 },
 	{ "dcterms:isPartOf", B_TRANSLATE_MARK("Series"), B_STRING_TYPE, 150 },	// the series the book belongs to
-	{ "schema:position", B_TRANSLATE_MARK("Series number"), B_DOUBLE_TYPE, 60 }
+	{ "schema:position", B_TRANSLATE_MARK("Series number"), B_DOUBLE_TYPE, 60 },
+	// rtl, ltr or default, the page progression of the EPUB standard (a manga is read from the right to the left)
+	{ "epub:pageProgressionDirection", B_TRANSLATE_MARK("Reading direction"), B_STRING_TYPE, 90 }
 };
 static const size_t kBookAttributeCount = sizeof(kBookAttributes) / sizeof(kBookAttributes[0]);
 
@@ -959,6 +962,7 @@ EnsureIndices(dev_t device)
 		{ "dc:description", B_STRING_TYPE }, { "dc:publisher", B_STRING_TYPE },
 		{ "dc:language", B_STRING_TYPE }, { "dc:identifier", B_STRING_TYPE }, { "schema:isbn", B_STRING_TYPE },
 		{ "dcterms:isPartOf", B_STRING_TYPE }, { "schema:position", B_DOUBLE_TYPE },
+		{ "epub:pageProgressionDirection", B_STRING_TYPE },
 		{ "dc:date", B_INT64_TYPE }, { "SEN:annotationCount", B_INT32_TYPE },
 		{ "PDF:created", B_INT64_TYPE }, { "PDF:modified", B_INT64_TYPE }
 	};
@@ -1080,6 +1084,14 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 			UpdateAttr(node, "schema:position", B_DOUBLE_TYPE, 0, &position, sizeof(position));
 		}
 		UpdatePublished(node, comic->Date().String());
+	}
+
+	// a document that says it is read from the right to the left (a manga, an EPUB) says so in the attribute, so that it
+	// can be found; what the reader chose for the file is written when it is closed and is not changed here
+	if (doc->DeclaredReading() == 1) {
+		attr_info info;
+		if (node.GetAttrInfo("epub:pageProgressionDirection", &info) != B_OK)
+			UpdateAttr(node, "epub:pageProgressionDirection", B_STRING_TYPE, 0, (void*)"rtl", 4);
 	}
 
 	// how many annotations it has (for a book also the ones that are only in the attribute)

@@ -45,6 +45,7 @@ public:
 	BString              series;          // the collection the book belongs to
 	BString              seriesIndex;     // its position in it, if given
 	BString              version;         // of the EPUB standard, e.g. 3.0
+	BString              pageProgression; // of the spine (page-progression-direction): ltr, rtl, or empty/default
 
 	// The reading order: the files of the book (in the container) with the steps that a CFI takes to them: <spine> is
 	// the child element number spineStep / 2 of <package>, an itemref the number step / 2 of <spine>.

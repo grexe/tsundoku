@@ -409,10 +409,10 @@ PDFView::LoadFileSettings(entry_ref* ref, FileAttributes* fileAttributes, float&
 		fileAttributes->SetLeftTop(left, top);
 	}
 
-	// the direction of reading: what the reader chose for this file, else what a manga says about itself
+	// the direction of reading: what the reader chose for this file, else what the document says about itself
 	int reading = fileAttributes->GetReading();
-	if (reading < 0 && mDoc->Comic() != NULL)
-		reading = mDoc->Comic()->rightToLeft ? 1 : 0;
+	if (reading < 0)
+		reading = mDoc->DeclaredReading();
 	mLayout.SetRightToLeft(reading == 1);
 }
 

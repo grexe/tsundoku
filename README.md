@@ -104,7 +104,9 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   in `ComicInfo.xml`) is a spread of its own and fills the view, and the page before it stands alone if it has no
   partner. View > Right to left reads a manga the other way: only the places of the pages in a spread are swapped (the
   first page on the right, the title page alone on the left), the pages themselves are not mirrored. A manga says so in
-  `ComicInfo.xml` (`Manga`), and the choice is kept with the file (`bepdf:rtl`).
+  `ComicInfo.xml` (`Manga`) and an EPUB says so in its spine (`page-progression-direction`), and the choice is kept with
+  the file in the attribute `epub:pageProgressionDirection` (`rtl`, `ltr` or `default`, which is what the document says;
+  a document that says `rtl` has the attribute, so that it can be found).
 - The Bound Book Format (`.bbf`, version 3, [libbbf](https://github.com/ef1500/libbbf)) is read as a comic book, too.
   It has the pages in a table in reading order, so one is found without reading the file; it is a MuPDF archive handler
   of its own (the format is small, and only its index is parsed: `BbfInfo`, which does not depend on MuPDF). The sections

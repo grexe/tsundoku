@@ -233,6 +233,9 @@ public:
 	// What a comic book archive says about itself, NULL if it is not one or has no ComicInfo.xml.
 	const ComicInfo* Comic() const { return fComic; }
 	bool         IsComic() const { return fIsComic; }
+	// The direction of reading that the document itself declares (ComicInfo.xml says a manga is read from the right to the
+	// left, an EPUB has the page progression of its spine): 1 right to left, 0 left to right, -1 not said.
+	int          DeclaredReading() const;
 	// Whether a page (1-based) of a comic book is a double page: marked as one in its ComicInfo.xml, or wider than high.
 	// Always false for other documents. Measures the page, if it is not known.
 	bool         IsWidePage(int page);

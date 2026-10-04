@@ -352,6 +352,21 @@ Document::CanAnnotate()
 }
 
 
+int
+Document::DeclaredReading() const
+{
+	if (fComic != NULL && fComic->rightToLeft)
+		return 1;
+	if (fEpub != NULL) {
+		if (fEpub->pageProgression.ICompare("rtl") == 0)
+			return 1;
+		if (fEpub->pageProgression.ICompare("ltr") == 0)
+			return 0;
+	}
+	return -1;
+}
+
+
 bool
 Document::IsWidePage(int page)
 {

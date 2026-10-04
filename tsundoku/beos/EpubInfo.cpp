@@ -252,6 +252,7 @@ EpubInfo::Read(const char* path)
 			packageElements++;
 		if (IsElement(section, "spine")) {
 			info->spineStep = 2 * packageElements;
+			info->pageProgression = Attribute(section, "page-progression-direction");
 			int32 spineElements = 0;
 			for (xmlNode* node = section->children; node != NULL; node = node->next) {
 				if (node->type != XML_ELEMENT_NODE)
