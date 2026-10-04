@@ -61,12 +61,8 @@ AnnotationsView::AnnotationsView(Document* document, uint32 chosenMessage)
 	BView("annotations", B_WILL_DRAW | B_FRAME_EVENTS),
 	fDocument(document),
 	fChosenMessage(chosenMessage),
-	fThread(-1),
-	fWake(-1),
-	fCancel(false),
-	fQuit(false),
-	fLock("annotations"),
-	fRequestAll(false),
+	fWorker(NULL),
+	fSerial(0),
 	fCount(0)
 {
 	// the standard list with columns that can be sorted and resized, but not moved or taken away
@@ -111,41 +107,60 @@ AnnotationsView::AttachedToWindow()
 }
 
 
+AnnotationsView::Worker::Worker(Document* doc, BMessenger target, int32 id)
+	:
+	document(doc),
+	messenger(target),
+	serial(id),
+	wake(create_sem(0, "annotations wake")),
+	cancel(false),
+	quit(false),
+	lock("annotations"),
+	requestAll(false)
+{
+	document->Acquire();
+}
+
+
+AnnotationsView::Worker::~Worker()
+{
+	delete_sem(wake);
+	document->Release();
+}
+
+
 // One worker thread reads the annotations, so that the window never waits for the document (a page that is
-// rendered holds it). It takes the requests together: all pages, or single pages that have changed.
+// rendered holds it). It takes the requests together: all pages, or single pages that have changed. When the
+// document is replaced the worker is let go: it finishes on its own, bound to its document.
 void
 AnnotationsView::Start()
 {
-	if (fThread >= 0 || fDocument == NULL || !fMessenger.IsValid())
+	if (fWorker != NULL || fDocument == NULL || !fMessenger.IsValid())
 		return;
 
-	fQuit = false;
-	fCancel = false;
-	fWake = create_sem(0, "annotations wake");
-	fThread = spawn_thread(WorkerThread, "annotations scan", B_LOW_PRIORITY, this);
-	if (fThread >= 0)
-		resume_thread(fThread);
+	fWorker = new Worker(fDocument, fMessenger, ++fSerial);
+	thread_id thread = spawn_thread(WorkerThread, "annotations scan", B_LOW_PRIORITY, fWorker);
+	if (thread < 0) {
+		delete fWorker;
+		fWorker = NULL;
+		return;
+	}
+	resume_thread(thread);
 }
 
 
 void
 AnnotationsView::Stop()
 {
-	if (fThread >= 0) {
-		fQuit = true;
-		fCancel = true;
-		release_sem(fWake);
-		status_t result;
-		wait_for_thread(fThread, &result);
-		fThread = -1;
-		delete_sem(fWake);
-		fWake = -1;
-	}
-	fLock.Lock();
-	fRequestAll = false;
-	fRequestPages.clear();
-	fResults.clear();
-	fLock.Unlock();
+	Worker* worker = fWorker;
+	fWorker = NULL;
+	if (worker == NULL)
+		return;
+
+	worker->quit = true;
+	worker->cancel = true;
+	sem_id wake = worker->wake;
+	release_sem(wake);		// (the worker deletes itself; nothing of it is used after this)
 }
 
 
@@ -164,15 +179,15 @@ AnnotationsView::Refresh()
 	if (fDocument == NULL || !fMessenger.IsValid())
 		return;
 	Start();
-	if (fThread < 0)
+	if (fWorker == NULL)
 		return;
 
-	fLock.Lock();
-	fRequestAll = true;
-	fRequestPages.clear();
-	fCancel = true;		// a scan that is on its way starts again
-	fLock.Unlock();
-	release_sem(fWake);
+	fWorker->lock.Lock();
+	fWorker->requestAll = true;
+	fWorker->requestPages.clear();
+	fWorker->cancel = true;		// a scan that is on its way starts again
+	fWorker->lock.Unlock();
+	release_sem(fWorker->wake);
 }
 
 
@@ -182,64 +197,70 @@ AnnotationsView::RefreshPage(int page)
 	if (fDocument == NULL || !fMessenger.IsValid())
 		return;
 	Start();
-	if (fThread < 0)
+	if (fWorker == NULL)
 		return;
 
-	fLock.Lock();
-	if (!fRequestAll)
-		fRequestPages.insert(page);
-	fLock.Unlock();
-	release_sem(fWake);
+	fWorker->lock.Lock();
+	if (!fWorker->requestAll)
+		fWorker->requestPages.insert(page);
+	fWorker->lock.Unlock();
+	release_sem(fWorker->wake);
 }
 
 
 int32
 AnnotationsView::WorkerThread(void* data)
 {
-	((AnnotationsView*)data)->Work();
+	Worker* worker = (Worker*)data;
+	Work(worker);
+	delete worker;
 	return 0;
 }
 
 
 void
-AnnotationsView::Work()
+AnnotationsView::Work(Worker* worker)
 {
-	while (acquire_sem(fWake) == B_OK && !fQuit) {
-		fLock.Lock();
-		bool all = fRequestAll;
+	while (acquire_sem(worker->wake) == B_OK && !worker->quit) {
+		worker->lock.Lock();
+		bool all = worker->requestAll;
 		std::set<int> pages;
-		pages.swap(fRequestPages);
-		fRequestAll = false;
-		fCancel = false;
-		fLock.Unlock();
+		pages.swap(worker->requestPages);
+		worker->requestAll = false;
+		worker->cancel = false;
+		worker->lock.Unlock();
 
 		if (all) {
 			Result result;
 			result.all = true;
 			result.page = 0;
 			TimingMark("list: scan starts");
-			if (fDocument->ListAnnotations(result.entries, &fCancel) && !fCancel) {
+			if (worker->document->ListAnnotations(result.entries, &worker->cancel) && !worker->cancel) {
 				TimingMark("list: scan done");
-				fLock.Lock();
-				fResults.push_back(result);
-				fLock.Unlock();
-				fMessenger.SendMessage(kScanDone);
+				worker->lock.Lock();
+				worker->results.push_back(result);
+				worker->lock.Unlock();
+				BMessage done(kScanDone);
+				done.AddInt32("serial", worker->serial);
+				worker->messenger.SendMessage(&done);
 			}
 			continue;
 		}
 
-		for (std::set<int>::const_iterator it = pages.begin(); it != pages.end() && !fQuit; ++it) {
+		for (std::set<int>::const_iterator it = pages.begin(); it != pages.end() && !worker->quit; ++it) {
 			Result result;
 			result.all = false;
 			result.page = *it;
 			TimingMark("list: page scan starts");
-			if (!fDocument->ListAnnotationsOnPage(*it, result.entries))
+			if (!worker->document->ListAnnotationsOnPage(*it, result.entries))
 				continue;
 			TimingMark("list: page scan done");
-			fLock.Lock();
-			fResults.push_back(result);
-			fLock.Unlock();
-			fMessenger.SendMessage(kScanDone);
+			worker->lock.Lock();
+			worker->results.push_back(result);
+			worker->lock.Unlock();
+			BMessage done(kScanDone);
+			done.AddInt32("serial", worker->serial);
+			worker->messenger.SendMessage(&done);
 		}
 	}
 }
@@ -300,12 +321,16 @@ AnnotationsView::UpdateStatus()
 
 
 void
-AnnotationsView::Fill()
+AnnotationsView::Fill(int32 serial)
 {
+	// (what a worker that has been let go found is of no interest)
+	if (fWorker == NULL || fWorker->serial != serial)
+		return;
+
 	std::vector<Result> results;
-	fLock.Lock();
-	results.swap(fResults);
-	fLock.Unlock();
+	fWorker->lock.Lock();
+	results.swap(fWorker->results);
+	fWorker->lock.Unlock();
 
 	TimingMark("list: scan result received");
 	for (size_t i = 0; i < results.size(); i++) {
@@ -323,9 +348,12 @@ void
 AnnotationsView::MessageReceived(BMessage* message)
 {
 	switch (message->what) {
-		case kScanDone:
-			Fill();
+		case kScanDone: {
+			int32 serial = 0;
+			message->FindInt32("serial", &serial);
+			Fill(serial);
 			break;
+		}
 		case kChosen: {
 			AnnotationRow* row = dynamic_cast<AnnotationRow*>(fList->CurrentSelection());
 			if (row != NULL && Window() != NULL) {

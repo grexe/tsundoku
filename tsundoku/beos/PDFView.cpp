@@ -361,9 +361,11 @@ PDFView::OpenFile(entry_ref *ref, const char *ownerPassword, const char *userPas
 	UpdatePanelDirectory(&path);
 
 
-	// the page cache refers to the previous document
+	// The pages that are rendered of the previous document are rendered on, bound to that document (which goes away when
+	// the last of them has finished); the new document does not wait for them.
 	SetSlotsDocument(NULL);
-	delete mDoc;
+	if (mDoc != NULL)
+		mDoc->Release();
 	mDoc = newDoc;
 	SetSlotsDocument(mDoc);
 	MakeTitleString(&path);
@@ -427,7 +429,6 @@ PDFView::LoadFile(entry_ref *ref, FileAttributes *fileAttributes, const char *ow
 	StopBusy();
 
 	SetPassword(ownerPassword, userPassword);
-	WaitForPage(true);
 
 	// We use the application thread to load a file.
 	// To keep the window responsive while loading, we unlock the window lock
@@ -486,7 +487,8 @@ PDFView::~PDFView()
 		delete mSlots[i];
 	for (size_t i = 0; i < mFreeSlots.size(); i++)
 		delete mFreeSlots[i];	// they refer to the document
-	delete mDoc;
+	if (mDoc != NULL)
+		mDoc->Release();
 	delete mModifierRunner;
 	delete mToolCursor;
 	for (int h = 0; h < kHandleCount; h++)
@@ -1914,6 +1916,17 @@ PageSlot::PageSlot()
 }
 
 
+void
+PageSlot::Retire()
+{
+	renderer->Retire(page);
+	renderer = new PageRenderer();
+	page = new CachedPage();
+	rendering = false;
+	rendererId = -1;
+}
+
+
 PageSlot::~PageSlot()
 {
 	renderer->Abort();
@@ -1961,8 +1974,13 @@ PDFView::NewSlot()
 void
 PDFView::ReleaseSlot(PageSlot* slot)
 {
-	slot->renderer->Abort();
-	slot->renderer->Wait();
+	// (a page that is rendered is let go of without waiting for it)
+	if (slot->renderer->IsRunning())
+		RetireSlot(slot);
+	else {
+		slot->renderer->Abort();
+		slot->renderer->Wait();
+	}
 	slot->page->MakeEmpty();
 	slot->number = 0;
 	slot->rendering = false;
@@ -1977,16 +1995,36 @@ PDFView::ReleaseSlot(PageSlot* slot)
 }
 
 
-// the pages refer to the document, so every slot has to let go of it before it is deleted
+// The renderer and the cached page of a slot go on without it; the slot is given new ones (which the view that points
+// to the active slot has to be told about).
+void
+PDFView::RetireSlot(PageSlot* slot)
+{
+	slot->Retire();
+	if (Window() != NULL)
+		slot->renderer->SetListener(Window(), this);
+	slot->renderer->SetDocument(mDoc);
+	if (slot == mActive)
+		SetActiveRaw(slot);
+}
+
+
+// The slots work for another document. Pages that are rendered of the old one are not waited for.
 void
 PDFView::SetSlotsDocument(Document* document)
 {
 	for (size_t i = 0; i < mSlots.size(); i++) {
-		mSlots[i]->renderer->Abort();
-		mSlots[i]->renderer->Wait();
-		mSlots[i]->renderer->SetDocument(document);
+		PageSlot* slot = mSlots[i];
+		if (slot->renderer->IsRunning()) {
+			slot->Retire();
+			if (Window() != NULL)
+				slot->renderer->SetListener(Window(), this);
+			if (slot == mActive)
+				SetActiveRaw(slot);
+		}
+		slot->renderer->SetDocument(document);
 		if (document == NULL)
-			mSlots[i]->page->MakeEmpty();
+			slot->page->MakeEmpty();
 	}
 	for (size_t i = 0; i < mFreeSlots.size(); i++) {
 		mFreeSlots[i]->renderer->SetDocument(document);

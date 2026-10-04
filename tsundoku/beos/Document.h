@@ -25,6 +25,7 @@
 #include <Node.h>
 
 #include <Locker.h>
+#include <OS.h>
 #include <String.h>
 
 extern "C" {
@@ -187,7 +188,11 @@ public:
 	// A book is laid out once, for the text size (the number of pages needs every chapter to be laid out).
 	static OpenResult Open(const char* path, const char* password, Document** document, float textSize = 0);
 
-	~Document();
+	// A document is shared by what works with it: the view that shows it, and each thread that renders a page of it. It is
+	// deleted when the last of them lets go of it, so a new document can be opened while the pages of the old one are
+	// still rendered. (Acquire() and Release() are thread safe; the document starts with one reference.)
+	void Acquire();
+	void Release();
 
 	fz_context*  Context() const { return fContext; }
 	fz_document* Doc() const { return fDocument; }
@@ -289,6 +294,10 @@ public:
 	// An annotation as a W3C Web Annotation in a message (WebAnnotation.h), with the file as the source of its target;
 	// and where the target of a deep link (oa:hasTarget) leads in this document.
 	bool         WebAnnotationOf(int page, int index, BMessage* annotation);
+	// the annotations of a PDF file as Web Annotations in the attribute SEN:annotations of the file at path
+	bool         WriteWebAnnotations(const char* path);
+	// whether the dictionary of a page (1-based) has annotations that are listed; no page is loaded
+	bool         PageMayHaveAnnotations(int page);
 	bool         ResolveTarget(const BMessage& target, DocTarget* result);
 
 	// The anchor of the beginning of a page (a book), and the page that an anchor leads to in the layout as it is.
@@ -316,6 +325,7 @@ public:
 	bool         IsExternalLink(const char* uri);
 
 private:
+	~Document();
 	Document(fz_context* context, fz_document* document, const char* path, float textSize);
 	void ListPage(int pageNo, std::vector<DocAnnotationEntry>& entries);
 
@@ -350,6 +360,7 @@ private:
 	void RecordOperation(int page, const char* name);
 	void ForgetHistory();
 
+	int32           fRefs;
 	fz_context*     fContext;
 	fz_document*    fDocument;
 	BString         fPath;

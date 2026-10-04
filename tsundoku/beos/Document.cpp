@@ -119,7 +119,7 @@ Document::Open(const char* path, const char* password, Document** _document, flo
 
 	Document* result = new Document(context, document, path, textSize);
 	if (result->fPageCount <= 0) {
-		delete result;
+		result->Release();
 		return kFailed;
 	}
 	*_document = result;
@@ -129,6 +129,7 @@ Document::Open(const char* path, const char* password, Document** _document, flo
 
 Document::Document(fz_context* context, fz_document* document, const char* path, float textSize)
 	:
+	fRefs(1),
 	fContext(context),
 	fDocument(document),
 	fPath(path),
@@ -202,6 +203,21 @@ Document::Document(fz_context* context, fz_document* document, const char* path,
 		LoadStore();
 		fEpub = EpubInfo::Read(path);
 	}
+}
+
+
+void
+Document::Acquire()
+{
+	atomic_add(&fRefs, 1);
+}
+
+
+void
+Document::Release()
+{
+	if (atomic_add(&fRefs, -1) == 1)
+		delete this;
 }
 
 
@@ -1766,6 +1782,16 @@ CountListedAnnotations(fz_context* context, pdf_document* pdf, int pageIndex)
 }
 
 
+bool
+Document::PageMayHaveAnnotations(int page)
+{
+	if (!fIsPDF || page < 1 || page > fPageCount)
+		return false;
+	DocumentLocker locker(this);
+	return PageHasListedAnnotation(fContext, pdf_specifics(fContext, fDocument), page - 1);
+}
+
+
 int
 Document::AnnotationCount()
 {
@@ -1849,6 +1875,7 @@ Document::Save()
 		fModified = false;
 		ForgetHistory();
 		SyncAnnotationCount(fPath.String());
+		WriteWebAnnotations(fPath.String());
 	}
 	return ok != 0;
 }
@@ -1904,6 +1931,7 @@ Document::SaveCopy(const char* path)
 		fModified = false;
 		ForgetHistory();
 		SyncAnnotationCount(path);
+		WriteWebAnnotations(path);
 	}
 	return ok != 0;
 }

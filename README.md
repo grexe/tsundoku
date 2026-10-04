@@ -58,12 +58,17 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   `sen:underline`, `sen:strikethrough` and `sen:squiggle` for the other marks of a text (SEN's own `oa:Motivation`s,
   which are `skos:broader oa:highlighting`). "Copy as Web Annotation" in the menu of an annotation puts it on the
   clipboard as JSON-LD. The marks of an EPUB are stored in this form (the attribute `SEN:annotations`); the
-  annotations of a PDF file stay PDF annotations in the file and are described in this form when they are handed on.
+  annotations of a PDF file stay PDF annotations in the file; they are described in this form when they are handed on, and when the file
+  is saved or a copy is made they are written to `SEN:annotations` of the file too (with `SEN:annotationCount`), so that they can be found
+  and used without opening the PDF file.
   Other applications (SEN) open a document at a place with `B_REFS_RECEIVED`: the file in `refs`, and
   `oa:hasTarget` (a message with `oa:hasSelector` entries as in the model, any of the selectors above that the document
   understands; an EPUB CFI is found in whatever layout the book has, the words are searched for from the page that
   was named), and with `oa:motivatedBy` the passage that the words name is also marked (not saved); or
   `oa:Annotation` with the identifier of an annotation (`urn:uuid:...`): the document goes there and selects it.
+- The threads that render pages work for the document, not for the window: a document is shared (reference counted) by the view and
+  by every thread that works on it, so another file can be opened in the window at once, and the pages of the first one that
+  are still being rendered finish in the background (and so does the list of its annotations).
 - The pages can be shown one at a time, two side by side like the pages of a book ("Double-sided"; the title page can
   stay alone, View > Title page alone), or all one below the other and scrolled through ("Continuous"). The buttons
   next to the fit buttons and the View menu switch between them; next and previous page go by a spread. In the code

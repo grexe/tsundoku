@@ -23,6 +23,8 @@
 
 #include "Document.h"
 
+#include <Node.h>
+
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -56,32 +58,22 @@ RgbText(uint32 color)
 }
 
 
-// The words that a mark covers, from the page.
+// The words that a mark covers, from the text of the page.
 static BString
-MarkedWords(Document* document, int pageNo, const DocAnnotation& annotation)
+MarkedWords(Document* document, fz_stext_page* text, const DocAnnotation& annotation)
 {
-	if (annotation.quads.empty())
+	if (annotation.quads.empty() || text == NULL)
 		return BString();
 
 	fz_context* context = document->Context();
-	fz_page* page = NULL;
-	fz_stext_page* text = NULL;
 	char* copied = NULL;
 	const fz_quad& first = annotation.quads.front();
 	const fz_quad& last = annotation.quads.back();
 	fz_point a = fz_make_point(first.ul.x + 0.5f, (first.ul.y + first.ll.y) / 2);
 	fz_point b = fz_make_point(last.ur.x - 0.5f, (last.ur.y + last.lr.y) / 2);
-	fz_var(page);
-	fz_var(text);
 	fz_var(copied);
 	fz_try(context) {
-		page = fz_load_page(context, document->Doc(), pageNo - 1);
-		text = fz_new_stext_page_from_page(context, page, NULL);
 		copied = fz_copy_selection(context, text, a, b, 0);
-	}
-	fz_always(context) {
-		fz_drop_stext_page(context, text);
-		fz_drop_page(context, page);
 	}
 	fz_catch(context) {
 		copied = NULL;
@@ -134,6 +126,86 @@ ShapeSvg(const DocAnnotation& annotation, const fz_rect& bounds)
 }
 
 
+// A PDF annotation of a page as a Web Annotation. The text of the page is made when a mark needs it. If the source is not
+// wanted (the annotation is stored with the file that it is about), the target has none.
+static void
+BuildPdfAnnotation(Document* document, int pageNo, fz_page* page, fz_stext_page** text, const DocAnnotation& a,
+	const fz_rect& bounds, bool withSource, BMessage* annotation)
+{
+	BString motivation = kHighlighting;
+	switch (a.type) {
+		case PDF_ANNOT_UNDERLINE:	motivation = kUnderline; break;
+		case PDF_ANNOT_STRIKE_OUT:	motivation = kStrikethrough; break;
+		case PDF_ANNOT_SQUIGGLY:	motivation = kSquiggle; break;
+		case PDF_ANNOT_TEXT:
+		case PDF_ANNOT_FREE_TEXT:	motivation = kCommenting; break;
+		default: break;
+	}
+
+	if (!a.id.IsEmpty())
+		annotation->AddString("id", IdentifierIri(a.id.String()));
+	annotation->AddString("type", kAnnotation);
+	annotation->AddString("oa:motivatedBy", motivation);
+	AddCreator(annotation, a.author.String(), 0);
+	if (!a.contents.IsEmpty())
+		AddTextualBody(annotation, a.contents.String());
+	if (a.hasColor) {
+		BString css;
+		if (a.kind == kAnnotMarkup)
+			css = ColorStyle(motivation.String(), a.color);
+		else if (a.kind == kAnnotNote || a.kind == kAnnotText)
+			css << "color: " << RgbText(a.color) << ";";
+		else
+			css << "stroke: " << RgbText(a.color) << "; fill: none;";
+		AddCssStyle(annotation, css.String());
+	}
+
+	// the target: the page of the file, and then where on it
+	BMessage target;
+	if (withSource)
+		target.AddString("oa:hasSource", FileIri(document->Path()));
+	BMessage pageSelector;
+	char pageValue[24];
+	snprintf(pageValue, sizeof(pageValue), "page=%d", pageNo);
+	MakeFragmentSelector(&pageSelector, kConformsToPdf, pageValue);
+
+	BMessage refinement;
+	bool refined = false;
+	if (a.kind == kAnnotMarkup) {
+		fz_context* context = document->Context();
+		if (*text == NULL && page != NULL) {
+			fz_try(context) {
+				*text = fz_new_stext_page_from_page(context, page, NULL);
+			}
+			fz_catch(context) {
+				*text = NULL;
+			}
+		}
+		BString words = MarkedWords(document, *text, a);
+		if (!words.IsEmpty()) {
+			refinement.AddString("type", kTextQuoteSelector);
+			refinement.AddString("oa:exact", words);
+			refined = true;
+		}
+	} else if (a.kind == kAnnotRectangle || a.kind == kAnnotEllipse || a.kind == kAnnotLine
+		|| a.kind == kAnnotInk) {
+		refinement.AddString("type", kSvgSelector);
+		refinement.AddString("rdf:value", ShapeSvg(a, bounds));
+		refined = true;
+	} else if (a.kind == kAnnotNote || a.kind == kAnnotText) {
+		BString region;
+		region << "xywh=pixel:" << Number(a.rect.x0) << "," << Number(a.rect.y0) << "," << Number(a.rect.x1 - a.rect.x0)
+			<< "," << Number(a.rect.y1 - a.rect.y0);
+		MakeFragmentSelector(&refinement, kConformsToMediaFragments, region.String());
+		refined = true;
+	}
+	if (refined)
+		pageSelector.AddMessage("oa:refinedBy", &refinement);
+	target.AddMessage("oa:hasSelector", &pageSelector);
+	annotation->AddMessage("oa:hasTarget", &target);
+}
+
+
 bool
 Document::WebAnnotationOf(int pageNo, int index, BMessage* annotation)
 {
@@ -157,76 +229,78 @@ Document::WebAnnotationOf(int pageNo, int index, BMessage* annotation)
 	if (!loaded)
 		return false;
 	LoadAnnotations(pageNo, page, list);
+
+	bool ok = index >= 0 && index < (int)list.size();
+	fz_stext_page* text = NULL;
+	if (ok) {
+		fz_rect bounds = fz_empty_rect;
+		PageBounds(pageNo, &bounds);
+		BuildPdfAnnotation(this, pageNo, page, &text, list[index], bounds, true, annotation);
+	}
+	fz_drop_stext_page(fContext, text);
 	fz_drop_page(fContext, page);
-	if (index < 0 || index >= (int)list.size())
+	return ok;
+}
+
+
+// All annotations of a PDF file as Web Annotations in the attribute SEN:annotations of the file (it is taken away if
+// there are none), so that they can be found and used without opening the PDF file; the annotations themselves stay in
+// the file. Done when the file is saved or a copy is made.
+bool
+Document::WriteWebAnnotations(const char* path)
+{
+	if (!fIsPDF)
+		return true;
+
+	BNode node(path);
+	if (node.InitCheck() != B_OK)
 		return false;
-	const DocAnnotation& a = list[index];
-	fz_rect bounds = fz_empty_rect;
-	PageBounds(pageNo, &bounds);
 
-	BString motivation = kHighlighting;
-	switch (a.type) {
-		case PDF_ANNOT_UNDERLINE:	motivation = kUnderline; break;
-		case PDF_ANNOT_STRIKE_OUT:	motivation = kStrikethrough; break;
-		case PDF_ANNOT_SQUIGGLY:	motivation = kSquiggle; break;
-		case PDF_ANNOT_TEXT:
-		case PDF_ANNOT_FREE_TEXT:	motivation = kCommenting; break;
-		default: break;
-	}
-
-	if (!a.id.IsEmpty()) {
-		annotation->AddString("id", IdentifierIri(a.id.String()));
-	}
-	annotation->AddString("type", kAnnotation);
-	annotation->AddString("oa:motivatedBy", motivation);
-	AddCreator(annotation, a.author.String(), 0);
-	if (!a.contents.IsEmpty())
-		AddTextualBody(annotation, a.contents.String());
-	if (a.hasColor) {
-		BString css;
-		if (a.kind == kAnnotMarkup)
-			css = ColorStyle(motivation.String(), a.color);
-		else if (a.kind == kAnnotNote || a.kind == kAnnotText)
-			css << "color: " << RgbText(a.color) << ";";
-		else
-			css << "stroke: " << RgbText(a.color) << "; fill: none;";
-		AddCssStyle(annotation, css.String());
-	}
-
-	// the target: the page of the file, and then where on it
-	BMessage target;
-	target.AddString("oa:hasSource", FileIri(fPath.String()));
-	BMessage pageSelector;
-	char pageValue[24];
-	snprintf(pageValue, sizeof(pageValue), "page=%d", pageNo);
-	MakeFragmentSelector(&pageSelector, kConformsToPdf, pageValue);
-
-	BMessage refinement;
-	bool refined = false;
-	if (a.kind == kAnnotMarkup) {
-		BString words = MarkedWords(this, pageNo, a);
-		if (!words.IsEmpty()) {
-			refinement.AddString("type", kTextQuoteSelector);
-			refinement.AddString("oa:exact", words);
-			refined = true;
+	DocumentLocker locker(this);
+	BMessage archive;
+	archive.AddInt32("version", 2);
+	int count = 0;
+	for (int pageNo = 1; pageNo <= fPageCount; pageNo++) {
+		if (!PageMayHaveAnnotations(pageNo))
+			continue;
+		fz_page* page = NULL;
+		int loaded = 0;
+		fz_var(page);
+		fz_try(fContext) {
+			page = fz_load_page(fContext, fDocument, pageNo - 1);
+			loaded = 1;
 		}
-	} else if (a.kind == kAnnotRectangle || a.kind == kAnnotEllipse || a.kind == kAnnotLine
-		|| a.kind == kAnnotInk) {
-		refinement.AddString("type", kSvgSelector);
-		refinement.AddString("rdf:value", ShapeSvg(a, bounds));
-		refined = true;
-	} else if (a.kind == kAnnotNote || a.kind == kAnnotText) {
-		BString region;
-		region << "xywh=pixel:" << Number(a.rect.x0) << "," << Number(a.rect.y0) << "," << Number(a.rect.x1 - a.rect.x0)
-			<< "," << Number(a.rect.y1 - a.rect.y0);
-		MakeFragmentSelector(&refinement, kConformsToMediaFragments, region.String());
-		refined = true;
+		fz_catch(fContext) {
+			loaded = 0;
+		}
+		if (!loaded)
+			continue;
+
+		std::vector<DocAnnotation> list;
+		LoadAnnotations(pageNo, page, list);
+		fz_rect bounds = fz_empty_rect;
+		PageBounds(pageNo, &bounds);
+		fz_stext_page* text = NULL;
+		for (size_t i = 0; i < list.size(); i++) {
+			BMessage annotation;
+			BuildPdfAnnotation(this, pageNo, page, &text, list[i], bounds, false, &annotation);
+			archive.AddMessage(kAnnotation, &annotation);
+			count++;
+		}
+		fz_drop_stext_page(fContext, text);
+		fz_drop_page(fContext, page);
 	}
-	if (refined)
-		pageSelector.AddMessage("oa:refinedBy", &refinement);
-	target.AddMessage("oa:hasSelector", &pageSelector);
-	annotation->AddMessage("oa:hasTarget", &target);
-	return true;
+
+	if (count == 0) {
+		node.RemoveAttr("SEN:annotations");
+		return true;
+	}
+	ssize_t size = archive.FlattenedSize();
+	char* buffer = new char[size];
+	bool ok = archive.Flatten(buffer, size) == B_OK
+		&& node.WriteAttr("SEN:annotations", B_MESSAGE_TYPE, 0, buffer, size) == size;
+	delete[] buffer;
+	return ok;
 }
 
 

@@ -60,6 +60,8 @@ class BusyWindow;
 struct PageSlot {
 	PageSlot();
 	~PageSlot();
+	// the renderer and the cached page go on without the slot (when a page is rendered), the slot gets new ones
+	void Retire();
 
 	int           number;       // the page, 0 if the slot is free
 	CachedPage*   page;
@@ -291,6 +293,7 @@ public:
 	// slots, layout and the active page
 	PageSlot* NewSlot();
 	void ReleaseSlot(PageSlot* slot);
+	void RetireSlot(PageSlot* slot);
 	void SetSlotsDocument(Document* document);
 	PageSlot* SlotForPage(int page) const;
 	PageSlot* SlotAt(BPoint point) const;

@@ -66,14 +66,32 @@ private:
 		std::vector<DocAnnotationEntry> entries;
 	};
 
+	// What reads the annotations of one document. It has the document (a reference to it) and everything else that it needs, so
+	// that it can finish on its own when the view has moved on to another document, or is gone.
+	struct Worker {
+		Worker(Document* document, BMessenger messenger, int32 serial);
+		~Worker();
+
+		Document*          document;
+		BMessenger         messenger;
+		int32              serial;
+		sem_id             wake;
+		volatile bool      cancel;      // stops a scan of all pages that a new request makes obsolete
+		volatile bool      quit;
+		BLocker            lock;        // guards the members below
+		bool               requestAll;
+		std::set<int>      requestPages;
+		std::vector<Result> results;
+	};
+
 	static int32 WorkerThread(void* data);
-	void Work();
+	static void Work(Worker* worker);
 	void Start();
 	void AddRow(const DocAnnotationEntry& entry);
 	void FillAll(const std::vector<DocAnnotationEntry>& entries);
 	void FillPage(int page, const std::vector<DocAnnotationEntry>& entries);
 	void UpdateStatus();
-	void Fill();
+	void Fill(int32 serial);
 
 	Document*      fDocument;
 	uint32         fChosenMessage;
@@ -83,14 +101,8 @@ private:
 	BColumn*       fExcerptColumn;
 	BStringView*   fStatus;
 	BMessenger     fMessenger;
-	thread_id      fThread;
-	sem_id         fWake;
-	volatile bool  fCancel;     // stops a scan of all pages that a new request makes obsolete
-	volatile bool  fQuit;
-	BLocker        fLock;      // guards the members below
-	bool           fRequestAll;
-	std::set<int>  fRequestPages;
-	std::vector<Result> fResults;
+	Worker*        fWorker;     // the one that works for the current document, NULL if none
+	int32          fSerial;
 	int            fCount;
 };
 

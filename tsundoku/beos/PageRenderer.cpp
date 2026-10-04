@@ -33,8 +33,11 @@ int32 page_rendering_thread(void* data);
 PageRenderer::PageRenderer()
 	:
 	mDocument(NULL),
-	mLooper(NULL),
-	mHandler(NULL),
+	mHeld(NULL),
+	mLock("page renderer"),
+	mRunning(false),
+	mRetired(false),
+	mOwnedPage(NULL),
 	mWidth(0),
 	mHeight(0),
 	mRenderingThread(-1),
@@ -67,8 +70,7 @@ PageRenderer::SetDocument(Document* document)
 void
 PageRenderer::SetListener(BLooper* looper, BHandler* handler)
 {
-	mLooper = looper;
-	mHandler = handler;
+	mListener = BMessenger(handler, looper);
 }
 
 
@@ -128,8 +130,15 @@ PageRenderer::Start(CachedPage* page, int pageNo, int zoomDPI, int rotation, thr
 	mPage->SetMatrix(matrix);
 	mPage->SetState(CachedPage::RENDERING);
 
-	// start new thread
+	// start new thread, which holds a reference to the document until it is done
 	memset(&mCookie, 0, sizeof(mCookie));
+	if (mDocument != NULL) {
+		mDocument->Acquire();
+		mHeld = mDocument;
+	}
+	mLock.Lock();
+	mRunning = true;
+	mLock.Unlock();
 	mRenderingThread = spawn_thread(page_rendering_thread, "page_rendering_thread", B_NORMAL_PRIORITY, this);
 	*id = mRenderingThread;
 	resume_thread(mRenderingThread);
@@ -160,7 +169,58 @@ page_rendering_thread(void* data)
 {
 	PageRenderer* renderer = (PageRenderer*)data;
 	renderer->Render();
+	renderer->Finished();	// (the renderer may be gone afterwards)
 	return 0;
+}
+
+
+// the end of the thread: it lets go of the document, and deletes what is retired
+void
+PageRenderer::Finished()
+{
+	Document* held = mHeld;
+	mHeld = NULL;
+
+	mLock.Lock();
+	mRunning = false;
+	bool retired = mRetired;
+	CachedPage* owned = mOwnedPage;
+	mLock.Unlock();
+
+	if (held != NULL)
+		held->Release();
+	if (retired) {
+		mRenderingThread = -1;	// this is that thread: nobody waits for it
+		delete owned;
+		delete this;
+	}
+}
+
+
+bool
+PageRenderer::IsRunning()
+{
+	mLock.Lock();
+	bool running = mRunning;
+	mLock.Unlock();
+	return running;
+}
+
+
+void
+PageRenderer::Retire(CachedPage* ownedPage)
+{
+	mLock.Lock();
+	if (mRunning) {
+		mRetired = true;
+		mOwnedPage = ownedPage;
+		Abort();
+		mLock.Unlock();
+		return;
+	}
+	mLock.Unlock();
+	delete ownedPage;
+	delete this;
 }
 
 
@@ -281,13 +341,13 @@ PageRenderer::Render()
 void
 PageRenderer::Notify(uint32 what)
 {
-	if (mLooper == NULL)
+	if (!mListener.IsValid())
 		return;
 
 	BMessage msg(what);
 	msg.AddInt32("bepdf:id", mRenderingThread);
 	msg.AddPointer("bepdf:bitmap", mBitmap);
-	mLooper->PostMessage(&msg);
+	mListener.SendMessage(&msg);
 }
 
 

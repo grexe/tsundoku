@@ -21,13 +21,17 @@
 
 #include <Bitmap.h>
 #include <Handler.h>
+#include <Locker.h>
 #include <Looper.h>
+#include <Messenger.h>
 
 #include "Document.h"
 
 class CachedPage;
 
-// renders a page in its own thread
+// Renders a page in its own thread. The thread works with the document (it holds a reference to it) and with the cached page
+// that it fills, not with the view: when the view moves on to another document, the renderer is retired (Retire()) and
+// finishes in the background, and everything it works with goes away with it.
 class PageRenderer {
 public:
 	PageRenderer();
@@ -35,6 +39,11 @@ public:
 
 	void SetDocument(Document* document);
 	void SetListener(BLooper* looper, BHandler* handler);
+	// is a page being rendered
+	bool IsRunning();
+	// The view does not need the renderer any more, nor the cached page that it fills (the renderer takes it over): both are
+	// deleted when the thread has finished, or at once if there is none. The renderer must not be used afterwards.
+	void Retire(CachedPage* ownedPage);
 
 	enum {
 		// sent to listener when page has been rendered
@@ -66,11 +75,16 @@ public:
 private:
 	friend int32 page_rendering_thread(void* data);
 	void Render();
+	void Finished();
 	void Notify(uint32 what);
 
 	Document*   mDocument;
-	BLooper*    mLooper;
-	BHandler*   mHandler;
+	Document*   mHeld;		// the document that the running thread holds a reference to
+	BMessenger  mListener;
+	BLocker     mLock;		// guards mRunning, mRetired and mOwnedPage
+	bool        mRunning;
+	bool        mRetired;
+	CachedPage* mOwnedPage;
 	float       mWidth, mHeight;
 	thread_id   mRenderingThread;
 	CachedPage* mPage;

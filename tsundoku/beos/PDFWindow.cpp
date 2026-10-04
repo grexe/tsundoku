@@ -2122,6 +2122,16 @@ PDFWindow::MessageReceived(BMessage* message)
 				start.AddBool("ignoreCase", ignoreCase != 0);
 				start.AddBool("backward", backward != 0);
 				MessageReceived(&start);
+			} else if (cmd == "open") {
+				// a file is opened in this window, as the file panel or Tracker do it (path in "text")
+				BString text;
+				message->FindString("text", &text);
+				entry_ref ref;
+				if (get_ref_for_path(text.String(), &ref) == B_OK) {
+					BMessage open(B_REFS_RECEIVED);
+					open.AddRef("refs", &ref);
+					be_app->PostMessage(&open);
+				}
 			} else if (cmd == "bookmark") {
 				// what the window for a bookmark sends (the page and, in "text", the label)
 				BString text;
