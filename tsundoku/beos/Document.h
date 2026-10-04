@@ -118,6 +118,18 @@ struct DocAnnotationEntry {
 class BMessage;
 class EpubInfo;
 
+// Where a deep link leads (see ResolveTarget): the page, the words to look for, a region on the page.
+struct DocTarget {
+	int     page;			// 1-based, 0 if not known
+	BString quote, prefix, suffix;
+	BString cfi;
+	bool    hasRegion;
+	bool    regionPercent;
+	fz_rect region;			// in page space
+
+	DocTarget() : page(0), hasRegion(false), regionPercent(false), region(fz_empty_rect) {}
+};
+
 // A place in a book that stays the same when the pages change: the words at it (a quote, as W3C Web Annotations call
 // it), the EPUB CFI of those words, and where it was (chapter, place in the chapter) to find it quickly. Used for
 // marks, bookmarks and the position where the reader stopped.
@@ -148,6 +160,8 @@ struct StoredAnnotation {
 	float   fraction;     // where the page was in the chapter (0 to 1)
 	float   ypos;         // where the text started on the page (0 to 1)
 	BString quote;        // the words, in one line
+	BString prefix;       // some of the text before and after them, to tell equal words apart
+	BString suffix;
 };
 
 // Where a stored annotation is now: on one page, or two if it runs over a page break.
@@ -272,6 +286,11 @@ public:
 	int          Undo();
 	int          Redo();
 
+	// An annotation as a W3C Web Annotation in a message (WebAnnotation.h), with the file as the source of its target;
+	// and where the target of a deep link (oa:hasTarget) leads in this document.
+	bool         WebAnnotationOf(int page, int index, BMessage* annotation);
+	bool         ResolveTarget(const BMessage& target, DocTarget* result);
+
 	// The anchor of the beginning of a page (a book), and the page that an anchor leads to in the layout as it is.
 	bool         MakeAnchor(int page, TextAnchor* anchor);
 	int          PageOfAnchor(const TextAnchor& anchor);
@@ -309,6 +328,7 @@ private:
 	void StoreAnnotationsOnPage(int pageNo, std::vector<DocAnnotation>& annotations);
 	bool StoreIndexFor(int pageNo, int index, int* storeIndex);
 	void PushStoreUndo(const char* name, int page);
+	bool StoreWebAnnotation(int pageNo, int index, BMessage* annotation);
 	bool StoreAddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int count, const float color[3]);
 	bool StoreDelete(int pageNo, int index);
 	bool StoreSetContents(int pageNo, int index, const char* text);

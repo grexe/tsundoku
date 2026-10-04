@@ -1793,9 +1793,6 @@ Document::SyncAnnotationCount(const char* path)
 	if (node.InitCheck() != B_OK)
 		return;
 
-	// (the first versions of Tsundoku wrote a flag with another name)
-	node.RemoveAttr("META:annotated");
-
 	int32 count = AnnotationCount();
 	int32 value = 0;
 	bool present = node.ReadAttr("SEN:annotationCount", B_INT32_TYPE, 0, &value, sizeof(value)) == sizeof(value);

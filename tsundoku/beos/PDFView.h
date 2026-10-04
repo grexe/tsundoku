@@ -426,6 +426,10 @@ public:
 	void ShowAnnotation(int page, int index);
 	// finds a quoted passage, selects it and shows it (see PDFSearch.cpp)
 	bool ShowQuote(const char* quote, int page, bool annotate);
+	// a deep link: where the selectors of an oa:hasTarget lead (a page, a text, a region of a page)
+	bool ShowTarget(const BMessage& target, bool annotate);
+	// puts the annotation as a Web Annotation (JSON-LD) on the clipboard
+	void CopyWebAnnotation(int page, int index);
 	void SetFilledSelection(bool filled);
 
 	// caller must delete returned string object

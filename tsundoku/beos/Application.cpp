@@ -77,11 +77,15 @@ static const char * licenseCopyright =
     "This program is free software under the GNU AGPL v3, or any later version.\n";
 
 static const char *PAGE_NUM_MSG_KEY = "bepdf:page_num";
-// a passage to show, found by its text; with SEN:highlight it is also marked in the document (not saved)
-static const char *QUOTE_MSG_KEY = "SEN:quote";
-static const char *HIGHLIGHT_MSG_KEY = "SEN:highlight";
-// the id (the /NM of the PDF) of an annotation to show: the document goes to its page and selects it
-static const char *ANNOTATION_MSG_KEY = "SEN:annotation";
+// Deep links are described like W3C Web Annotations (WebAnnotation.h). A B_REFS_RECEIVED message names the file in refs
+// and says where to go in it with
+//   oa:hasTarget    a message with oa:hasSelector entries: an oa:FragmentSelector (page=5, an EPUB CFI), an
+//                   oa:TextQuoteSelector (the words), which may be refined by another selector (oa:refinedBy);
+//   oa:motivatedBy  (a string, with oa:hasTarget) the passage that the words name is also marked, not saved;
+//   oa:Annotation   the identifier of an annotation (an IRI: urn:uuid:...): the document goes to it and selects it.
+static const char *TARGET_MSG_KEY = "oa:hasTarget";
+static const char *MOTIVATION_MSG_KEY = "oa:motivatedBy";
+static const char *ANNOTATION_MSG_KEY = "oa:Annotation";
 
 static const char *settingsFilename = "Tsundoku";
 
@@ -682,9 +686,11 @@ void BepdfApplication::RefsReceived(BMessage *msg)
 	const char *owner = NULL;
 	const char *user  = NULL;
     int32 pageNum = 0;
-	BString quote;
+	BMessage target;
+	bool hasTarget = false;
+	BString motivation;
+	bool mark = false;
 	BString annotationId;
-	bool highlight = false;
 	entry_ref ref;
 
 	if (B_OK == msg->FindString("ownerPassword", &ownerPassword)) {
@@ -701,9 +707,9 @@ void BepdfApplication::RefsReceived(BMessage *msg)
         }
 	}
 
-	msg->FindString(QUOTE_MSG_KEY, &quote);
+	hasTarget = msg->FindMessage(TARGET_MSG_KEY, &target) == B_OK;
+	mark = msg->FindString(MOTIVATION_MSG_KEY, &motivation) == B_OK;
 	msg->FindString(ANNOTATION_MSG_KEY, &annotationId);
-	msg->FindBool(HIGHLIGHT_MSG_KEY, &highlight);
 
 	Initialize();
 
@@ -756,12 +762,12 @@ void BepdfApplication::RefsReceived(BMessage *msg)
                 annotationMsg.AddString("id", annotationId);
                 mWindow->PostMessage(&annotationMsg);
             }
-            if (quote.Length() > 0 && mWindow != NULL) {
-                BMessage quoteMsg(PDFWindow::SHOW_QUOTE_CMD);
-                quoteMsg.AddString("quote", quote);
-                quoteMsg.AddInt32("page", pageNum);
-                quoteMsg.AddBool("annotate", highlight);
-                mWindow->PostMessage(&quoteMsg);
+            if (hasTarget && mWindow != NULL) {
+                BMessage targetMsg(PDFWindow::SHOW_TARGET_CMD);
+                targetMsg.AddMessage(TARGET_MSG_KEY, &target);
+                if (mark)
+                    targetMsg.AddString(MOTIVATION_MSG_KEY, motivation);
+                mWindow->PostMessage(&targetMsg);
             }
 			// stop after first document
 			mGotSomething = true;
@@ -954,12 +960,6 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 
 	// what only a book says, one attribute for each (so they can be shown in Tracker and queried)
 	if (const EpubInfo* epub = doc->Epub()) {
-		// (those of the first versions of Tsundoku had names of their own)
-		static const char* const kOld[] = { "EPUB:language", "EPUB:publisher", "EPUB:published", "EPUB:identifier",
-			"EPUB:series", "EPUB:series_index", "EPUB:version", NULL };
-		for (int i = 0; kOld[i] != NULL; i++)
-			node.RemoveAttr(kOld[i]);
-
 		struct { const char* name; const BString* value; } strings[] = {
 			{ "dc:description", &epub->description }, { "dc:publisher", &epub->publisher },
 			{ "dc:language", &epub->language }, { "dc:identifier", &epub->identifier },

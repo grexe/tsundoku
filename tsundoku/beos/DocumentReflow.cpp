@@ -27,6 +27,7 @@
 #include "EpubCfi.h"
 #include "EpubInfo.h"
 #include "Globals.h"
+#include "WebAnnotation.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -57,12 +58,10 @@ const float Document::kDefaultTextSize = 12;
 const float Document::kMinTextSize = 6;
 const float Document::kMaxTextSize = 40;
 
-// The annotations of a book are kept in this attribute of its file (a standard message, which other applications
-// can use for the same purpose). Nothing in the ontologies is made for it, so it has the prefix of SEN, whose standard
-// it is; the names of the first versions are still read.
+// The annotations of a book are kept in this attribute of its file, as W3C Web Annotations (WebAnnotation.h). The
+// ontologies have nothing for such an attribute, so it has the prefix of SEN.
 static const char* kStoreAttribute = "SEN:annotations";
-static const char* const kLegacyStoreAttributes[] = { "META:annotations", "tsundoku:annotations", NULL };
-static const int32 kStoreVersion = 1;
+static const int32 kStoreVersion = 2;
 static const int kMaxUndo = 100;
 static const int kMaxQuoteLength = 4000;
 
@@ -294,6 +293,71 @@ Document::ChapterTitles()
 ///////////////////////////////////////////////////////////////////////////
 // The attribute
 
+// The marks of a text as Web Annotations: the motivation says what kind of mark it is
+static const char*
+MotivationOf(int markup)
+{
+	switch (markup) {
+		case kMarkupUnderline:	return WebAnnotation::kUnderline;
+		case kMarkupStrikeOut:	return WebAnnotation::kStrikethrough;
+		case kMarkupSquiggly:	return WebAnnotation::kSquiggle;
+		default:				return WebAnnotation::kHighlighting;
+	}
+}
+
+
+static int
+MarkupOf(const BString& motivation)
+{
+	if (motivation == WebAnnotation::kUnderline)
+		return kMarkupUnderline;
+	if (motivation == WebAnnotation::kStrikethrough)
+		return kMarkupStrikeOut;
+	if (motivation == WebAnnotation::kSquiggle)
+		return kMarkupSquiggly;
+	return kMarkupHighlight;
+}
+
+
+static void
+ToMark(const StoredAnnotation& a, WebAnnotation::Mark* mark)
+{
+	mark->id = a.id;
+	mark->motivation = MotivationOf(a.markup);
+	mark->color = a.color;
+	mark->hasColor = true;
+	mark->body = a.contents;
+	mark->creator = a.author;
+	mark->created = a.created;
+	mark->quote = a.quote;
+	mark->prefix = a.prefix;
+	mark->suffix = a.suffix;
+	mark->cfi = a.cfi;
+	mark->chapter = a.chapter;
+	mark->fraction = a.fraction;
+	mark->ypos = a.ypos;
+}
+
+
+static void
+FromMark(const WebAnnotation::Mark& mark, StoredAnnotation* a)
+{
+	a->id = mark.id;
+	a->markup = MarkupOf(mark.motivation);
+	a->color = mark.hasColor ? mark.color : 0xffeb3b;
+	a->contents = mark.body;
+	a->author = mark.creator;
+	a->created = mark.created;
+	a->quote = mark.quote;
+	a->prefix = mark.prefix;
+	a->suffix = mark.suffix;
+	a->cfi = mark.cfi;
+	a->chapter = mark.chapter;
+	a->fraction = mark.fraction;
+	a->ypos = mark.ypos;
+}
+
+
 void
 Document::LoadStore()
 {
@@ -306,47 +370,21 @@ Document::LoadStore()
 
 	BNode node(fPath.String());
 	attr_info info;
-	const char* attribute = kStoreAttribute;
-	if (node.InitCheck() != B_OK)
-		return;
-	if (node.GetAttrInfo(attribute, &info) != B_OK) {
-		attribute = NULL;
-		for (int i = 0; kLegacyStoreAttributes[i] != NULL && attribute == NULL; i++) {
-			if (node.GetAttrInfo(kLegacyStoreAttributes[i], &info) == B_OK)
-				attribute = kLegacyStoreAttributes[i];
-		}
-		if (attribute == NULL)
-			return;
-	}
-	if (info.size <= 0 || info.size > 16 * 1024 * 1024)
+	if (node.InitCheck() != B_OK || node.GetAttrInfo(kStoreAttribute, &info) != B_OK || info.size <= 0
+		|| info.size > 16 * 1024 * 1024)
 		return;
 
 	char* buffer = new char[info.size];
-	ssize_t size = node.ReadAttr(attribute, info.type, 0, buffer, info.size);
+	ssize_t size = node.ReadAttr(kStoreAttribute, info.type, 0, buffer, info.size);
 	BMessage archive;
 	if (size == info.size && archive.Unflatten(buffer) == B_OK) {
 		BMessage item;
-		for (int32 i = 0; archive.FindMessage("annotation", i, &item) == B_OK; i++) {
-			StoredAnnotation a;
-			int32 markup = 0;
-			uint32 color = 0xffeb3b;
-			int64 created = 0;
-			item.FindString("id", &a.id);
-			item.FindInt32("markup", &markup);
-			item.FindUInt32("color", &color);
-			item.FindString("contents", &a.contents);
-			item.FindString("author", &a.author);
-			item.FindInt64("created", &created);
-			item.FindInt32("chapter", &a.chapter);
-			item.FindFloat("fraction", &a.fraction);
-			item.FindFloat("ypos", &a.ypos);
-			item.FindString("quote", &a.quote);
-			item.FindString("cfi", &a.cfi);
-			a.markup = markup;
-			a.color = color;
-			a.created = created;
-			if (a.id.Length() == 0 || a.quote.Length() == 0)
+		for (int32 i = 0; archive.FindMessage(WebAnnotation::kAnnotation, i, &item) == B_OK; i++) {
+			WebAnnotation::Mark mark;
+			if (!WebAnnotation::UnarchiveMark(item, &mark))
 				continue;
+			StoredAnnotation a;
+			FromMark(mark, &a);
 			fStore.push_back(a);
 		}
 	}
@@ -362,8 +400,6 @@ Document::WriteStore(const char* path)
 	if (node.InitCheck() != B_OK)
 		return false;
 
-	for (int i = 0; kLegacyStoreAttributes[i] != NULL; i++)
-		node.RemoveAttr(kLegacyStoreAttributes[i]);
 	if (fStore.empty()) {
 		node.RemoveAttr(kStoreAttribute);
 		return true;
@@ -372,20 +408,11 @@ Document::WriteStore(const char* path)
 	BMessage archive;
 	archive.AddInt32("version", kStoreVersion);
 	for (size_t i = 0; i < fStore.size(); i++) {
-		const StoredAnnotation& a = fStore[i];
+		WebAnnotation::Mark mark;
+		ToMark(fStore[i], &mark);
 		BMessage item;
-		item.AddString("id", a.id);
-		item.AddInt32("markup", a.markup);
-		item.AddUInt32("color", a.color);
-		item.AddString("contents", a.contents);
-		item.AddString("author", a.author);
-		item.AddInt64("created", a.created);
-		item.AddInt32("chapter", a.chapter);
-		item.AddFloat("fraction", a.fraction);
-		item.AddFloat("ypos", a.ypos);
-		item.AddString("quote", a.quote);
-		item.AddString("cfi", a.cfi);
-		archive.AddMessage("annotation", &item);
+		WebAnnotation::ArchiveMark(mark, &item);
+		archive.AddMessage(WebAnnotation::kAnnotation, &item);
 	}
 
 	ssize_t size = archive.FlattenedSize();
@@ -1060,7 +1087,7 @@ Document::StoreAddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int 
 
 	// where it is in the book, in a form that other programs know
 	if (fEpub != NULL)
-		EpubCfi::Create(fPath.String(), *fEpub, chapter, quote.String(), a.fraction, &a.cfi);
+		EpubCfi::Create(fPath.String(), *fEpub, chapter, quote.String(), a.fraction, &a.cfi, &a.prefix, &a.suffix);
 
 	const char* names[] = { B_TRANSLATE("Add highlight"), B_TRANSLATE("Add underline"),
 		B_TRANSLATE("Add strike out"), B_TRANSLATE("Add squiggly line") };
@@ -1072,6 +1099,27 @@ Document::StoreAddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int 
 	part.quads.assign(quads, quads + count);
 	fResolved.push_back(std::vector<StoredPart>(1, part));
 	fResolvedKnown.push_back(1);
+	return true;
+}
+
+
+// A mark of a book as a Web Annotation, with the file as the source of its target (the store has none in it).
+bool
+Document::StoreWebAnnotation(int pageNo, int index, BMessage* annotation)
+{
+	DocumentLocker locker(this);
+	int at;
+	if (!StoreIndexFor(pageNo, index, &at))
+		return false;
+	WebAnnotation::Mark mark;
+	ToMark(fStore[at], &mark);
+	WebAnnotation::ArchiveMark(mark, annotation);
+
+	BMessage target;
+	if (annotation->FindMessage("oa:hasTarget", &target) == B_OK) {
+		target.AddString("oa:hasSource", WebAnnotation::FileIri(fPath.String()));
+		annotation->ReplaceMessage("oa:hasTarget", &target);
+	}
 	return true;
 }
 

@@ -565,7 +565,7 @@ IndexFor(const FlatText& flat, xmlNode* node, int rawOffset)
 
 bool
 EpubCfi::Create(const char* container, const EpubInfo& info, int spineIndex, const char* words, float fraction,
-	BString* cfi)
+	BString* cfi, BString* prefix, BString* suffix)
 {
 	xmlDoc* doc = LoadContent(container, info, spineIndex);
 	if (doc == NULL)
@@ -622,6 +622,21 @@ EpubCfi::Create(const char* container, const EpubInfo& info, int spineIndex, con
 
 				std::string result = "epubcfi(" + parent + head + "," + from + "," + to + ")";
 				cfi->SetTo(result.c_str());
+				if (prefix != NULL) {
+					// about 32 characters before and after, from the beginning of a character
+					size_t from32 = start > 32 ? start - 32 : 0;
+					while (from32 < start && ((unsigned char)flat.text[from32] & 0xc0) == 0x80)
+						from32++;
+					std::string before = flat.text.substr(from32, start - from32);
+					prefix->SetTo(before.c_str());
+				}
+				if (suffix != NULL) {
+					size_t to32 = end + 32 < flat.text.size() ? end + 32 : flat.text.size();
+					while (to32 < flat.text.size() && ((unsigned char)flat.text[to32] & 0xc0) == 0x80)
+						to32++;
+					std::string after = flat.text.substr(end, to32 - end);
+					suffix->SetTo(after.c_str());
+				}
 				ok = true;
 			}
 		}

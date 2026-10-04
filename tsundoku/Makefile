@@ -38,6 +38,7 @@ SRCS = beos/AnnotationsView.cpp \
 	beos/CachedPage.cpp \
 	beos/Document.cpp \
 	beos/DocumentReflow.cpp \
+	beos/DocumentWeb.cpp \
 	beos/EntryChangedMonitor.cpp \
 	beos/EpubCfi.cpp \
 	beos/EpubInfo.cpp \
@@ -63,6 +64,7 @@ SRCS = beos/AnnotationsView.cpp \
 	beos/Settings.cpp \
 	beos/StatusWindow.cpp \
 	beos/TraceWindow.cpp \
+	beos/WebAnnotation.cpp \
 	beos/utils/EntryMenuItem.cpp \
 	beos/utils/ResourceLoader.cpp \
 	beos/utils/Thread.cpp

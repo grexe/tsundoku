@@ -65,6 +65,7 @@
 #include "PasswordWindow.h"
 #include "PDFView.h"
 #include "PDFWindow.h"
+#include "WebAnnotation.h"
 #include "PreferencesWindow.h"
 #include "PrintSettingsWindow.h"
 #include "ResourceLoader.h"
@@ -697,7 +698,7 @@ bool PDFWindow::CancelCommand(BMessage* msg) {
 			case PREVIOUS_N_PAGE_CMD:
 			case LAST_PAGE_CMD:
 			case GOTO_PAGE_CMD:
-			case SHOW_QUOTE_CMD:
+			case SHOW_TARGET_CMD:
 			case HISTORY_BACK_CMD:
 			case HISTORY_FORWARD_CMD:
 			case PAGE_SELECTED_CMD:
@@ -1605,15 +1606,12 @@ PDFWindow::MessageReceived(BMessage* message)
 	case LAST_PAGE_CMD:
 		mMainView->MoveToPage (mMainView->GetNumPages());
 		break;
-	case SHOW_QUOTE_CMD: {
-		// from another application, see BepdfApplication::RefsReceived()
-		BString quote;
-		int32 quotePage = 0;
-		bool annotate = false;
-		message->FindString("quote", &quote);
-		message->FindInt32("page", &quotePage);
-		message->FindBool("annotate", &annotate);
-		if (!mMainView->ShowQuote(quote.String(), quotePage, annotate))
+	case SHOW_TARGET_CMD: {
+		// a deep link: the target of a Web Annotation, and perhaps what to mark it with
+		BMessage target;
+		BString motivation;
+		if (message->FindMessage("oa:hasTarget", &target) != B_OK
+			|| !mMainView->ShowTarget(target, message->FindString("oa:motivatedBy", &motivation) == B_OK))
 			beep();
 		break;
 	}
@@ -1846,6 +1844,7 @@ PDFWindow::MessageReceived(BMessage* message)
 		int32 page = 0, index = -1;
 		BString id;
 		if (message->FindString("id", &id) == B_OK && id.Length() > 0) {
+			id = WebAnnotation::IdentifierUuid(id.String());
 			int foundPage = 0, foundIndex = -1;
 			if (!mMainView->GetDocument()->FindAnnotationById(id.String(), &foundPage, &foundIndex)) {
 				beep();
@@ -2069,14 +2068,46 @@ PDFWindow::MessageReceived(BMessage* message)
 				BString text;
 				message->FindString("text", &text);
 				SaveCopyTo(text.String());
-			} else if (cmd == "quote") {
-				BString text;
+			} else if (cmd == "target") {
+				// a deep link as another application sends it: the words ("text"), a page, an EPUB CFI ("cfi")
+				BString text, cfi;
 				message->FindString("text", &text);
-				BMessage quote(SHOW_QUOTE_CMD);
-				quote.AddString("quote", text);
-				quote.AddInt32("page", TestInt(message, "page", 0));
-				quote.AddBool("annotate", TestInt(message, "annotate", 0) != 0);
-				MessageReceived(&quote);
+				message->FindString("cfi", &cfi);
+				int32 pageNo = TestInt(message, "page", 0);
+				BMessage target;
+				if (pageNo > 0) {
+					BMessage selector;
+					BString value;
+					value << "page=" << (int)pageNo;
+					WebAnnotation::MakeFragmentSelector(&selector, WebAnnotation::kConformsToPdf, value.String());
+					target.AddMessage("oa:hasSelector", &selector);
+				}
+				if (cfi.Length() > 0) {
+					BMessage selector;
+					WebAnnotation::MakeFragmentSelector(&selector, WebAnnotation::kConformsToEpubCfi, cfi.String());
+					target.AddMessage("oa:hasSelector", &selector);
+				}
+				if (text.Length() > 0) {
+					BMessage selector;
+					selector.AddString("type", WebAnnotation::kTextQuoteSelector);
+					selector.AddString("oa:exact", text);
+					target.AddMessage("oa:hasSelector", &selector);
+				}
+				BMessage show(SHOW_TARGET_CMD);
+				show.AddMessage("oa:hasTarget", &target);
+				if (TestInt(message, "annotate", 0) != 0)
+					show.AddString("oa:motivatedBy", WebAnnotation::kHighlighting);
+				MessageReceived(&show);
+			} else if (cmd == "webannot") {
+				// an annotation of the page as JSON-LD, in the test output
+				BMessage annotation;
+				bool ok = mMainView->GetDocument()->WebAnnotationOf(TestInt(message, "page", mMainView->Page()),
+					TestInt(message, "which", 0), &annotation);
+				FILE* out = fopen("/tmp/ts_test.out", "a");
+				if (out != NULL) {
+					fprintf(out, "webannot: %s\n%s", ok ? "ok" : "failed", WebAnnotation::ToJson(annotation).String());
+					fclose(out);
+				}
 			} else if (cmd == "find") {
 				// as the find window does it
 				if (mFindWindow == NULL)

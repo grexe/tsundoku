@@ -71,6 +71,7 @@
 #include "PDFWindow.h"
 #include "BusyWindow.h"
 #include "EpubCfi.h"
+#include "WebAnnotation.h"
 #include "EpubInfo.h"
 #include "PDFView.h"
 #include "PrintingProgressWindow.h"
@@ -94,6 +95,7 @@ static const int kZoomDPI[MAX_ZOOM - MIN_ZOOM + 1] = {
 #define SELECT_ALL_MSG                 'slal'
 #define ANNOTATE_MSG                   'anno'
 #define DELETE_ANNOTATION_MSG          'dlan'
+#define COPY_ANNOTATION_MSG            'cpan'
 #define EDIT_NOTE_MSG                  'ednt'
 #define NOTE_ENTERED_MSG               'ntnt'
 #define CHANGE_COLOR_MSG               'chcl'
@@ -587,6 +589,13 @@ void PDFView::MessageReceived(BMessage *msg) {
 		msg->FindInt32("color", &rgb);
 		if (ConfirmEditable() && mDoc->SetAnnotationColor(page, index, (uint32)rgb))
 			AnnotationsChanged();
+		break;
+	}
+	case COPY_ANNOTATION_MSG: {
+		int32 page = 0, index = -1;
+		msg->FindInt32("page", &page);
+		msg->FindInt32("index", &index);
+		CopyWebAnnotation(page, index);
 		break;
 	}
 	case DELETE_ANNOTATION_MSG: {
@@ -1695,6 +1704,14 @@ PDFView::ShowPopUpMenu(BPoint point, const DocLink* link, const DocAnnotation* a
 			msg->AddString("text", annotation->contents);
 			i = new BMenuItem(annotation->isFreeText ? B_TRANSLATE("Edit text" B_UTF8_ELLIPSIS)
 				: B_TRANSLATE("Edit note" B_UTF8_ELLIPSIS), msg);
+			i->SetTarget(this);
+			menu->AddItem(i);
+
+			// the annotation as a Web Annotation (JSON-LD), to hand it on
+			msg = new BMessage(COPY_ANNOTATION_MSG);
+			msg->AddInt32("page", ActivePage());
+			msg->AddInt32("index", annotation->index);
+			i = new BMenuItem(B_TRANSLATE("Copy as Web Annotation"), msg);
 			i->SetTarget(this);
 			menu->AddItem(i);
 
@@ -3588,6 +3605,47 @@ PDFView::ShowAnnotation(int page, int index)
 	BRect shown = r.OffsetByCopy(mLeft, mTop), bounds(Bounds());
 	if (!bounds.Contains(shown))
 		ScrollTo(r.left - 40, r.top - 60);
+}
+
+
+bool
+PDFView::ShowTarget(const BMessage& target, bool annotate)
+{
+	if (mDoc == NULL)
+		return false;
+
+	DocTarget where;
+	if (!mDoc->ResolveTarget(target, &where))
+		return false;
+
+	// the words are looked for from the page that was named (also if they are not on it)
+	if (!where.quote.IsEmpty() && ShowQuote(where.quote.String(), where.page, annotate))
+		return true;
+	if (where.page < 1)
+		return false;
+
+	MoveToPage(where.page);
+	if (where.hasRegion) {
+		WaitForPage();
+		BPoint corner = mPage->PageToDev(fz_make_point(where.region.x0, where.region.y0));
+		BRect shown(corner.x + mLeft, corner.y + mTop, corner.x + mLeft + 10, corner.y + mTop + 10), bounds(Bounds());
+		if (!bounds.Contains(shown))
+			ScrollTo(corner.x - 40, corner.y - 60);
+	}
+	return true;
+}
+
+
+void
+PDFView::CopyWebAnnotation(int page, int index)
+{
+	BMessage annotation;
+	if (mDoc == NULL || !mDoc->WebAnnotationOf(page, index, &annotation)) {
+		beep();
+		return;
+	}
+	BString json = WebAnnotation::ToJson(annotation);
+	CopyText(&json);
 }
 
 

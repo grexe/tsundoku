@@ -50,11 +50,20 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   cannot be written (system directory, the title says "read-only") or that MuPDF had to repair, Save and
   File > Save as… (Cmd+Shift+S) write a copy, with the attributes of the original, and Tsundoku goes on with the copy. The
   cursor becomes an I-beam while Option or Cmd is held, to show that dragging selects.
-- Other applications (SEN) can open a document at a quoted passage: send `B_REFS_RECEIVED` with the file and
-  `SEN:quote` (the text; `bepdf:page_num` is a hint where to start looking and may be wrong). Tsundoku finds the
-  text, selects it and scrolls to it. With `SEN:highlight` (bool) the passage is also marked with a highlight
-  annotation, which is only saved when the user saves. With `SEN:annotation` (the id of an annotation, its `/NM`) the
-  document goes to that annotation and selects it.
+- Annotations and deep links are described with the [W3C Web Annotation Data Model](https://www.w3.org/TR/annotation-model/)
+  (`oa:`), for PDF files and EPUB books alike: an annotation has a target (the document and selectors that say where in
+  it: `oa:FragmentSelector` with `page=5` or an EPUB CFI, `oa:TextQuoteSelector` with the words and some text around
+  them, `oa:SvgSelector` for shapes and drawings, which can be refined by one another with `oa:refinedBy`), perhaps a
+  body (`oa:TextualBody`, the note), a style (`oa:CssStyle`) and a motivation: `oa:highlighting`, `oa:commenting`, and
+  `sen:underline`, `sen:strikethrough` and `sen:squiggle` for the other marks of a text (SEN's own `oa:Motivation`s,
+  which are `skos:broader oa:highlighting`). "Copy as Web Annotation" in the menu of an annotation puts it on the
+  clipboard as JSON-LD. The marks of an EPUB are stored in this form (the attribute `SEN:annotations`); the
+  annotations of a PDF file stay PDF annotations in the file and are described in this form when they are handed on.
+  Other applications (SEN) open a document at a place with `B_REFS_RECEIVED`: the file in `refs`, and
+  `oa:hasTarget` (a message with `oa:hasSelector` entries as in the model, any of the selectors above that the document
+  understands; an EPUB CFI is found in whatever layout the book has, the words are searched for from the page that
+  was named), and with `oa:motivatedBy` the passage that the words name is also marked (not saved); or
+  `oa:Annotation` with the identifier of an annotation (`urn:uuid:...`): the document goes there and selects it.
 - The pages can be shown one at a time, two side by side like the pages of a book ("Double-sided"; the title page can
   stay alone, View > Title page alone), or all one below the other and scrolled through ("Continuous"). The buttons
   next to the fit buttons and the View menu switch between them; next and previous page go by a spread. In the code
