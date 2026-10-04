@@ -33,4 +33,14 @@ if [ -n "$MUPDF_DIR" ] && [ ! -f "$MUPDF_DIR/build/release/libmupdf.a" ]; then
 		USE_SYSTEM_OPENJPEG=yes USE_SYSTEM_BROTLI=yes USE_SYSTEM_JBIG2DEC=yes libs
 fi
 
-make -C tsundoku "$@"
+# The makefile-engine names the object directory after $CC and breaks on a compiler launcher like CC="ccache gcc".
+# Name it as it would for the compiler alone.
+case "$CC" in
+	*" "*)
+		compiler="${CC##* }"
+		OBJ_DIR="objects.$(uname -m)-$compiler$($compiler -dumpversion | cut -d. -f1)-release"
+		set -- "OBJ_DIR=$OBJ_DIR" "$@"
+		;;
+esac
+
+make -C tsundoku -j"$(nproc)" "$@"
