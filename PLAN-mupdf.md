@@ -64,8 +64,7 @@ away, the UI classes (selection, move, resize, property window) are ported to `p
 - XPS, CBZ, images, SVG: nearly free once M1 is done (fixed layout).
 - EPUB/FB2/MOBI: reflowable, needs relayout on resize/zoom and stable positions (`fz_bookmark`) instead of page
   numbers, so `bepdf:page_num` and BFS bookmarks need a policy. Own milestone.
-- DjVu: a second backend behind the `Document` layer, through Haiku's DjVu translator or `libdjvulibre` directly.
-  To check: whether the translator can select a page, and whether text layers are available.
+- DjVu: assessed in "DjVu" below (a document handler for MuPDF on top of `libdjvulibre`, not a second backend).
 
 **Cleanup.** Remove the `xpdf/` tree, `dist/encodings`, `dist/fonts`, XPDF license files and CI steps for XPDF; update
 README, About text ("based on MuPDF"), package license and size.
@@ -155,3 +154,61 @@ For other formats this is what is needed: EPUB and other reflowable documents ha
 text width, so `SetPages` is run again on a resize and the page the reader is at is kept by a position instead of a
 number (`fz_bookmark`); comics (CBZ) are fixed pages and use the presets as they are (a double page spread and a
 right-to-left order would be two more switches of the layout, in the same table).
+
+## DjVu (assessed 2026-10-04, not started)
+
+**What there is.** MuPDF reads no DjVu. HaikuPorts has `djvu` (DjVuLibre 3.5.29, library `lib:libdjvulibre`, package
+`djvu_devel`, tools `djvu_tools` with `c44`, `cjb2`, `djvm`, `djvused`, `djvutxt`), a Haiku translator (`djvutranslator`, by
+3dEyes, which hands out a page as a bitmap) and two viewers (`djvuviewer`, `djview`). The library's license is GPL version 2
+**or any later version** (stated in the headers, the recipe only says "GPL v2"), so it can be combined with the AGPL version
+3 of Tsundoku. DjVu files have a real mark (`AT&TFORM` and `DJVU` or `DJVM` at offset 12), so the type (`image/vnd.djvu`,
+extensions `djvu`, `djv`) gets a plain sniffer rule.
+
+**The way to do it: a document handler for MuPDF**, not a second backend and not the translator. MuPDF's document API is
+public (`fz_register_document_handler`, `fz_new_derived_document`, `fz_new_derived_page`), as the comic work showed for
+archives. A handler `DjvuDocument.cpp` that implements the callbacks on `ddjvu_*` makes DjVu look like any fixed-layout
+document to everything above it (`Document`, `PageLayout`, rendering, search, selection, outline, links, deep links,
+printing), so none of that is written twice. The translator cannot be used: it has one bitmap and no text, no outline, no
+links. A command line tool (`ddjvu`) is out of the question for speed and text.
+
+**What the handler does** (the `ddjvu` API, `ddjvuapi.h`):
+- *Pages and size:* `ddjvu_document_get_pagenum`, `ddjvu_document_get_pageinfo` (width, height, dpi, rotation); the page is
+  `width * 72 / dpi` points wide, so a 300 dpi scan has its paper size. DjVu documents can be bundled or indirect (an
+  index and files next to it), both are opened by `ddjvu_document_create_by_filename`.
+- *Drawing:* `fz_run_page` renders the page for the size that the matrix asks for (`ddjvu_page_render`, which scales and
+  clips itself, color mode for the mixed layers) into a pixmap and draws it as an image. The decoding is asynchronous
+  in the API (messages, `ddjvu_message_wait`), so the handler waits for the page to be decoded; it runs with the document
+  locked like all MuPDF calls in Tsundoku, so one thread at a time uses the context of DjVu.
+- *Text:* the hidden text layer (`ddjvu_document_get_pagetext`, a nested list of page, column, paragraph, line and word
+  with boxes) goes to the page as invisible text, one word per `fz_text` stretched to its box (`fz_ignore_text`), which is
+  what the text extraction of MuPDF expects of an OCR layer. Search, flowing selection and copy then work as for a PDF.
+  Boxes are in DjVu coordinates (origin at the bottom left, in pixels of the page's dpi).
+- *Outline:* `ddjvu_document_get_outline` (title and `#page` targets) to `fz_outline`. *Links:* the hyperlinks of the page
+  annotations (`ddjvu_document_get_pageanno`, `ddjvu_anno_get_hyperlinks`: rectangles, ovals, polygons with a URL) to
+  `fz_link`. *Metadata:* the keys of the document annotations (title, author, year, ...) for `fz_lookup_metadata` and so
+  for the file attributes (`META:title`, `META:author`, `dc:date`) and File info.
+- *Annotations:* the shapes, notes and text of the comic work (the store in `SEN:annotations`, DocumentDraw.cpp) work on
+  any fixed document, so a DjVu file has them from the start; marks on text (highlight, underline) need the store to find
+  words on fixed pages, which `ResolveAnnotation` does by search (a small change: it is written for books now).
+
+**Effort** (the size of the comic work, most of it testing): the handler with pages, size and drawing is about 250 lines
+and gives a viewer (M1); the text layer about 200 (M2); outline, links, metadata, type, File info, build and package
+requirements about 250 (M3); annotations on top of the store, a day at most (M4). Together roughly 3 to 4 days of work in
+the shape of the existing code, and the first usable result (reading, zooming, the page list) after the first of them.
+
+**Risks and things to check first:**
+- The asynchronous message API: a small wrapper that blocks until the page is done, with a timeout and the abort of the
+  cookie (`fz_cookie`) so that a zoom while the render goes on does not hang.
+- Memory and speed: a 600 dpi scan is large; render for the zoom only (never the whole page at full size), and cache the
+  decoded page in DjVuLibre (`ddjvu_cache_set_size`). In the emulated VM decoding is slow, so judge speed on a real machine.
+- Rotation and the dpi of pages that have none; pages of different size in one file (the layout handles them).
+- The text boxes of words that DjVu stores per line only (no word zones): fall back to lines.
+- CI needs `djvu_devel` (HaikuPorts) as a build dependency and `lib:libdjvulibre` in the package requirements.
+
+**Test material:** `djvulibre-book-en.djvu` (installed in the documentation of `djvu_devel`: many pages, an outline, text
+and links), and small files made with the tools (`c44` for a photo page, `cjb2` for a bilevel scan, `djvm` to join,
+`djvused` to add a text layer and an outline).
+
+**To decide:** (1) that the handler is the way (this plan), and that the GPL 2-or-later library is a dependency of the
+package; (2) whether text marks for DjVu are wanted at once or after the shapes; (3) the name of the type: `image/vnd.djvu`
+is the registered one, Haiku's translator has registered its own for the format, to be looked at on the VM when starting.
