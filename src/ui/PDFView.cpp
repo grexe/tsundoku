@@ -280,6 +280,8 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 	mRendering = false;
 
 	mSelected = NOT_SELECTED;
+	mTextEndPage = 0;
+	mSpansPages = false;
 	mSelectionKind = kSelectText;
 	mFilledSelection = settings->GetFilledSelection();
 	mTextStart = mTextEnd = fz_make_point(0, 0);
@@ -313,7 +315,7 @@ void PDFView::SetPassword(const char* ownerPassword, const char* userPassword) {
 void
 PDFView::EndDoc() {
 	mSelected = NOT_SELECTED;
-	mQuads.clear();
+	ClearQuads();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -872,8 +874,13 @@ PDFView::DrawSelection(BRect updateRect)
 	if (mSelectionKind == kSelectText) {
 		// the text between the two points, line by line
 		SetDrawingMode(B_OP_ALPHA);
-		for (size_t i = 0; i < mQuads.size(); i++) {
-			const fz_quad& q = mQuads[i];
+		const std::vector<fz_quad>* quads = QuadsOnPage(mActive->number);
+		if (quads == NULL) {
+			SetDrawingMode(B_OP_COPY);
+			return;
+		}
+		for (size_t i = 0; i < quads->size(); i++) {
+			const fz_quad& q = (*quads)[i];
 			BPoint polygon[4] = { mPage->PageToDev(q.ul), mPage->PageToDev(q.ur),
 				mPage->PageToDev(q.lr), mPage->PageToDev(q.ll) };
 			for (int j = 0; j < 4; j++)
@@ -934,7 +941,8 @@ PDFView::Draw(BRect updateRect)
 				DrawSelection(updateRect);
 				DrawToolPreview();
 				DrawAnnotationSelection();
-			}
+			} else if (mSelected != NOT_SELECTED && mSelectionKind == kSelectText && mSpansPages)
+				DrawSelection(updateRect);
 		}
 	}
 }
@@ -1140,7 +1148,7 @@ PDFView::BeginSelection(BPoint point, bool rectangle) {
 	if (mSelected != NOT_SELECTED) {
 		BRect old = SelectionBounds();
 		mSelected = NOT_SELECTED;
-		mQuads.clear();
+		ClearQuads();
 		if (old.IsValid())
 			Invalidate(old.InsetByCopy(-2, -2).OffsetByCopy(mLeft, mTop));
 	}
@@ -1243,7 +1251,7 @@ PDFView::MouseDown (BPoint point) {
 			if (mSelected != NOT_SELECTED) {
 				BRect old = SelectionBounds();
 				mSelected = NOT_SELECTED;
-				mQuads.clear();
+				ClearQuads();
 				if (old.IsValid())
 					Invalidate(old.InsetByCopy(-2, -2).OffsetByCopy(mLeft, mTop));
 			}
@@ -1483,9 +1491,10 @@ PDFView::MouseMoved (BPoint point, uint32 transit, const BMessage *msg) {
 
 void
 PDFView::ResizeSelection(BPoint point) {
+	const BPoint viewPoint = point;
 	point = CorrectMousePos(point);
 	if (mMouseAction == SELECT_ACTION && mSelectionKind == kSelectText) {
-		ExtendTextSelection(point);
+		ExtendTextSelectionTo(viewPoint);
 		return;
 	}
 
@@ -1531,7 +1540,7 @@ PDFView::MouseUp (BPoint point) {
 	if (mMouseAction == SELECT_ACTION) { // copy selection
 		if (mSelectionKind == kSelectText) {
 			BRect bounds = SelectionBounds();
-			if (!mQuads.empty()) {
+			if (!mQuads.empty() || TextEndPage() != mInteractionPage) {
 				mSelected = SELECTED;
 				CopySelection();
 			} else {
@@ -2253,7 +2262,7 @@ PDFView::SyncSlots()
 			// the page that the selections belong to is not shown any more
 			if (mSelected != NOT_SELECTED) {
 				mSelected = NOT_SELECTED;
-				mQuads.clear();
+				ClearQuads();
 			}
 			mAnnotationIndex = -1;
 			mInteractionPage = wanted->number;
@@ -2315,7 +2324,7 @@ PDFView::Redraw(bool keepRendered)
 	}
 	if (!keepSelection) {
 		mSelected = NOT_SELECTED;
-		mQuads.clear();
+		ClearQuads();
 	}
 	if (!pageStays)
 		mAnnotationIndex = -1;
@@ -2864,6 +2873,65 @@ PDFView::RotateAntiClockwise() {
 ///////////////////////////////////////////////////////////////////////////
 // Text selection
 
+void
+PDFView::ClearQuads() {
+	mQuads.clear();
+	mPageQuads.clear();
+	mTextEndPage = 0;
+	mSpansPages = false;
+}
+
+// Whether the selection of text covers the page, and the part of it that is on the page: from the point where it began to
+// the end of the page, the whole page, or from the beginning of the page to the end point.
+bool
+PDFView::SelectionOnPage(int page, fz_point* from, fz_point* to) {
+	int first = mInteractionPage, last = TextEndPage();
+	fz_point a = mTextStart, b = mTextEnd;
+	if (last < first) {
+		std::swap(first, last);
+		std::swap(a, b);
+	}
+	if (page < first || page > last)
+		return false;
+	fz_rect bounds = fz_empty_rect;
+	if (first != last && !mDoc->PageBounds(page, &bounds))
+		return false;
+	*from = page == first ? a : fz_make_point(bounds.x0, bounds.y0);
+	*to = page == last ? b : fz_make_point(bounds.x1, bounds.y1);
+	return true;
+}
+
+// the areas of the selection on a page that is shown (not the first one, whose areas are mQuads); NULL if it is not selected
+const std::vector<fz_quad>*
+PDFView::QuadsOnPage(int page) {
+	if (page == mInteractionPage)
+		return &mQuads;
+	std::map<int, std::vector<fz_quad> >::iterator found = mPageQuads.find(page);
+	if (found != mPageQuads.end())
+		return &found->second;
+	fz_point from, to;
+	PageSlot* slot = SlotForPage(page);
+	if (slot == NULL || !SelectionOnPage(page, &from, &to))
+		return NULL;
+	std::vector<fz_quad> quads;
+	fz_stext_page* text = slot->page->Text();
+	if (text != NULL) {
+		quads.resize(kMaxQuads);
+		int count = 0;
+		DocumentLocker locker(mDoc);
+		fz_context* context = mDoc->Context();
+		fz_var(count);
+		fz_try(context) {
+			count = fz_highlight_selection(context, text, from, to, &quads[0], kMaxQuads);
+		}
+		fz_catch(context) {
+			count = 0;
+		}
+		quads.resize(count);
+	}
+	return &(mPageQuads[page] = quads);
+}
+
 // the area that is selected, in coordinates of the bitmap
 BRect
 PDFView::SelectionBounds() {
@@ -2899,13 +2967,49 @@ PDFView::InTextSelection(BPoint point) {
 void
 PDFView::StartTextSelection(BPoint point) {
 	mSelectionKind = kSelectText;
-	mQuads.clear();
+	ClearQuads();
 	mTextStart = mTextEnd = mPage->DevToPage(point);
 }
 
 void
 PDFView::ExtendTextSelection(BPoint point) {
 	mTextEnd = mPage->DevToPage(LimitToPage(point));
+	mTextEndPage = 0;
+	UpdateQuads(true);
+}
+
+// The selection goes on to the point in the view: on the page that is there, or on the nearest page if the point is beside
+// or between pages.
+void
+PDFView::ExtendTextSelectionTo(BPoint viewPoint) {
+	PageSlot* slot = SlotAt(viewPoint);
+	if (slot == NULL) {
+		float best = 1e30f;
+		for (size_t i = 0; i < mSlots.size(); i++) {
+			PageSlot* candidate = mSlots[i];
+			BRect area(candidate->origin.x, candidate->origin.y, candidate->origin.x + candidate->page->GetWidth() - 1,
+				candidate->origin.y + candidate->page->GetHeight() - 1);
+			float dx = viewPoint.x < area.left ? area.left - viewPoint.x : viewPoint.x > area.right ? viewPoint.x - area.right : 0;
+			float dy = viewPoint.y < area.top ? area.top - viewPoint.y : viewPoint.y > area.bottom ? viewPoint.y - area.bottom : 0;
+			// (the pages are read from the top to the bottom, so a vertical distance counts for more)
+			float distance = dx * dx + dy * dy * 4;
+			if (distance < best) {
+				best = distance;
+				slot = candidate;
+			}
+		}
+	}
+	if (slot == NULL)
+		return;
+
+	BPoint local = viewPoint - slot->origin;
+	if (local.x < 0) local.x = 0;
+	else if (local.x > slot->page->GetWidth() - 1) local.x = slot->page->GetWidth() - 1;
+	if (local.y < 0) local.y = 0;
+	else if (local.y > slot->page->GetHeight() - 1) local.y = slot->page->GetHeight() - 1;
+
+	mTextEnd = slot->page->DevToPage(local);
+	mTextEndPage = slot->number == mInteractionPage ? 0 : slot->number;
 	UpdateQuads(true);
 }
 
@@ -2913,12 +3017,14 @@ PDFView::ExtendTextSelection(BPoint point) {
 void
 PDFView::UpdateQuads(bool invalidate) {
 	BRect old;
+	const bool wasSpanning = mSpansPages;
 	if (invalidate && mSelectionKind == kSelectText)
 		old = SelectionBounds();
 
 	std::vector<fz_quad> quads;
 	fz_stext_page* text = mPage->Text();
-	if (text != NULL) {
+	fz_point from, to;
+	if (text != NULL && SelectionOnPage(mInteractionPage, &from, &to)) {
 		quads.resize(kMaxQuads);
 		fz_quad* buffer = &quads[0];
 		int count = 0;
@@ -2927,7 +3033,7 @@ PDFView::UpdateQuads(bool invalidate) {
 		fz_context* context = mDoc->Context();
 		fz_var(count);
 		fz_try(context) {
-			count = fz_highlight_selection(context, text, mTextStart, mTextEnd, buffer, kMaxQuads);
+			count = fz_highlight_selection(context, text, from, to, buffer, kMaxQuads);
 		}
 		fz_catch(context) {
 			count = 0;
@@ -2935,11 +3041,17 @@ PDFView::UpdateQuads(bool invalidate) {
 		quads.resize(count);
 	}
 	mQuads.swap(quads);
+	mPageQuads.clear();
+	mSpansPages = TextEndPage() != mInteractionPage;
 
 	if (invalidate) {
-		BRect changed = old | SelectionBounds();
-		if (changed.IsValid())
-			Invalidate(changed.InsetByCopy(-2, -2).OffsetByCopy(mLeft, mTop));
+		if (mSpansPages || wasSpanning) {
+			Invalidate();	// (the other pages are not where the bounds of the first are)
+		} else {
+			BRect changed = old | SelectionBounds();
+			if (changed.IsValid())
+				Invalidate(changed.InsetByCopy(-2, -2).OffsetByCopy(mLeft, mTop));
+		}
 	}
 }
 
@@ -2967,6 +3079,7 @@ PDFView::SelectTextAt(BPoint point, int mode) {
 	mSelectionKind = kSelectText;
 	mTextStart = start;
 	mTextEnd = end;
+	mTextEndPage = 0;
 	UpdateQuads(false);
 	if (mQuads.empty()) {
 		mSelected = NOT_SELECTED;
@@ -2989,6 +3102,7 @@ PDFView::SelectFound(fz_point start, fz_point end) {
 	mSelectionKind = kSelectText;
 	mTextStart = start;
 	mTextEnd = end;
+	mTextEndPage = 0;
 	UpdateQuads(false);
 	mSelected = mQuads.empty() ? NOT_SELECTED : SELECTED;
 
@@ -3017,6 +3131,27 @@ BString*
 PDFView::GetSelectedText() {
 	if (mSelected != SELECTED)
 		return NULL;
+
+	// a selection over several pages: the text of each page, one after the other
+	if (mSelectionKind == kSelectText && TextEndPage() != mInteractionPage) {
+		int first = std::min(mInteractionPage, TextEndPage()), last = std::max(mInteractionPage, TextEndPage());
+		BString* all = new BString();
+		for (int page = first; page <= last; page++) {
+			fz_point from, to;
+			BString part;
+			if (SelectionOnPage(page, &from, &to) && mDoc->SelectionText(page, from, to, &part) && part.Length() > 0) {
+				if (all->Length() > 0)
+					all->Append("\n");
+				all->Append(part);
+			}
+		}
+		if (all->Length() == 0) {
+			delete all;
+			return NULL;
+		}
+		return all;
+	}
+
 	fz_stext_page* text = mPage->Text();
 	if (text == NULL)
 		return NULL;
@@ -3146,6 +3281,7 @@ void PDFView::SelectAll() {
 	mSelectionKind = kSelectText;
 	mTextStart = fz_make_point(bounds.x0, bounds.y0);
 	mTextEnd = fz_make_point(bounds.x1, bounds.y1);
+	mTextEndPage = 0;
 	UpdateQuads(false);
 	mSelected = mQuads.empty() ? NOT_SELECTED : SELECTED;
 	SelectionChanged();
@@ -3156,7 +3292,7 @@ void PDFView::SelectAll() {
 void PDFView::SelectNone() {
 	if (mSelected == SELECTED) {
 		mSelected = NOT_SELECTED;
-		mQuads.clear();
+		ClearQuads();
 		SelectionChanged();
 		Invalidate();
 	}
@@ -3177,7 +3313,8 @@ void PDFView::SetFilledSelection(bool filled) {
 bool
 PDFView::AnnotateSelection(MarkupType type, uint32 rgb)
 {
-	if (!HasTextSelection() || mQuads.empty() || !mDoc->CanMarkText()) {
+	const bool spanning = TextEndPage() != mInteractionPage;
+	if (!HasTextSelection() || (mQuads.empty() && !spanning) || !mDoc->CanMarkText()) {
 		beep();
 		return false;
 	}
@@ -3186,10 +3323,29 @@ PDFView::AnnotateSelection(MarkupType type, uint32 rgb)
 		return false;
 
 	float color[3] = { ((rgb >> 16) & 0xff) / 255.0f, ((rgb >> 8) & 0xff) / 255.0f, (rgb & 0xff) / 255.0f };
-	std::vector<fz_quad> quads = mQuads;
 	TimingStart();
 	WaitForPage(true);
 	TimingMark("render aborted");
+	if (spanning) {
+		// a mark on each page that the selection covers
+		int first = std::min(mInteractionPage, TextEndPage()), last = std::max(mInteractionPage, TextEndPage());
+		std::vector<int> marked;
+		for (int page = first; page <= last; page++) {
+			fz_point from, to;
+			std::vector<fz_quad> quads;
+			if (!SelectionOnPage(page, &from, &to) || !mDoc->SelectionQuads(page, from, to, &quads))
+				continue;
+			if (mDoc->AddMarkup(page, type, &quads[0], (int)quads.size(), color))
+				marked.push_back(page);
+		}
+		if (marked.empty())
+			return false;
+		SelectNone();
+		for (size_t i = 0; i < marked.size(); i++)
+			AnnotationsChanged(marked[i]);
+		return true;
+	}
+	std::vector<fz_quad> quads = mQuads;
 	if (!mDoc->AddMarkup(ActivePage(), type, &quads[0], (int)quads.size(), color))
 		return false;
 	TimingMark("annotation added to the document");

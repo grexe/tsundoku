@@ -371,6 +371,59 @@ HitsOnPage(Document* document, fz_stext_page* text, const BString& needle,
 
 
 bool
+Document::SelectionQuads(int pageNo, fz_point from, fz_point to, std::vector<fz_quad>* quads)
+{
+	if (pageNo < 1 || pageNo > fPageCount)
+		return false;
+	DocumentLocker locker(this);
+	std::map<int, fz_stext_page*> cache;
+	fz_stext_page* text = TextOfPage(this, cache, pageNo - 1);
+	if (text == NULL)
+		return false;
+	const int kMax = 4096;
+	quads->resize(kMax);
+	int count = 0;
+	fz_var(count);
+	fz_try(fContext) {
+		count = fz_highlight_selection(fContext, text, from, to, &(*quads)[0], kMax);
+	}
+	fz_catch(fContext) {
+		count = 0;
+	}
+	quads->resize(count);
+	fz_drop_stext_page(fContext, text);
+	return count > 0;
+}
+
+
+bool
+Document::SelectionText(int pageNo, fz_point from, fz_point to, BString* result)
+{
+	if (pageNo < 1 || pageNo > fPageCount)
+		return false;
+	DocumentLocker locker(this);
+	std::map<int, fz_stext_page*> cache;
+	fz_stext_page* text = TextOfPage(this, cache, pageNo - 1);
+	if (text == NULL)
+		return false;
+	char* copied = NULL;
+	fz_var(copied);
+	fz_try(fContext) {
+		copied = fz_copy_selection(fContext, text, from, to, 0);
+	}
+	fz_catch(fContext) {
+		copied = NULL;
+	}
+	fz_drop_stext_page(fContext, text);
+	if (copied == NULL)
+		return false;
+	*result = copied;
+	fz_free(fContext, copied);
+	return true;
+}
+
+
+bool
 Document::PageText(int pageNo, BString* result)
 {
 	if (pageNo < 1 || pageNo > fPageCount)

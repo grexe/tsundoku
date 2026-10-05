@@ -309,6 +309,11 @@ public:
 	// Moves or resizes: the annotation is fitted into the new bounds (a note only follows the corner).
 	bool         SetAnnotationBounds(int page, int index, fz_rect bounds, bool resize);
 
+	// The text between two points of a page (1-based, page space) and the areas it covers: for selections that run over
+	// several pages (the pages between are taken whole, from the top left to the bottom right corner).
+	bool         SelectionQuads(int page, fz_point from, fz_point to, std::vector<fz_quad>* quads);
+	bool         SelectionText(int page, fz_point from, fz_point to, BString* text);
+
 	// Where the words are on the page (1-based): the quads of the first hit, in page space. For making a mark from words
 	// that a program names; false if they are not there.
 	bool         FindQuoteQuads(int page, const char* quote, std::vector<fz_quad>* quads);

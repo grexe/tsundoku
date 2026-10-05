@@ -55,7 +55,8 @@ The sidebar is wider by default and collapses on its own if the document has nei
   click selects a word, triple click a line. The selected text is copied right away. With Shift as well the selection is a
   rectangle, which also copies the picture of that area. The cursor is an I-beam while Option or Cmd is held.
 - Dragging without a key moves the page; the secondary button opens a menu (copy, select all, the link actions).
-- A selection stays when you zoom or rotate.
+- A selection can run over several pages (the continuous flow, or the two pages of a spread): it is copied or marked page by
+  page (a mark on each page). It stays when you zoom or rotate.
 - Searching finds the text in the order of reading, continues after the previous hit (also backwards, Shift+G) and shows all hits
   on the page.
 - Copy text or graphics to the clipboard, or by drag and drop to other applications (Tracker too).
@@ -144,7 +145,6 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
 
 Tsundoku is in preview: formats and attribute names may still change before 1.0.
 
-- **Known limit:** in the continuous flow a text selection stops at the end of the page it was started on.
 - **Not there yet:** line widths and fill colors, the fonts of a
   document in the file info, fixed-layout EPUB, DRM, JPEG XL and HEIC pages (no translator on Haiku), margin notes.
 - See [PLAN-mupdf.md](PLAN-mupdf.md) for the plans and design notes.

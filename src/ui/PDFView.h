@@ -24,6 +24,7 @@
 #ifndef _PDFVIEW_H_
 #define _PDFVIEW_H_
 
+#include <map>
 #include <vector>
 
 #include <be/interface/Bitmap.h>
@@ -210,8 +211,14 @@ private:
 	bool mFilledSelection;
 
 	// text selection: end points in page space and the area they cover (page space)
+	// A text selection can run over several pages (the pages of a continuous flow or of a spread): it goes from mTextStart on
+	// the page where it began (mInteractionPage) to mTextEnd on page mTextEndPage (0: the same page); the pages between are
+	// selected whole. mQuads are the areas on the first page, the areas on the others are found when they are drawn.
 	fz_point mTextStart, mTextEnd;
+	int mTextEndPage;
+	bool mSpansPages;						// whether it was over several pages when it was last drawn
 	std::vector<fz_quad> mQuads;
+	std::map<int, std::vector<fz_quad> > mPageQuads;
 	// area selection (and zoom to selection): in coordinates of the bitmap
 	BPoint mSelectionStart;
 	BRect mSelection;
@@ -236,6 +243,13 @@ private:
 	// selection of text
 	void StartTextSelection(BPoint point);
 	void ExtendTextSelection(BPoint point);
+	// to the point in the view, on the page that is there or the nearest one
+	void ExtendTextSelectionTo(BPoint viewPoint);
+	void ClearQuads();
+	int  TextEndPage() const { return mTextEndPage != 0 ? mTextEndPage : mInteractionPage; }
+	// whether the selection of text covers the page, and from where to where in page space
+	bool SelectionOnPage(int page, fz_point* from, fz_point* to);
+	const std::vector<fz_quad>* QuadsOnPage(int page);
 	bool SelectTextAt(BPoint point, int mode);
 	void UpdateQuads(bool invalidate);
 	bool InTextSelection(BPoint point);
