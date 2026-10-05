@@ -41,9 +41,9 @@ ignored.
 - **Annotations:** notes, text, shapes and drawings work like in a PDF (there is no text to mark); they are kept in the file's
   attribute `SEN:annotations`.
 
-![A comic in the double-sided flow, left to right.](images/comic-spread.png)
+![A comic in the double-sided flow, left to right. (Bobby Make-Believe, Chicago Sunday Tribune, 1915, public domain.)](images/comic-spread.png)
 
-![The same kind of comic read right to left (manga): the first page is on the right.](images/manga-rtl.png)
+![A manga read right to left: the first page is on the right. (Black Jack ni Yoroshiku, © Shuho Sato / Manga on Web.)](images/manga-rtl.png)
 
 ## DjVu
 

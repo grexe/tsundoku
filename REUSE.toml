@@ -44,3 +44,18 @@ path = ["docs/guide/images/**"]
 precedence = "override"
 SPDX-FileCopyrightText = "2026 Gregor B. Rosenauer & Claude"
 SPDX-License-Identifier = "CC-BY-4.0"
+
+# These two screenshots show comics of others: Black Jack ni Yoroshiku by Shuho Sato (published on Manga on Web, free to
+# use with attribution) and Bobby Make-Believe (Chicago Sunday Tribune, 1915, public domain). The files of the comics are not
+# in this repository.
+[[annotations]]
+path = ["docs/guide/images/manga-rtl.png"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 Gregor B. Rosenauer & Claude", "Shuho Sato / Manga on Web (the manga shown)"]
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["docs/guide/images/comic-spread.png"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 Gregor B. Rosenauer & Claude", "Chicago Sunday Tribune, 1915 (the comic shown, public domain)"]
+SPDX-License-Identifier = "CC-BY-4.0"

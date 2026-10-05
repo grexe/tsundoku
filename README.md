@@ -16,7 +16,7 @@ PDF: EPUB books, comics (CBZ, CBR, CB7, CBT, BBF), DjVu, XPS and images.
 | | |
 |---|---|
 | ![PDF with marks and margin notes](docs/guide/images/main-window.png) | ![An EPUB with a mark and a margin note](docs/guide/images/epub.png) |
-| ![A comic in two pages](docs/guide/images/comic-spread.png) | ![The marker menu](docs/guide/images/marker-menu.png) |
+| ![A comic in two pages (Bobby Make-Believe, 1915, public domain)](docs/guide/images/comic-spread.png) | ![The marker menu](docs/guide/images/marker-menu.png) |
 
 ## Formats
 
@@ -214,6 +214,8 @@ which is under the GNU AGPL version 3.
 - © 2000-2011 Michael Pfeiffer
 - © 1998-2000 Hubert Figuiere
 - © 1997 Benoit Triquet
+- The comics in the screenshots: *Bobby Make-Believe* (Chicago Sunday Tribune, 1915, public domain) and *Black Jack ni Yoroshiku*
+  (© Shuho Sato / Manga on Web, used with attribution)
 - The icon of the shapes button is from [ArtPaint](https://github.com/HaikuArchives/ArtPaint) (MIT)
 - and the contributors to [BePDF](https://github.com/HaikuArchives/BePDF), among them Humdinger (the toolbar icons), Augustin Cavalier,
   Markus Himmel and the translators
