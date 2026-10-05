@@ -257,7 +257,7 @@ notes and shapes from the store. What was different from the plan and what was l
   once and keeps them in its own structures. The proper fix is in the recipe: a patch to `miniexp.cpp` (`pthread_once_t
   gctls_once = PTHREAD_ONCE_INIT;`), to be sent to HaikuPorts and upstream (to ask the user first).
 - Done afterwards: the year as `dc:date`, text of turned pages. `ddjvu_document_get_pageinfo()` gives the size of the page as it is
-  shown (turned already), the text boxes are in the stored orientation (`TurnBox`). Not done (see TODO.md): text marks (highlight, underline).
+  shown (turned already), the text boxes are in the stored orientation (`TurnBox`). Text marks (highlight, underline, strike out) are done too (0.8.0).
 - Test files: `djvulibre-book-en.djvu` (57 pages, outline, text), with links and metadata added by `djvused`
   (`select 3; set-ant file`, `set-meta file`).
 
