@@ -1088,6 +1088,15 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 		UpdatePublished(node, comic->Date().String());
 	}
 
+	// a DjVu file has free metadata: the year (or the date) of the work is its date
+	if (doc->IsDjvu()) {
+		BString year = doc->Metadata("info:Year");
+		if (year.IsEmpty())
+			year = doc->Metadata("info:Date");
+		if (!year.IsEmpty())
+			UpdatePublished(node, year.String());
+	}
+
 	// a document that says it is read from the right to the left (a manga, an EPUB) says so in the attribute, so that it
 	// can be found; what the reader chose for the file is written when it is closed and is not changed here
 	int declared = doc->DeclaredReading();

@@ -63,7 +63,8 @@ const long kMaxPixels = 80L * 1000 * 1000;		// of a page that is drawn: 8000 by 
 
 
 struct PageInfo {
-	int width, height;		// in pixels, as they are drawn (turned if the page is)
+	int width, height;		// in pixels, as they are shown (turned if the page is)
+	int storedWidth, storedHeight;	// as the file has them
 	int dpi;
 	int rotation;			// quarter turns that the file asks for
 	int known;
@@ -124,7 +125,8 @@ struct DjvuPage {
 	fz_page super;
 	int number;				// from 0
 	float width, height;		// in points
-	int rotation;
+	int rotation;			// quarter turns, counter-clockwise
+	int storedWidth, storedHeight;	// of the page as the file has it, in pixels
 	int dpi;
 };
 
@@ -209,10 +211,13 @@ GetInfo(DjvuDoc* doc, int number, PageInfo* info)
 
 	PageInfo result;
 	result.rotation = raw.rotation & 3;
-	// a page that is turned by a quarter is drawn the other way round
+	// the size is that of the page as it is shown (DjVuLibre has turned it already if the page is turned by a quarter); the
+	// page as the file has it is the other way round then
 	bool turned = (result.rotation & 1) != 0;
-	result.width = turned ? raw.height : raw.width;
-	result.height = turned ? raw.width : raw.height;
+	result.width = raw.width;
+	result.height = raw.height;
+	result.storedWidth = turned ? raw.height : raw.width;
+	result.storedHeight = turned ? raw.width : raw.height;
 	result.dpi = raw.dpi > 0 ? raw.dpi : kDefaultDpi;
 	result.known = 1;
 	doc->infos[number] = result;
@@ -450,12 +455,44 @@ StringWidth(fz_context* context, fz_font* font, const char* text, float size)
 }
 
 
-// One piece of text in its box, stretched to the box.
-void
-AddText(fz_context* context, fz_text* run, fz_font* font, const Word& word, float scale, float pageHeight)
+// A box of the text, which is in the coordinates of the page as the file has it (origin at the bottom left, in pixels), as it is
+// on the page as it is shown: turned by the quarter turns, counter-clockwise, that the file asks for. (Links are given in the
+// coordinates of the page as it is shown, only the text is not: ddjvu_page_get_initial_rotation() says so.)
+Box
+TurnBox(const Box& box, int rotation, int storedWidth, int storedHeight)
 {
-	float left = word.box.x0 * scale, right = word.box.x1 * scale;
-	float top = pageHeight - word.box.y1 * scale, bottom = pageHeight - word.box.y0 * scale;
+	// the corners, turned: a quarter turn counter-clockwise takes (x, y) to (height - y, x)
+	int xs[2] = { box.x0, box.x1 }, ys[2] = { box.y0, box.y1 };
+	int minX = 0, minY = 0, maxX = 0, maxY = 0;
+	bool first = true;
+	for (int i = 0; i < 2; i++) {
+		for (int k = 0; k < 2; k++) {
+			int x = xs[i], y = ys[k], tx, ty;
+			switch (rotation & 3) {
+				case 1:		tx = storedHeight - y; ty = x; break;
+				case 2:		tx = storedWidth - x; ty = storedHeight - y; break;
+				case 3:		tx = y; ty = storedWidth - x; break;
+				default:	tx = x; ty = y; break;
+			}
+			if (first || tx < minX) minX = tx;
+			if (first || tx > maxX) maxX = tx;
+			if (first || ty < minY) minY = ty;
+			if (first || ty > maxY) maxY = ty;
+			first = false;
+		}
+	}
+	Box result = { minX, minY, maxX, maxY };
+	return result;
+}
+
+
+// One piece of text in its box (on the page as it is shown), stretched to the box.
+void
+AddText(fz_context* context, fz_text* run, fz_font* font, const Box& box, const std::string& text, float scale,
+	float pageHeight)
+{
+	float left = box.x0 * scale, right = box.x1 * scale;
+	float top = pageHeight - box.y1 * scale, bottom = pageHeight - box.y0 * scale;
 	float height = bottom - top, width = right - left;
 	if (height < 0.5f || width < 0.5f)
 		return;
@@ -463,14 +500,14 @@ AddText(fz_context* context, fz_text* run, fz_font* font, const Word& word, floa
 	float ascender = fz_font_ascender(context, font), descender = fz_font_descender(context, font);
 	float em = ascender - descender;
 	float size = em > 0 ? height / em : height;
-	float natural = StringWidth(context, font, word.text.c_str(), size);
+	float natural = StringWidth(context, font, text.c_str(), size);
 	float stretch = natural > 0 ? width / natural : 1;
 	if (stretch < 0.1f)
 		stretch = 0.1f;
 	else if (stretch > 10)
 		stretch = 10;
 	fz_matrix matrix = fz_make_matrix(size * stretch, 0, 0, -size, left, top + size * ascender);
-	fz_show_string(context, run, font, matrix, word.text.c_str(), 0, 0, FZ_BIDI_LTR, FZ_LANG_UNSET);
+	fz_show_string(context, run, font, matrix, text.c_str(), 0, 0, FZ_BIDI_LTR, FZ_LANG_UNSET);
 }
 
 
@@ -478,9 +515,6 @@ AddText(fz_context* context, fz_text* run, fz_font* font, const Word& word, floa
 void
 RunText(fz_context* context, DjvuDoc* doc, DjvuPage* page, fz_device* device, fz_matrix ctm)
 {
-	// the text is in the coordinates of the page as it is stored, which only is the page as it is drawn if it is not turned
-	if (page->rotation != 0)
-		return;
 	const std::vector<Word>& words = WordsOf(doc, page->number);
 	if (words.empty())
 		return;
@@ -491,8 +525,10 @@ RunText(fz_context* context, DjvuDoc* doc, DjvuPage* page, fz_device* device, fz
 	fz_var(font);
 	fz_try(context) {
 		font = fz_new_base14_font(context, "Helvetica");
-		for (size_t i = 0; i < words.size(); i++)
-			AddText(context, run, font, words[i], scale, page->height);
+		for (size_t i = 0; i < words.size(); i++) {
+			Box box = TurnBox(words[i].box, page->rotation, page->storedWidth, page->storedHeight);
+			AddText(context, run, font, box, words[i].text, scale, page->height);
+		}
 		fz_ignore_text(context, device, run, ctm);
 	}
 	fz_always(context) {
@@ -652,6 +688,8 @@ LoadPage(fz_context* context, fz_document* doc_, int, int number)
 	page->super.drop_page = DropPage;
 	page->number = number;
 	page->rotation = info.rotation;
+	page->storedWidth = info.storedWidth;
+	page->storedHeight = info.storedHeight;
 	page->dpi = info.dpi;
 	page->width = info.width * PointsPerPixel(info.dpi);
 	page->height = info.height * PointsPerPixel(info.dpi);

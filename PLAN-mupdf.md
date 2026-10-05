@@ -255,7 +255,8 @@ notes and shapes from the store. What was different from the plan and what was l
   around every call that makes s-expressions (`KeyGuard`), switches the collector off, and asks for text, links, outline and metadata
   once and keeps them in its own structures. The proper fix is in the recipe: a patch to `miniexp.cpp` (`pthread_once_t
   gctls_once = PTHREAD_ONCE_INIT;`), to be sent to HaikuPorts and upstream (to ask the user first).
-- Not done (see TODO.md): text of turned pages, the year of the metadata as `dc:date`, text marks (highlight, underline) on DjVu.
+- Done afterwards: the year as `dc:date`, text of turned pages. `ddjvu_document_get_pageinfo()` gives the size of the page as it is
+  shown (turned already), the text boxes are in the stored orientation (`TurnBox`). Not done (see TODO.md): text marks (highlight, underline).
 - Test files: `djvulibre-book-en.djvu` (57 pages, outline, text), with links and metadata added by `djvused`
   (`select 3; set-ant file`, `set-meta file`).
 

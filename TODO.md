@@ -80,14 +80,11 @@ the library is fixed (keep the cache, which saves work anyway).
 
 ## DjVu
 
-What is not done, and whether it is ours or DjVu's (2026-10-05):
+What is not done (2026-10-05); done since: the year of the metadata as `dc:date`, the text of turned pages (the boxes of the text
+layer are in the coordinates of the page as the file has it and are turned to those of the page as shown, checked for all four
+orientations against computed positions):
 
 - [ ] **Text marks** (highlight, underline, strike out) on DjVu: ours. The text layer is there and works for search and
   selection; marks need `Document::ResolveAnnotation()` (written for books: chapters and EPUB CFIs) to find the quoted words
   on fixed pages and `StoreAddMarkup()` to make the anchor from a page. A fixed-page quote anchor (page + text quote selector)
   would also serve other documents with a text layer (XPS, scanned PDFs).
-- [ ] **The year of the metadata** as `dc:date`: ours, small. DjVu metadata keys are free-form (`djvused set-meta`: title, author,
-  year, ...); only title, author, subject, keywords are read as the PDF info, `year` is not mapped.
-- [ ] **Text on turned pages** (a page with an initial rotation of 90, 180 or 270 degrees): ours, caused by a peculiarity of the
-  DjVu API: text zones are in the coordinates of the page as stored, links in those of the page as shown
-  (`ddjvu_page_get_initial_rotation()` documents it). The boxes have to be turned.

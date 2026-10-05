@@ -124,8 +124,8 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   `DjvuDocument.cpp`, so everything above it works as it does for other documents): the hidden text layer is put into the
   page as invisible text, so search, selection and copy work; the outline, the hyperlinks (also those that lead to another
   page of the file) and the metadata (title, author, keywords) are those of the file; notes, text, shapes and drawings
-  are annotations of the same kind as those of comics. A document that is in several files (an index with files next to it) is read as well; text is not found on pages that
-  are turned.
+  are annotations of the same kind as those of comics. A document that is in several files (an index with files next to it) is read as well, pages that are turned are
+  turned (and their text with them); the year in the metadata is the date (`dc:date`).
   DjVuLibre has a bug on Haiku that this works around (see the note in `DjvuDocument.cpp`): a once-only initialisation that
   does not happen, so that it stores its data of a thread under a key that belongs to someone else.
 - EPUB books open like PDF files. A book has no fixed pages, so it is laid out as pages of 6 by 9 inches for a text
