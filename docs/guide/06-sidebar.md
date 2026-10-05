@@ -9,7 +9,7 @@ default and collapses on its own if the document has neither an outline nor book
 The first tab has the **outline** of the document (chapters and sections, as the document defines them; it follows the current
 page) and **your own bookmarks**.
 
-- **Bookmark > Add** makes a bookmark for the current page; you give it a label. **Edit** changes the label, **Delete** removes
+- **Bookmark > Add** makes a bookmark for the current page; you give it a label. It starts with the title of the section the page is in and the page, such as "7.3 Comic books (p11)" (just the title in a book, "Page 11" if the document has no outline). **Edit** changes the label, **Delete** removes
   the bookmark of the page.
 - In a book a bookmark is a place in the text, not a page number: it is found again when you change the text size.
 

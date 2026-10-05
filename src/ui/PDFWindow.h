@@ -383,6 +383,7 @@ protected:
 	void OnFullScreen();
 
 	// User defined bookmarks
+	BString DefaultBookmarkLabel(int page);
 	void AddUserBookmark();
 	void DeleteUserBookmark();
 	void EditUserBookmark();

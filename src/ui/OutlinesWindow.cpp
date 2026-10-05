@@ -543,13 +543,17 @@ BookmarkWindow::BookmarkWindow(int pageNum, const char* title, BRect aRect, BLoo
 	// center window
 
 	aRect.OffsetBy(aRect.Width() / 2, aRect.Height() / 2);
-	float width = 300, height = 45;
+	float width = 480, height = 45;
 	aRect.SetRightBottom(BPoint(aRect.left + width, aRect.top + height));
 	aRect.OffsetBy(-aRect.Width() / 2, -aRect.Height() / 2);
-	MoveTo(aRect.left, aRect.top);
 	ResizeTo(width, height);
+	if (BWindow* parent = dynamic_cast<BWindow*>(looper))
+		CenterIn(parent->Frame());
+	else
+		CenterOnScreen();
 
 	mTitle = new BTextControl("mTitle", "", title, NULL);
+	mTitle->SetExplicitMinSize(BSize(340, B_SIZE_UNSET));	// room for "7.3 Comic books (p11)"
 
 	BButton *button = new BButton("button", B_TRANSLATE("OK"), new BMessage('OK'));
 

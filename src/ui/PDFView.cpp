@@ -3192,12 +3192,14 @@ PDFView::NoteButton()
 			CancelTool();
 		return;
 	}
+	// the button is for margin notes: the selected text gets one, or the next selection of text does; a note on the page itself
+	// (for a document without text to select) is in the menu of the shapes button and in the Edit menu
 	if (HasTextSelection() && mDoc->CanMarkText())
 		MarkSelection(kMarkupHighlight, 0xffeb3b, true);
+	else if (mDoc->CanMarkText() && mDoc->CanCopy())
+		ArmMarkup(kMarkupHighlight, 0xffeb3b, true);
 	else if (mDoc->CanDrawAnnotations())
 		SetTool(kToolNote);
-	else if (mDoc->CanMarkText())
-		ArmMarkup(kMarkupHighlight, 0xffeb3b, true);
 	else
 		beep();
 }
@@ -3362,7 +3364,8 @@ void
 PDFView::ShowShapesMenu(BPoint screenPoint)
 {
 	static const struct { const char* label; PlacementTool tool; } kShapes[] = {
-		{ B_TRANSLATE_MARK("Text"), kToolFreeText }, { B_TRANSLATE_MARK("Rectangle"), kToolRectangle },
+		{ B_TRANSLATE_MARK("Note"), kToolNote }, { B_TRANSLATE_MARK("Text"), kToolFreeText },
+		{ B_TRANSLATE_MARK("Rectangle"), kToolRectangle },
 		{ B_TRANSLATE_MARK("Ellipse"), kToolEllipse }, { B_TRANSLATE_MARK("Line"), kToolLine },
 		{ B_TRANSLATE_MARK("Arrow"), kToolArrow }, { B_TRANSLATE_MARK("Drawing"), kToolInk }
 	};
@@ -4100,14 +4103,8 @@ PDFView::BeginTool(BPoint point)
 	if (p.x < 0 || p.y < 0 || p.x >= mWidth || p.y >= mHeight)
 		return;
 
-	if (mTool == kToolNote || mTool == kToolFreeText) {
-		// a click is all it takes, the text is asked for
-		PlacementTool tool = mTool;
-		CancelTool();
-		AskForText(tool, mPage->DevToPage(p));
-		return;
-	}
-
+	// (a note or a text is asked for when the button is released, see FinishTool: a window that opens under the pressed
+	// button is a surprise)
 	mToolStart = mToolEnd = p;
 	mToolPoints.clear();
 	mToolPoints.push_back(p);
@@ -4120,6 +4117,15 @@ PDFView::BeginTool(BPoint point)
 void
 PDFView::FinishTool(BPoint)
 {
+	if (mTool == kToolNote || mTool == kToolFreeText) {
+		// a click is all it takes, the text is asked for
+		PlacementTool tool = mTool;
+		BPoint at = mToolStart;
+		CancelTool();
+		AskForText(tool, mPage->DevToPage(at));
+		return;
+	}
+
 	BRect bounds = ToolBounds();
 	float dx = mToolEnd.x - mToolStart.x, dy = mToolEnd.y - mToolStart.y;
 	float length = sqrtf(dx * dx + dy * dy);

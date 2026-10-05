@@ -2670,11 +2670,42 @@ void PDFWindow::WorkspaceActivated(int32 workspace, bool active) {
 
 // #pragma mark - User-defined bookmarks
 
+// The name that a new bookmark gets: the title of the section that the page is in, and the page ("7.3 Comic books (p11)"), or
+// just "Page 11" if the document has no table of contents. (The pages of a book change with the text size: its bookmarks have
+// the title only.)
+BString PDFWindow::DefaultBookmarkLabel(int page)
+{
+	Document* doc = mMainView->GetDocument();
+	std::vector<DocOutlineEntry> entries;
+	const DocOutlineEntry* section = NULL;
+	if (doc != NULL && doc->LoadOutline(entries)) {
+		// the last entry that starts on or before the page is the one that the page is in
+		for (size_t i = 0; i < entries.size(); i++) {
+			if (entries[i].page > 0 && entries[i].page <= page && entries[i].title.Length() > 0)
+				section = &entries[i];
+		}
+	}
+	BString label;
+	char buffer[16];
+	snprintf(buffer, sizeof(buffer), "%d", page);
+	if (section != NULL && doc->IsReflowable()) {
+		label = section->title;
+	} else if (section != NULL) {
+		label = B_TRANSLATE_COMMENT("%1 (p%2)", "Name of a bookmark: the section (1) and the page (2)");
+		label.ReplaceFirst("%1", section->title.String());
+		label.ReplaceFirst("%2", buffer);
+	} else {
+		char text[64];
+		snprintf(text, sizeof(text), B_TRANSLATE("Page %d"), page);
+		label = text;
+	}
+	return label;
+}
+
 void PDFWindow::AddUserBookmark()
 {
-	char buffer[256];
-	sprintf(buffer, B_TRANSLATE("Page %d"), mMainView->Page());
-	new BookmarkWindow(mMainView->Page(), buffer, BRect(30, 30, 300, 200), this);
+	BString label = DefaultBookmarkLabel(mMainView->Page());
+	new BookmarkWindow(mMainView->Page(), label.String(), BRect(30, 30, 300, 200), this);
 }
 
 void PDFWindow::DeleteUserBookmark() {

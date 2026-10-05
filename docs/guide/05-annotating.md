@@ -17,8 +17,8 @@ next click or selection uses it once, and Escape (or the button again) puts it d
 | Button | What it does |
 |:---|:---|
 | **Marker** (highlighter) | opens a menu of colors (and *Underline* and *Strike out*). After you choose, the pointer is an I-beam: select the text (drag, double click for a word, triple click for a line) and it is marked in that color. If some text is already selected, it is marked at once. |
-| **Note** | with text selected, a margin note for it (see below). Otherwise the pointer is a cross: click on the page where the note should be, then write it. In a book the next selection of text gets a margin note. |
-| **Text, shapes and drawing** | opens a menu (*Text, Rectangle, Ellipse, Line, Arrow, Drawing*); after you choose, the pointer is a cross and you click or drag on the page. |
+| **Note** | a margin note: with text selected, that text gets one at once. Otherwise the pointer is an I-beam: select the text (drag, double click for a word, triple click for a line) and a window asks for the note when you let go. |
+| **Text, shapes and drawing** | opens a menu (*Note, Text, Rectangle, Ellipse, Line, Arrow, Drawing*); after you choose, the pointer is a cross and you click (note, text) or drag on the page. The *Note* of this menu is a note icon on the page itself, for places where there is no text to select. |
 
 A small arrow at the corner of the icon of the **Marker** and of the **Text, shapes and drawing** button says that the button opens a
 menu. The buttons are dimmed for documents that cannot take what they make (see the table above).
@@ -40,8 +40,7 @@ A mark can carry a note. Select the text and choose **Edit > Add margin note** (
 text is selected: the text is highlighted and a window asks for the note. A small note appears in the white margin at the right border of the page, at the height of the mark. Rest the pointer on it to read the note: a dotted line shows to which words it
 belongs. Click it to edit.
 
-In a book (EPUB) the **Note** button arms the next selection of text for a margin note, since there are no notes that sit on
-the page there. **View > Show margin notes** switches the small notes off.
+In a book (EPUB) there are no notes that sit on the page. **View > Show margin notes** switches the small notes off.
 
 ## Notes, text and shapes
 
