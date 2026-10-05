@@ -5,6 +5,16 @@ permissions:
   contents: write   # to attach the package to a release
 
 jobs:
+  # every file has its license (REUSE), and the MIT components in lib/ need nothing that is copyleft
+  licenses:
+    runs-on: ubuntu-latest
+    name: licenses
+    steps:
+      - uses: actions/checkout@v7
+      - uses: fsfe/reuse-action@v6
+      - name: lib/ is MIT and stays independent
+        run: tests/check_lib_boundary.sh
+
   # the user guide is made from the Markdown chapters in docs/guide: HTML, EPUB 3, PDF and DjVu
   docs:
     runs-on: ubuntu-latest

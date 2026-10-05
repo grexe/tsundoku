@@ -1,7 +1,7 @@
 # lib: reusable components (MIT)
 
-The code in this folder is licensed under the **MIT License** (see [LICENSE](LICENSE); each file says
-`SPDX-License-Identifier: MIT`). It was written for Tsundoku, but it has no part of Tsundoku's user interface and does not use
+The code in this folder is licensed under the **MIT License** (see [LICENSE](LICENSE); the header of each
+file has the SPDX identifier `MIT`). It was written for Tsundoku, but it has no part of Tsundoku's user interface and does not use
 MuPDF, so that SEN (enrichment plugins, navigators, ...) and other programs can use it without taking on the AGPL of Tsundoku.
 
 | File | What it does | Needs |

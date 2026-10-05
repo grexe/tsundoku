@@ -399,7 +399,7 @@ BepdfApplication::BepdfApplication()
 	}
 
 	mDefaultPDF = mAppPath;
-	mDefaultPDF.Append("docs/Start.pdf");
+	mDefaultPDF.Append("docs/tsundoku-guide.pdf");		// the user guide is the start page
 
 	BPath path(mAppPath);
 	LoadSettings();

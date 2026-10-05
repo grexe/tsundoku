@@ -1,4 +1,7 @@
-/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * SPDX-FileCopyrightText: 2026 Gregor B. Rosenauer & Claude, and the authors of BePDF
+ */
 #include <Application.h>
 #include <IconUtils.h>
 #include <Resources.h>

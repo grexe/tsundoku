@@ -1,0 +1,32 @@
+version = 1
+SPDX-PackageName = "Tsundoku"
+SPDX-PackageSupplier = "SEN Labs e.U."
+SPDX-PackageDownloadLocation = "https://github.com/sen-laboratories/tsundoku"
+
+# The program and what belongs to it: AGPL-3.0-or-later (BePDF is GPL-2.0-or-later, which allows it; MuPDF is AGPL-3.0).
+# The source files say so themselves (SPDX-License-Identifier in the header); these are the files that cannot.
+[[annotations]]
+path = [
+	"README.md", "TODO.md", "PLAN-mupdf.md", "MUPDF-NOTES.md", "LICENSE",
+	"build.sh", "package.sh", "package/**", ".github/**", ".gitignore", ".gitattributes", "REUSE.toml",
+	"docs/**", "tests/**", "dist/license/**",
+	"src/locales/**", "src/graphics/*.iom",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Gregor B. Rosenauer & Claude, and the authors of BePDF (see README.md)"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# The logo, the name's artwork and the icons that were made for Tsundoku: CC BY 4.0. (This does not give rights to the name
+# Tsundoku or to SEN as trademarks.)
+[[annotations]]
+path = ["images/**", "src/graphics/tsundoku.hvif"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Gregor B. Rosenauer & Claude"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# The components that others may use (the source files carry their own MIT header)
+[[annotations]]
+path = ["lib/README.md", "lib/LICENSE"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Gregor B. Rosenauer & Claude"
+SPDX-License-Identifier = "MIT"

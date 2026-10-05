@@ -1,4 +1,7 @@
-/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * SPDX-FileCopyrightText: 2026 Gregor B. Rosenauer & Claude, and the authors of BePDF
+ */
 resource app_flags B_MULTIPLE_LAUNCH;
 
 resource app_version {
