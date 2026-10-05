@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="images/toji-logo_small.jpg" alt="Toji" width="320">
+  <img src="images/toji-logo.png" alt="Toji" width="240">
 </p>
 
 # Toji™

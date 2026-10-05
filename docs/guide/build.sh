@@ -15,7 +15,7 @@ echo "HTML"
 pandoc $CHAPTERS $COMMON -t html5 -s --embed-resources --css=guide.css -o "$OUT/$NAME.html"
 
 echo "EPUB 3"
-pandoc $CHAPTERS $COMMON -t epub3 --css=guide.css --epub-cover-image=../../images/toji-logo_small.jpg \
+pandoc $CHAPTERS $COMMON -t epub3 --css=guide.css --epub-cover-image=../../images/toji-logo.png \
 	-o "$OUT/$NAME.epub"
 
 if command -v typst >/dev/null; then
