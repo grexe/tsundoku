@@ -23,7 +23,10 @@ static void gctls_alloc() {
 ```
 
 POSIX only guarantees that a `pthread_once_t` initialised with `PTHREAD_ONCE_INIT` works. On Haiku that is `{ -1 }`
-(`/system/develop/headers/posix/pthread.h`), and a zero control counts as "already done": **`gctls_key_alloc()` never runs**
+(`/system/develop/headers/posix/pthread.h`; `src/system/libroot/posix/pthread/pthread_once.cpp` uses negative states, and reads a
+non-negative state as the id of a semaphore that a waiting thread has created). A zero control is therefore taken for "another
+thread is initialising, wait on semaphore 0"; `acquire_sem(0)` fails at once and `pthread_once()` returns 0 without calling the
+routine: **`gctls_key_alloc()` never runs**
 (checked: a program that calls `pthread_once()` on a static `pthread_once_t` and on `PTHREAD_ONCE_INIT` has its routine run 0
 and 1 times). `gctls_key` stays 0, so every thread that builds an s-expression does `pthread_setspecific(0, gctls_t*)`: it
 overwrites the thread-specific value of **key 0 of the process, which is whoever created the first key** (in Tsundoku: the
