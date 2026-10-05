@@ -23,7 +23,7 @@ the HaikuPorts libraries (see M0 results). The text below keeps the reasoning.
    viewing, navigation, search and outline have parity, then merge to `main` and release as 0.2.0. Editing may come
    later (see M4), which would make 0.2.0 view-only for annotations.
 
-## Where XPDF is used today (21k lines in `src/app`)
+## Where XPDF is used today (21k lines in `src`)
 
 | Area | Files | Lines | What happens to it |
 |------|-------|-------|--------------------|
@@ -85,7 +85,7 @@ because the UI classes need real rework. M5 items are independent and can wait. 
   annotated by BePDF.
 - CI build time with MuPDF in the emulated VM.
 
-## M0 results (spike done, `spike/mupdf-spike.cpp`)
+## M0 results (the spike is done and removed from the tree; it is in the history up to 0.8.0)
 
 MuPDF 1.28.5 builds on Haiku without patches, with `make build=release HAVE_X11=no HAVE_GLUT=no HAVE_CURL=no
 USE_SYSTEM_FREETYPE=yes USE_SYSTEM_HARFBUZZ=yes USE_SYSTEM_ZLIB=yes USE_SYSTEM_LIBJPEG=yes USE_SYSTEM_OPENJPEG=yes

@@ -32,47 +32,47 @@ APP_MIME_SIG = application/x-vnd.sen-labs.Tsundoku
 #	means this Makefile will not work correctly if two source files with the
 #	same name (source.c or source.cpp) are included from different directories.
 #	Also note that spaces in folder names do not work well with this Makefile.
-SRCS = app/AnnotationsView.cpp \
-	app/AttachmentsView.cpp \
-	app/BusyWindow.cpp \
-	app/CachedPage.cpp \
-	app/Document.cpp \
-	app/DjvuDocument.cpp \
-	app/DocumentDraw.cpp \
-	app/DocumentReflow.cpp \
-	app/DocumentWeb.cpp \
+SRCS = annotations/AnnotationsView.cpp \
+	ui/AttachmentsView.cpp \
+	ui/BusyWindow.cpp \
+	backend/CachedPage.cpp \
+	backend/Document.cpp \
+	backend/DjvuDocument.cpp \
+	annotations/DocumentDraw.cpp \
+	annotations/DocumentReflow.cpp \
+	annotations/DocumentWeb.cpp \
 	app/EntryChangedMonitor.cpp \
-	app/BbfInfo.cpp \
-	app/ComicArchive.cpp \
-	app/ComicInfo.cpp \
-	app/EpubCfi.cpp \
-	app/EpubInfo.cpp \
-	app/FileInfoWindow.cpp \
-	app/FindTextWindow.cpp \
+	metadata/BbfInfo.cpp \
+	backend/ComicArchive.cpp \
+	metadata/ComicInfo.cpp \
+	annotations/EpubCfi.cpp \
+	metadata/EpubInfo.cpp \
+	ui/FileInfoWindow.cpp \
+	ui/FindTextWindow.cpp \
 	app/Globals.cpp \
 	app/Application.cpp \
 	app/History.cpp \
-	app/LayoutUtils.cpp \
-	app/NoteWindow.cpp \
-	app/OutlinesWindow.cpp \
-	app/PageLayout.cpp \
-	app/PDFPrint.cpp \
-	app/PDFSearch.cpp \
-	app/PDFView.cpp \
-	app/PDFWindow.cpp \
-	app/PageRenderer.cpp \
-	app/PasswordWindow.cpp \
-	app/PreferencesWindow.cpp \
-	app/SidebarTabView.cpp \
-	app/PrintSettingsWindow.cpp \
-	app/PrintingProgressWindow.cpp \
+	ui/LayoutUtils.cpp \
+	annotations/NoteWindow.cpp \
+	ui/OutlinesWindow.cpp \
+	layout/PageLayout.cpp \
+	ui/PDFPrint.cpp \
+	ui/PDFSearch.cpp \
+	ui/PDFView.cpp \
+	ui/PDFWindow.cpp \
+	backend/PageRenderer.cpp \
+	ui/PasswordWindow.cpp \
+	ui/PreferencesWindow.cpp \
+	ui/SidebarTabView.cpp \
+	ui/PrintSettingsWindow.cpp \
+	ui/PrintingProgressWindow.cpp \
 	app/Settings.cpp \
-	app/StatusWindow.cpp \
-	app/TraceWindow.cpp \
-	app/WebAnnotation.cpp \
-	app/utils/EntryMenuItem.cpp \
-	app/utils/ResourceLoader.cpp \
-	app/utils/Thread.cpp
+	ui/StatusWindow.cpp \
+	ui/TraceWindow.cpp \
+	annotations/WebAnnotation.cpp \
+	ui/EntryMenuItem.cpp \
+	app/ResourceLoader.cpp \
+	app/Thread.cpp
 
 #	Specify the resource definition files to use. Full or relative paths can be
 #	used.
