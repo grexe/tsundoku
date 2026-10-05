@@ -1,0 +1,12 @@
+Terms for "Black Jack ni Yoroshiku" (Shuho Sato, published by Manga on Web)
+
+This is not a standard license. In September 2012 the author released the work for free secondary use under his own terms,
+as announced at https://www.itmedia.co.jp/news/article/1210/18/1121018055/ and on Manga on Web:
+
+- The work may be used for commercial and non-commercial purposes (copying, translating, adapting, derived works) without
+  prior notice and without royalties.
+- The author's name must be credited somewhere: (C) Shuho Sato / Manga on Web
+- The work is used at your own risk.
+
+In this repository the work appears only in a screenshot (docs/guide/images/manga-rtl.png). The files of the manga are not
+included.

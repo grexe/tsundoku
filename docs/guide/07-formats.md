@@ -43,7 +43,7 @@ ignored.
 
 ![A comic in the double-sided flow, left to right. (Bobby Make-Believe, Chicago Sunday Tribune, 1915, public domain.)](images/comic-spread.png)
 
-![A manga read right to left: the first page is on the right. (Black Jack ni Yoroshiku, © Shuho Sato / Manga on Web.)](images/manga-rtl.png)
+![A manga read right to left: the first page is on the right. (Black Jack ni Yoroshiku, (C) Shuho Sato / Manga on Web.)](images/manga-rtl.png)
 
 ## DjVu
 

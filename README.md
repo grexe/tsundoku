@@ -215,7 +215,7 @@ which is under the GNU AGPL version 3.
 - © 1998-2000 Hubert Figuiere
 - © 1997 Benoit Triquet
 - The comics in the screenshots: *Bobby Make-Believe* (Chicago Sunday Tribune, 1915, public domain) and *Black Jack ni Yoroshiku*
-  (© Shuho Sato / Manga on Web, used with attribution)
+  ((C) Shuho Sato / Manga on Web, free for secondary use with this credit)
 - The icon of the shapes button is from [ArtPaint](https://github.com/HaikuArchives/ArtPaint) (MIT)
 - and the contributors to [BePDF](https://github.com/HaikuArchives/BePDF), among them Humdinger (the toolbar icons), Augustin Cavalier,
   Markus Himmel and the translators
