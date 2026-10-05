@@ -91,6 +91,3 @@ What is not done, and whether it is ours or DjVu's (2026-10-05):
 - [ ] **Text on turned pages** (a page with an initial rotation of 90, 180 or 270 degrees): ours, caused by a peculiarity of the
   DjVu API: text zones are in the coordinates of the page as stored, links in those of the page as shown
   (`ddjvu_page_get_initial_rotation()` documents it). The boxes have to be turned.
-- [ ] **The file is read into memory** when it is opened, and documents in several files (an index with files next to it) are not
-  read: ours, a consequence of the bug above (opening by name crashed, so the bytes are handed over). To retest by name with
-  `KeyGuard` in place; or to feed the data on request (`DDJVU_NEWSTREAM`).

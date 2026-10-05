@@ -808,21 +808,9 @@ Open(fz_context* context, const char* path)
 			fz_throw(context, FZ_ERROR_SYSTEM, "cannot start DjVuLibre");
 		// decoded pages are kept for a while: the same page is drawn again at every zoom
 		ddjvu_cache_set_size(doc->ddjvu, 128UL * 1024 * 1024);
-		// The bytes of the file are handed over, not its name: DjVuLibre opens a file again each time it needs data and converts
-		// its name with wcrtomb(), which crashed in libroot (the conversion goes through ICU) in the threads that draw.
-		// The file is then in memory as long as it is open. (A DjVu document that is in several files is not read this way.)
-		doc->document = ddjvu_document_create(doc->ddjvu, NULL, 0);
+		doc->document = ddjvu_document_create_by_filename(doc->ddjvu, path, 0);
 		if (doc->document == NULL)
 			fz_throw(context, FZ_ERROR_FORMAT, "cannot open the DjVu file");
-		FILE* file = fopen(path, "rb");
-		if (file == NULL)
-			fz_throw(context, FZ_ERROR_SYSTEM, "cannot read the DjVu file");
-		char chunk[65536];
-		size_t got;
-		while ((got = fread(chunk, 1, sizeof(chunk), file)) > 0)
-			ddjvu_stream_write(doc->document, 0, chunk, (unsigned long)got);
-		fclose(file);
-		ddjvu_stream_close(doc->document, 0, 0);
 		DocumentDone done = { doc };
 		if (!Wait(doc, done) || ddjvu_document_decoding_error(doc->document))
 			fz_throw(context, FZ_ERROR_FORMAT, "cannot read the DjVu file");
