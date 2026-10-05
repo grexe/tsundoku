@@ -4,6 +4,8 @@
 
 ## Document
 
+![The preferences, Document page.](images/settings.png)
+
 - **Restore page number:** open a file where you stopped (on by default).
 - **Restore window position and size:** the window comes back where it was for this file.
 - **Open in workspace:** which workspace a new window opens in.

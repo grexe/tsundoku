@@ -10,3 +10,5 @@ setup** sets the paper. Printing uses the print server of Haiku, so any printer 
 **File > File info** shows what the file says about itself: the title, author, subject, keywords, the program that made it, the
 dates, the number of pages and, for books and comics, the cover, series, publisher and so on, and whether the document may be
 printed, copied and edited.
+
+![File info of a book: what the file says about itself, with its cover.](images/file-info.png)

@@ -27,3 +27,5 @@ Files embedded in a PDF are listed in the third tab (**View > Show attachments**
 ## Annotations
 
 The fourth tab is the [list of annotations](#the-list-of-annotations).
+
+![The list of annotations.](images/annotations-list.png)

@@ -15,12 +15,16 @@ grep -q 'libmupdf1.28.so' $APP || {
 	exit 1
 }
 
-# version from the app_version resource, a development build becomes a pre-release
+# version from the app_version resource, a development build becomes a pre-release, a beta is 1.0.0~beta1
 major=$(sed -n 's/^[[:space:]]*major[[:space:]]*=[[:space:]]*\([0-9]*\).*/\1/p' $RDEF | head -n1)
 middle=$(sed -n 's/^[[:space:]]*middle[[:space:]]*=[[:space:]]*\([0-9]*\).*/\1/p' $RDEF | head -n1)
 minor=$(sed -n 's/^[[:space:]]*minor[[:space:]]*=[[:space:]]*\([0-9]*\).*/\1/p' $RDEF | head -n1)
 VERSION="$major.$middle.$minor"
 grep -q 'variety[[:space:]]*=[[:space:]]*B_APPV_DEVELOPMENT' $RDEF && VERSION="$VERSION~dev"
+if grep -q 'variety[[:space:]]*=[[:space:]]*B_APPV_BETA' $RDEF; then
+	internal=$(sed -n 's/^[[:space:]]*internal[[:space:]]*=[[:space:]]*\([0-9]*\).*/\1/p' $RDEF | head -n1)
+	VERSION="$VERSION~beta${internal:-1}"
+fi
 VERSION="$VERSION-${REVISION:-1}"
 ARCH=$(getarch)
 

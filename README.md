@@ -11,6 +11,13 @@ collect and mean to read. It is a fork of [BePDF](https://github.com/HaikuArchiv
 [MuPDF](https://mupdf.com) instead of XPDF: faster, with better quality, and with support for many more formats than
 PDF: EPUB books, comics (CBZ, CBR, CB7, CBT, BBF), DjVu, XPS and images.
 
+## Screenshots
+
+| | |
+|---|---|
+| ![PDF with marks and margin notes](docs/guide/images/main-window.png) | ![An EPUB with a mark and a margin note](docs/guide/images/epub.png) |
+| ![A comic in two pages](docs/guide/images/comic-spread.png) | ![The marker menu](docs/guide/images/marker-menu.png) |
+
 ## Formats
 
 | Format | Notes |
@@ -110,6 +117,12 @@ The model, the storage and the access from other programs: [docs/reference/annot
   is a webtoon or whose first pages are very tall.
 - The metadata of `ComicInfo.xml` and BBF shows in File info with the cover.
 
+### Links to places
+
+A place in a document is a link: `toji:///path/doc.pdf#page=5`, with the standard fragments for pages, regions, words, EPUB
+positions and annotations. **Edit > Copy link to this place** makes one, and `Toji <link>` or `open <link>` follows it
+([docs/reference/links.md](docs/reference/links.md)).
+
 ### Scripting
 
 Other programs (and `hey`) can read and change the annotations and bookmarks of the document in a window, go to a page or to an
@@ -147,7 +160,8 @@ application signature (`application/x-vnd.sen-labs.Toji`) and release cycle.
 
 ## Status
 
-Toji is in preview: formats and attribute names may still change before 1.0.
+Toji is in **beta**: the features are in and usable, and are being tested. Details such as attribute names may still change
+before 1.0 if testing shows a need.
 
 - **Not there yet:** the fonts of a
   document in the file info, fixed-layout EPUB, DRM, JPEG XL and HEIC pages (no translator on Haiku).

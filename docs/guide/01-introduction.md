@@ -16,6 +16,8 @@ It remembers where you stopped reading, lets you select, copy and search text, m
 bookmarks, and it writes what a document says about itself (title, author, series, ...) to the attributes of the file, so that
 Tracker can show it in columns and queries can find it.
 
+![The main window: the outline in the sidebar, marks and margin notes on the page, the annotation buttons in the toolbar.](images/main-window.png)
+
 Toji is also the reader of SEN (Semantic Extensions Native): other programs can open a document at an exact place, and
 read and change annotations. [Chapter 11](#files-attributes-and-sen) tells how.
 

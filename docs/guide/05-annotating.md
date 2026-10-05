@@ -22,6 +22,8 @@ next click or selection uses it once, and Escape (or the button again) puts it d
 
 The buttons are dimmed for documents that cannot take what they make (see the table above).
 
+![The marker menu: choose a color, then select the text.](images/marker-menu.png)
+
 ## Marking text
 
 Select the text, then choose **Edit > Highlight selection** (Cmd+Shift+H), **Underline selection** (Cmd+Shift+U) or **Strike out
@@ -48,6 +50,8 @@ the menu of the secondary mouse button, where a note or text goes where that men
 
 A shape or drawing has a **line width** (1 to 8 points) and a rectangle or an ellipse can be **filled** with a color: choose
 them in the menu of the secondary mouse button on the shape (**Line width**, **Fill**).
+
+![Shapes with a line width and a fill, an arrow and a note.](images/shapes.png)
 
 Click a note, text, shape, line or drawing to select it: drag it to move it, drag a handle to resize it, press Delete to remove
 it, Escape to let go. Its color and its note can be changed in the secondary button's menu.

@@ -37,3 +37,10 @@ path = ["src/graphics/artpaint/**"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "The ArtPaint authors"
 SPDX-License-Identifier = "MIT"
+
+# The screenshots of the guide (of the user guide itself and of test documents of ours)
+[[annotations]]
+path = ["docs/guide/images/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Gregor B. Rosenauer & Claude"
+SPDX-License-Identifier = "CC-BY-4.0"

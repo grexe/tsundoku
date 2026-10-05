@@ -1,33 +1,71 @@
-# Toji: A Semantic, Multi-Format Document Viewer for Haiku (EPUB, ComicBook, DjVu, and PDF)
+# Toji: a semantic, multi-format document reader for Haiku (PDF, EPUB, comics, DjVu)
 
 Hey everyone,
 
-I wanted to introduce a project I’ve been actively developing for Haiku called Toji.
+I'd like to introduce a project I have been working on for Haiku: **Toji** (綴じ, "binding": the way a book is bound). It was called
+*Tsundoku* until recently, and started as a fork of the classic BePDF. Many thanks to its authors, Michael Pfeiffer, Hubert
+Figuiere, Benoit Triquet, waddlesplash and everyone who contributed over the years. Toji has grown into a modern, standards-based
+reader that uses what Haiku is good at: attributes, queries and messages. It is now in **beta**, and I'd be glad for testers.
 
-Originally started as a fork of the classic BePDF, Toji has evolved far beyond standard PDF viewing into a modern, standards-based, semantic document viewer designed to leverage Haiku's native strengths.
+![Toji with a PDF: outline, marks and margin notes](guide/images/main-window.png)
 
-## Multi-Format Document Support
+## Formats
 
-While PDF support remains rock-solid, Toji expands format coverage significantly:
+- **PDF**, rendered with MuPDF (faster and better than the XPDF of BePDF), also encrypted files.
+- **EPUB** 2 and 3: laid out for a text size (pages stay where your reading is when you change it). Not yet: fixed-layout EPUB and
+  DRM.
+- **Comic books:** CBZ, CBR, CB7, CBT and the new Bound Book Format (BBF), with double pages, manga reading order (right to left)
+  and webtoons (top to bottom), `ComicInfo.xml` metadata and the cover.
+- **DjVu**, with its text layer: search, selection and marks work.
+- XPS, FictionBook and pictures through MuPDF.
 
-⚬ Full eBook Support: Complete rendering and navigation for EPUB (up to EPUB v3).
-⚬ ComicBook Archives: Native handling of compressed comic formats (CBZ, CBA, CB7, CBR).
-⚬ PDF Engine: Preserved and modernized from BePDF.
-⚬ DjVu: Support coming soon.
+## Annotating
 
-## Semantic Features & BFS Integration
+Highlight, underline and strike out text in colors, add **margin notes**, free notes, text, rectangles, ellipses, lines, arrows
+and drawings with line width and fill. Toolbar buttons arm a tool (marker colors, note, shapes), and text can be selected over
+several pages. In a PDF the annotations are normal PDF annotations that other readers show; for EPUB, comics and DjVu they are kept
+with the file.
 
-⚬ Standards-Based WebAnnotations: Full support for document annotations following the W3C WebAnnotation specification across all supported formats. Annotations, highlights, and notes remain open, portable, and interoperable rather than locked into a proprietary viewer format.
-⚬ Native BFS Metadata: Deep integration with Haiku's file system attributes using established schemas. Document metadata, reading progress, and annotations are stored as BFS attributes, making them directly queryable through native Haiku Queries and Tracker.
-⚬ Deep Linking: Precise URI/deep-linking support, allowing you to link directly to specific sections, pages, chapters, or highlighted passages within any document across the system.
+## Semantic features and BFS
 
-## Showcase for SEN (Semantic Extensions Native)
+- **Annotations as W3C Web Annotations:** every annotation is described in the W3C Web Annotation model (targets with page,
+  region, quoted words or EPUB CFI), stored as BFS attributes of the file (`SEN:annotations`), so other programs can find and
+  use them without opening the document. Bookmarks are annotations, too. Every annotation has a stable identifier.
+- **Native BFS metadata:** title, author, series, language, ISBN, date, the number of pages and more are written as BFS attributes
+  with standard names (`dc:title`, `dc:creator`, `schema:isbn`, ...), so Tracker can show them as columns and queries can find
+  files. Where you stopped reading is kept with the file.
+- **Links to places:** a place in a document is a link, `toji:///path/doc.pdf#page=5`, using the standard fragments (pages, regions,
+  text fragments, EPUB CFI) and annotation identifiers. **Copy link to this place** makes one, and `Toji <link>` or `open <link>`
+  follows it, so a note, a mail or another program can point right into a document.
+- **Scripting:** the document, its pages, annotations and bookmarks can be read and changed with `hey Toji ...` or with scripting
+  messages from your own programs (get and set the note or the words of a mark, create annotations, go to a place, save).
 
-Toji serves both as a versatile daily document viewer for Haiku and as a showcase/entry point into SEN (Semantic Extensions Native), demonstrating how native OS file attributes, semantic schemas, and open standards can seamlessly blend on Haiku. More details on the broader SEN ecosystem will be released later this year.
+## A showcase for SEN
 
-## Source Code & Project Status
+Toji is a daily reader and an entry point to **SEN (Semantic Extensions Native)**, which brings semantic relations to Haiku files
+and documents. It shows how file attributes, open standards and messages can work together on Haiku. More about SEN later this
+year.
 
-The project is live and open source:
-👉 https://github.com/sen-laboratories/Toji
+## Install
 
-It’s an active work in progress, and I’d love for anyone interested in semantic document handling, EPUB/Comic reading on Haiku, or BFS attribute workflows to check it out and share feedback!
+```
+pkgman add-repo https://kiri.sen-labs.org/x86_64
+pkgman install toji
+```
+
+The libraries it needs (MuPDF, libarchive, libzip, libxml2, DjVuLibre) come with the package. A **user guide** (PDF, EPUB, DjVu,
+HTML) is built from Markdown and installed with it; **Help** opens it.
+
+## Licenses
+
+Toji is free software under the **AGPL-3.0-or-later** (MuPDF is AGPL, BePDF GPL-2+). The reusable parts (the Web Annotation model,
+bookmarks, the EPUB, ComicInfo and BBF readers, EPUB CFI, links) are in a separate folder, `lib/`, under the **MIT license**, so
+other programs can use them. The artwork is CC BY 4.0, and every file has an SPDX identifier (REUSE compliant).
+
+## Source and status
+
+👉 https://github.com/sen-laboratories/toji
+
+It is a beta: the features are in and usable, and are being tested on Haiku R1/beta6. Bug reports, ideas and feedback are very
+welcome, especially from people who read EPUB or comics on Haiku, work with scanned DjVu documents, or want to script their
+documents.

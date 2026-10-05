@@ -25,6 +25,13 @@ Annotations and bookmarks are kept as [W3C Web Annotations](https://www.w3.org/T
 was marked and where. Other programs (SEN in particular) can read them from the attribute without opening the document. A
 document can be opened at a place the same way: a page, a region of a page, some words or an EPUB position.
 
+## Links to places
+
+**Edit > Copy link to this place** (Cmd+Shift+L) puts a link on the clipboard that opens the document at the page you are on, at
+the words that are selected, or at the annotation that is selected. In a book it is the place in the text. The link looks like
+`toji:///boot/home/papers/x.pdf#page=5`; paste it into a note or a mail, or open it with `Toji <link>` or `open <link>`. The
+details are in `docs/reference/links.md`.
+
 ## Scripting
 
 Toji can be controlled from other programs and from the command line with `hey`:

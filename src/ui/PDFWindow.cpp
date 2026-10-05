@@ -2340,7 +2340,7 @@ PDFWindow::MessageReceived(BMessage* message)
 					{ "pagelist", SHOW_PAGE_LIST_CMD }, { "attachments", SHOW_ATTACHMENTS_CMD }, { "annotations", SHOW_ANNOTATIONS_CMD }, { "sidebar", HIDE_LEFT_PANEL_CMD }, { "bookmarks", SHOW_BOOKMARKS_CMD },
 					{ "close", CLOSE_FILE_CMD }, { "textlarger", TEXT_LARGER_CMD }, { "textsmaller", TEXT_SMALLER_CMD }, { "zoomin", ZOOM_IN_CMD }, { "zoomout", ZOOM_OUT_CMD }, { "next", NEXT_PAGE_CMD },
 					{ "previous", PREVIOUS_PAGE_CMD }, { "last", LAST_PAGE_CMD }, { "first", FIRST_PAGE_CMD },
-					{ "copy", COPY_SELECTION_CMD }, { "selectall", SELECT_ALL_CMD }, { "addbookmark", ADD_USER_BOOKMARK_CMD },
+					{ "markermenu", MARKER_MENU_CMD }, { "shapesmenu", SHAPES_MENU_CMD }, { "notebutton", NOTE_BUTTON_CMD }, { "copy", COPY_SELECTION_CMD }, { "selectall", SELECT_ALL_CMD }, { "addbookmark", ADD_USER_BOOKMARK_CMD },
 					{ NULL, 0 }
 				};
 				BString name(cmd.String() + 3);

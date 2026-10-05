@@ -21,6 +21,8 @@ with a barber pole says so if it takes more than a moment.
 - Page numbers (a bookmark you made, the page to come back to) are only right for the text size they were made at; the number
   of pages in the file info is the one for the standard text size.
 
+![An EPUB with a mark and a margin note.](images/epub.png)
+
 An EPUB read from right to left (a manga or a book in Arabic or Hebrew) says so in its reading order, and Toji follows.
 
 ## Comic books
@@ -39,11 +41,17 @@ ignored.
 - **Annotations:** notes, text, shapes and drawings work like in a PDF (there is no text to mark); they are kept in the file's
   attribute `SEN:annotations`.
 
+![A comic in the double-sided flow, left to right.](images/comic-spread.png)
+
+![The same kind of comic read right to left (manga): the first page is on the right.](images/manga-rtl.png)
+
 ## DjVu
 
 DjVu documents open like PDF files. The hidden text layer works: search, selection, copy and marks. The outline, the links
 (also to other pages of the file) and the metadata are those of the file. A document in several files (an index with files next to
 it) opens as well, and pages that are stored turned are shown right.
+
+![A DjVu document with marks on its text layer.](images/djvu.png)
 
 ## Other formats
 
