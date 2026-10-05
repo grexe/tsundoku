@@ -105,8 +105,8 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
   partner. View > Right to left reads a manga the other way: only the places of the pages in a spread are swapped (the
   first page on the right, the title page alone on the left), the pages themselves are not mirrored. A manga says so in
   `ComicInfo.xml` (`Manga`) and an EPUB says so in its spine (`page-progression-direction`), and the choice is kept with
-  the file in the attribute `readingProgression` (the name of the W3C Publication Manifest property; `rtl`, `ltr` or
-  `default`, which is what the document says;
+  the file in the attribute `SEN:readingProgression` (named after the W3C Publication Manifest property, with SEN's prefix
+  since no ontology has one for a BFS attribute; `rtl`, `ltr` or `default`, which is what the document says;
   a document that says `rtl` has the attribute, so that it can be found). A webtoon or a manhua that is a strip is read
   from the top to the bottom (`ttb`, also a value of that property): a comic with `Webtoon` as its format, genre or tag in
   `ComicInfo.xml`, or whose first pages are all at least three times as high as they are wide, opens in the continuous flow with

@@ -167,9 +167,9 @@ bool FileAttributes::Read(entry_ref *ref, GlobalSettings *s) {
 	reading = -1;
 	hasZoom = false;
 	if (node.InitCheck() == B_OK) {
-		// readingProgression: rtl, ltr or default (what the document itself says)
+		// SEN:readingProgression: rtl, ltr or default (what the document itself says)
 		char direction[16];
-		ssize_t got = node.ReadAttr("readingProgression", B_STRING_TYPE, 0, direction, sizeof(direction) - 1);
+		ssize_t got = node.ReadAttr("SEN:readingProgression", B_STRING_TYPE, 0, direction, sizeof(direction) - 1);
 		if (got > 0) {
 			direction[got] = '\0';
 			if (strcasecmp(direction, "rtl") == 0)
@@ -293,7 +293,7 @@ bool FileAttributes::Write(entry_ref *ref, GlobalSettings *s) {
 		}
 		if (reading >= 0) {
 			const char* direction = reading == 1 ? "rtl" : reading == 2 ? "ttb" : "ltr";
-			node.WriteAttr("readingProgression", B_STRING_TYPE, 0, direction, strlen(direction) + 1);
+			node.WriteAttr("SEN:readingProgression", B_STRING_TYPE, 0, direction, strlen(direction) + 1);
 		}
 		if (anchor.IsEmpty()) {
 			node.RemoveAttr("bepdf:anchor");

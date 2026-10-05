@@ -163,7 +163,7 @@ static const BookAttribute kBookAttributes[] = {
 	{ "dcterms:isPartOf", B_TRANSLATE_MARK("Series"), B_STRING_TYPE, 150 },	// the series the book belongs to
 	{ "schema:position", B_TRANSLATE_MARK("Series number"), B_DOUBLE_TYPE, 60 },
 	// rtl, ltr or default, the page progression of the EPUB standard (a manga is read from the right to the left)
-	{ "readingProgression", B_TRANSLATE_MARK("Reading direction"), B_STRING_TYPE, 90 }
+	{ "SEN:readingProgression", B_TRANSLATE_MARK("Reading direction"), B_STRING_TYPE, 90 }
 };
 static const size_t kBookAttributeCount = sizeof(kBookAttributes) / sizeof(kBookAttributes[0]);
 
@@ -964,7 +964,7 @@ EnsureIndices(dev_t device)
 		{ "dc:description", B_STRING_TYPE }, { "dc:publisher", B_STRING_TYPE },
 		{ "dc:language", B_STRING_TYPE }, { "dc:identifier", B_STRING_TYPE }, { "schema:isbn", B_STRING_TYPE },
 		{ "dcterms:isPartOf", B_STRING_TYPE }, { "schema:position", B_DOUBLE_TYPE },
-		{ "readingProgression", B_STRING_TYPE },
+		{ "SEN:readingProgression", B_STRING_TYPE },
 		{ "dc:date", B_INT64_TYPE }, { "SEN:annotationCount", B_INT32_TYPE },
 		{ "PDF:created", B_INT64_TYPE }, { "PDF:modified", B_INT64_TYPE }
 	};
@@ -1093,8 +1093,8 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 	int declared = doc->DeclaredReading();
 	if (declared == 1 || declared == 2) {
 		attr_info info;
-		if (node.GetAttrInfo("readingProgression", &info) != B_OK)
-			UpdateAttr(node, "readingProgression", B_STRING_TYPE, 0, (void*)(declared == 1 ? "rtl" : "ttb"), 4);
+		if (node.GetAttrInfo("SEN:readingProgression", &info) != B_OK)
+			UpdateAttr(node, "SEN:readingProgression", B_STRING_TYPE, 0, (void*)(declared == 1 ? "rtl" : "ttb"), 4);
 	}
 
 	// how many annotations it has (for a book also the ones that are only in the attribute)
