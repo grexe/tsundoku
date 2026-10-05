@@ -230,6 +230,18 @@ void PDFWindow::FitToScreen()
 
 
 ///////////////////////////////////////////////////////////
+void
+PDFWindow::ToolsChanged()
+{
+	if (mToolBar == NULL || mMainView == NULL)
+		return;
+	int armed = mMainView->ArmedState();
+	mToolBar->SetActionPressed(MARKER_MENU_CMD, armed == 1);
+	mToolBar->SetActionPressed(NOTE_BUTTON_CMD, armed == 2);
+	mToolBar->SetActionPressed(SHAPES_MENU_CMD, armed == 3);
+}
+
+
 status_t
 PDFWindow::GetSupportedSuites(BMessage* data)
 {
@@ -701,6 +713,9 @@ bool PDFWindow::CancelCommand(BMessage* msg) {
 			case ANNOTATE_UNDERLINE_CMD:
 			case ANNOTATE_STRIKEOUT_CMD:
 			case ADD_ANNOTATION_CMD:
+			case MARKER_MENU_CMD:
+			case NOTE_BUTTON_CMD:
+			case SHAPES_MENU_CMD:
 			case PRINT_SETTINGS_CMD:
 			case PAGESETUP_FILE_CMD:
 			case COPY_SELECTION_CMD:
@@ -865,6 +880,10 @@ void PDFWindow::UpdateInputEnabler()
 		fMenuBar->FindItem(COPY_SELECTION_CMD)->SetEnabled(okToCopy);
 		fMenuBar->FindItem(SELECT_ALL_CMD)->SetEnabled(okToCopy);
 		fMenuBar->FindItem(SELECT_NONE_CMD)->SetEnabled(okToCopy);
+
+		mToolBar->SetActionEnabled(MARKER_MENU_CMD, doc->CanMarkText() && doc->CanCopy());
+		mToolBar->SetActionEnabled(NOTE_BUTTON_CMD, doc->CanDrawAnnotations());
+		mToolBar->SetActionEnabled(SHAPES_MENU_CMD, doc->CanDrawAnnotations());
 
 		bool canMark = doc->CanMarkText() && mMainView->HasTextSelection();
 		fMenuBar->FindItem(ANNOTATE_HIGHLIGHT_CMD)->SetEnabled(canMark);
@@ -1221,6 +1240,16 @@ BToolBar* PDFWindow::BuildToolBar()
 
 	mToolBar->AddSeparator();
 
+	// marking and annotating: each button arms what the next click or selection works with (Escape lets go)
+	mToolBar->AddAction(MARKER_MENU_CMD, this, LoadVectorIcon("ANNOT_HIGHLIGHT"),
+		B_TRANSLATE("Marker: choose a color, then select the text"), NULL, true);
+	mToolBar->AddAction(NOTE_BUTTON_CMD, this, LoadVectorIcon("ANNOT_NOTE"),
+		B_TRANSLATE("Note: click on the page"), NULL, true);
+	mToolBar->AddAction(SHAPES_MENU_CMD, this, LoadVectorIcon("ANNOT_SQUARE"),
+		B_TRANSLATE("Text, shapes and drawing: choose one, then click or drag on the page"), NULL, true);
+
+	mToolBar->AddSeparator();
+
 	mToolBar->AddAction(FIRST_PAGE_CMD, this, LoadVectorIcon("FIRST"),
 		B_TRANSLATE("Go to start of document"));
 	mToolBar->AddAction(PREVIOUS_N_PAGE_CMD, this,
@@ -1558,6 +1587,33 @@ PDFWindow::MessageReceived(BMessage* message)
 		break;
 	case SAVE_FILE_CMD:
 		SaveDocument();
+		break;
+	case MARKER_MENU_CMD:
+	case SHAPES_MENU_CMD: {
+		// a button that is armed puts the tool down; else its menu opens under it
+		const bool marker = message->what == MARKER_MENU_CMD;
+		int armed = mMainView->ArmedState();
+		if (marker ? armed == 1 : armed == 3) {
+			if (marker)
+				mMainView->DisarmMarkup();
+			else
+				mMainView->CancelToolFromToolbar();
+		} else if (BButton* button = mToolBar->FindButton(message->what)) {
+			BPoint under = button->ConvertToScreen(BPoint(0, button->Bounds().bottom + 1));
+			if (marker)
+				mMainView->ShowMarkerMenu(under);
+			else
+				mMainView->ShowShapesMenu(under);
+		}
+		ToolsChanged();
+		break;
+	}
+	case NOTE_BUTTON_CMD:
+		if (mMainView->ArmedState() == 2)
+			mMainView->CancelToolFromToolbar();
+		else
+			mMainView->SetTool(PDFView::kToolNote);
+		ToolsChanged();
 		break;
 	case ADD_ANNOTATION_CMD: {
 		int32 tool = PDFView::kToolNone;

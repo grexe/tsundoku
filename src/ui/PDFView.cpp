@@ -103,6 +103,7 @@ static const int kZoomDPI[MAX_ZOOM - MIN_ZOOM + 1] = {
 #define NOTE_ENTERED_MSG               'ntnt'
 #define CHANGE_COLOR_MSG               'chcl'
 #define ADD_TOOL_MSG                   'adtl'
+#define ARM_MARKUP_MSG                 'armM'
 #define CREATE_TEXT_MSG                'crtx'
 #define MODIFIERS_POLL_MSG             'mdfy'
 #define SHOW_BUSY_MSG                  'busy'
@@ -248,6 +249,9 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 	mSelectKeyDown = false;
 	mReadOnlyWarned = false;
 	mTool = kToolNone;
+	mMarkupArmed = false;
+	mArmedType = kMarkupHighlight;
+	mArmedColor = 0xffeb3b;
 	mToolCursor = new BCursor(B_CURSOR_ID_CROSS_HAIR);
 	mAnnotationIndex = -1;
 	mAnnotationHandle = kHandleNone;
@@ -592,6 +596,13 @@ void PDFView::MessageReceived(BMessage *msg) {
 		msg->FindInt32("type", &type);
 		msg->FindInt32("color", &rgb);
 		AnnotateSelection((MarkupType)type, (uint32)rgb);
+		break;
+	}
+	case ARM_MARKUP_MSG: {
+		int32 type = kMarkupHighlight, rgb = 0xffeb3b;
+		msg->FindInt32("type", &type);
+		msg->FindInt32("color", &rgb);
+		ArmMarkup((MarkupType)type, (uint32)rgb);
 		break;
 	}
 	case ADD_TOOL_MSG: {
@@ -1053,7 +1064,9 @@ PDFView::KeyDown (const char * bytes, int32 numBytes)
 		return;
 	switch (*bytes) {
 	case B_ESCAPE:
-		if (mTool != kToolNone)
+		if (mMarkupArmed)
+			DisarmMarkup();
+		else if (mTool != kToolNone)
 			CancelTool();
 		else if (mAnnotationIndex >= 0)
 			SelectAnnotation(-1);
@@ -1201,7 +1214,7 @@ PDFView::MouseDown (BPoint point) {
 
 	// a click on an annotation that can be moved selects it, and a drag from there moves it; elsewhere the click
 	// has its usual meaning
-	if (buttons == B_PRIMARY_MOUSE_BUTTON && !SelectModifierDown() && BeginAnnotationDrag(point))
+	if (buttons == B_PRIMARY_MOUSE_BUTTON && !SelectingText() && BeginAnnotationDrag(point))
 		return;
 	if (buttons == B_SECONDARY_MOUSE_BUTTON) {
 		const DocAnnotation* clicked = OnAnnotation(point);
@@ -1212,9 +1225,16 @@ PDFView::MouseDown (BPoint point) {
 	switch (buttons) {
 		case B_PRIMARY_MOUSE_BUTTON:
 			// Option: select text, with Shift a rectangle (which also copies the picture of it)
-			if (SelectModifierDown()) {
+			if (SelectingText()) {
+				// (the marker takes a word or a line at a double or triple click)
+				if (mMarkupArmed && clicks >= 2 && mDoc->CanCopy()
+					&& SelectTextAt(point, clicks == 2 ? FZ_SELECT_WORDS : FZ_SELECT_LINES)) {
+					SelectionChanged();
+					ApplyArmedMarkup();
+					break;
+				}
 				if (mDoc->CanCopy())
-					BeginSelection(point, (modifiers() & B_SHIFT_KEY) != 0);
+					BeginSelection(point, !mMarkupArmed && (modifiers() & B_SHIFT_KEY) != 0);
 				break;
 			}
 			if ((mSelected == SELECTED) && InSelection(point)) {
@@ -1544,7 +1564,10 @@ PDFView::MouseUp (BPoint point) {
 			BRect bounds = SelectionBounds();
 			if (!mQuads.empty() || TextEndPage() != mInteractionPage) {
 				mSelected = SELECTED;
-				CopySelection();
+				if (mMarkupArmed)
+					ApplyArmedMarkup();
+				else
+					CopySelection();
 			} else {
 				mSelected = NOT_SELECTED;
 			}
@@ -1909,6 +1932,10 @@ PDFView::DisplayLink(BPoint point)
 
 	if (mTool != kToolNone) {
 		SetViewCursor(mToolCursor);
+		return;
+	}
+	if (mMarkupArmed) {
+		SetViewCursor(gApp->textSelectionCursor);
 		return;
 	}
 
@@ -2873,6 +2900,131 @@ PDFView::RotateAntiClockwise() {
 }
 
 ///////////////////////////////////////////////////////////////////////////
+// The marker and the tools of the toolbar
+
+bool
+PDFView::SelectingText() const
+{
+	return mMarkupArmed || SelectModifierDown();
+}
+
+
+int
+PDFView::ArmedState() const
+{
+	if (mMarkupArmed)
+		return 1;
+	if (mTool == kToolNote)
+		return 2;
+	return mTool != kToolNone ? 3 : 0;
+}
+
+
+void
+PDFView::ToolsChanged()
+{
+	if (PDFWindow* window = GetPDFWindow())
+		window->ToolsChanged();
+}
+
+
+void
+PDFView::ArmMarkup(MarkupType type, uint32 rgb)
+{
+	if (mDoc == NULL || !mDoc->CanMarkText() || !mDoc->CanCopy()) {
+		beep();
+		return;
+	}
+	// some text that is selected is marked at once
+	if (HasTextSelection()) {
+		AnnotateSelection(type, rgb);
+		return;
+	}
+	if (mTool != kToolNone)
+		CancelTool();
+	mMarkupArmed = true;
+	mArmedType = type;
+	mArmedColor = rgb;
+	SetViewCursor(gApp->textSelectionCursor);
+	ToolsChanged();
+}
+
+
+void
+PDFView::DisarmMarkup()
+{
+	if (!mMarkupArmed)
+		return;
+	mMarkupArmed = false;
+	SetViewCursor(gApp->handCursor);
+	ToolsChanged();
+}
+
+
+// the text that was selected with the marker armed is marked, and the marker is put down
+void
+PDFView::ApplyArmedMarkup()
+{
+	MarkupType type = mArmedType;
+	uint32 rgb = mArmedColor;
+	DisarmMarkup();
+	AnnotateSelection(type, rgb);
+}
+
+
+void
+PDFView::ShowMarkerMenu(BPoint screenPoint)
+{
+	BPopUpMenu* menu = new BPopUpMenu("MarkerMenu", false, false);
+	menu->SetAsyncAutoDestruct(true);
+
+	for (int c = 0; c < kMarkerColorCount; c++) {
+		BMessage* message = new BMessage(ARM_MARKUP_MSG);
+		message->AddInt32("type", kMarkupHighlight);
+		message->AddInt32("color", kMarkerColors[c].rgb);
+		BMenuItem* item = new ColorMenuItem(B_TRANSLATE_NOCOLLECT(kMarkerColors[c].name), kMarkerColors[c].rgb, message);
+		item->SetTarget(this);
+		menu->AddItem(item);
+	}
+	menu->AddSeparatorItem();
+	BMessage* underline = new BMessage(ARM_MARKUP_MSG);
+	underline->AddInt32("type", kMarkupUnderline);
+	underline->AddInt32("color", kMarkerColors[5].rgb);
+	BMenuItem* item = new BMenuItem(B_TRANSLATE("Underline"), underline);
+	item->SetTarget(this);
+	menu->AddItem(item);
+	BMessage* strike = new BMessage(ARM_MARKUP_MSG);
+	strike->AddInt32("type", kMarkupStrikeOut);
+	strike->AddInt32("color", kMarkerColors[5].rgb);
+	item = new BMenuItem(B_TRANSLATE("Strike out"), strike);
+	item->SetTarget(this);
+	menu->AddItem(item);
+	menu->Go(screenPoint, true, true, true);
+}
+
+
+void
+PDFView::ShowShapesMenu(BPoint screenPoint)
+{
+	static const struct { const char* label; PlacementTool tool; } kShapes[] = {
+		{ B_TRANSLATE_MARK("Text"), kToolFreeText }, { B_TRANSLATE_MARK("Rectangle"), kToolRectangle },
+		{ B_TRANSLATE_MARK("Ellipse"), kToolEllipse }, { B_TRANSLATE_MARK("Line"), kToolLine },
+		{ B_TRANSLATE_MARK("Arrow"), kToolArrow }, { B_TRANSLATE_MARK("Drawing"), kToolInk }
+	};
+	BPopUpMenu* menu = new BPopUpMenu("ShapesMenu", false, false);
+	menu->SetAsyncAutoDestruct(true);
+	for (size_t i = 0; i < sizeof(kShapes) / sizeof(kShapes[0]); i++) {
+		BMessage* message = new BMessage(ADD_TOOL_MSG);
+		message->AddInt32("tool", kShapes[i].tool);
+		BMenuItem* item = new BMenuItem(B_TRANSLATE_NOCOLLECT(kShapes[i].label), message);
+		item->SetTarget(this);
+		menu->AddItem(item);
+	}
+	menu->Go(screenPoint, true, true, true);
+}
+
+
+///////////////////////////////////////////////////////////////////////////
 // Text selection
 
 void
@@ -3563,8 +3715,11 @@ PDFView::SetTool(PlacementTool tool, const fz_point* position)
 		return;
 	}
 
+	if (mMarkupArmed)
+		DisarmMarkup();
 	mTool = tool;
 	SetViewCursor(mToolCursor);
+	ToolsChanged();
 }
 
 
@@ -3579,6 +3734,7 @@ PDFView::CancelTool()
 	if (old.IsValid())
 		Invalidate(old.InsetByCopy(-4, -4).OffsetByCopy(mLeft, mTop));
 	SetViewCursor(gApp->handCursor);
+	ToolsChanged();
 }
 
 
@@ -4300,6 +4456,24 @@ PDFView::TestCommand(BMessage* message)
 		bool ok = AnnotateSelection(type, kind == "highlight" ? 0xffeb3b : 0xe53935);
 		TestLog("annotate %s: %s, unsaved changes: %d", kind.String(), ok ? "ok" : "failed",
 			(int)mDoc->HasUnsavedChanges());
+	} else if (cmd == "armmarker") {
+		// the marker of the toolbar with a color (kind: highlight, underline, strikeout)
+		BString kind;
+		message->FindString("kind", &kind);
+		MarkupType type = kind == "underline" ? kMarkupUnderline : kind == "strikeout" ? kMarkupStrikeOut : kMarkupHighlight;
+		ArmMarkup(type, type == kMarkupHighlight ? 0x78beff : 0xe53935);
+		TestLog("armmarker %s: armed state %d", kind.String(), ArmedState());
+	} else if (cmd == "armtool") {
+		BString kind;
+		message->FindString("kind", &kind);
+		SetTool(kind == "note" ? kToolNote : kind == "text" ? kToolFreeText : kToolRectangle);
+		TestLog("armtool %s: armed state %d", kind.String(), ArmedState());
+	} else if (cmd == "markermenu") {
+		ShowMarkerMenu(ConvertToScreen(BPoint(150, 60)));
+	} else if (cmd == "shapesmenu") {
+		ShowShapesMenu(ConvertToScreen(BPoint(150, 60)));
+	} else if (cmd == "armstate") {
+		TestLog("armed state %d", ArmedState());
 	} else if (cmd == "showannot") {
 		// what the list of annotations sends, or the id from outside (in "text")
 		BString id;

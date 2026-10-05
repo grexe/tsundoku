@@ -97,6 +97,9 @@ public:
 		SAVE_FILE_CMD,
 		UNDO_CMD,
 		ADD_ANNOTATION_CMD,
+		MARKER_MENU_CMD,
+		NOTE_BUTTON_CMD,
+		SHAPES_MENU_CMD,
 		REDO_CMD,
 		SAVE_AS_FILE_CMD,
 		ANNOTATE_HIGHLIGHT_CMD,
@@ -279,6 +282,8 @@ public:
 	virtual BHandler* ResolveSpecifier(BMessage* message, int32 index, BMessage* specifier, int32 what,
 		const char* property);
 	PDFView* View() { return mMainView; }
+	// the marker or a tool was armed or put down: the buttons of the toolbar show it
+	void ToolsChanged();
 	OutlinesView* BookmarkList() { return mOutlinesView; }
 	// the bookmarks were changed from outside the sidebar
 	void BookmarksChanged() { SaveUserBookmarks(); }

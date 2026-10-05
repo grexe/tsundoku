@@ -171,6 +171,12 @@ public:
 
 private:
 	PlacementTool mTool;
+	bool mMarkupArmed;			// the next selection of text is marked, see ArmMarkup()
+	MarkupType mArmedType;
+	uint32 mArmedColor;
+	bool SelectingText() const;	// the mouse selects text: Option is down, or the marker is armed
+	void ApplyArmedMarkup();
+	void ToolsChanged();		// tells the window (the buttons of the toolbar)
 	BPoint mToolStart, mToolEnd;       // in the bitmap
 	std::vector<BPoint> mToolPoints;   // the path of a drawing
 	BCursor* mToolCursor;
@@ -451,6 +457,17 @@ public:
 	// shape is drawn with the next drag.
 	void SetTool(PlacementTool tool, const fz_point* position = NULL);
 	bool HasTool() const { return mTool != kToolNone; }
+	// The marker of the toolbar: after a color is chosen the next selection of text is marked with it (one time; Escape lets
+	// go). If some text is selected when it is chosen, that is marked at once.
+	void ArmMarkup(MarkupType type, uint32 rgb);
+	void DisarmMarkup();
+	bool IsMarkupArmed() const { return mMarkupArmed; }
+	void CancelToolFromToolbar() { CancelTool(); }
+	// what is armed, for the toolbar: 0 nothing, 1 the marker, 2 the note, 3 another tool (text, shapes, drawing)
+	int ArmedState() const;
+	// the menus of the toolbar buttons, at the screen point
+	void ShowMarkerMenu(BPoint screenPoint);
+	void ShowShapesMenu(BPoint screenPoint);
 	bool HasAnnotationSelected() const { return SelectedAnnotation() != NULL; }
 	void DeleteSelectedAnnotation();
 	// goes to the annotation (page and index as in DocAnnotation) and shows it: a mark on text is selected, the

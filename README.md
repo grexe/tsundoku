@@ -63,6 +63,8 @@ The sidebar is wider by default and collapses on its own if the document has nei
 
 ### Annotating
 
+- **Toolbar buttons:** a marker (choose a color, then select the text), a note, and a menu for text, shapes and drawings arm a
+  tool for the next click or selection; Escape puts it down.
 - **Marks on text:** highlight, underline, strike out (Edit menu or the menu of the secondary button, with a choice of colors,
   each shown with a sample). From the menu of an existing mark its color and its note can be changed, or the mark deleted; the
   note shows as a tooltip when the mouse rests on the mark.

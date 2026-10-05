@@ -9,6 +9,19 @@ You can mark text and add notes and shapes to pages. Which tools a document offe
 | Comics | no (there is no text) | yes |
 | DjVu | yes | yes |
 
+## The toolbar buttons
+
+Three buttons of the toolbar do the marking and annotating without the menus. Each one **arms** a tool: the pointer changes, the
+next click or selection uses it once, and Escape (or the button again) puts it down. An armed button looks pressed.
+
+| Button | What it does |
+|---|---|
+| **Marker** (highlighter) | opens a menu of colors (and *Underline* and *Strike out*). After you choose, the pointer is an I-beam: select the text (drag, double click for a word, triple click for a line) and it is marked in that color. If some text is already selected, it is marked at once. |
+| **Note** | the pointer is a cross: click on the page where the note should be, then write it. |
+| **Text, shapes and drawing** | opens a menu (*Text, Rectangle, Ellipse, Line, Arrow, Drawing*); after you choose, the pointer is a cross and you click or drag on the page. |
+
+The buttons are dimmed for documents that cannot take what they make (see the table above).
+
 ## Marking text
 
 Select the text, then choose **Edit > Highlight selection** (Cmd+Shift+H), **Underline selection** (Cmd+Shift+U) or **Strike out
