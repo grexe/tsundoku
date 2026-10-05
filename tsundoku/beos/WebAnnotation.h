@@ -76,6 +76,7 @@ struct Mark {
 	int32   chapter;
 	float   fraction;
 	float   ypos;
+	int32   textPage;		// the page of a mark on words in a document with fixed pages (the target is the page, refined by the words)
 
 	// A drawn annotation on a page that stays as it is (a comic book), instead of words: the page, what it is (sen:shape:
 	// rectangle, ellipse, line, arrow, ink, note or text) and where on the page, in fractions of it (0 to 1, from the top
@@ -87,7 +88,7 @@ struct Mark {
 	float   box[4];				// left, top, right, bottom
 	std::vector<std::vector<float> > paths;	// x and y, one after the other, of the points of a line or a drawing
 
-	Mark() : color(0), hasColor(false), created(0), chapter(0), fraction(0), ypos(0), page(0)
+	Mark() : color(0), hasColor(false), created(0), chapter(0), fraction(0), ypos(0), textPage(0), page(0)
 	{
 		box[0] = box[1] = box[2] = box[3] = 0;
 	}

@@ -880,7 +880,7 @@ Document::CanEditAnnotations()
 bool
 Document::CanMarkText()
 {
-	return (fIsPDF || fReflowable) && CanAnnotate();
+	return (fIsPDF || fReflowable || fIsDjvu) && CanAnnotate();
 }
 
 

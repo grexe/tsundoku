@@ -169,6 +169,7 @@ struct StoredAnnotation {
 	BString prefix;       // some of the text before and after them, to tell equal words apart
 	BString suffix;
 	// drawn on a page (a comic book), see WebAnnotation::Mark
+	int     textPage;     // the page of a mark on words in a document with fixed pages (DjVu), 1-based, 0 in a book
 	int     kind;         // AnnotationKind, kAnnotMarkup for a mark on words
 	int     page;         // 1-based, 0 for a mark on words
 	fz_rect box;          // fractions of the page, from the top left corner
@@ -176,7 +177,7 @@ struct StoredAnnotation {
 	bool    arrow;
 
 	StoredAnnotation()
-		: markup(0), color(0), created(0), chapter(0), fraction(0), ypos(0), kind(kAnnotMarkup), page(0),
+		: markup(0), color(0), created(0), chapter(0), fraction(0), ypos(0), textPage(0), kind(kAnnotMarkup), page(0),
 		box(fz_empty_rect), arrow(false) {}
 };
 

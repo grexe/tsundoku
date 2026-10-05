@@ -515,8 +515,17 @@ UnarchiveDrawn(const BMessage& annotation, const BMessage& target, Mark* mark)
 		BMessage refinement;
 		if (mark->page < 1 || selector.FindMessage("oa:refinedBy", &refinement) != B_OK)
 			return false;
-		annotation.FindString("sen:shape", &mark->shape);
 		refinement.FindString("type", &type);
+		if (type == kTextQuoteSelector) {
+			// not drawn: the words on a page
+			mark->textPage = mark->page;
+			mark->page = 0;
+			refinement.FindString("oa:exact", &mark->quote);
+			refinement.FindString("oa:prefix", &mark->prefix);
+			refinement.FindString("oa:suffix", &mark->suffix);
+			return false;
+		}
+		annotation.FindString("sen:shape", &mark->shape);
 		if (refinement.FindString("rdf:value", &value) != B_OK)
 			return false;
 		if (type == kSvgSelector)
@@ -574,7 +583,16 @@ ArchiveMark(const Mark& mark, BMessage* annotation)
 		quote.AddString("oa:prefix", mark.prefix);
 	if (mark.suffix.Length() > 0)
 		quote.AddString("oa:suffix", mark.suffix);
-	target.AddMessage("oa:hasSelector", &quote);
+	if (mark.textPage > 0) {
+		// a page of a document with fixed pages, and the words on it (as the marks of a PDF file are written)
+		BMessage pageSelector;
+		char pageValue[24];
+		snprintf(pageValue, sizeof(pageValue), "page=%d", (int)mark.textPage);
+		MakeFragmentSelector(&pageSelector, kConformsToPdf, pageValue);
+		pageSelector.AddMessage("oa:refinedBy", &quote);
+		target.AddMessage("oa:hasSelector", &pageSelector);
+	} else
+		target.AddMessage("oa:hasSelector", &quote);
 	if (mark.cfi.Length() > 0) {
 		BMessage cfi;
 		MakeFragmentSelector(&cfi, kConformsToEpubCfi, mark.cfi.String());

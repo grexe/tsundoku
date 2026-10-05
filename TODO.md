@@ -83,11 +83,5 @@ the library is fixed (keep the cache, which saves work anyway).
 
 ## DjVu
 
-What is not done (2026-10-05); done since: the year of the metadata as `dc:date`, the text of turned pages (the boxes of the text
-layer are in the coordinates of the page as the file has it and are turned to those of the page as shown, checked for all four
-orientations against computed positions):
-
-- [ ] **Text marks** (highlight, underline, strike out) on DjVu: ours. The text layer is there and works for search and
-  selection; marks need `Document::ResolveAnnotation()` (written for books: chapters and EPUB CFIs) to find the quoted words
-  on fixed pages and `StoreAddMarkup()` to make the anchor from a page. A fixed-page quote anchor (page + text quote selector)
-  would also serve other documents with a text layer (XPS, scanned PDFs).
+Nothing is open for DjVu (2026-10-05): the year of the metadata is `dc:date`, the text of turned pages is turned to the page as
+shown, and text marks (highlight, underline, strike out) keep the page and the quoted words in `SEN:annotations`.

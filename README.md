@@ -123,8 +123,9 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
 - DjVu files open like PDF files. DjVuLibre draws the pages at the size that is asked for (as a document handler for MuPDF,
   `DjvuDocument.cpp`, so everything above it works as it does for other documents): the hidden text layer is put into the
   page as invisible text, so search, selection and copy work; the outline, the hyperlinks (also those that lead to another
-  page of the file) and the metadata (title, author, keywords) are those of the file; notes, text, shapes and drawings
-  are annotations of the same kind as those of comics. A document that is in several files (an index with files next to it) is read as well, pages that are turned are
+  page of the file) and the metadata (title, author, keywords) are those of the file; highlight, underline and strike out
+  work on the words of the text layer, and notes, text, shapes and drawings are annotations of the same kind as those of comics
+  (all of them in `SEN:annotations`; a mark on words is kept as the page and the quoted words). A document that is in several files (an index with files next to it) is read as well, pages that are turned are
   turned (and their text with them); the year in the metadata is the date (`dc:date`).
   DjVuLibre has a bug on Haiku that this works around (see the note in `DjvuDocument.cpp`): a once-only initialisation that
   does not happen, so that it stores its data of a thread under a key that belongs to someone else.

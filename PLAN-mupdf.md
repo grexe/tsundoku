@@ -187,8 +187,9 @@ printing), so none of that is written twice. The translator is not enough: the T
   `fz_link`. *Metadata:* the keys of the document annotations (title, author, year, ...) for `fz_lookup_metadata` and so
   for the file attributes (`META:title`, `META:author`, `dc:date`) and File info.
 - *Annotations:* the shapes, notes and text of the comic work (the store in `SEN:annotations`, DocumentDraw.cpp) work on
-  any fixed document, so a DjVu file has them from the start; marks on text (highlight, underline) need the store to find
-  words on fixed pages, which `ResolveAnnotation` does by search (a small change: it is written for books now).
+  any fixed document, so a DjVu file has them from the start; marks on text (highlight, underline, strike out) work as well (done in 0.8.0): the store keeps
+  the page and the quoted words (`oa:FragmentSelector page=N` refined by an `oa:TextQuoteSelector`, as for PDF), and
+  `ResolveAnnotation` finds the words again on that page.
 
 **Effort** (the size of the comic work, most of it testing): the handler with pages, size and drawing is about 250 lines
 and gives a viewer (M1); the text layer about 200 (M2); outline, links, metadata, type, File info, build and package

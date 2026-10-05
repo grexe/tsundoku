@@ -368,6 +368,7 @@ ToMark(const StoredAnnotation& a, WebAnnotation::Mark* mark)
 	mark->chapter = a.chapter;
 	mark->fraction = a.fraction;
 	mark->ypos = a.ypos;
+	mark->textPage = a.textPage;
 
 	mark->page = a.page;
 	if (a.page > 0) {
@@ -408,6 +409,7 @@ FromMark(const WebAnnotation::Mark& mark, StoredAnnotation* a)
 	a->chapter = mark.chapter;
 	a->fraction = mark.fraction;
 	a->ypos = mark.ypos;
+	a->textPage = mark.textPage;
 
 	a->page = mark.page;
 	if (mark.page > 0) {
@@ -1162,6 +1164,8 @@ Document::StoreAddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int 
 		chapterPages = 1;
 	a.chapter = chapter;
 	a.fraction = (inChapter + 0.5f) / chapterPages;
+	if (fIsDjvu)
+		a.textPage = pageNo;
 	fz_rect bounds;
 	a.ypos = 0;
 	if (PageBounds(pageNo, &bounds) && bounds.y1 > bounds.y0)
