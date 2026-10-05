@@ -63,6 +63,8 @@ The sidebar is wider by default and collapses on its own if the document has nei
 
 ### Annotating
 
+- **Margin notes:** a mark can carry a note, shown as a small note in the margin of the page (Edit > Add margin note).
+- **Shapes** have a line width and an optional fill color.
 - **Toolbar buttons:** a marker (choose a color, then select the text), a note, and a menu for text, shapes and drawings arm a
   tool for the next click or selection; Escape puts it down.
 - **Marks on text:** highlight, underline, strike out (Edit menu or the menu of the secondary button, with a choice of colors,
@@ -147,8 +149,8 @@ application signature (`application/x-vnd.sen-labs.Toji`) and release cycle.
 
 Toji is in preview: formats and attribute names may still change before 1.0.
 
-- **Not there yet:** line widths and fill colors, the fonts of a
-  document in the file info, fixed-layout EPUB, DRM, JPEG XL and HEIC pages (no translator on Haiku), margin notes.
+- **Not there yet:** the fonts of a
+  document in the file info, fixed-layout EPUB, DRM, JPEG XL and HEIC pages (no translator on Haiku).
 - See [PLAN-mupdf.md](PLAN-mupdf.md) for the plans and design notes.
 
 ## Installing
@@ -198,6 +200,7 @@ which is under the GNU AGPL version 3.
 - © 2000-2011 Michael Pfeiffer
 - © 1998-2000 Hubert Figuiere
 - © 1997 Benoit Triquet
+- The icon of the shapes button is from [ArtPaint](https://github.com/HaikuArchives/ArtPaint) (MIT)
 - and the contributors to [BePDF](https://github.com/HaikuArchives/BePDF), among them Humdinger (the toolbar icons), Augustin Cavalier,
   Markus Himmel and the translators
 

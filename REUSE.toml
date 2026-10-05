@@ -30,3 +30,10 @@ path = ["lib/README.md", "lib/LICENSE"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Gregor B. Rosenauer & Claude"
 SPDX-License-Identifier = "MIT"
+
+# An icon from ArtPaint (https://github.com/HaikuArchives/ArtPaint), MIT license: the shapes button of the toolbar
+[[annotations]]
+path = ["src/graphics/artpaint/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "The ArtPaint authors"
+SPDX-License-Identifier = "MIT"

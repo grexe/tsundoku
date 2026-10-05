@@ -109,6 +109,9 @@ struct DocAnnotation {
 	BString quote;        // reflowable documents: the words that are marked
 	BString cfi;          // and the EPUB CFI of them
 	bool    continued = false;   // the part of a mark that runs over a page break, on the page after the first
+	float   width = 0;           // the line of a shape or a drawing, in points (0 if it has none)
+	bool    hasFill = false;     // a rectangle or an ellipse that is filled
+	uint32  fill = 0;            // 0xRRGGBB, if hasFill
 };
 
 // An annotation with the page it is on, for a list of all of them.
@@ -181,10 +184,13 @@ struct StoredAnnotation {
 	fz_rect box;          // fractions of the page, from the top left corner
 	std::vector<std::vector<fz_point> > paths;   // of a line (one path) and of a drawing, fractions of the page
 	bool    arrow;
+	float   width;        // of the line of a shape or a drawing, in points, 0 for the usual
+	bool    hasFill;      // a rectangle or an ellipse that is filled
+	uint32  fill;         // 0xRRGGBB, if hasFill
 
 	StoredAnnotation()
 		: markup(0), color(0), created(0), chapter(0), fraction(0), ypos(0), textPage(0), kind(kAnnotMarkup), page(0),
-		box(fz_empty_rect), arrow(false) {}
+		box(fz_empty_rect), arrow(false), width(0), hasFill(false), fill(0) {}
 };
 
 // Where a stored annotation is now: on one page, or two if it runs over a page break.
@@ -329,8 +335,12 @@ public:
 	// New annotations that are not tied to text. Positions are in page space, colors 0xRRGGBB.
 	bool         AddNote(int page, fz_point where, const char* text);
 	bool         AddFreeText(int page, fz_point where, const char* text);
-	bool         AddShape(int page, ShapeType type, fz_point from, fz_point to, uint32 rgb);
-	bool         AddInk(int page, const fz_point* points, int count, uint32 rgb);
+	// width is the line in points (0: the usual, 2); a rectangle or an ellipse can be filled
+	bool         AddShape(int page, ShapeType type, fz_point from, fz_point to, uint32 rgb, float width = 0,
+	                 bool hasFill = false, uint32 fill = 0);
+	bool         AddInk(int page, const fz_point* points, int count, uint32 rgb, float width = 0);
+	// Changes the line width (points, 0 to leave it) and the fill (none, or a color) of a shape or a drawing.
+	bool         SetAnnotationStyle(int page, int index, float width, bool hasFill, uint32 fill);
 
 	// Saving adds the changes to the end of the file (so that its attributes and the rest stay as they are).
 	// Undo and redo of the edits above. They return the page (1-based) that changed, 0 if there was nothing to do.
@@ -407,8 +417,10 @@ private:
 	// drawn on a page (comic books), positions in page space
 	bool StoreAddNote(int pageNo, fz_point where, const char* text);
 	bool StoreAddFreeText(int pageNo, fz_point where, const char* text);
-	bool StoreAddShape(int pageNo, ShapeType type, fz_point from, fz_point to, uint32 rgb);
-	bool StoreAddInk(int pageNo, const fz_point* points, int count, uint32 rgb);
+	bool StoreAddShape(int pageNo, ShapeType type, fz_point from, fz_point to, uint32 rgb, float width, bool hasFill,
+		uint32 fill);
+	bool StoreAddInk(int pageNo, const fz_point* points, int count, uint32 rgb, float width);
+	bool StoreSetStyle(int pageNo, int index, float width, bool hasFill, uint32 fill);
 	bool StoreSetBounds(int pageNo, int index, fz_rect bounds, bool resize);
 	// one drawn annotation as it is on its page, in page space
 	void StoreDrawnOnPage(const StoredAnnotation& annotation, int index, DocAnnotation* entry);

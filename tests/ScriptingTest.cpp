@@ -151,14 +151,68 @@ Text(BMessage message)
 }
 
 
+// the line width and the fill of shapes, on any document that can take shapes (page 2 must exist)
+static void
+ShapeChecks()
+{
+	BMessage reply;
+	BString id;
+	BMessage create = Items(B_CREATE_PROPERTY, "Annotation");
+	create.AddString("kind", "rectangle");
+	create.AddInt32("page", 2);
+	create.AddFloat("left", 20);
+	create.AddFloat("top", 20);
+	create.AddFloat("right", 120);
+	create.AddFloat("bottom", 90);
+	create.AddFloat("width", 5);
+	create.AddInt32("fill", 0x78beff);
+	Check("CREATE a rectangle with a width and a fill", Send(create, &reply));
+	reply.FindString("result", &id);
+	Check("the rectangle has an identifier", id.Length() > 0);
+	BMessage width = ItemNamed(B_GET_PROPERTY, "Annotation", id.String(), "Width");
+	Send(width, &reply);
+	float value = 0;
+	reply.FindFloat("result", &value);
+	Check("GET Width is 5", value > 4.9 && value < 5.1);
+	Check("GET Fill", Number(ItemNamed(B_GET_PROPERTY, "Annotation", id.String(), "Fill")) == 0x78beff);
+	BMessage set = ItemNamed(B_SET_PROPERTY, "Annotation", id.String(), "Width");
+	set.AddFloat("data", 3);
+	Check("SET Width", Send(set, &reply));
+	width = ItemNamed(B_GET_PROPERTY, "Annotation", id.String(), "Width");
+	Send(width, &reply);
+	value = 0;
+	reply.FindFloat("result", &value);
+	Check("GET Width is 3", value > 2.9 && value < 3.1);
+	Check("the fill stays when the width changes",
+		Number(ItemNamed(B_GET_PROPERTY, "Annotation", id.String(), "Fill")) == 0x78beff);
+	BMessage fill = ItemNamed(B_SET_PROPERTY, "Annotation", id.String(), "Fill");
+	fill.AddInt32("data", 0xe53935);
+	Check("SET Fill", Send(fill, &reply));
+	Check("GET Fill is the new one", Number(ItemNamed(B_GET_PROPERTY, "Annotation", id.String(), "Fill")) == 0xe53935);
+	BMessage none = ItemNamed(B_SET_PROPERTY, "Annotation", id.String(), "Fill");
+	none.AddString("data", "none");
+	Check("SET Fill none", Send(none, &reply));
+	BMessage gone = ItemNamed(B_GET_PROPERTY, "Annotation", id.String(), "Fill");
+	Check("the fill is gone", !Send(gone, &reply));
+	BMessage del = ItemNamed(B_DELETE_PROPERTY, "Annotation", id.String(), NULL);
+	Check("DELETE the rectangle", Send(del, &reply));
+}
+
+
 int
-main()
+main(int argc, char** argv)
 {
 	BApplication app("application/x-vnd.sen-labs.ScriptingTest");
 	sTarget = BMessenger("application/x-vnd.sen-labs.Toji");
 	if (!sTarget.IsValid()) {
 		printf("Toji is not running\n");
 		return 1;
+	}
+
+	if (argc > 1 && strcmp(argv[1], "shapes") == 0) {
+		ShapeChecks();
+		printf("%d checks, %d failed\n", sChecks, sFailed);
+		return sFailed;
 	}
 
 	BMessage reply;

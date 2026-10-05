@@ -35,6 +35,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #include <Message.h>
 #include <Point.h>
@@ -91,7 +92,7 @@ static property_info sDocumentProperties[] = {
 };
 
 
-enum { kId, kKind, kAnnotationPage, kText, kQuote, kColor, kBounds, kAuthor, kJson, kAnnotationGoto };
+enum { kId, kKind, kAnnotationPage, kText, kQuote, kColor, kBounds, kAuthor, kJson, kAnnotationGoto, kWidth, kFill };
 
 static property_info sAnnotationProperties[] = {
 	{ "Id", { B_GET_PROPERTY, 0 }, { B_DIRECT_SPECIFIER, 0 }, "The identifier (the name of the annotation).", 0,
@@ -111,6 +112,10 @@ static property_info sAnnotationProperties[] = {
 	{ "JSON", { B_GET_PROPERTY, 0 }, { B_DIRECT_SPECIFIER, 0 }, "The annotation as a Web Annotation (JSON-LD).", 0,
 		{ B_STRING_TYPE } },
 	{ "Goto", { B_EXECUTE_PROPERTY, 0 }, { B_DIRECT_SPECIFIER, 0 }, "Goes to the annotation and selects it.", 0 },
+	{ "Width", { B_GET_PROPERTY, B_SET_PROPERTY, 0 }, { B_DIRECT_SPECIFIER, 0 },
+		"The line of a shape or a drawing, in points.", 0, { B_FLOAT_TYPE } },
+	{ "Fill", { B_GET_PROPERTY, B_SET_PROPERTY, 0 }, { B_DIRECT_SPECIFIER, 0 },
+		"The fill of a rectangle or an ellipse, 0xRRGGBB; setting -1 (or none) takes the fill away.", 0, { B_INT32_TYPE } },
 	{ 0 }
 };
 
@@ -306,6 +311,10 @@ DescribeAnnotation(const DocAnnotationEntry& entry, BMessage* info)
 		info->AddInt32("Color", (int32)a.color);
 	info->AddRect("Bounds", BRect(a.rect.x0, a.rect.y0, a.rect.x1, a.rect.y1));
 	info->AddString("Author", a.author);
+	if (a.width > 0)
+		info->AddFloat("Width", a.width);
+	if (a.hasFill)
+		info->AddInt32("Fill", (int32)a.fill);
 }
 
 
@@ -576,6 +585,51 @@ AnnotationHandler::MessageReceived(BMessage* message)
 			reply.AddString("result", WebAnnotation::ToJson(web));
 			break;
 		}
+		case kWidth:
+			if (message->what == B_GET_PROPERTY) {
+				if (a.width <= 0) {
+					ReplyError(message, B_ENTRY_NOT_FOUND, "the annotation has no line");
+					return;
+				}
+				reply.AddFloat("result", a.width);
+			} else {
+				double width;
+				if (!NumberField(message, "data", &width) || width <= 0 || width > 100) {
+					ReplyError(message, B_BAD_VALUE, "give a width in points (1 to 100)");
+					return;
+				}
+				if (!doc->SetAnnotationStyle(entry.page, a.index, (float)width, a.hasFill, a.fill)) {
+					ReplyError(message, B_ERROR, "cannot change the line");
+					return;
+				}
+				fWindow->View()->AnnotationsChanged(entry.page);
+			}
+			break;
+		case kFill:
+			if (message->what == B_GET_PROPERTY) {
+				if (!a.hasFill) {
+					ReplyError(message, B_ENTRY_NOT_FOUND, "the annotation has no fill");
+					return;
+				}
+				reply.AddInt32("result", (int32)a.fill);
+			} else {
+				uint32 rgb = 0;
+				const char* text;
+				bool none = (message->FindString("data", &text) == B_OK && strcasecmp(text, "none") == 0);
+				double value;
+				if (!none && NumberField(message, "data", &value) && value < 0)
+					none = true;
+				if (!none && !ColorField(message, "data", &rgb)) {
+					ReplyError(message, B_BAD_VALUE, "give a color (0xRRGGBB), or -1 or none");
+					return;
+				}
+				if (!doc->SetAnnotationStyle(entry.page, a.index, 0, !none, rgb)) {
+					ReplyError(message, B_ERROR, "cannot change the fill");
+					return;
+				}
+				fWindow->View()->AnnotationsChanged(entry.page);
+			}
+			break;
 		case kAnnotationGoto: {
 			BMessage show(PDFWindow::SHOW_ANNOTATION_CMD);
 			show.AddInt32("page", entry.page);
@@ -973,7 +1027,12 @@ CreateAnnotation(PDFWindow* window, BMessage* message, BString* id, BString* err
 			: kind == "line" ? kShapeLine : kShapeArrow;
 		if (!hasColor)
 			rgb = 0xe53935;
-		ok = doc->AddShape(page, shape, fz_make_point(left, top), fz_make_point(right, bottom), rgb);
+		double width = 0;
+		NumberField(message, "width", &width);
+		uint32 fillRgb = 0;
+		bool hasFill = ColorField(message, "fill", &fillRgb);
+		ok = doc->AddShape(page, shape, fz_make_point(left, top), fz_make_point(right, bottom), rgb, (float)width, hasFill,
+			fillRgb);
 	} else if (kind == "ink") {
 		if (!doc->CanDrawAnnotations()) {
 			*error = "this document cannot take drawings";
@@ -991,7 +1050,9 @@ CreateAnnotation(PDFWindow* window, BMessage* message, BString* id, BString* err
 			points.push_back(fz_make_point(point.x, point.y));
 		if (!hasColor)
 			rgb = 0xe53935;
-		ok = doc->AddInk(page, points.data(), (int)points.size(), rgb);
+		double width = 0;
+		NumberField(message, "width", &width);
+		ok = doc->AddInk(page, points.data(), (int)points.size(), rgb, (float)width);
 	} else {
 		*error = "the kind is highlight, underline, strikeout, squiggly, note, text, rectangle, ellipse, line, arrow or ink";
 		return false;

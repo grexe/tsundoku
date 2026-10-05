@@ -71,8 +71,12 @@ struct Mark {
 	BString shape;
 	float   box[4];				// left, top, right, bottom
 	std::vector<std::vector<float> > paths;	// x and y, one after the other, of the points of a line or a drawing
+	float   width;				// of the line of a shape, in points (0: the usual)
+	bool    hasFill;			// a filled rectangle or ellipse
+	uint32  fill;				// 0xRRGGBB
 
-	Mark() : color(0), hasColor(false), created(0), chapter(0), fraction(0), ypos(0), textPage(0), page(0)
+	Mark() : color(0), hasColor(false), created(0), chapter(0), fraction(0), ypos(0), textPage(0), page(0),
+		width(0), hasFill(false), fill(0)
 	{
 		box[0] = box[1] = box[2] = box[3] = 0;
 	}

@@ -46,6 +46,8 @@ of Document of Window 0`.
 | `Quote` | GET, SET | the words a mark covers; setting them moves the mark to other words of the page (it keeps its identifier, color and note) |
 | `Color` | GET, SET | `0xRRGGBB` |
 | `Bounds` | GET, SET | a `BRect` in points on the page |
+| `Width` | GET, SET | the line of a shape or drawing, in points |
+| `Fill` | GET, SET | the fill of a rectangle or ellipse, `0xRRGGBB`; set `-1` or `none` to take it away |
 | `Author` | GET | |
 | `JSON` | GET | the annotation as a [Web Annotation](annotations.md) (JSON-LD) |
 | `Goto` | DO | goes to the annotation and selects it |
@@ -74,8 +76,8 @@ the same:
 |--------|--------|
 | `highlight`, `underline`, `strikeout`, `squiggly` | `quote` (the words, on `page`), or the selection if there is no quote; `color`, `text` |
 | `note`, `text` | `page`, `x`, `y` (points), `text` |
-| `rectangle`, `ellipse`, `line`, `arrow` | `page`, `left`, `top`, `right`, `bottom` (points), `color` |
-| `ink` | `page`, `points` (an array of `BPoint`), `color` |
+| `rectangle`, `ellipse`, `line`, `arrow` | `page`, `left`, `top`, `right`, `bottom` (points), `color`, `width` (points), `fill` (rectangle and ellipse) |
+| `ink` | `page`, `points` (an array of `BPoint`), `color`, `width` |
 
 The result is the identifier of the new annotation. A bookmark takes `label` and `page`.
 

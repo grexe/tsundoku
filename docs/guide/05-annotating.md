@@ -17,7 +17,7 @@ next click or selection uses it once, and Escape (or the button again) puts it d
 | Button | What it does |
 |---|---|
 | **Marker** (highlighter) | opens a menu of colors (and *Underline* and *Strike out*). After you choose, the pointer is an I-beam: select the text (drag, double click for a word, triple click for a line) and it is marked in that color. If some text is already selected, it is marked at once. |
-| **Note** | the pointer is a cross: click on the page where the note should be, then write it. |
+| **Note** | with text selected, a margin note for it (see below). Otherwise the pointer is a cross: click on the page where the note should be, then write it. In a book the next selection of text gets a margin note. |
 | **Text, shapes and drawing** | opens a menu (*Text, Rectangle, Ellipse, Line, Arrow, Drawing*); after you choose, the pointer is a cross and you click or drag on the page. |
 
 The buttons are dimmed for documents that cannot take what they make (see the table above).
@@ -31,11 +31,23 @@ sample.
 From the menu of an existing mark you can change its color and its note, or delete it. The note shows as a tooltip when the mouse
 rests on the mark. A selection over several pages gets a mark on each page.
 
+## Margin notes
+
+A mark can carry a note. Select the text and choose **Edit > Add margin note** (Cmd+Shift+N), or press the **Note** button while
+text is selected: the text is highlighted and a window asks for the note. A small note appears in the margin of the page next
+to the mark. Rest the pointer on it to read the note, and click it to edit.
+
+In a book (EPUB) the **Note** button arms the next selection of text for a margin note, since there are no notes that sit on
+the page there. **View > Show margin notes** switches the small notes off.
+
 ## Notes, text and shapes
 
 **Edit > Add** creates a note, text on the page, a rectangle, an ellipse, a line, an arrow or a freehand drawing. Choose one, then
 click (note, text) or drag (the others) on the page; the pointer is a cross until then, and Escape cancels. The same entry is in
 the menu of the secondary mouse button, where a note or text goes where that menu was opened.
+
+A shape or drawing has a **line width** (1 to 8 points) and a rectangle or an ellipse can be **filled** with a color: choose
+them in the menu of the secondary mouse button on the shape (**Line width**, **Fill**).
 
 Click a note, text, shape, line or drawing to select it: drag it to move it, drag a handle to resize it, press Delete to remove
 it, Escape to let go. Its color and its note can be changed in the secondary button's menu.

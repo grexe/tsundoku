@@ -714,6 +714,8 @@ bool PDFWindow::CancelCommand(BMessage* msg) {
 			case ANNOTATE_STRIKEOUT_CMD:
 			case ADD_ANNOTATION_CMD:
 			case MARKER_MENU_CMD:
+			case ADD_MARGIN_NOTE_CMD:
+			case SHOW_MARGIN_NOTES_CMD:
 			case NOTE_BUTTON_CMD:
 			case SHAPES_MENU_CMD:
 			case PRINT_SETTINGS_CMD:
@@ -882,13 +884,15 @@ void PDFWindow::UpdateInputEnabler()
 		fMenuBar->FindItem(SELECT_NONE_CMD)->SetEnabled(okToCopy);
 
 		mToolBar->SetActionEnabled(MARKER_MENU_CMD, doc->CanMarkText() && doc->CanCopy());
-		mToolBar->SetActionEnabled(NOTE_BUTTON_CMD, doc->CanDrawAnnotations());
+		mToolBar->SetActionEnabled(NOTE_BUTTON_CMD, doc->CanDrawAnnotations() || doc->CanMarkText());
 		mToolBar->SetActionEnabled(SHAPES_MENU_CMD, doc->CanDrawAnnotations());
 
 		bool canMark = doc->CanMarkText() && mMainView->HasTextSelection();
 		fMenuBar->FindItem(ANNOTATE_HIGHLIGHT_CMD)->SetEnabled(canMark);
 		fMenuBar->FindItem(ANNOTATE_UNDERLINE_CMD)->SetEnabled(canMark);
 		fMenuBar->FindItem(ANNOTATE_STRIKEOUT_CMD)->SetEnabled(canMark);
+		fMenuBar->FindItem(ADD_MARGIN_NOTE_CMD)->SetEnabled(canMark);
+		fMenuBar->FindItem(SHOW_MARGIN_NOTES_CMD)->SetMarked(mMainView->MarginNotesShown());
 		fMenuBar->FindItem(SAVE_FILE_CMD)->SetEnabled(doc->HasUnsavedChanges());
 
 		// "Undo Add highlight": what would be undone is named
@@ -1094,6 +1098,7 @@ BMenuBar* PDFWindow::BuildMenu()
 			.AddItem(B_TRANSLATE("Highlight selection"), ANNOTATE_HIGHLIGHT_CMD, 'H', B_SHIFT_KEY)
 			.AddItem(B_TRANSLATE("Underline selection"), ANNOTATE_UNDERLINE_CMD, 'U', B_SHIFT_KEY)
 			.AddItem(B_TRANSLATE("Strike out selection"), ANNOTATE_STRIKEOUT_CMD, 'K', B_SHIFT_KEY)
+			.AddItem(B_TRANSLATE("Add margin note"), ADD_MARGIN_NOTE_CMD, 'N', B_SHIFT_KEY)
 			.AddMenu(B_TRANSLATE("Add"))
 				.AddItem(B_TRANSLATE("Note"), AddToolMessage(PDFView::kToolNote))
 				.AddItem(B_TRANSLATE("Text"), AddToolMessage(PDFView::kToolFreeText))
@@ -1129,6 +1134,7 @@ BMenuBar* PDFWindow::BuildMenu()
 			.AddItem(B_TRANSLATE("Title page alone"), TITLE_PAGE_ALONE_CMD)
 			.AddItem(B_TRANSLATE("Right to left"), RIGHT_TO_LEFT_CMD)
 			.AddItem(B_TRANSLATE("Top to bottom"), TOP_TO_BOTTOM_CMD)
+			.AddItem(B_TRANSLATE("Show margin notes"), SHOW_MARGIN_NOTES_CMD)
 			.AddSeparator()
 			.AddItem(B_TRANSLATE("Zoom in"), (ZOOM_IN_CMD), '+')
 			.AddItem(B_TRANSLATE("Zoom out"), (ZOOM_OUT_CMD), '-')
@@ -1244,8 +1250,8 @@ BToolBar* PDFWindow::BuildToolBar()
 	mToolBar->AddAction(MARKER_MENU_CMD, this, LoadVectorIcon("ANNOT_HIGHLIGHT"),
 		B_TRANSLATE("Marker: choose a color, then select the text"), NULL, true);
 	mToolBar->AddAction(NOTE_BUTTON_CMD, this, LoadVectorIcon("ANNOT_NOTE"),
-		B_TRANSLATE("Note: click on the page"), NULL, true);
-	mToolBar->AddAction(SHAPES_MENU_CMD, this, LoadVectorIcon("ANNOT_SQUARE"),
+		B_TRANSLATE("Note: select text for a margin note, or click on the page"), NULL, true);
+	mToolBar->AddAction(SHAPES_MENU_CMD, this, LoadVectorIcon("ART_RECTS"),
 		B_TRANSLATE("Text, shapes and drawing: choose one, then click or drag on the page"), NULL, true);
 
 	mToolBar->AddSeparator();
@@ -1609,11 +1615,14 @@ PDFWindow::MessageReceived(BMessage* message)
 		break;
 	}
 	case NOTE_BUTTON_CMD:
-		if (mMainView->ArmedState() == 2)
-			mMainView->CancelToolFromToolbar();
-		else
-			mMainView->SetTool(PDFView::kToolNote);
+		mMainView->NoteButton();
 		ToolsChanged();
+		break;
+	case ADD_MARGIN_NOTE_CMD:
+		mMainView->MarginNoteOnSelection();
+		break;
+	case SHOW_MARGIN_NOTES_CMD:
+		mMainView->SetMarginNotesShown(!mMainView->MarginNotesShown());
 		break;
 	case ADD_ANNOTATION_CMD: {
 		int32 tool = PDFView::kToolNone;

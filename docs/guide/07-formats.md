@@ -51,4 +51,4 @@ XPS files, FictionBooks (`.fbz`, `.fb2.zip`) and pictures open through MuPDF.
 
 ## Not (yet) supported
 
-Fixed-layout EPUB, DRM, JPEG XL and HEIC pages in comics (Haiku has no translator for them), margin notes.
+Fixed-layout EPUB, DRM, JPEG XL and HEIC pages in comics (Haiku has no translator for them).

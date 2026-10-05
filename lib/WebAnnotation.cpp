@@ -574,7 +574,18 @@ ArchiveMark(const Mark& mark, BMessage* annotation)
 			char hex[16];
 			snprintf(hex, sizeof(hex), "#%06x", (unsigned)(mark.color & 0xffffff));
 			css = "stroke: ";
-			css << hex << "; fill: none;";
+			css << hex << ";";
+			if (mark.width > 0) {
+				char width[24];
+				snprintf(width, sizeof(width), " stroke-width: %g;", mark.width);
+				css << width;
+			}
+			if (mark.hasFill) {
+				char fill[24];
+				snprintf(fill, sizeof(fill), " fill: #%06x;", (unsigned)(mark.fill & 0xffffff));
+				css << fill;
+			} else
+				css << " fill: none;";
 		}
 		AddCssStyle(annotation, css.String());
 	}
@@ -639,8 +650,26 @@ UnarchiveMark(const BMessage& annotation, Mark* mark)
 	BMessage style;
 	mark->hasColor = false;
 	BString css;
-	if (annotation.FindMessage("oa:hasStyle", &style) == B_OK && style.FindString("rdf:value", &css) == B_OK)
+	mark->width = 0;
+	mark->hasFill = false;
+	if (annotation.FindMessage("oa:hasStyle", &style) == B_OK && style.FindString("rdf:value", &css) == B_OK) {
 		mark->hasColor = ColorOfStyle(css.String(), &mark->color);
+		// the line and the fill of a shape, as in an SVG: stroke-width: 2; fill: #rrggbb (or none)
+		int widthAt = css.IFindFirst("stroke-width:");
+		if (widthAt >= 0)
+			mark->width = (float)atof(css.String() + widthAt + 13);
+		int fillAt = css.IFindFirst("fill:");
+		if (fillAt >= 0) {
+			const char* value = css.String() + fillAt + 5;
+			while (*value == ' ')
+				value++;
+			if (*value == '#') {
+				unsigned long rgb = strtoul(value + 1, NULL, 16);
+				mark->hasFill = true;
+				mark->fill = (uint32)(rgb & 0xffffff);
+			}
+		}
+	}
 
 	BMessage agent;
 	mark->creator = "";

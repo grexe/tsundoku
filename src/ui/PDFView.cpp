@@ -102,6 +102,7 @@ static const int kZoomDPI[MAX_ZOOM - MIN_ZOOM + 1] = {
 #define EDIT_NOTE_MSG                  'ednt'
 #define NOTE_ENTERED_MSG               'ntnt'
 #define CHANGE_COLOR_MSG               'chcl'
+#define CHANGE_STYLE_MSG               'chst'
 #define ADD_TOOL_MSG                   'adtl'
 #define ARM_MARKUP_MSG                 'armM'
 #define CREATE_TEXT_MSG                'crtx'
@@ -250,6 +251,7 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 	mReadOnlyWarned = false;
 	mTool = kToolNone;
 	mMarkupArmed = false;
+	mArmedNote = false;
 	mArmedType = kMarkupHighlight;
 	mArmedColor = 0xffeb3b;
 	mToolCursor = new BCursor(B_CURSOR_ID_CROSS_HAIR);
@@ -639,6 +641,20 @@ void PDFView::MessageReceived(BMessage *msg) {
 			AnnotationsChanged();
 		break;
 	}
+	case CHANGE_STYLE_MSG: {
+		// the line width and the fill of a shape
+		int32 page = 0, index = -1, rgb = 0;
+		float width = 0;
+		bool hasFill = false;
+		msg->FindInt32("page", &page);
+		msg->FindInt32("index", &index);
+		msg->FindFloat("width", &width);
+		msg->FindBool("hasFill", &hasFill);
+		msg->FindInt32("color", &rgb);
+		if (ConfirmEditable() && mDoc->SetAnnotationStyle(page, index, width, hasFill, (uint32)rgb))
+			AnnotationsChanged();
+		break;
+	}
 	case COPY_ANNOTATION_MSG: {
 		int32 page = 0, index = -1;
 		msg->FindInt32("page", &page);
@@ -948,6 +964,7 @@ PDFView::Draw(BRect updateRect)
 			SlotScope scope(this, slot);
 			DrawPage(updateRect);
 			DrawFindHits(updateRect);
+			DrawMarginNotes(updateRect);
 			if (slot->number == mTargetPage)
 				DrawTargetRegion();
 			if (slot->number == mInteractionPage) {
@@ -1210,6 +1227,19 @@ PDFView::MouseDown (BPoint point) {
 			return;
 		}
 		CancelTool();	// another button gets its usual meaning
+	}
+
+	// a click on the note in the margin opens it for editing
+	if (buttons == B_PRIMARY_MOUSE_BUTTON && !SelectingText()) {
+		if (const DocAnnotation* margin = MarginNoteAt(CorrectMousePos(point))) {
+			BMessage edit(EDIT_NOTE_MSG);
+			edit.AddInt32("page", ActivePage());
+			edit.AddInt32("index", margin->index);
+			edit.AddString("text", margin->contents);
+			if (Window() != NULL)
+				Window()->PostMessage(&edit, this);
+			return;
+		}
 	}
 
 	// a click on an annotation that can be moved selects it, and a drag from there moves it; elsewhere the click
@@ -1802,6 +1832,49 @@ PDFView::ShowPopUpMenu(BPoint point, const DocLink* link, const DocAnnotation* a
 					annotation->color));
 			}
 
+			// the line and the fill of a shape or a drawing
+			const bool shape = annotation->kind == kAnnotRectangle || annotation->kind == kAnnotEllipse
+				|| annotation->kind == kAnnotLine || annotation->kind == kAnnotInk;
+			if (shape && annotation->width > 0) {
+				BMenu* widths = new BMenu(B_TRANSLATE("Line width"));
+				static const float kWidths[] = { 1, 2, 3, 4, 6, 8 };
+				for (size_t w = 0; w < sizeof(kWidths) / sizeof(kWidths[0]); w++) {
+					BMessage* change = new BMessage(CHANGE_STYLE_MSG);
+					change->AddInt32("page", ActivePage());
+					change->AddInt32("index", annotation->index);
+					change->AddFloat("width", kWidths[w]);
+					change->AddBool("hasFill", annotation->hasFill);
+					change->AddInt32("color", (int32)annotation->fill);
+					BString label;
+					label.SetToFormat(B_TRANSLATE("%d points"), (int)kWidths[w]);
+					i = new BMenuItem(label.String(), change);
+					i->SetTarget(this);
+					i->SetMarked(fabsf(annotation->width - kWidths[w]) < 0.5f);
+					widths->AddItem(i);
+				}
+				menu->AddItem(widths);
+			}
+			if (shape && (annotation->kind == kAnnotRectangle || annotation->kind == kAnnotEllipse)) {
+				BMessage fillTemplate(CHANGE_STYLE_MSG);
+				fillTemplate.AddInt32("page", ActivePage());
+				fillTemplate.AddInt32("index", annotation->index);
+				fillTemplate.AddFloat("width", annotation->width);
+				fillTemplate.AddBool("hasFill", true);
+				BMenu* fill = BuildColorMenu(B_TRANSLATE("Fill"), fillTemplate, this, annotation->hasFill, annotation->fill);
+				BMessage* none = new BMessage(CHANGE_STYLE_MSG);
+				none->AddInt32("page", ActivePage());
+				none->AddInt32("index", annotation->index);
+				none->AddFloat("width", annotation->width);
+				none->AddBool("hasFill", false);
+				none->AddInt32("color", 0);
+				i = new BMenuItem(B_TRANSLATE("No fill"), none);
+				i->SetTarget(this);
+				i->SetMarked(!annotation->hasFill);
+				fill->AddItem(i, 0);
+				fill->AddItem(new BSeparatorItem(), 1);
+				menu->AddItem(fill);
+			}
+
 			msg = new BMessage(EDIT_NOTE_MSG);
 			msg->AddInt32("page", ActivePage());
 			msg->AddInt32("index", annotation->index);
@@ -1968,6 +2041,8 @@ PDFView::DisplayLink(BPoint point)
 
 	// a note of an annotation is shown as a tooltip, to read it while scrolling through the document
 	const DocAnnotation* note = OnAnnotation(point);
+	if (note == NULL)
+		note = MarginNoteAt(p);
 	if (note != NULL && note->contents.Length() > 0) {
 		if (mNoteTip != note->index + 1) {
 			mNoteTip = note->index + 1;
@@ -2913,7 +2988,7 @@ int
 PDFView::ArmedState() const
 {
 	if (mMarkupArmed)
-		return 1;
+		return mArmedNote ? 2 : 1;
 	if (mTool == kToolNote)
 		return 2;
 	return mTool != kToolNone ? 3 : 0;
@@ -2929,7 +3004,7 @@ PDFView::ToolsChanged()
 
 
 void
-PDFView::ArmMarkup(MarkupType type, uint32 rgb)
+PDFView::ArmMarkup(MarkupType type, uint32 rgb, bool note)
 {
 	if (mDoc == NULL || !mDoc->CanMarkText() || !mDoc->CanCopy()) {
 		beep();
@@ -2937,12 +3012,13 @@ PDFView::ArmMarkup(MarkupType type, uint32 rgb)
 	}
 	// some text that is selected is marked at once
 	if (HasTextSelection()) {
-		AnnotateSelection(type, rgb);
+		MarkSelection(type, rgb, note);
 		return;
 	}
 	if (mTool != kToolNone)
 		CancelTool();
 	mMarkupArmed = true;
+	mArmedNote = note;
 	mArmedType = type;
 	mArmedColor = rgb;
 	SetViewCursor(gApp->textSelectionCursor);
@@ -2956,6 +3032,7 @@ PDFView::DisarmMarkup()
 	if (!mMarkupArmed)
 		return;
 	mMarkupArmed = false;
+	mArmedNote = false;
 	SetViewCursor(gApp->handCursor);
 	ToolsChanged();
 }
@@ -2967,8 +3044,172 @@ PDFView::ApplyArmedMarkup()
 {
 	MarkupType type = mArmedType;
 	uint32 rgb = mArmedColor;
+	bool note = mArmedNote;
 	DisarmMarkup();
-	AnnotateSelection(type, rgb);
+	MarkSelection(type, rgb, note);
+}
+
+
+// marks the selected text, and asks for the note if it is a margin note
+void
+PDFView::MarkSelection(MarkupType type, uint32 rgb, bool note)
+{
+	int page = std::min(mInteractionPage, TextEndPage());
+	if (!AnnotateSelection(type, rgb))
+		return;
+	if (note)
+		EditNewestNote(page);
+}
+
+
+// opens the note of the mark that was added last on the page
+void
+PDFView::EditNewestNote(int page)
+{
+	std::vector<DocAnnotationEntry> entries;
+	if (mDoc == NULL || !mDoc->ListAnnotationsOnPage(page, entries))
+		return;
+	int newest = -1;
+	for (size_t i = 0; i < entries.size(); i++) {
+		if (entries[i].annotation.isMarkup && !entries[i].annotation.continued && entries[i].annotation.index > newest)
+			newest = entries[i].annotation.index;
+	}
+	if (newest < 0)
+		return;
+	BMessage edit(EDIT_NOTE_MSG);
+	edit.AddInt32("page", page);
+	edit.AddInt32("index", newest);
+	edit.AddString("text", "");
+	if (Window() != NULL)
+		Window()->PostMessage(&edit, this);
+}
+
+
+void
+PDFView::MarginNoteOnSelection()
+{
+	if (!HasTextSelection() || mDoc == NULL || !mDoc->CanMarkText()) {
+		beep();
+		return;
+	}
+	MarkSelection(kMarkupHighlight, 0xffeb3b, true);
+}
+
+
+void
+PDFView::NoteButton()
+{
+	if (mDoc == NULL)
+		return;
+	if (ArmedState() == 2) {
+		if (mMarkupArmed)
+			DisarmMarkup();
+		else
+			CancelTool();
+		return;
+	}
+	if (HasTextSelection() && mDoc->CanMarkText())
+		MarkSelection(kMarkupHighlight, 0xffeb3b, true);
+	else if (mDoc->CanDrawAnnotations())
+		SetTool(kToolNote);
+	else if (mDoc->CanMarkText())
+		ArmMarkup(kMarkupHighlight, 0xffeb3b, true);
+	else
+		beep();
+}
+
+
+bool
+PDFView::MarginNotesShown() const
+{
+	return gApp->GetSettings()->GetShowMarginNotes();
+}
+
+
+void
+PDFView::SetMarginNotesShown(bool shown)
+{
+	gApp->GetSettings()->SetShowMarginNotes(shown);
+	Invalidate();
+}
+
+
+// ---- the notes in the margin: a small note at the right edge of the page for each mark that has a note
+
+void
+PDFView::MarginNoteBoxes(std::vector<MarginBox>* boxes)
+{
+	boxes->clear();
+	if (!MarginNotesShown() || mPage == NULL)
+		return;
+	struct Item {
+		float y;
+		const DocAnnotation* annotation;
+	};
+	std::vector<Item> items;
+	const std::vector<DocAnnotation>& list = mPage->mAnnotations;
+	for (size_t i = 0; i < list.size(); i++) {
+		const DocAnnotation& a = list[i];
+		if (!a.isMarkup || a.continued || a.contents.Length() == 0 || a.quads.empty())
+			continue;
+		Item item = { mPage->PageToDev(a.quads[0]).top, &a };
+		items.push_back(item);
+	}
+	// from the top to the bottom, each below the one before
+	for (size_t i = 0; i < items.size(); i++) {
+		for (size_t k = i + 1; k < items.size(); k++) {
+			if (items[k].y < items[i].y)
+				std::swap(items[i], items[k]);
+		}
+	}
+	const float kSize = 14;
+	float lastBottom = -1000;
+	for (size_t i = 0; i < items.size(); i++) {
+		float y = items[i].y > lastBottom + 2 ? items[i].y : lastBottom + 2;
+		MarginBox box;
+		box.box = BRect(mWidth - kSize - 3, y, mWidth - 4, y + kSize - 3);
+		box.annotation = items[i].annotation;
+		boxes->push_back(box);
+		lastBottom = box.box.bottom;
+	}
+}
+
+
+const DocAnnotation*
+PDFView::MarginNoteAt(BPoint point)
+{
+	std::vector<MarginBox> boxes;
+	MarginNoteBoxes(&boxes);
+	for (size_t i = 0; i < boxes.size(); i++) {
+		if (boxes[i].box.Contains(point))
+			return boxes[i].annotation;
+	}
+	return NULL;
+}
+
+
+void
+PDFView::DrawMarginNotes(BRect)
+{
+	std::vector<MarginBox> boxes;
+	MarginNoteBoxes(&boxes);
+	if (boxes.empty())
+		return;
+	rgb_color fill = { 255, 235, 100, 255 };
+	rgb_color edge = { 150, 120, 20, 255 };
+	for (size_t i = 0; i < boxes.size(); i++) {
+		BRect box = boxes[i].box.OffsetByCopy(mLeft, mTop);
+		SetHighColor(fill);
+		FillRoundRect(box, 2, 2);
+		SetHighColor(edge);
+		StrokeRoundRect(box, 2, 2);
+		// the lines of the note
+		float inset = 3;
+		for (int line = 0; line < 3; line++) {
+			float y = box.top + 3 + line * 3;
+			StrokeLine(BPoint(box.left + inset, y), BPoint(box.right - inset - (line == 2 ? 3 : 0), y));
+		}
+	}
 }
 
 
@@ -4468,6 +4709,12 @@ PDFView::TestCommand(BMessage* message)
 		message->FindString("kind", &kind);
 		SetTool(kind == "note" ? kToolNote : kind == "text" ? kToolFreeText : kToolRectangle);
 		TestLog("armtool %s: armed state %d", kind.String(), ArmedState());
+	} else if (cmd == "marginnote") {
+		MarginNoteOnSelection();
+		TestLog("marginnote: unsaved changes %d", (int)mDoc->HasUnsavedChanges());
+	} else if (cmd == "notebutton") {
+		NoteButton();
+		TestLog("notebutton: armed state %d", ArmedState());
 	} else if (cmd == "markermenu") {
 		ShowMarkerMenu(ConvertToScreen(BPoint(150, 60)));
 	} else if (cmd == "shapesmenu") {

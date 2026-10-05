@@ -162,7 +162,18 @@ BuildPdfAnnotation(Document* document, int pageNo, fz_page* page, fz_stext_page*
 		else if (a.kind == kAnnotNote || a.kind == kAnnotText)
 			css << "color: " << RgbText(a.color) << ";";
 		else
-			css << "stroke: " << RgbText(a.color) << "; fill: none;";
+{
+			css << "stroke: " << RgbText(a.color) << ";";
+			if (a.width > 0) {
+				char width[24];
+				snprintf(width, sizeof(width), " stroke-width: %g;", a.width);
+				css << width;
+			}
+			if (a.hasFill)
+				css << " fill: " << RgbText(a.fill) << ";";
+			else
+				css << " fill: none;";
+		}
 		AddCssStyle(annotation, css.String());
 	}
 

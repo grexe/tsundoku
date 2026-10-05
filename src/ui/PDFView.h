@@ -174,6 +174,16 @@ private:
 	bool mMarkupArmed;			// the next selection of text is marked, see ArmMarkup()
 	MarkupType mArmedType;
 	uint32 mArmedColor;
+	bool mArmedNote;			// the marked text gets a margin note
+	struct MarginBox {
+		BRect box;
+		const DocAnnotation* annotation;
+	};
+	void MarginNoteBoxes(std::vector<MarginBox>* boxes);	// of the active page, in the coordinates of its bitmap
+	const DocAnnotation* MarginNoteAt(BPoint point);	// point in the coordinates of the bitmap of the active page
+	void DrawMarginNotes(BRect updateRect);
+	void MarkSelection(MarkupType type, uint32 rgb, bool note);
+	void EditNewestNote(int page);
 	bool SelectingText() const;	// the mouse selects text: Option is down, or the marker is armed
 	void ApplyArmedMarkup();
 	void ToolsChanged();		// tells the window (the buttons of the toolbar)
@@ -459,10 +469,18 @@ public:
 	bool HasTool() const { return mTool != kToolNone; }
 	// The marker of the toolbar: after a color is chosen the next selection of text is marked with it (one time; Escape lets
 	// go). If some text is selected when it is chosen, that is marked at once.
-	void ArmMarkup(MarkupType type, uint32 rgb);
+	void ArmMarkup(MarkupType type, uint32 rgb, bool note = false);
 	void DisarmMarkup();
 	bool IsMarkupArmed() const { return mMarkupArmed; }
 	void CancelToolFromToolbar() { CancelTool(); }
+	// A margin note: the selected text is marked and the note for it is written at once; the mark has a small note in the margin of
+	// the page that shows the text on hover and opens it for editing with a click.
+	void MarginNoteOnSelection();
+	// the Note button: a margin note if text is selected, else a note on the page (or, where there are none, the next
+	// selection of text gets a margin note)
+	void NoteButton();
+	bool MarginNotesShown() const;
+	void SetMarginNotesShown(bool shown);
 	// what is armed, for the toolbar: 0 nothing, 1 the marker, 2 the note, 3 another tool (text, shapes, drawing)
 	int ArmedState() const;
 	// the menus of the toolbar buttons, at the screen point

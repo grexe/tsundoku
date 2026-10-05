@@ -192,7 +192,8 @@ Document::StoreAddFreeText(int pageNo, fz_point where, const char* text)
 
 
 bool
-Document::StoreAddShape(int pageNo, ShapeType type, fz_point from, fz_point to, uint32 rgb)
+Document::StoreAddShape(int pageNo, ShapeType type, fz_point from, fz_point to, uint32 rgb, float width, bool hasFill,
+	uint32 fill)
 {
 	if (!CanDrawAnnotations() || pageNo < 1 || pageNo > fPageCount)
 		return false;
@@ -207,6 +208,9 @@ Document::StoreAddShape(int pageNo, ShapeType type, fz_point from, fz_point to, 
 
 	StoredAnnotation a;
 	a.color = rgb & 0xffffff;
+	a.width = width;
+	a.hasFill = hasFill && (type == kShapeRectangle || type == kShapeEllipse);
+	a.fill = fill & 0xffffff;
 	a.box = fz_make_rect(fminf(a0.x, a1.x), fminf(a0.y, a1.y), fmaxf(a0.x, a1.x), fmaxf(a0.y, a1.y));
 	switch (type) {
 		case kShapeEllipse:
@@ -231,7 +235,7 @@ Document::StoreAddShape(int pageNo, ShapeType type, fz_point from, fz_point to, 
 
 
 bool
-Document::StoreAddInk(int pageNo, const fz_point* points, int count, uint32 rgb)
+Document::StoreAddInk(int pageNo, const fz_point* points, int count, uint32 rgb, float width)
 {
 	if (!CanDrawAnnotations() || pageNo < 1 || pageNo > fPageCount || count < 2)
 		return false;
@@ -243,6 +247,7 @@ Document::StoreAddInk(int pageNo, const fz_point* points, int count, uint32 rgb)
 	StoredAnnotation a;
 	a.kind = kAnnotInk;
 	a.color = rgb & 0xffffff;
+	a.width = width;
 	std::vector<fz_point> stroke;
 	for (int i = 0; i < count; i++)
 		stroke.push_back(ToFraction(bounds, points[i]));
@@ -327,6 +332,10 @@ Document::StoreDrawnOnPage(const StoredAnnotation& a, int index, DocAnnotation* 
 	entry->isFreeText = a.kind == kAnnotText;
 	entry->hasColor = true;
 	entry->color = a.color;
+	entry->width = a.kind == kAnnotRectangle || a.kind == kAnnotEllipse || a.kind == kAnnotLine || a.kind == kAnnotInk
+		? (a.width > 0 ? a.width : 2) : 0;
+	entry->hasFill = a.hasFill;
+	entry->fill = a.fill;
 	entry->continued = false;
 	for (size_t i = 0; i < a.paths.size(); i++) {
 		std::vector<fz_point> path;
@@ -457,7 +466,8 @@ Document::PaintDrawn(const StoredAnnotation& a, fz_device* device, fz_matrix ctm
 	fz_context* context = fContext;
 	float rgb[3] = { ((a.color >> 16) & 0xff) / 255.0f, ((a.color >> 8) & 0xff) / 255.0f, (a.color & 0xff) / 255.0f };
 	float scale = PageScale(bounds);
-	float lineWidth = 2 * scale;
+	float lineWidth = (a.width > 0 ? a.width : 2) * scale;
+	const float fillRgb[3] = { ((a.fill >> 16) & 0xff) / 255.0f, ((a.fill >> 8) & 0xff) / 255.0f, (a.fill & 0xff) / 255.0f };
 	fz_rect box = RectFromFraction(bounds, a.box);
 
 	fz_path* path = NULL;
@@ -503,6 +513,8 @@ Document::PaintDrawn(const StoredAnnotation& a, fz_device* device, fz_matrix ctm
 			}
 			case kAnnotEllipse:
 				EllipsePath(context, path, box);
+				if (a.hasFill)
+					Fill(context, device, ctm, path, fillRgb, 1);
 				Stroke(context, device, ctm, path, stroke, rgb);
 				break;
 			case kAnnotLine:
@@ -543,6 +555,8 @@ Document::PaintDrawn(const StoredAnnotation& a, fz_device* device, fz_matrix ctm
 				break;
 			default:
 				RectPath(context, path, box);
+				if (a.hasFill)
+					Fill(context, device, ctm, path, fillRgb, 1);
 				Stroke(context, device, ctm, path, stroke, rgb);
 				break;
 		}

@@ -915,6 +915,9 @@ Document::LoadAnnotations(int pageNo, fz_page* page, std::vector<DocAnnotation>&
 		pdf_annot* next = NULL;
 		int colorCount = 0;
 		float colorValue[4] = { 0, 0, 0, 0 };
+		float borderWidth = 0;
+		int fillCount = 0;
+		float fillValue[4] = { 0, 0, 0, 0 };
 		fz_point lineA = fz_make_point(0, 0), lineB = lineA;
 		int strokeCount = 0, pointCount = 0;
 
@@ -935,6 +938,10 @@ Document::LoadAnnotations(int pageNo, fz_page* page, std::vector<DocAnnotation>&
 				const char* by = pdf_annot_author(fContext, annot);
 				strlcpy(author, by != NULL ? by : "", sizeof(author));
 				pdf_annot_color(fContext, annot, &colorCount, colorValue);
+				if (type == PDF_ANNOT_SQUARE || type == PDF_ANNOT_CIRCLE || type == PDF_ANNOT_LINE || type == PDF_ANNOT_INK)
+					borderWidth = pdf_annot_border_width(fContext, annot);
+				if ((type == PDF_ANNOT_SQUARE || type == PDF_ANNOT_CIRCLE) && pdf_annot_has_interior_color(fContext, annot))
+					pdf_annot_interior_color(fContext, annot, &fillCount, fillValue);
 				const char* nm = pdf_annot_name(fContext, annot);
 				strlcpy(name, nm != NULL ? nm : "", sizeof(name));
 				if (type == PDF_ANNOT_LINE)
@@ -968,6 +975,12 @@ Document::LoadAnnotations(int pageNo, fz_page* page, std::vector<DocAnnotation>&
 			entry.quads.assign(quads.begin(), quads.begin() + quadCount);
 			entry.contents = contents;
 			entry.author = author;
+			entry.width = borderWidth;
+			if (fillCount == 3 || fillCount == 1) {
+				entry.hasFill = true;
+				float r = fillValue[0], g = fillCount == 3 ? fillValue[1] : fillValue[0], b = fillCount == 3 ? fillValue[2] : fillValue[0];
+				entry.fill = ((uint32)(r * 255 + 0.5f) << 16) | ((uint32)(g * 255 + 0.5f) << 8) | (uint32)(b * 255 + 0.5f);
+			}
 			entry.isMarkup = type == PDF_ANNOT_HIGHLIGHT || type == PDF_ANNOT_UNDERLINE
 				|| type == PDF_ANNOT_STRIKE_OUT || type == PDF_ANNOT_SQUIGGLY;
 			entry.isFreeText = type == PDF_ANNOT_FREE_TEXT;
@@ -1308,6 +1321,67 @@ Document::MoveMarkupToQuote(int pageNo, int index, const char* quote)
 }
 
 
+static void
+ColorFloats(uint32 rgb, float color[3])
+{
+	color[0] = ((rgb >> 16) & 0xff) / 255.0f;
+	color[1] = ((rgb >> 8) & 0xff) / 255.0f;
+	color[2] = (rgb & 0xff) / 255.0f;
+}
+
+
+bool
+Document::SetAnnotationStyle(int pageNo, int index, float width, bool hasFill, uint32 fill)
+{
+	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
+		return false;
+	if (UsesStore())
+		return StoreSetStyle(pageNo, index, width, hasFill, fill);
+
+	BString operation(B_TRANSLATE("Change line"));
+	DocumentLocker locker(this);
+	fz_page* page = NULL;
+	int ok = 0;
+	int began = 0;
+
+	fz_var(page);
+	fz_try(fContext) {
+		page = fz_load_page(fContext, fDocument, pageNo - 1);
+		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
+		pdf_annot* annot = FindAnnotation(fContext, pdfPage, index);
+		if (annot != NULL) {
+			BEGIN_EDIT(operation.String())
+			int type = pdf_annot_type(fContext, annot);
+			if (width > 0)
+				pdf_set_annot_border_width(fContext, annot, width);
+			if (type == PDF_ANNOT_SQUARE || type == PDF_ANNOT_CIRCLE) {
+				if (hasFill) {
+					float color[3];
+					ColorFloats(fill, color);
+					pdf_set_annot_interior_color(fContext, annot, 3, color);
+				} else
+					pdf_dict_del(fContext, pdf_annot_obj(fContext, annot), PDF_NAME(IC));
+			}
+			pdf_set_annot_modification_date(fContext, annot, (int64_t)time(NULL));
+			pdf_update_annot(fContext, annot);
+			END_EDIT()
+			ok = 1;
+		}
+	}
+	fz_always(fContext) {
+		fz_drop_page(fContext, page);
+	}
+	fz_catch(fContext) {
+		LogError(fContext, "cannot change the line of an annotation");
+		ABANDON_EDIT()
+		ok = 0;
+	}
+	if (ok)
+		RecordOperation(pageNo, operation.String());
+	return ok != 0;
+}
+
+
 bool
 Document::SetAnnotationColor(int pageNo, int index, uint32 rgb)
 {
@@ -1351,13 +1425,6 @@ Document::SetAnnotationColor(int pageNo, int index, uint32 rgb)
 }
 
 
-static void
-ColorFloats(uint32 rgb, float color[3])
-{
-	color[0] = ((rgb >> 16) & 0xff) / 255.0f;
-	color[1] = ((rgb >> 8) & 0xff) / 255.0f;
-	color[2] = (rgb & 0xff) / 255.0f;
-}
 
 
 // the rectangle at a position, as far as it fits on the page
@@ -1490,10 +1557,11 @@ Document::AddFreeText(int pageNo, fz_point where, const char* text)
 
 
 bool
-Document::AddShape(int pageNo, ShapeType type, fz_point from, fz_point to, uint32 rgb)
+Document::AddShape(int pageNo, ShapeType type, fz_point from, fz_point to, uint32 rgb, float width, bool hasFill,
+	uint32 fill)
 {
 	if (FixedStore())
-		return StoreAddShape(pageNo, type, from, to, rgb);
+		return StoreAddShape(pageNo, type, from, to, rgb, width, hasFill, fill);
 	if (!CanDrawAnnotations() || pageNo < 1 || pageNo > fPageCount)
 		return false;
 
@@ -1527,7 +1595,12 @@ Document::AddShape(int pageNo, ShapeType type, fz_point from, fz_point to, uint3
 		} else
 			pdf_set_annot_rect(fContext, annot, rect);
 		pdf_set_annot_color(fContext, annot, 3, color);
-		pdf_set_annot_border_width(fContext, annot, kShapeLineWidth);
+		pdf_set_annot_border_width(fContext, annot, width > 0 ? width : kShapeLineWidth);
+		if (hasFill && (type == kShapeRectangle || type == kShapeEllipse)) {
+			float fillColor[3];
+			ColorFloats(fill, fillColor);
+			pdf_set_annot_interior_color(fContext, annot, 3, fillColor);
+		}
 		if (author != NULL && author[0] != '\0')
 			pdf_set_annot_author(fContext, annot, author);
 		pdf_set_annot_creation_date(fContext, annot, (int64_t)time(NULL));
@@ -1551,10 +1624,10 @@ Document::AddShape(int pageNo, ShapeType type, fz_point from, fz_point to, uint3
 
 
 bool
-Document::AddInk(int pageNo, const fz_point* points, int count, uint32 rgb)
+Document::AddInk(int pageNo, const fz_point* points, int count, uint32 rgb, float width)
 {
 	if (FixedStore())
-		return StoreAddInk(pageNo, points, count, rgb);
+		return StoreAddInk(pageNo, points, count, rgb, width);
 	if (!CanDrawAnnotations() || pageNo < 1 || pageNo > fPageCount || count < 2)
 		return false;
 
@@ -1579,7 +1652,7 @@ Document::AddInk(int pageNo, const fz_point* points, int count, uint32 rgb)
 		pdf_set_annot_name(fContext, annot, annotationId);
 		pdf_add_annot_ink_list(fContext, annot, count, &stroke[0]);
 		pdf_set_annot_color(fContext, annot, 3, color);
-		pdf_set_annot_border_width(fContext, annot, kShapeLineWidth);
+		pdf_set_annot_border_width(fContext, annot, width > 0 ? width : kShapeLineWidth);
 		if (author != NULL && author[0] != '\0')
 			pdf_set_annot_author(fContext, annot, author);
 		pdf_set_annot_creation_date(fContext, annot, (int64_t)time(NULL));

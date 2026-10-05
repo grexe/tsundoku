@@ -12,6 +12,7 @@
 | Cmd+C | Copy |
 | Cmd+A, Cmd+Shift+A | Select all, Select none |
 | Cmd+Shift+H, U, K | Highlight, underline, strike out the selection |
+| Cmd+Shift+N | Add a margin note to the selection |
 | Cmd+F, Cmd+G, Cmd+Shift+G | Find, Find next, Find previous |
 | Cmd+J | Jump to a page |
 | Cmd+Left, Cmd+Right | Back, Forward (through places you jumped from) |

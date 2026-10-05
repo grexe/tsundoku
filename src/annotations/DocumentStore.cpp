@@ -160,6 +160,9 @@ ToMark(const StoredAnnotation& a, WebAnnotation::Mark* mark)
 		mark->box[1] = a.box.y0;
 		mark->box[2] = a.box.x1;
 		mark->box[3] = a.box.y1;
+		mark->width = a.width;
+		mark->hasFill = a.hasFill;
+		mark->fill = a.fill;
 		mark->paths.clear();
 		for (size_t i = 0; i < a.paths.size(); i++) {
 			std::vector<float> path;
@@ -195,6 +198,9 @@ FromMark(const WebAnnotation::Mark& mark, StoredAnnotation* a)
 	if (mark.page > 0) {
 		a->kind = KindOfShape(mark.shape);
 		a->arrow = mark.shape == "arrow";
+		a->width = mark.width;
+		a->hasFill = mark.hasFill;
+		a->fill = mark.fill;
 		a->box = fz_make_rect(mark.box[0], mark.box[1], mark.box[2], mark.box[3]);
 		a->paths.clear();
 		for (size_t i = 0; i < mark.paths.size(); i++) {
@@ -1122,6 +1128,22 @@ Document::StoreSetContents(int pageNo, int index, const char* text)
 		return false;
 	PushStoreUndo(B_TRANSLATE("Change note"), pageNo);
 	fStore[at].contents = text != NULL ? text : "";
+	return true;
+}
+
+
+bool
+Document::StoreSetStyle(int pageNo, int index, float width, bool hasFill, uint32 fill)
+{
+	DocumentLocker locker(this);
+	int at;
+	if (!StoreIndexFor(pageNo, index, &at))
+		return false;
+	PushStoreUndo(B_TRANSLATE("Change line"), pageNo);
+	if (width > 0)
+		fStore[at].width = width;
+	fStore[at].hasFill = hasFill;
+	fStore[at].fill = fill & 0xffffff;
 	return true;
 }
 
