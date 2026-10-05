@@ -5,13 +5,40 @@ permissions:
   contents: write   # to attach the package to a release
 
 jobs:
+  # the user guide is made from the Markdown chapters in docs/guide: HTML, EPUB 3, PDF and DjVu
+  docs:
+    runs-on: ubuntu-latest
+    name: user-guide
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pandoc/actions/setup@v1
+        with:
+          version: 3.10.2
+      - uses: typst-community/setup-typst@v5
+      - name: Install pdf2djvu
+        run: sudo apt-get update && sudo apt-get install -y pdf2djvu
+      - name: Build the guide
+        run: docs/guide/build.sh
+      - uses: actions/upload-artifact@v7
+        with:
+          name: tsundoku-user-guide
+          path: docs/guide/build/
+          if-no-files-found: error
+
   build-haiku:
     timeout-minutes: 120
+    needs: docs
     runs-on: ubuntu-latest
     name: build-haiku-r1beta6-x86-64
 
     steps:
       - uses: actions/checkout@v7
+
+      # the guide goes into the package
+      - uses: actions/download-artifact@v7
+        with:
+          name: tsundoku-user-guide
+          path: docs/guide/build
 
       - name: Start Haiku VM
         uses: cross-platform-actions/action@v1.6.0
@@ -52,5 +79,7 @@ jobs:
       - uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/v')
         with:
-          files: "*.hpkg"
+          files: |
+            *.hpkg
+            docs/guide/build/tsundoku-guide.*
           generate_release_notes: true

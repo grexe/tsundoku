@@ -8,3 +8,4 @@ dist/Tsundoku
 package-build/
 3rd-party/
 .DS_Store
+docs/guide/build/

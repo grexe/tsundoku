@@ -33,6 +33,10 @@ mkdir -p $STAGE/data/licenses
 cp -a dist/license/AGPL-3.0 "$STAGE/data/licenses/GNU AGPL v3"
 mkdir $STAGE/apps/Tsundoku/docs
 cp -a dist/docs/Start.pdf $STAGE/apps/Tsundoku/docs/   # the start page, shown when no file is given
+# the user guide, built from docs/guide (by CI, or build.sh there); the package is made without it if it is not there
+for guide in docs/guide/build/tsundoku-guide.pdf docs/guide/build/tsundoku-guide.epub; do
+	[ -f "$guide" ] && cp -a "$guide" $STAGE/apps/Tsundoku/docs/
+done
 ln -s ../../../../apps/Tsundoku/Tsundoku $STAGE/data/deskbar/menu/Applications/Tsundoku
 sed -e "s|@VERSION@|$VERSION|g" -e "s|@ARCH@|$ARCH|g" package/PackageInfo.in > $STAGE/.PackageInfo
 

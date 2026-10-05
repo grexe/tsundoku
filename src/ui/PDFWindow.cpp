@@ -1815,7 +1815,7 @@ PDFWindow::MessageReceived(BMessage* message)
 		OpenHelp();
 		break;
 	case ONLINE_HELP_CMD:
-		LaunchHTMLBrowser("http://haikuarchives.github.io/BePDF/English/table_of_contents.html");
+		LaunchHTMLBrowser("https://github.com/sen-laboratories/tsundoku/tree/main/docs/guide");
 		break;
 	case HOME_PAGE_CMD:
 		LaunchHTMLBrowser("https://github.com/sen-laboratories/tsundoku");
@@ -2320,10 +2320,10 @@ PDFWindow::OpenPDFHelp(const char* name)
 void
 PDFWindow::OpenHelp()
 {
-	// Tsundoku does not ship a manual of its own yet, so fall back to the online one of BePDF
-	if (!OpenPDFHelp(B_TRANSLATE_COMMENT("English.pdf",
+	// the user guide that is shipped with the program (built from docs/guide), else the online one
+	if (!OpenPDFHelp(B_TRANSLATE_COMMENT("tsundoku-guide.pdf",
 			"Replace with the PDF name of the help document, if there is one for your language.")))
-		LaunchHTMLBrowser("http://haikuarchives.github.io/BePDF/English/table_of_contents.html");
+		LaunchHTMLBrowser("https://github.com/sen-laboratories/tsundoku/tree/main/docs/guide");
 }
 
 
