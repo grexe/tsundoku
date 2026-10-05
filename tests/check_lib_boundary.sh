@@ -5,10 +5,12 @@
 # Checks the rule of lib/: the files there are MIT, and use nothing that is copyleft (no header of src/, MuPDF or DjVuLibre).
 cd "$(dirname "$0")/.." || exit 2
 failed=0
+# (the identifier is built here so that REUSE does not take this line for the license of this file)
+MIT_TAG="SPDX-License-""Identifier: MIT"
 fail() { echo "FAIL: $*"; failed=1; }
 
 for f in lib/*.cpp lib/*.h; do
-	grep -q "SPDX-License-Identifier: MIT" "$f" || fail "$f has no MIT identifier"
+	grep -q "$MIT_TAG" "$f" || fail "$f has no MIT identifier"
 	grep -qi "AGPL\|GNU General Public" "$f" && fail "$f mentions a copyleft license"
 	# local includes must be files of lib/
 	for inc in $(grep -o '^#include "[^"]*"' "$f" | sed 's/#include "\(.*\)"/\1/'); do
@@ -19,7 +21,7 @@ done
 
 # nothing outside lib/ may claim to be MIT
 for f in $(git ls-files src | grep -E '\.(cpp|h)$'); do
-	grep -q "SPDX-License-Identifier: MIT" "$f" && fail "$f is MIT but is not in lib/"
+	grep -q "$MIT_TAG" "$f" && fail "$f is MIT but is not in lib/"
 done
 
 [ $failed = 0 ] && echo "lib/ is clean: MIT files that need nothing copyleft"

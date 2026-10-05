@@ -180,8 +180,8 @@ MuPDF set `MUPDF_DIR`.
 To build an installable package (`tsundoku-<version>-<arch>.hpkg`) from the result, run `./package.sh`. Copy it to
 `~/config/packages` to install it for your user.
 
-Tsundoku has no manual of its own yet. Since it works like BePDF, use the [BePDF manual](http://haikuarchives.github.io/BePDF/English/table_of_contents.html)
-for now; "Help" in the application opens it as well.
+The user guide is in [docs/guide](docs/guide) (Markdown); `docs/guide/build.sh` makes HTML, EPUB, PDF and DjVu from it (CI does too,
+and the package has the PDF). "Help" in the application opens it.
 
 Bug reports and ideas: [issues](https://github.com/sen-laboratories/tsundoku/issues).
 
