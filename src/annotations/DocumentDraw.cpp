@@ -20,7 +20,7 @@
 
 // Annotations drawn on a page of a comic book: notes, text, rectangles, ellipses, lines, arrows and drawings. A comic
 // book is an archive of images, it has neither text to mark nor a place to keep annotations, so they are kept in an
-// attribute of the file (DocumentReflow.cpp, the store) like the marks of a book and told by the page and a place on
+// attribute of the file (DocumentStore.cpp, the store) like the marks of a book and told by the page and a place on
 // it, in fractions of the page. They are drawn into the rendering of the page, as the marks of a book.
 //
 // Note: fz_try() uses setjmp()/longjmp(), so no C++ objects with destructors may be created or destroyed inside

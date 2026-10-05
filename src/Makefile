@@ -39,7 +39,8 @@ SRCS = annotations/AnnotationsView.cpp \
 	backend/Document.cpp \
 	backend/DjvuDocument.cpp \
 	annotations/DocumentDraw.cpp \
-	annotations/DocumentReflow.cpp \
+	annotations/DocumentStore.cpp \
+	layout/DocumentLayout.cpp \
 	annotations/DocumentWeb.cpp \
 	app/EntryChangedMonitor.cpp \
 	metadata/BbfInfo.cpp \

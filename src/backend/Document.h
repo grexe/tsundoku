@@ -361,7 +361,7 @@ private:
 	Document(fz_context* context, fz_document* document, const char* path, float textSize);
 	void ListPage(int pageNo, std::vector<DocAnnotationEntry>& entries);
 
-	// the marks of a reflowable document (see DocumentReflow.cpp) and the annotations of a comic book (DocumentDraw.cpp)
+	// the marks of a reflowable document (see DocumentStore.cpp) and the annotations of a comic book (DocumentDraw.cpp)
 	// are kept in an attribute of the file, not in the file
 	bool UsesStore() const { return fIsComic || fIsDjvu || (fReflowable && !fIsPDF); }
 	// the documents with pages that stay as they are and no place in the file for annotations: what is drawn on them (notes,
