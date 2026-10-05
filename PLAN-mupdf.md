@@ -131,15 +131,11 @@ SEN has to be able to point at an annotation and to read or change it. What exis
   it is loaded with the annotation (`DocAnnotation::id`) and survives saving, moving, resizing and undo.
   `Document::FindAnnotationById()` finds it in the document. Annotations of other programs have their own `/NM` or
   none; those without one can only be named by page and index, which is not stable.
-- **Deep link (done).** `B_REFS_RECEIVED` takes `SEN:annotation` (the id) next to `bepdf:page_num` and `SEN:quote`:
-  Tsundoku opens the file, goes to the page, selects the annotation and scrolls to it (`PDFView::ShowAnnotation`).
-- **Message suite (later).** A BeOS scripting suite on the window (`GetSupportedSuites`, `ResolveSpecifier`), so that
-  `hey Tsundoku get Annotation "<id>" of Window 0` and the same in code work:
-  properties Id, Kind, Page, Bounds, Text, Color, Author, Created, Modified; GET, SET (text, color, bounds), DELETE,
-  COUNT and CREATE (markup from a quoted text, notes, shapes with their fields); Annotation addressed by index or by
-  name (the id), on the document and per page.
-- **Change notices (later).** Observers (`StartWatching`) get a message when annotations were added, changed or
-  removed, so that SEN can keep relations to annotations in step.
+- **Deep link (done).** `B_REFS_RECEIVED` takes `oa:hasTarget` (selectors for a page, a region, words, an EPUB CFI) or `oa:Annotation`
+  (the id): Tsundoku opens the file, goes there, selects the annotation and scrolls to it (`PDFView::ShowAnnotation`). The old
+  `bepdf:page_num` is not read any more (a page is the selector `page=N`; the command line `Tsundoku file page` makes one).
+- **Message suite (done, 0.9).** `suite/vnd.sen-labs.Tsundoku` on the window: Document, Page, Annotation, Bookmark with the verbs
+  above; see docs/reference/scripting.md. No change notices (SEN watches the attribute with the file system monitor).
 
 ## Page layouts (done, the basis for other formats)
 

@@ -176,6 +176,13 @@ Write(const char* path, const BMessage& bookmarks)
 		added++;
 	}
 
+	// how many there are, for showing (not indexed)
+	if (added > 0) {
+		int32 count = added;
+		node.WriteAttr("SEN:bookmarkCount", B_INT32_TYPE, 0, &count, sizeof(count));
+	} else
+		node.RemoveAttr("SEN:bookmarkCount");
+
 	if (others + added == 0) {
 		node.RemoveAttr(kAttribute);
 		return true;

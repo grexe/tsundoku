@@ -58,6 +58,7 @@ SRCS = annotations/AnnotationsView.cpp \
 	annotations/NoteWindow.cpp \
 	ui/OutlinesWindow.cpp \
 	layout/PageLayout.cpp \
+	scripting/Scripting.cpp \
 	ui/PDFPrint.cpp \
 	ui/PDFSearch.cpp \
 	ui/PDFView.cpp \

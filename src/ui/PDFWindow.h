@@ -221,6 +221,7 @@ private:
 	BStringView    *mTotalPageNumberItem;
 	BSplitView*		mSplitView;
 	PDFView*		mMainView;
+	BHandler*		mScripting;	// the document for the scripting suite (Scripting.h)
 	BView*			fMainContainer;
 	SidebarTabView*	mLayerView;
 	BOutlineListView *mPagesView;
@@ -268,6 +269,15 @@ public:
 
 	virtual bool QuitRequested();
 	virtual	bool CanClose();
+
+	// scripting (Scripting.h)
+	virtual status_t GetSupportedSuites(BMessage* data);
+	virtual BHandler* ResolveSpecifier(BMessage* message, int32 index, BMessage* specifier, int32 what,
+		const char* property);
+	PDFView* View() { return mMainView; }
+	OutlinesView* BookmarkList() { return mOutlinesView; }
+	// the bookmarks were changed from outside the sidebar
+	void BookmarksChanged() { SaveUserBookmarks(); }
 	bool IsOk();
 	BMenuBar* BuildMenu();
 	BToolBar* BuildToolBar();

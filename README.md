@@ -105,6 +105,12 @@ The model, the storage and the access from other programs: [docs/reference/annot
   is a webtoon or whose first pages are very tall.
 - The metadata of `ComicInfo.xml` and BBF shows in File info with the cover.
 
+### Scripting
+
+Other programs (and `hey`) can read and change the annotations and bookmarks of the document in a window, go to a page or to an
+annotation, and save: `hey Tsundoku do AddAnnotation of Document of Window 0 with kind=highlight and quote="the words" and
+page=3`. See [docs/reference/scripting.md](docs/reference/scripting.md).
+
 ### Printing and information
 
 - Printing (range of pages, even or odd pages only, reverse or in order).
@@ -125,12 +131,11 @@ relations between files and documents to Haiku. Reading is where relations becom
 part in them:
 
 - **Navigation:** SEN navigators hand over a target, e.g. the page of a bookmark or reference in a relation, and
-  Tsundoku jumps right there. The target is passed as `bepdf:page_num`, the same message field BePDF understands, so
-  both readers remain interchangeable for SEN. A target can also be a Web Annotation selector (a page and a region, the
-  words, an EPUB CFI) or the identifier of an annotation.
+  Tsundoku jumps right there. The target is a Web Annotation target (`oa:hasTarget`: a page, a region on it, the words, an EPUB CFI) or the identifier of
+  an annotation.
 - **Annotations as data:** annotations are described with the W3C Web Annotation model and kept where SEN can find them, even
-  without opening the document.
-- **Planned:** a scripting suite so that other programs can read and change annotations, and more semantic extensions.
+  without opening the document; every annotation has an identifier, and a scripting suite lets other programs read and change
+  them.
 
 Such extensions do not belong into a general purpose reader, so this is an independent fork with its own name,
 application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
@@ -140,7 +145,7 @@ application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
 Tsundoku is in preview: formats and attribute names may still change before 1.0.
 
 - **Known limit:** in the continuous flow a text selection stops at the end of the page it was started on.
-- **Not there yet:** line widths and fill colors, scripting of annotations from other programs (planned for 0.9), the fonts of a
+- **Not there yet:** line widths and fill colors, the fonts of a
   document in the file info, fixed-layout EPUB, DRM, JPEG XL and HEIC pages (no translator on Haiku), margin notes.
 - See [PLAN-mupdf.md](PLAN-mupdf.md) for the plans and design notes.
 

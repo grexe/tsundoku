@@ -11,8 +11,10 @@ What Tsundoku writes to the BFS attributes of a file, and how places in a docume
   only the application needs).
 - The attributes are defined for the file types (so that Tracker offers them as columns), and the indices are made on the
   volume.
-- What BePDF made up (`META:*`, `bepdf:*`) is not used any more; files that have those attributes show the new ones once they
-  are opened.
+- What BePDF made up (`META:*`, `bepdf:*`) is not used any more. A file that has the old `META:` attributes is **left as it
+  is** (Tsundoku writes no metadata to it) unless the setting "Replace existing attributes with standard ones" is on: then the
+  values are moved to the standard names (`META:title` to `dc:title`, ...) and the old attributes are taken away. The setting
+  is off by default. While it is off, the columns of the old names stay defined for PDF files.
 
 ## Attributes
 
@@ -24,7 +26,7 @@ What Tsundoku writes to the BFS attributes of a file, and how places in a docume
 | `schema:isbn`, `schema:position` | [schema.org/Book](https://schema.org/Book): the ISBN, and the number in the series |
 | `schema:numberOfPages` | the number of pages (see below) |
 | `PDF:creator`, `PDF:producer`, `PDF:created`, `PDF:modified` | what only a PDF file has: the program that made the document and the one that made the PDF, and the dates |
-| `SEN:annotations`, `SEN:annotationCount` | the annotations and the bookmarks, and how many annotations there are (see [annotations.md](annotations.md)) |
+| `SEN:annotations`, `SEN:annotationCount`, `SEN:bookmarkCount` | the annotations and the bookmarks, and how many of each there are (see [annotations.md](annotations.md)); only the count of annotations is indexed |
 | `SEN:readingProgression` | `rtl`, `ltr`, `ttb` or `default` (see below) |
 | `tsundoku:viewState` | where you stopped reading (see below) |
 

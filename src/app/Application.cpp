@@ -52,6 +52,7 @@
 
 #include "PDFWindow.h"
 #include "Application.h"
+#include "WebAnnotation.h"
 #include "ResourceLoader.h"
 #include "PasswordWindow.h"
 #include "Globals.h"
@@ -78,7 +79,6 @@ static const char * licenseCopyright =
     "\n\n"
     "This program is free software under the GNU AGPL v3, or any later version.\n";
 
-static const char *PAGE_NUM_MSG_KEY = "bepdf:page_num";
 // Deep links are described like W3C Web Annotations (WebAnnotation.h). A B_REFS_RECEIVED message names the file in refs
 // and says where to go in it with
 //   oa:hasTarget    a message with oa:hasSelector entries: an oa:FragmentSelector (page=5, an EPUB CFI), an
@@ -172,6 +172,8 @@ static const size_t kBookAttributeCount = sizeof(kBookAttributes) / sizeof(kBook
 // how many annotations the document has (any kind of document), for queries; the annotations of a book are in
 // SEN:annotations. Nothing in the ontologies is made for either, so they have the prefix of SEN.
 static const char* const kAnnotationCountAttribute = "SEN:annotationCount";
+// ... and how many bookmarks (not indexed: it is for showing)
+static const char* const kBookmarkCountAttribute = "SEN:bookmarkCount";
 
 
 // CBZ, CBR and CBT are ZIP, RAR and TAR files without a mark of their own. What they have in common is that the first
@@ -234,7 +236,7 @@ AddAttrInfo(BMessage* info, const char* name, const char* label, int32 type, int
 // known, by its extension and by the name of the first file of the container. Which application opens them is
 // left to the user.
 static void
-InstallMimeTypes(const entry_ref* application)
+InstallMimeTypes(const entry_ref* application, bool keepLegacyColumns)
 {
 	BMimeType epub("application/epub+zip");
 	if (epub.InitCheck() != B_OK)
@@ -255,16 +257,19 @@ InstallMimeTypes(const entry_ref* application)
 		AddAttrInfo(&epubInfo, kBookAttributes[i].name, kBookAttributes[i].label, kBookAttributes[i].type,
 			kBookAttributes[i].width);
 	AddAttrInfo(&epubInfo, kAnnotationCountAttribute, B_TRANSLATE_MARK("Annotations"), B_INT32_TYPE, 70);
+	AddAttrInfo(&epubInfo, kBookmarkCountAttribute, B_TRANSLATE_MARK("Bookmarks"), B_INT32_TYPE, 70);
 	epub.SetAttrInfo(&epubInfo);
 
 	// The same attributes for PDF files. What the type had (the PDF: attributes of the producer and the dates) stays; the
 	// META: attributes of PDF files, which BePDF made up, are the properties of the ontologies now (dc:title, dc:creator,
-	// dc:subject, dc:description, schema:numberOfPages, and PDF:creator for the program that made the document).
+	// dc:subject, dc:description, schema:numberOfPages, and PDF:creator for the program that made the document). The files
+	// are not changed unless the user wants that (the setting), so their columns stay as long as it is off.
 	{
 		BMessage pdfNew;
 		const char* name;
 		for (int32 i = 0; pdfInfo.FindString("attr:name", i, &name) == B_OK; i++) {
-			if (strncmp(name, "META:", 5) == 0 || strcmp(name, kAnnotationCountAttribute) == 0 || strcmp(name, "PDF:creator") == 0)
+			if ((!keepLegacyColumns && strncmp(name, "META:", 5) == 0) || strcmp(name, kAnnotationCountAttribute) == 0
+				|| strcmp(name, kBookmarkCountAttribute) == 0 || strcmp(name, "PDF:creator") == 0)
 				continue;
 			bool ours = false;
 			for (size_t k = 0; k < kBookAttributeCount; k++) {
@@ -297,6 +302,7 @@ InstallMimeTypes(const entry_ref* application)
 				kBookAttributes[i].width);
 		AddAttrInfo(&pdfNew, "PDF:creator", B_TRANSLATE_MARK("Creator"), B_STRING_TYPE, 120);
 		AddAttrInfo(&pdfNew, kAnnotationCountAttribute, B_TRANSLATE_MARK("Annotations"), B_INT32_TYPE, 70);
+		AddAttrInfo(&pdfNew, kBookmarkCountAttribute, B_TRANSLATE_MARK("Bookmarks"), B_INT32_TYPE, 70);
 		pdf.SetAttrInfo(&pdfNew);
 	}
 
@@ -395,7 +401,7 @@ BepdfApplication::BepdfApplication()
 
 	BPath path(mAppPath);
 	LoadSettings();
-	InstallMimeTypes(mAppRef.device >= 0 ? &mAppRef : NULL);
+	InstallMimeTypes(mAppRef.device >= 0 ? &mAppRef : NULL, !mSettings->GetReplaceFileAttributes());
 
 	InitBePDF();
 }
@@ -738,7 +744,6 @@ void BepdfApplication::RefsReceived(BMessage *msg)
 	uint32 type;
 	int32 count;
 	mReadyToQuit = false;
-    status_t result;
 
 	msg->GetInfo("refs", &type, &count);
 
@@ -752,7 +757,6 @@ void BepdfApplication::RefsReceived(BMessage *msg)
 	BString ownerPassword, userPassword;
 	const char *owner = NULL;
 	const char *user  = NULL;
-    int32 pageNum = 0;
 	BMessage target;
 	bool hasTarget = false;
 	BString motivation;
@@ -765,13 +769,6 @@ void BepdfApplication::RefsReceived(BMessage *msg)
 	}
 	if (B_OK == msg->FindString("userPassword", &userPassword)) {
 		user = userPassword.String();
-	}
-    result = msg->FindInt32(PAGE_NUM_MSG_KEY, &pageNum);
-    if (result != B_OK) {
-        if (result != B_NAME_NOT_FOUND) {
-            BAlert *error = new BAlert(B_TRANSLATE("Error"), B_TRANSLATE("Error getting page number!"), B_TRANSLATE("Close"), NULL, NULL, B_WIDTH_AS_USUAL, B_WARNING_ALERT);
-            error->Go();
-        }
 	}
 
 	hasTarget = msg->FindMessage(TARGET_MSG_KEY, &target) == B_OK;
@@ -818,12 +815,6 @@ void BepdfApplication::RefsReceived(BMessage *msg)
 				mWindow = win;
 				win->Show();
 			}
-            // jump to page if provided
-            if (pageNum != 0) {
-                BMessage goToPageMsg(PDFWindow::GOTO_PAGE_CMD);
-                goToPageMsg.AddInt32("page", pageNum);
-                mWindow->MessageReceived(&goToPageMsg);
-            }
             if (annotationId.Length() > 0 && mWindow != NULL) {
                 BMessage annotationMsg(PDFWindow::SHOW_ANNOTATION_CMD);
                 annotationMsg.AddString("id", annotationId);
@@ -900,8 +891,15 @@ BepdfApplication::ArgvReceived (int32 argc, char **argv)
 	pg = argc == 3 ? atoi(argv[2]) : 0;
 
 	BMessage msg(B_REFS_RECEIVED);
-	if (pg != 0)
-		msg.AddInt32 (PAGE_NUM_MSG_KEY, pg);
+	if (pg != 0) {
+		// the page as a target, as other programs say it
+		BMessage selector, target;
+		char value[24];
+		snprintf(value, sizeof(value), "page=%d", pg);
+		WebAnnotation::MakeFragmentSelector(&selector, WebAnnotation::kConformsToPdf, value);
+		target.AddMessage("oa:hasSelector", &selector);
+		msg.AddMessage(TARGET_MSG_KEY, &target);
+	}
 	get_ref_for_path (argv[1], &fileToOpen);
 	msg.AddRef ("refs", &fileToOpen);
 	PostMessage (&msg);
@@ -978,6 +976,48 @@ EnsureIndices(dev_t device)
 
 
 ///////////////////////////////////////////////////////////
+// The attributes that BePDF made up for PDF files (and that this program wrote for books until 0.8), and the standard ones
+// that take their place
+static const struct { const char* old; const char* standard; } kLegacyAttributes[] = {
+	{ "META:title", "dc:title" }, { "META:author", "dc:creator" }, { "META:keyw", "dc:subject" },
+	{ "META:pages", "schema:numberOfPages" }, { "META:subject", "dc:description" }, { "META:creator", "PDF:creator" }
+};
+
+
+static bool
+HasLegacyAttributes(BNode& node)
+{
+	attr_info info;
+	for (size_t i = 0; i < sizeof(kLegacyAttributes) / sizeof(kLegacyAttributes[0]); i++) {
+		if (node.GetAttrInfo(kLegacyAttributes[i].old, &info) == B_OK)
+			return true;
+	}
+	return false;
+}
+
+
+// the value of each is kept (it may have been edited), and the old attribute is taken away
+static void
+MoveLegacyAttributes(BNode& node)
+{
+	for (size_t i = 0; i < sizeof(kLegacyAttributes) / sizeof(kLegacyAttributes[0]); i++) {
+		attr_info info;
+		if (node.GetAttrInfo(kLegacyAttributes[i].old, &info) != B_OK)
+			continue;
+		bool moved = node.GetAttrInfo(kLegacyAttributes[i].standard, &info) == B_OK;
+		if (!moved && node.GetAttrInfo(kLegacyAttributes[i].old, &info) == B_OK && info.size >= 0 && info.size < 65536) {
+			char* data = new char[info.size + 1];
+			if (node.ReadAttr(kLegacyAttributes[i].old, info.type, 0, data, info.size) == info.size)
+				moved = node.WriteAttr(kLegacyAttributes[i].standard, info.type, 0, data, info.size) == info.size;
+			delete[] data;
+		}
+		if (moved)
+			node.RemoveAttr(kLegacyAttributes[i].old);
+	}
+}
+
+
+///////////////////////////////////////////////////////////
 void
 BepdfApplication::UpdateAttr(BNode &node, const char *name, type_code type, off_t offset, void *buffer, size_t length) {
 	char dummy[10];
@@ -1012,6 +1052,19 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 	BNode node(ref);
 	if (node.InitCheck() != B_OK) return;
 	EnsureIndices(ref->device);
+
+	// annotations of other programs get an identifier (and the file is saved)
+	GlobalSettings* settings = gApp->GetSettings();
+	if (settings->GetUpgradeAnnotationIds())
+		doc->UpgradeAnnotationIds();
+
+	// A file that has the attributes of BePDF (and of older versions of this program) is left as it is, unless the user wants
+	// them replaced by the standard ones: then the values are moved.
+	if (HasLegacyAttributes(node)) {
+		if (!settings->GetReplaceFileAttributes())
+			return;
+		MoveLegacyAttributes(node);
+	}
 
 	const bool force_overwrite = (modifiers() & B_COMMAND_KEY) == B_COMMAND_KEY;
 

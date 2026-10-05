@@ -370,6 +370,59 @@ HitsOnPage(Document* document, fz_stext_page* text, const BString& needle,
 }
 
 
+bool
+Document::PageText(int pageNo, BString* result)
+{
+	if (pageNo < 1 || pageNo > fPageCount)
+		return false;
+	DocumentLocker locker(this);
+	std::map<int, fz_stext_page*> cache;
+	fz_stext_page* text = TextOfPage(this, cache, pageNo - 1);
+	if (text == NULL)
+		return false;
+	*result = "";
+	for (fz_stext_block* block = text->first_block; block != NULL; block = block->next) {
+		if (block->type != FZ_STEXT_BLOCK_TEXT)
+			continue;
+		for (fz_stext_line* line = block->u.t.first_line; line != NULL; line = line->next) {
+			for (fz_stext_char* ch = line->first_char; ch != NULL; ch = ch->next) {
+				char utf8[8];
+				int length = fz_runetochar(utf8, ch->c);
+				result->Append(utf8, length);
+			}
+			result->Append("\n");
+		}
+	}
+	fz_drop_stext_page(fContext, text);
+	return true;
+}
+
+
+bool
+Document::FindQuoteQuads(int pageNo, const char* quote, std::vector<fz_quad>* quads)
+{
+	if (quote == NULL || quote[0] == '\0' || pageNo < 1 || pageNo > fPageCount)
+		return false;
+	BString needle(quote);
+	needle.ReplaceAll("\r", " ");
+	needle.ReplaceAll("\n", " ");
+	while (needle.FindFirst("  ") >= 0)
+		needle.ReplaceAll("  ", " ");
+	needle.Trim();
+
+	DocumentLocker locker(this);
+	std::map<int, fz_stext_page*> cache;
+	fz_stext_page* text = TextOfPage(this, cache, pageNo - 1);
+	std::vector<std::vector<fz_quad> > hits;
+	bool found = HitsOnPage(this, text, needle, &hits);
+	if (found)
+		*quads = hits.front();
+	if (text != NULL)
+		fz_drop_stext_page(fContext, text);
+	return found;
+}
+
+
 // Looks for the text on the pages of a chapter, beginning with the page where it was and going out from there.
 // firstPage is the 0-based number of the first page of the chapter, count the number of its pages.
 // The first and the last character of a page that is not white space (false if there is none), as the middle of

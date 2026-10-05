@@ -61,6 +61,7 @@
 #include "AttachmentsView.h"
 #include "SidebarTabView.h"
 #include "OutlinesWindow.h"
+#include "Scripting.h"
 #include "PageRenderer.h"
 #include "PasswordWindow.h"
 #include "PDFView.h"
@@ -130,6 +131,8 @@ PDFWindow::PDFWindow(entry_ref* ref, BRect frame, const char *ownerPassword,
 	: BWindow(frame, "PDF", B_DOCUMENT_WINDOW, 0)
 {
 	mMainView = NULL;
+	mScripting = new Scripting::DocumentHandler(this);
+	AddHandler(mScripting);
 	mPagesView = NULL;
 	mPageNumberItem = NULL;
 	mPrintSettings = NULL;
@@ -223,6 +226,26 @@ void PDFWindow::FitToScreen()
 
 
 ///////////////////////////////////////////////////////////
+status_t
+PDFWindow::GetSupportedSuites(BMessage* data)
+{
+	Scripting::AddWindowSuite(data);
+	return BWindow::GetSupportedSuites(data);
+}
+
+
+BHandler*
+PDFWindow::ResolveSpecifier(BMessage* message, int32 index, BMessage* specifier, int32 what, const char* property)
+{
+	if (Scripting::IsDocumentSpecifier(message, index, specifier, what, property)) {
+		// the specifiers that follow are for the document
+		message->PopSpecifier();
+		return mScripting;
+	}
+	return BWindow::ResolveSpecifier(message, index, specifier, what, property);
+}
+
+
 PDFWindow::~PDFWindow()
 {
 	delete mSavePanel;

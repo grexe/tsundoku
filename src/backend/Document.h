@@ -305,6 +305,16 @@ public:
 	// Moves or resizes: the annotation is fitted into the new bounds (a note only follows the corner).
 	bool         SetAnnotationBounds(int page, int index, fz_rect bounds, bool resize);
 
+	// Where the words are on the page (1-based): the quads of the first hit, in page space. For making a mark from words
+	// that a program names; false if they are not there.
+	bool         FindQuoteQuads(int page, const char* quote, std::vector<fz_quad>* quads);
+	// The text of a page (1-based) in the order of reading, lines separated by a line feed.
+	bool         PageText(int page, BString* text);
+	// Gives an annotation (its place on the page as listed) the identifier (the /NM of a PDF) that it should have.
+	bool         SetAnnotationId(int page, int index, const char* id);
+	// Puts a mark on text on other words (the same page): it keeps its identifier, color, note and author.
+	bool         MoveMarkupToQuote(int page, int index, const char* quote);
+
 	// New annotations that are not tied to text. Positions are in page space, colors 0xRRGGBB.
 	bool         AddNote(int page, fz_point where, const char* text);
 	bool         AddFreeText(int page, fz_point where, const char* text);
@@ -340,6 +350,12 @@ public:
 	// (not there if it has none); written when it is opened and saved. Counting does not load the pages.
 	int          AnnotationCount();
 	void         SyncAnnotationCount(const char* path);
+
+	// Gives the annotations of a PDF file that have no name (the /NM of the PDF; programs that do not know of identifiers
+	// make them) a UUID, so that the annotations can be referred to in the standard way, and saves the file, which also
+	// describes the annotations in SEN:annotations. Returns how many were named; nothing is done (0) if the file cannot
+	// be saved.
+	int          UpgradeAnnotationIds();
 
 	bool         HasUnsavedChanges();
 	bool         CanSave();

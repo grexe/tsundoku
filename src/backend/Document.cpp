@@ -1246,6 +1246,90 @@ Document::SetAnnotationContents(int pageNo, int index, const char* text)
 
 
 bool
+Document::SetAnnotationId(int pageNo, int index, const char* id)
+{
+	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount || id == NULL)
+		return false;
+	DocumentLocker locker(this);
+	if (UsesStore()) {
+		int at;
+		if (!StoreIndexFor(pageNo, index, &at))
+			return false;
+		fStore[at].id = id;
+		return true;
+	}
+
+	fz_page* page = NULL;
+	int ok = 0;
+	fz_var(page);
+	fz_try(fContext) {
+		page = fz_load_page(fContext, fDocument, pageNo - 1);
+		pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
+		pdf_annot* annot = FindAnnotation(fContext, pdfPage, index);
+		if (annot != NULL) {
+			pdf_set_annot_name(fContext, annot, id);
+			pdf_update_annot(fContext, annot);
+			ok = 1;
+		}
+	}
+	fz_always(fContext) {
+		fz_drop_page(fContext, page);
+	}
+	fz_catch(fContext) {
+		LogError(fContext, "cannot name annotation");
+		ok = 0;
+	}
+	return ok != 0;
+}
+
+
+bool
+Document::MoveMarkupToQuote(int pageNo, int index, const char* quote)
+{
+	std::vector<DocAnnotationEntry> entries;
+	if (!ListAnnotationsOnPage(pageNo, entries))
+		return false;
+	const DocAnnotation* old = NULL;
+	for (size_t i = 0; i < entries.size(); i++) {
+		if (entries[i].annotation.index == index && !entries[i].annotation.continued)
+			old = &entries[i].annotation;
+	}
+	if (old == NULL || !old->isMarkup)
+		return false;
+
+	std::vector<fz_quad> quads;
+	if (!FindQuoteQuads(pageNo, quote, &quads))
+		return false;
+
+	BString id = old->id, contents = old->contents;
+	MarkupType type = old->type == PDF_ANNOT_UNDERLINE ? kMarkupUnderline
+		: old->type == PDF_ANNOT_STRIKE_OUT ? kMarkupStrikeOut
+		: old->type == PDF_ANNOT_SQUIGGLY ? kMarkupSquiggly : kMarkupHighlight;
+	uint32 rgb = old->hasColor ? old->color : 0xffeb3b;
+	float color[3] = { ((rgb >> 16) & 0xff) / 255.0f, ((rgb >> 8) & 0xff) / 255.0f, (rgb & 0xff) / 255.0f };
+
+	if (!DeleteAnnotation(pageNo, index) || !AddMarkup(pageNo, type, quads.data(), (int)quads.size(), color))
+		return false;
+
+	entries.clear();
+	int newest = -1;
+	if (ListAnnotationsOnPage(pageNo, entries)) {
+		for (size_t i = 0; i < entries.size(); i++) {
+			if (entries[i].annotation.index > newest)
+				newest = entries[i].annotation.index;
+		}
+	}
+	if (newest < 0)
+		return false;
+	if (id.Length() > 0)
+		SetAnnotationId(pageNo, newest, id.String());
+	if (contents.Length() > 0)
+		SetAnnotationContents(pageNo, newest, contents.String());
+	return true;
+}
+
+
+bool
 Document::SetAnnotationColor(int pageNo, int index, uint32 rgb)
 {
 	if (!CanEditAnnotations() || pageNo < 1 || pageNo > fPageCount)
@@ -2028,6 +2112,49 @@ Document::SyncAnnotationCount(const char* path)
 		node.WriteAttr("SEN:annotationCount", B_INT32_TYPE, 0, &count, sizeof(count));
 	else if (count == 0 && present)
 		node.RemoveAttr("SEN:annotationCount");
+}
+
+
+int
+Document::UpgradeAnnotationIds()
+{
+	if (!fIsPDF || !fCanSave)
+		return 0;
+
+	DocumentLocker locker(this);
+	int named = 0;
+	for (int pageNo = 1; pageNo <= fPageCount; pageNo++) {
+		if (!PageMayHaveAnnotations(pageNo))
+			continue;
+		fz_page* page = NULL;
+		fz_var(page);
+		fz_try(fContext) {
+			page = fz_load_page(fContext, fDocument, pageNo - 1);
+			pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
+			for (pdf_annot* annot = pdf_first_annot(fContext, pdfPage); annot != NULL;
+					annot = pdf_next_annot(fContext, annot)) {
+				if (!IsListedAnnotation(pdf_annot_type(fContext, annot)))
+					continue;
+				const char* nm = pdf_annot_name(fContext, annot);
+				if (nm != NULL && nm[0] != '\0')
+					continue;
+				char id[48];
+				NewAnnotationId(id, sizeof(id));
+				pdf_set_annot_name(fContext, annot, id);
+				named++;
+			}
+		}
+		fz_catch(fContext) {
+			LogError(fContext, "cannot name the annotations of a page");
+		}
+		fz_drop_page(fContext, page);
+	}
+
+	if (named > 0) {
+		fModified = true;
+		Save();
+	}
+	return named;
 }
 
 

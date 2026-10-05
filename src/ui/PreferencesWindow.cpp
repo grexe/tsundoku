@@ -96,6 +96,21 @@ void PreferencesWindow::SetupView() {
 		new BMessage(RESTORE_WINDOW_FRAME_CHANGED));
 	windowPos->SetValue(settings->GetRestoreWindowFrame());
 
+	BCheckBox *replaceAttributes = new BCheckBox("replaceAttributes",
+		B_TRANSLATE("Replace existing attributes with standard ones"),
+		new BMessage(REPLACE_ATTRIBUTES_CHANGED));
+	replaceAttributes->SetValue(settings->GetReplaceFileAttributes());
+	replaceAttributes->SetToolTip(B_TRANSLATE("Files that have the attributes of BePDF or older versions (META:title, "
+		"META:author, ...) are left as they are, unless this is on: then their values are moved to the standard names "
+		"(dc:title, dc:creator, ...)."));
+
+	BCheckBox *upgradeIds = new BCheckBox("upgradeIds",
+		B_TRANSLATE("Give annotations of other programs an identifier"),
+		new BMessage(UPGRADE_IDS_CHANGED));
+	upgradeIds->SetValue(settings->GetUpgradeAnnotationIds());
+	upgradeIds->SetToolTip(B_TRANSLATE("When a PDF file is opened, the annotations that have no name get one, so that "
+		"other programs can refer to them. This saves the file."));
+
 	BPopUpMenu *openMenu = new BPopUpMenu("openMenu");
 	mOpenInWorkspace = new BMenuField("mOpeninWorkspace",
 		B_TRANSLATE("Open in workspace:"), openMenu);
@@ -107,6 +122,9 @@ void PreferencesWindow::SetupView() {
 		.SetInsets(B_USE_SMALL_INSETS, B_USE_SMALL_INSETS, B_USE_SMALL_INSETS, 0)
 		.Add(pageNumber)
 		.Add(windowPos)
+		.AddStrut(B_USE_ITEM_INSETS)
+		.Add(replaceAttributes)
+		.Add(upgradeIds)
 		.AddStrut(B_USE_ITEM_INSETS)
 		.Add(mOpenInWorkspace)
 		.AddStrut(B_USE_SMALL_INSETS)
@@ -245,6 +263,10 @@ void PreferencesWindow::MessageReceived(BMessage *msg) {
 	case RESTORE_PAGE_NO_CHANGED: mSettings->SetRestorePageNumber(IsOn(msg));
 		break;
 	case RESTORE_WINDOW_FRAME_CHANGED: mSettings->SetRestoreWindowFrame(IsOn(msg));
+		break;
+	case REPLACE_ATTRIBUTES_CHANGED: mSettings->SetReplaceFileAttributes(IsOn(msg));
+		break;
+	case UPGRADE_IDS_CHANGED: mSettings->SetUpgradeAnnotationIds(IsOn(msg));
 		break;
 	case QUASI_FULLSCREEN_MODE_ON:
 		gApp->GetSettings()->SetQuasiFullscreenMode(true);

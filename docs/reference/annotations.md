@@ -16,6 +16,14 @@ document.
 For a PDF file the annotations are described in the same form when they are handed on, and when the file is saved or a copy is
 made they are written to `SEN:annotations` too, so that they can be found and used without opening the PDF file.
 
+## Identifiers
+
+Every annotation has an identifier. A PDF annotation that was made by another program has none (the `/NM` of the PDF is empty);
+when such a file is opened the annotations get a UUID and the file is saved, so that SEN and others can refer to them in the
+standard way (the setting "Give annotations of other programs an identifier", on by default; a file that cannot be written is
+left as it is). The same can be done from outside with the scripting suite (`UpgradeAnnotations`, see
+[scripting.md](scripting.md)).
+
 ## Bookmarks
 
 The bookmarks of the reader (the sidebar's bookmarks list; Bookmark > Add) are annotations with the motivation
@@ -23,7 +31,7 @@ The bookmarks of the reader (the sidebar's bookmarks list; Bookmark > Add) are a
 which are rewritten when it is saved, and the bookmarks stay). The label is the body. The target is the page (`page=3`, an
 `oa:FragmentSelector`) or, in a book, the place in the text (a `oa:TextQuoteSelector` and the EPUB CFI, see
 [metadata.md](metadata.md#anchors-in-books)). They are written when the file is closed, and are not counted in
-`SEN:annotationCount`.
+`SEN:annotationCount` (`SEN:bookmarkCount`, not indexed, says how many there are).
 
 ## The Web Annotation model
 
@@ -65,7 +73,7 @@ The target is the page (`page=3`, an `oa:FragmentSelector`) refined by
 
 ## From other programs
 
-Other applications (SEN) open a document at a place with `B_REFS_RECEIVED`:
+Other applications (SEN) open a document at a place with `B_REFS_RECEIVED`; there is no other way to say a page (the `bepdf:page_num` of BePDF is not read any more, a page is the selector `page=N`):
 
 - the file in `refs`, and `oa:hasTarget`: a message with `oa:hasSelector` entries as in the model, any of the selectors above
   that the document understands. An EPUB CFI is found in whatever layout the book has; the words are searched for from the page
@@ -73,7 +81,6 @@ Other applications (SEN) open a document at a place with `B_REFS_RECEIVED`:
   page) go to the page and mark the place for a moment.
 - with `oa:motivatedBy`, the passage that the words name is also marked (not saved).
 - or `oa:Annotation` with the identifier of an annotation (`urn:uuid:...`): the document goes there and selects it.
-- for navigation as BePDF understands it, the page is `bepdf:page_num`.
 
-Planned: a scripting suite (see [PLAN-mupdf.md](../../PLAN-mupdf.md)) so that annotations can be read and changed from other
-programs, and change notices.
+Annotations can be read and changed with the scripting suite: [scripting.md](scripting.md). There are no change notices; the
+attribute `SEN:annotations` is what to watch.
