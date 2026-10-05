@@ -31,7 +31,7 @@ jobs:
         run: docs/guide/build.sh
       - uses: actions/upload-artifact@v7
         with:
-          name: tsundoku-user-guide
+          name: toji-user-guide
           path: docs/guide/build/
           if-no-files-found: error
 
@@ -47,7 +47,7 @@ jobs:
       # the guide goes into the package
       - uses: actions/download-artifact@v7
         with:
-          name: tsundoku-user-guide
+          name: toji-user-guide
           path: docs/guide/build
 
       - name: Start Haiku VM
@@ -81,7 +81,7 @@ jobs:
       # the package is back in the workspace now
       - uses: actions/upload-artifact@v7
         with:
-          name: tsundoku-haiku-r1beta6-x86-64
+          name: toji-haiku-r1beta6-x86-64
           path: "*.hpkg"
           if-no-files-found: error
 
@@ -91,5 +91,5 @@ jobs:
         with:
           files: |
             *.hpkg
-            docs/guide/build/tsundoku-guide.*
+            docs/guide/build/toji-guide.*
           generate_release_notes: true

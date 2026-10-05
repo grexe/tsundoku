@@ -5,14 +5,14 @@
 Open a file from **File > Open**, by dropping it on the window or on the application, from Tracker, or from the command line:
 
 ```
-Tsundoku document.pdf        # where you left off
-Tsundoku document.pdf 12     # on page 12
+Toji document.pdf        # where you left off
+Toji document.pdf 12     # on page 12
 ```
 
-When you open a file again Tsundoku shows it as you left it: the page, the zoom, the rotation and (if you chose that in the
-[settings](#settings)) the position and size of the window. This is kept in the attribute `tsundoku:viewState` of the file.
+When you open a file again Toji shows it as you left it: the page, the zoom, the rotation and (if you chose that in the
+[settings](#settings)) the position and size of the window. This is kept in the attribute `toji:viewState` of the file.
 
-If a file has a password, Tsundoku asks for it.
+If a file has a password, Toji asks for it.
 
 ## Moving through the document
 

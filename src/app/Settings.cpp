@@ -167,9 +167,10 @@ void FileAttributes::GetLeftTop(float &left, float &top) {
 
 // What is kept with the file besides what it says about itself: where the reader stopped (page, place on the page, zoom,
 // rotation, and for a book the anchor in the text, as the page changes with the text size) and the window. It is one
-// attribute, a message, of the application: tsundoku:viewState. The bookmarks of the reader are annotations
+// attribute, a message, of the application: toji:viewState. The bookmarks of the reader are annotations
 // (oa:bookmarking) in SEN:annotations (Bookmarks.h).
-static const char* const kViewStateAttribute = "tsundoku:viewState";
+static const char* const kViewStateAttribute = "toji:viewState";
+static const char* const kOldViewStateAttribute = "tsundoku:viewState";
 
 
 static void
@@ -234,6 +235,8 @@ bool FileAttributes::Read(entry_ref *ref, GlobalSettings *s) {
 
 	BMessage state;
 	ReadMessageAttribute(node, kViewStateAttribute, &state);
+	if (state.IsEmpty())
+		ReadMessageAttribute(node, kOldViewStateAttribute, &state);	// (when the program was called Tsundoku)
 	if (state.IsEmpty())
 		ReadLegacyViewState(node, &state);
 
@@ -314,6 +317,7 @@ bool FileAttributes::Write(entry_ref *ref, GlobalSettings *s) {
 	delete []buffer;
 	if (!ok)
 		return false;
+	node.RemoveAttr(kOldViewStateAttribute);
 
 	if (reading >= 0) {
 		const char* direction = reading == 1 ? "rtl" : reading == 2 ? "ttb" : "ltr";

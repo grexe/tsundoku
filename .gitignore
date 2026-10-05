@@ -3,7 +3,7 @@ objects*/
 *.swp
 *docs-build*
 
-dist/Tsundoku
+dist/Toji
 *.hpkg
 package-build/
 3rd-party/

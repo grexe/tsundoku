@@ -1,8 +1,8 @@
-1	English	application/x-vnd.sen-labs.Tsundoku	2450431064
+1	English	application/x-vnd.sen-labs.Toji	2450431064
 Editing of annotations in an encrypted PDF file isn't supported yet!	PDFWindow		Editing of annotations in an encrypted PDF file isn't supported yet!
 Selection rectangle	AnnotationWindow		Selection rectangle
 Cancel	PDFView		Cancel
-Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Error opening file!
+Toji: Error opening file!	BepdfApplication		Toji: Error opening file!
 a universal document reader based on BePDF, extended for SEN	BepdfApplication		a universal document reader based on BePDF, extended for SEN
 Go to previous page	PDFWindow		Go to previous page
 Subject:	FileInfoWindow		Subject:
@@ -17,7 +17,7 @@ Search string not found.	PDFSearch		Search string not found.
 Normal	PrintSettingsWindow		Normal
 System fonts	AnnotationWindow		System fonts
 Add widget annotation	PDFWindow		Add widget annotation
-Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.
+Can not overwrite a PDF file that's currently opened in Toji! Please choose another file name.	PDFWindow		Can not overwrite a PDF file that's currently opened in Toji! Please choose another file name.
 Zoom in	PDFWindow		Zoom in
 Unknown link action type: '%s'	PDFView		Unknown link action type: '%s'
 Page:	FindTextWindow		Page:
@@ -45,14 +45,14 @@ Name	FileInfoWindow		Name
 Document	OutlinesWindow		Document
 Hide side bar	PDFWindow		Hide side bar
 Invert vertical mouse scrolling	AnnotationWindow		Invert vertical mouse scrolling
-Tsundoku: Launch	PDFView		Tsundoku: Launch
+Toji: Launch	PDFView		Toji: Launch
 Page setup…	PDFWindow		Page setup…
 Add ink annotation	PDFWindow		Add ink annotation
 Stroked rectangle	AnnotationWindow		Stroked rectangle
 Find: 	FindTextWindow		Find: 
 Zoom	PDFWindow		Zoom
 Open in workspace:	AnnotationWindow		Open in workspace:
-About Tsundoku…	PDFWindow		About Tsundoku…
+About Toji…	PDFWindow		About Toji…
 Go to next page	PDFWindow		Go to next page
 Add square annotation	PDFWindow		Add square annotation
 [internal link]	PDFView		[internal link]
@@ -62,7 +62,7 @@ Last	PDFWindow		Last
 Abort	FileInfoWindow		Abort
 Find next	PDFWindow		Find next
 All pages	PrintSettingsWindow		All pages
-Tsundoku printing document: 	PrintingProgressWindow		Tsundoku printing document: 
+Toji printing document: 	PrintingProgressWindow		Toji printing document: 
 Show annotation toolbar	PDFWindow		Show annotation toolbar
 File name	AttachmentView		File name
 Go to start of document	PDFWindow		Go to start of document
@@ -86,7 +86,7 @@ Clear	TraceWindow		Clear
 Print	PrintSettingsWindow		Print
 Online help…	PDFWindow		Online help…
 Enter Password	PasswordWindow		Enter Password
-Tsundoku status	StatusWindow		Tsundoku status
+Toji status	StatusWindow		Toji status
 Filename:	FileInfoWindow		Filename:
 Embedded name	FileInfoWindow		Embedded name
 Copy link	PDFView		Copy link
@@ -139,7 +139,7 @@ Forward in page history list	PDFWindow		Forward in page history list
 Page:	PrintingProgressWindow		Page:
 Find next…	PDFWindow		Find next…
 Display	AnnotationWindow		Display
-Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku is based on XPDF %s, %s.
+Toji is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Toji is based on XPDF %s, %s.
 Visit homepage…	PDFWindow		Visit homepage…
 Even pages	PrintSettingsWindow		Even pages
 Stop	FindTextWindow		Stop
@@ -152,7 +152,7 @@ Annotation	AnnotationWindow		Annotation
 Bookmark	PDFWindow		Bookmark
 Next	PDFWindow		Next
 Reverse	PrintSettingsWindow		Reverse
-Tsundoku reading file: 	PDFView		Tsundoku reading file: 
+Toji reading file: 	PDFView		Toji reading file: 
 Close	BepdfApplication		Close
 Page: %d	PrintingProgressWindow		Page: %d
 Select none	PDFWindow		Select none
@@ -216,7 +216,7 @@ No title	OutlinesWindow		No title
 Page	PrintSettingsWindow		Page
 Created:	FileInfoWindow		Created:
 Title:	AnnotationWindow		Title:
-Tsundoku printing	PrintingProgressWindow		Tsundoku printing
+Toji printing	PrintingProgressWindow		Toji printing
 Saving file attachment:	PDFView		Saving file attachment:
 Open in new window	PDFView		Open in new window
 Height: 	PrintSettingsWindow		Height: 

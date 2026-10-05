@@ -11,7 +11,7 @@ the HaikuPorts libraries (see M0 results). The text below keeps the reasoning.
 ## Decisions to make first
 
 1. **License.** MuPDF is AGPL v3 (or commercial from Artifex). BePDF's code is "GPL v2 or any later version", so it may
-   be combined with AGPL v3 code, but the combined work, i.e. the Tsundoku binary, is then AGPL v3, and a v2-only
+   be combined with AGPL v3 code, but the combined work, i.e. the Toji binary, is then AGPL v3, and a v2-only
    option is gone. For a desktop app with public sources that costs nothing in practice. What changes: license text in
    the package and README, `.PackageInfo` (`licenses`), About dialog ("GNU AGPL v3"), headers of new files.
    XPDF credits go away with XPDF; the BePDF history stays.
@@ -94,7 +94,7 @@ brotli_devel` from HaikuPorts; gumbo, lcms2, mujs, cmark stay bundled because th
 needs `libbrotlienc` and `libbrotlicommon` besides `libbrotlidec`. Result: a 56 MB static `libmupdf.a` (unstripped)
 plus 3 MB of third-party code.
 
-Verified with a test program on a 73 page PDF (Gutenprint manual), the BePDF manual and Tsundoku's start page:
+Verified with a test program on a 73 page PDF (Gutenprint manual), the BePDF manual and Toji's start page:
 
 - Pixmap `fz_device_bgr` with alpha is byte-compatible with `B_RGB32`: rendering is a plain row copy into a `BBitmap`,
   no conversion. Output looks right (fonts, images, layout).
@@ -114,7 +114,7 @@ Findings that change the plan:
   `fz_locks_context` (pthread mutexes, `FZ_LOCK_MAX` of them). The design therefore is: one context with locks, one
   clone per thread, and a separate `fz_document` per thread (render thread and UI thread each open the file),
   instead of sharing one document behind `gPdfLock`.
-- **A `BApplication` must exist** before the first `BBitmap` is created; irrelevant inside Tsundoku, but test
+- **A `BApplication` must exist** before the first `BBitmap` is created; irrelevant inside Toji, but test
   programs need it.
 - The package will require the HaikuPorts libraries above instead of bundling them; the install gets much smaller
   because `dist/encodings` (10 MB) and `dist/fonts` disappear.
@@ -127,14 +127,14 @@ Next: M1, the `Document` layer and viewing parity.
 
 SEN has to be able to point at an annotation and to read or change it. What exists, and what comes:
 
-- **Identity (done).** Every annotation created by Tsundoku gets a UUID as its `/NM` (`pdf_set_annot_name`) at creation;
+- **Identity (done).** Every annotation created by Toji gets a UUID as its `/NM` (`pdf_set_annot_name`) at creation;
   it is loaded with the annotation (`DocAnnotation::id`) and survives saving, moving, resizing and undo.
   `Document::FindAnnotationById()` finds it in the document. Annotations of other programs have their own `/NM` or
   none; those without one can only be named by page and index, which is not stable.
 - **Deep link (done).** `B_REFS_RECEIVED` takes `oa:hasTarget` (selectors for a page, a region, words, an EPUB CFI) or `oa:Annotation`
-  (the id): Tsundoku opens the file, goes there, selects the annotation and scrolls to it (`PDFView::ShowAnnotation`). The old
-  `bepdf:page_num` is not read any more (a page is the selector `page=N`; the command line `Tsundoku file page` makes one).
-- **Message suite (done, 0.9).** `suite/vnd.sen-labs.Tsundoku` on the window: Document, Page, Annotation, Bookmark with the verbs
+  (the id): Toji opens the file, goes there, selects the annotation and scrolls to it (`PDFView::ShowAnnotation`). The old
+  `bepdf:page_num` is not read any more (a page is the selector `page=N`; the command line `Toji file page` makes one).
+- **Message suite (done, 0.9).** `suite/vnd.sen-labs.Toji` on the window: Document, Page, Annotation, Bookmark with the verbs
   above; see docs/reference/scripting.md. No change notices (SEN watches the attribute with the file system monitor).
 
 ## Page layouts (done, the basis for other formats)
@@ -157,7 +157,7 @@ right-to-left order would be two more switches of the layout, in the same table)
 `djvu_devel`, tools `djvu_tools` with `c44`, `cjb2`, `djvm`, `djvused`, `djvutxt`), a Haiku translator (`djvutranslator`, by
 3dEyes; a translator hands out a bitmap, which page it can give was not looked at) and two viewers (`djvuviewer`, `djview`). The library's license is GPL version 2
 **or any later version** (stated in the headers, the recipe only says "GPL v2"), so it can be combined with the AGPL version
-3 of Tsundoku. DjVu files have a real mark (`AT&TFORM` and `DJVU` or `DJVM` at offset 12), so the type (`image/vnd.djvu`,
+3 of Toji. DjVu files have a real mark (`AT&TFORM` and `DJVU` or `DJVM` at offset 12), so the type (`image/vnd.djvu`,
 extensions `djvu`, `djv`) gets a plain sniffer rule.
 
 **The way to do it: a document handler for MuPDF**, not a second backend and not the translator. MuPDF's document API is
@@ -173,7 +173,7 @@ printing), so none of that is written twice. The translator is not enough: the T
 - *Drawing:* `fz_run_page` renders the page for the size that the matrix asks for (`ddjvu_page_render`, which scales and
   clips itself, color mode for the mixed layers) into a pixmap and draws it as an image. The decoding is asynchronous
   in the API (messages, `ddjvu_message_wait`), so the handler waits for the page to be decoded; it runs with the document
-  locked like all MuPDF calls in Tsundoku, so one thread at a time uses the context of DjVu.
+  locked like all MuPDF calls in Toji, so one thread at a time uses the context of DjVu.
 - *Text:* the hidden text layer (`ddjvu_document_get_pagetext`, a nested list of page, column, paragraph, line and word
   with boxes) goes to the page as invisible text, one word per `fz_text` stretched to its box (`fz_ignore_text`), which is
   what the text extraction of MuPDF expects of an OCR layer. Search, flowing selection and copy then work as for a PDF.
@@ -221,7 +221,7 @@ translation can be switched); references (footnotes) and data (embedded pictures
 Windows, Android) and ACBF Editor, Peruse (KDE) is working on it. Far fewer files exist than with `ComicInfo.xml`, which
 Calibre, ComicTagger, Komga and Kavita write.
 
-**Value for Tsundoku and SEN, by part:**
+**Value for Toji and SEN, by part:**
 - *Metadata:* low to moderate, cheap. An `.acbf` entry in the archive is parsed with libxml2 into the same `ComicInfo`
   structure (`ComicInfo::FromAcbf`, like `FromBbf`), so the attributes, File info and the cover come for free. Half a day,
   with a test file from the specification's sample ("Craphound"). Worth doing when an ACBF file turns up.

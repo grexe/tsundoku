@@ -36,7 +36,7 @@ on. The history ends when the document is saved.
 
 **File > Save** (Cmd+S) adds the changes to the end of a PDF file, so that its attributes stay as they are. For a file that
 cannot be written (a system folder, or the title says "read-only") or that MuPDF had to repair, **Save** and **File > Save as**
-(Cmd+Shift+S) write a copy, with the attributes of the original, and Tsundoku goes on with the copy.
+(Cmd+Shift+S) write a copy, with the attributes of the original, and Toji goes on with the copy.
 
 EPUB books, comics and DjVu documents cannot take annotations inside them. Their annotations are kept in the attribute
 `SEN:annotations` of the file; they go along when the file is copied in Tracker, and **Save as** copies them with the document.
@@ -48,6 +48,6 @@ hold. Click a title to sort; choosing one goes there and selects it.
 
 ## Annotations of other programs
 
-A PDF file that was annotated by other programs shows their annotations. When Tsundoku opens it, it also describes them in the
+A PDF file that was annotated by other programs shows their annotations. When Toji opens it, it also describes them in the
 attribute `SEN:annotations`, without changing the PDF, and gives those that have no name an identifier so that other programs can
 refer to them (see [Settings](#settings) and [Files, attributes and SEN](#files-attributes-and-sen)).

@@ -1,6 +1,6 @@
 # Formats: how they are read
 
-Tsundoku renders with [MuPDF](https://mupdf.com); other libraries add what MuPDF does not read. For what is supported at a
+Toji renders with [MuPDF](https://mupdf.com); other libraries add what MuPDF does not read. For what is supported at a
 glance see the [README](../../README.md#formats).
 
 ## Comic books

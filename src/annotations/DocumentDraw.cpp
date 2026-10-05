@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
- * Tsundoku: a universal document reader for Haiku, extended for SEN.
+ * Toji: a universal document reader for Haiku, extended for SEN.
  * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
  *
  * Based on BePDF:
@@ -553,6 +553,6 @@ Document::PaintDrawn(const StoredAnnotation& a, fz_device* device, fz_matrix ctm
 		fz_drop_path(context, path);
 	}
 	fz_catch(context) {
-		fprintf(stderr, "Tsundoku: cannot draw an annotation: %s\n", fz_caught_message(context));
+		fprintf(stderr, "Toji: cannot draw an annotation: %s\n", fz_caught_message(context));
 	}
 }

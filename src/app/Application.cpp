@@ -67,7 +67,7 @@
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "BepdfApplication"
 
-static const char * tsundokuCopyright =
+static const char * tojiCopyright =
 	"© 2026 Gregor B. Rosenauer & Claude\n";
 
 // history of BePDF, newest first
@@ -91,7 +91,7 @@ static const char *TARGET_MSG_KEY = "oa:hasTarget";
 static const char *MOTIVATION_MSG_KEY = "oa:motivatedBy";
 static const char *ANNOTATION_MSG_KEY = "oa:Annotation";
 
-static const char *settingsFilename = "Tsundoku";
+static const char *settingsFilename = "Toji";
 
 // Implementation of PDFFilter
 class PDFFilter : public BRefFilter {
@@ -195,7 +195,7 @@ static const struct {
 	{ "application/x-cbt", "cbt", B_TRANSLATE_MARK("Comic book (TAR)"), "[257] \"ustar\"", "[0:100]" },
 	// the Bound Book Format has a mark of its own, at the start of the file
 	{ "application/x-bbf", "bbf", B_TRANSLATE_MARK("Comic book (BBF)"), "\"BBF3\"", NULL },
-	// DjVu is known to Haiku (type, extension, mark); it is here so that the attributes are defined and Tsundoku is offered
+	// DjVu is known to Haiku (type, extension, mark); it is here so that the attributes are defined and Toji is offered
 	{ "image/vnd.djvu", "djvu", B_TRANSLATE_MARK("DjVu document"), NULL, NULL }
 };
 static const size_t kComicTypeCount = sizeof(kComicTypes) / sizeof(kComicTypes[0]);
@@ -339,7 +339,7 @@ InstallMimeTypes(const entry_ref* application, bool keepLegacyColumns)
 
 	// The database knows what an application supports from the entry of its signature, which is only made
 	// when the application is entered (mimeset -a). Nobody does that for an application that comes in a package
-	// or is built, so the entry is out of date after a new type has been added: Tsundoku would not be offered for
+	// or is built, so the entry is out of date after a new type has been added: Toji would not be offered for
 	// EPUB files (Open with...). It is entered here, if it is not a supporting application of a type it names.
 	bool listed = true;
 	for (size_t i = 0; application != NULL && i <= kComicTypeCount && listed; i++) {
@@ -399,7 +399,7 @@ BepdfApplication::BepdfApplication()
 	}
 
 	mDefaultPDF = mAppPath;
-	mDefaultPDF.Append("docs/tsundoku-guide.pdf");		// the user guide is the start page
+	mDefaultPDF.Append("docs/toji-guide.pdf");		// the user guide is the start page
 
 	BPath path(mAppPath);
 	LoadSettings();
@@ -516,24 +516,24 @@ void BepdfApplication::AboutRequested()
 	}
 
 	BString version;
-	BString str("Tsundoku™\n\n");
+	BString str("Toji™\n\n");
 	str += B_TRANSLATE("a universal document reader based on BePDF, extended for SEN");
 	str += "\n";
 	str += B_TRANSLATE("Version");
 	str += " ";
 	str += GetVersion(version);
 	str += "\n";
-	str += tsundokuCopyright;
+	str += tojiCopyright;
 	str += "\n";
 
 	str += bePDFCopyright;
 	str += "\n";
 
-	str += BString().SetToFormat(B_TRANSLATE_COMMENT("Tsundoku renders with MuPDF %s, %s.", "MuPDF version, copyright"),
+	str += BString().SetToFormat(B_TRANSLATE_COMMENT("Toji renders with MuPDF %s, %s.", "MuPDF version, copyright"),
 		FZ_VERSION, "© Artifex Software, Inc.");
 
 	str += "\n\n";
-	str += B_TRANSLATE("Tsundoku™, SEN™ and SEN Labs™ are names of SEN Labs e.U.");
+	str += B_TRANSLATE("Toji™, SEN™ and SEN Labs™ are names of SEN Labs e.U.");
 	str += licenseCopyright;
 
 	float spacing = be_control_look->DefaultLabelSpacing();
@@ -589,7 +589,7 @@ void BepdfApplication::AboutRequested()
 		}
 	}
 
-	BWindow *about = new BWindow(BRect(0, 0, 100, 100), B_TRANSLATE("About Tsundoku"),
+	BWindow *about = new BWindow(BRect(0, 0, 100, 100), B_TRANSLATE("About Toji"),
 		B_TITLED_WINDOW_LOOK, B_NORMAL_WINDOW_FEEL,
 		B_NOT_ZOOMABLE | B_NOT_RESIZABLE | B_ASYNCHRONOUS_CONTROLS | B_AUTO_UPDATE_SIZE_LIMITS
 			| B_CLOSE_ON_ESCAPE);
@@ -804,7 +804,7 @@ void BepdfApplication::RefsReceived(BMessage *msg)
 
 			if (!ok) {
 				if (!encrypted) {
-			 		BAlert *error = new BAlert(B_TRANSLATE("Error"), B_TRANSLATE("Tsundoku: Error opening file!"), B_TRANSLATE("Close"), NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT);
+			 		BAlert *error = new BAlert(B_TRANSLATE("Error"), B_TRANSLATE("Toji: Error opening file!"), B_TRANSLATE("Close"), NULL, NULL, B_WIDTH_AS_USUAL, B_STOP_ALERT);
 			 		error->Go();
 
                     if (mWindow == NULL) {  // fixme: always true even if a PDF window is already open!
@@ -916,6 +916,13 @@ void BepdfApplication::LoadSettings() {
 BPath path;
 	if (find_directory(B_USER_SETTINGS_DIRECTORY, &path) == B_OK &&
 		path.Append(settingsFilename) == B_OK ) {
+		// the program was called Tsundoku until version 0.9: its settings are taken over once
+		BEntry entry(path.Path());
+		if (!entry.Exists()) {
+			BPath old;
+			if (find_directory(B_USER_SETTINGS_DIRECTORY, &old) == B_OK && old.Append("Tsundoku") == B_OK)
+				mSettings->Load(old.Path());
+		}
 		mSettings->Load(path.Path());
 	}
 }
@@ -947,7 +954,7 @@ static struct {
 	{NULL, NULL, NULL, 0}
 };
 
-// A query only finds files by an attribute that is indexed on their volume, so the indices for what Tsundoku writes
+// A query only finds files by an attribute that is indexed on their volume, so the indices for what Toji writes
 // are made (once for a volume) if they are missing.
 static void
 EnsureIndices(dev_t device)

@@ -32,7 +32,7 @@
 #include <be/storage/Node.h>
 #include "Settings.h"
 
-#define BEPDF_APP_SIG "application/x-vnd.sen-labs.Tsundoku"
+#define BEPDF_APP_SIG "application/x-vnd.sen-labs.Toji"
 
 class PDFWindow;
 class OutputTracer;

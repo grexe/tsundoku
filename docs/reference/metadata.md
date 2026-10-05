@@ -1,20 +1,20 @@
 # File attributes and anchors
 
-What Tsundoku writes to the BFS attributes of a file, and how places in a document are kept. For the annotation attribute see
+What Toji writes to the BFS attributes of a file, and how places in a document are kept. For the annotation attribute see
 [annotations.md](annotations.md).
 
 ## Principles
 
 - What a document says about itself (title, author, series, ...) is written to **separate BFS attributes** of the file, and
   nothing is invented: the names are the properties of the established ontologies with the prefix that is commonly used for
-  each. Where there is no established name, the prefix is `SEN:` (`PDF:` for what only a PDF file has, `tsundoku:` for what
+  each. Where there is no established name, the prefix is `SEN:` (`PDF:` for what only a PDF file has, `toji:` for what
   only the application needs).
 - The attributes are defined for the file types (so that Tracker offers them as columns), and the indices are made on the
   volume.
 - What BePDF made up (`META:*`, `bepdf:*`) is not used any more, but it is read: legacy bookmarks and the place where you
   stopped reading are taken over, and the standard attributes are written to such a file in any case. The legacy attributes
   **stay in place**, so that users can go back to BePDF, unless the user chooses to replace them: the first time a file with
-  legacy attributes is opened Tsundoku asks (Keep them / Replace them, recommended), and the answer is the setting "Replace
+  legacy attributes is opened Toji asks (Keep them / Replace them, recommended), and the answer is the setting "Replace
   legacy attributes with standard ones" in the preferences. When they are replaced the values are moved to the standard names
   (`META:title` to `dc:title`, ...) and the legacy attributes are taken away. While they are kept, the columns of the old names
   stay defined for PDF files.
@@ -31,7 +31,7 @@ What Tsundoku writes to the BFS attributes of a file, and how places in a docume
 | `PDF:creator`, `PDF:producer`, `PDF:created`, `PDF:modified` | what only a PDF file has: the program that made the document and the one that made the PDF, and the dates |
 | `SEN:annotations`, `SEN:annotationCount`, `SEN:bookmarkCount` | the annotations and the bookmarks, and how many of each there are (see [annotations.md](annotations.md)); only the count of annotations is indexed |
 | `SEN:readingProgression` | `rtl`, `ltr`, `ttb` or `default` (see below) |
-| `tsundoku:viewState` | where you stopped reading (see below) |
+| `toji:viewState` | where you stopped reading (see below) |
 
 Other prefixes such as `foaf:` come the same way when they are needed.
 
@@ -41,7 +41,7 @@ is first opened at another text size.
 
 ## View state
 
-`tsundoku:viewState` is one attribute (a message) with where you stopped reading: the page, the place on the page, zoom and
+`toji:viewState` is one attribute (a message) with where you stopped reading: the page, the place on the page, zoom and
 rotation, the position and size of the window, and for a book the [anchor](#anchors-in-books) of the place in the text.
 
 ## Where the metadata comes from
@@ -76,6 +76,6 @@ size. An anchor has
 - where it was (chapter, place in the chapter), to look there first.
 
 A mark and a bookmark keep their anchor in `SEN:annotations`, and the place where you stopped reading is in
-`tsundoku:viewState`. They find their page again for the text size the book is shown at.
+`toji:viewState`. They find their page again for the text size the book is shown at.
 If the words are not found any more (another version of the book), the CFI, which names a chapter by the id of its entry in the
 reading order, leads to the words that are there now.

@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
- * Tsundoku: a universal document reader for Haiku, extended for SEN.
+ * Toji: a universal document reader for Haiku, extended for SEN.
  * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
  *
  * Based on BePDF:
@@ -52,7 +52,7 @@ public:
 	// stops reading, to be called before the document goes away
 	void Stop();
 	int  Count() const { return fCount; }
-#ifdef TSUNDOKU_TESTING
+#ifdef TOJI_TESTING
 	// selects a line as a click does, to try what follows
 	void TestChoose(int index);
 #endif

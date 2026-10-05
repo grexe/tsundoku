@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
- * Tsundoku: a universal document reader for Haiku, extended for SEN.
+ * Toji: a universal document reader for Haiku, extended for SEN.
  * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
  *
  * Based on BePDF:
@@ -28,7 +28,7 @@
 // locale code of libroot and at the end of threads): miniexp.cpp keeps the key of its thread-specific data in a static
 // pthread_key_t that is created through a static pthread_once_t, which is zero. Haiku's PTHREAD_ONCE_INIT is -1, so the
 // creation never happens, the key stays 0, and every thread that makes an s-expression stores its data under the key 0 of the
-// process, which belongs to someone else (the ICU locale data of libroot, in Tsundoku). So the value of the key 0 is kept
+// process, which belongs to someone else (the ICU locale data of libroot, in Toji). So the value of the key 0 is kept
 // and put back around every call that makes s-expressions (KeyGuard); the garbage collector is switched off (its list of
 // the threads would be wrong); and each of these things is asked for only once and kept in structures of our own, so
 // that the s-expressions are never needed again.
@@ -843,7 +843,7 @@ Open(fz_context* context, const char* path)
 	doc->cache = new Cache();
 
 	fz_try(context) {
-		doc->ddjvu = ddjvu_context_create("Tsundoku");
+		doc->ddjvu = ddjvu_context_create("Toji");
 		if (doc->ddjvu == NULL)
 			fz_throw(context, FZ_ERROR_SYSTEM, "cannot start DjVuLibre");
 		// decoded pages are kept for a while: the same page is drawn again at every zoom

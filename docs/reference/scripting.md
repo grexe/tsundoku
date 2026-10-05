@@ -1,6 +1,6 @@
 # Scripting
 
-Tsundoku has a scripting suite, `suite/vnd.sen-labs.Tsundoku`, on its windows. It works from the command line with
+Toji has a scripting suite, `suite/vnd.sen-labs.Toji`, on its windows. It works from the command line with
 [`hey`](https://github.com/HaikuArchives/Hey) and from code with scripting messages (`B_GET_PROPERTY`, ...). Changes go through
 the same code as what the user does: they can be undone and count as unsaved. There are no change notices: watch the file's
 attributes (`SEN:annotations`) instead.
@@ -87,14 +87,14 @@ Undo, Goto) and prints one line per check: `tests/run_scripting_test.sh <file.pd
 ## Examples
 
 ```sh
-hey Tsundoku get Path of Document of Window 0
-hey Tsundoku do Goto of Document of Window 0 with page=12
-hey Tsundoku count Annotation of Document of Window 0 with context=page and page=12
-hey Tsundoku get Annotation of Document of Window 0
-hey Tsundoku get Quote of Annotation 0 of Document of Window 0
-hey Tsundoku set Text of Annotation 0 of Document of Window 0 to "check this"
-hey Tsundoku do Goto of Annotation '"6f0c3e1a-..."' of Document of Window 0
-hey Tsundoku do AddAnnotation of Document of Window 0 with kind=highlight and quote="the words" and page=3
-hey Tsundoku do AddBookmark of Document of Window 0 with label=Chapter and page=40
-hey Tsundoku delete Bookmark Chapter of Document of Window 0
+hey Toji get Path of Document of Window 0
+hey Toji do Goto of Document of Window 0 with page=12
+hey Toji count Annotation of Document of Window 0 with context=page and page=12
+hey Toji get Annotation of Document of Window 0
+hey Toji get Quote of Annotation 0 of Document of Window 0
+hey Toji set Text of Annotation 0 of Document of Window 0 to "check this"
+hey Toji do Goto of Annotation '"6f0c3e1a-..."' of Document of Window 0
+hey Toji do AddAnnotation of Document of Window 0 with kind=highlight and quote="the words" and page=3
+hey Toji do AddBookmark of Document of Window 0 with label=Chapter and page=40
+hey Toji delete Bookmark Chapter of Document of Window 0
 ```

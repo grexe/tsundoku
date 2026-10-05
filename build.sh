@@ -1,5 +1,5 @@
 #!/bin/sh
-# Builds Tsundoku. Arguments are passed on to the make of Tsundoku, e.g. ./build.sh bindcatalogs
+# Builds Toji. Arguments are passed on to the make of Toji, e.g. ./build.sh bindcatalogs
 #
 # MuPDF comes from the mupdf1.28_devel package if it is installed (https://kiri.sen-labs.org/x86_64). Otherwise it
 # is built once from source, taken from $MUPDF_DIR or downloaded to 3rd-party/. Libraries that exist as HaikuPorts

@@ -10,7 +10,7 @@
 
 #include <vector>
 
-// The W3C Web Annotation Data Model (https://www.w3.org/TR/annotation-model/) is how Tsundoku and SEN describe
+// The W3C Web Annotation Data Model (https://www.w3.org/TR/annotation-model/) is how Toji and SEN describe
 // annotations and places in documents: for PDF files, EPUB books and what comes later. An annotation has a target (the
 // document, and selectors that say where in it) and perhaps a body (the note); the motivation says what it is for.
 //

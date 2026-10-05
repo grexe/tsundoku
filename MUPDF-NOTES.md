@@ -1,6 +1,6 @@
 # MuPDF on Haiku: notes from the port
 
-What we learned while moving Tsundoku from XPDF to MuPDF 1.28.5. Written for whoever touches the code next, and as
+What we learned while moving Toji from XPDF to MuPDF 1.28.5. Written for whoever touches the code next, and as
 a basis for the HaikuPorts recipe.
 
 ## Building MuPDF
@@ -43,13 +43,13 @@ make build=release HAVE_X11=no HAVE_GLUT=no HAVE_CURL=no \
   `fz_var()`. All MuPDF calls in `Document.cpp` follow this: plain C types inside, C++ objects outside.
 - **Threads.** A `fz_context` must not be used by two threads at once. `fz_clone_context()` for another thread only
   works if the original was created with lock callbacks (`fz_locks_context`, pthread mutexes), otherwise it returns
-  NULL. Tsundoku uses one context per document and takes the document's `BLocker` around every use (`Document` does
+  NULL. Toji uses one context per document and takes the document's `BLocker` around every use (`Document` does
   it, `DocumentLocker` for direct use). The alternative for later (prefetching pages) is one clone and one
   `fz_document` per thread, which was verified to work (two threads rendered 30 pages without errors).
 - **A `BApplication` must exist before the first `BBitmap`**, otherwise the process dies in
   `AppServerLink` ("You need to have a valid app_server connection first!"). Only matters for test programs.
 - **Aborting a render:** pass an `fz_cookie` to `fz_run_page` and set `cookie.abort = 1` from another thread.
-- **Memory:** the store defaults to 256 MB per context, Tsundoku uses 128 MB.
+- **Memory:** the store defaults to 256 MB per context, Toji uses 128 MB.
 
 ## Rendering
 
@@ -76,7 +76,7 @@ make build=release HAVE_X11=no HAVE_GLUT=no HAVE_CURL=no \
   `fz_copy_rectangle`. `fz_snap_selection(&a, &b, FZ_SELECT_WORDS|FZ_SELECT_LINES)` for double and triple click; it
   moves the points to the snapped ends.
 - Search: `fz_match_stext_page_cb()` with `FZ_SEARCH_IGNORE_CASE` or `FZ_SEARCH_EXACT`. It calls back once per hit with
-  all the quads of the hit (a hit that wraps lines has more than one). Tsundoku selects a hit by selecting from the
+  all the quads of the hit (a hit that wraps lines has more than one). Toji selects a hit by selecting from the
   middle of the left edge of its first quad to the middle of the right edge of the last one, which gives the same
   highlight as the search found. `fz_search_page`/`fz_search_stext_page` are case insensitive only.
 - Text of a page with text in a picture only (scans) is empty; OCR (tesseract) is a build option, not used.
@@ -87,7 +87,7 @@ make build=release HAVE_X11=no HAVE_GLUT=no HAVE_CURL=no \
   password is tried as user and as owner password. Permissions: `fz_has_permission(FZ_PERMISSION_PRINT|COPY|EDIT|
   ANNOTATE)`. Tested with the encrypted files of the qpdf test suite (wrong password: needs password again, user
   and owner password open it, permissions are reported).
-- Pages are numbered from 0 in MuPDF, from 1 in Tsundoku (the `bepdf:page_num` of SEN stays 1-based).
+- Pages are numbered from 0 in MuPDF, from 1 in Toji (the `bepdf:page_num` of SEN stays 1-based).
 - Outline: `fz_load_outline` gives a tree with `title`, `is_open`, flags (bold, italic), color and a `fz_location`
   (`fz_page_number_from_location` for the number) plus `x`, `y`. Some entries have only a `uri`: resolve it with
   `fz_resolve_link`.
@@ -97,7 +97,7 @@ make build=release HAVE_X11=no HAVE_GLUT=no HAVE_CURL=no \
 - Page labels: `fz_page_label(page)` needs the page loaded, so labels of a very large document are skipped
   (more than 2000 pages) when the page list is filled.
 - Metadata: `fz_lookup_metadata("info:Title"|"info:Author"|"info:CreationDate"|"format"|"encryption", ...)`. PDF
-  dates stay in the PDF form (`D:2016...`) and are converted by Tsundoku.
+  dates stay in the PDF form (`D:2016...`) and are converted by Toji.
 - Not available in the C API: the list of fonts of a page (the "fonts of this page" tab of the file info is gone),
   PDF version and linearization (the BFS attributes `PDF:version` and `PDF:linearized` are not written any more).
 
@@ -115,19 +115,19 @@ make build=release HAVE_X11=no HAVE_GLUT=no HAVE_CURL=no \
   (the BFS attributes with bookmarks and position stay); `pdf_can_be_saved_incrementally` is false for documents
   that had to be repaired. The index of an annotation is its position in the list without links, popups and form
   fields (`Document::LoadAnnotations`), which both listing and changing use.
-- `hey Tsundoku "TSTX" ... cmd=quote and text=...`, `cmd=annotate and kind=highlight|underline|strikeout`,
+- `hey Toji "TSTX" ... cmd=quote and text=...`, `cmd=annotate and kind=highlight|underline|strikeout`,
   `cmd=annots`, `cmd=delannot and which=N`, `cmd=setnote and which=N and text=...`, `cmd=do_save` exercise M4.
   A real `B_REFS_RECEIVED` with `SEN:quote` was sent with a few lines of C++ (`send_refs`, see the session notes).
 
 ## Testing without a mouse
 
-`make DEFINES=TSUNDOKU_TESTING` compiles hooks that let `hey` drive the view and write what happened to
+`make DEFINES=TOJI_TESTING` compiles hooks that let `hey` drive the view and write what happened to
 `/tmp/ts_test.out`:
 
 ```
-hey Tsundoku "TSTX" Window 0 with cmd=select and x1=90 and y1=131 and x2=300 and y2=191
-hey Tsundoku "TSTX" Window 0 with cmd=word and x1=150 and y1=131
-hey Tsundoku "TSTX" Window 0 with cmd=do_fileinfo         # any window command: do_rotate, do_zoomin, ...
+hey Toji "TSTX" Window 0 with cmd=select and x1=90 and y1=131 and x2=300 and y2=191
+hey Toji "TSTX" Window 0 with cmd=word and x1=150 and y1=131
+hey Toji "TSTX" Window 0 with cmd=do_fileinfo         # any window command: do_rotate, do_zoomin, ...
 ```
 
 Coordinates are in the view. Other hooks: `cmd=find and text=... and backward=1`, `cmd=saveattachment and which=N and

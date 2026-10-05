@@ -1,6 +1,6 @@
 # Files, attributes and SEN
 
-Tsundoku keeps what belongs to a file **with the file**, in its attributes, and not in files of its own. Moving or copying the file
+Toji keeps what belongs to a file **with the file**, in its attributes, and not in files of its own. Moving or copying the file
 in Tracker takes everything along. (On a volume that is not BFS the attributes are lost.)
 
 ## What it writes
@@ -14,9 +14,9 @@ in Tracker takes everything along. (On a volume that is not BFS the attributes a
 | `SEN:annotations` | annotations (of books, comics, DjVu; for a PDF a description of the ones in the file) and bookmarks |
 | `SEN:annotationCount`, `SEN:bookmarkCount` | how many there are |
 | `SEN:readingProgression` | `rtl`, `ltr`, `ttb` or `default` |
-| `tsundoku:viewState` | where you stopped reading |
+| `toji:viewState` | where you stopped reading |
 
-Tracker can show these as columns for the types Tsundoku knows, and queries can use them (Tsundoku makes the indices on the
+Tracker can show these as columns for the types Toji knows, and queries can use them (Toji makes the indices on the
 volume).
 
 ## Annotations as Web Annotations
@@ -27,17 +27,17 @@ document can be opened at a place the same way: a page, a region of a page, some
 
 ## Scripting
 
-Tsundoku can be controlled from other programs and from the command line with `hey`:
+Toji can be controlled from other programs and from the command line with `hey`:
 
 ```
-hey Tsundoku get Path of Document of Window 0
-hey Tsundoku do Goto of Document of Window 0 with page=12
-hey Tsundoku count Annotation of Document of Window 0
-hey Tsundoku do AddAnnotation of Document of Window 0 with kind=highlight and quote="some words" and page=3
+hey Toji get Path of Document of Window 0
+hey Toji do Goto of Document of Window 0 with page=12
+hey Toji count Annotation of Document of Window 0
+hey Toji do AddAnnotation of Document of Window 0 with kind=highlight and quote="some words" and page=3
 ```
 
 The full list of what can be asked and done is in the scripting reference
-([`docs/reference/scripting.md`](https://github.com/sen-laboratories/tsundoku/blob/main/docs/reference/scripting.md)).
+([`docs/reference/scripting.md`](https://github.com/sen-laboratories/toji/blob/main/docs/reference/scripting.md)).
 
 ## More reference
 

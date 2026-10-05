@@ -17,7 +17,7 @@ at once, so you can paste it into any program. The pointer becomes an I-beam whi
 
 ## Searching
 
-**Search > Find** (Cmd+F) asks for a word or phrase. Tsundoku finds the text in the order of reading, shows **all hits on the page**
+**Search > Find** (Cmd+F) asks for a word or phrase. Toji finds the text in the order of reading, shows **all hits on the page**
 and goes to the first one. **Find next** (Cmd+G) continues after the previous hit and **Find previous** (Cmd+Shift+G) goes
 backwards.
 

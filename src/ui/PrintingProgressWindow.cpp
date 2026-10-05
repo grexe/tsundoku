@@ -36,14 +36,14 @@
 #define B_TRANSLATION_CONTEXT "PrintingProgressWindow"
 
 PrintingProgressWindow::PrintingProgressWindow(const char *text, BRect aRect, int32 pages)
-	: BWindow(aRect, B_TRANSLATE("Tsundoku printing"),
+	: BWindow(aRect, B_TRANSLATE("Toji printing"),
 		B_TITLED_WINDOW_LOOK,
 		B_MODAL_APP_WINDOW_FEEL,
 		B_NOT_RESIZABLE|B_NOT_ZOOMABLE|B_NOT_CLOSABLE|B_AUTO_UPDATE_SIZE_LIMITS) {
 	mPages = pages; mPrintedPages = 0;
 	mState = OK;
 
-	BString s(B_TRANSLATE("Tsundoku printing document: "));
+	BString s(B_TRANSLATE("Toji printing document: "));
 	s << text;
 	// center window
 
@@ -111,7 +111,7 @@ void PrintingProgressWindow::MessageReceived(BMessage *msg) {
 
 // PrintingHiddenWindow
 PrintingHiddenWindow::PrintingHiddenWindow(BRect aRect)
-	: BWindow(aRect, "Tsundoku Printing Hidden Window",
+	: BWindow(aRect, "Toji Printing Hidden Window",
 		B_FLOATING_WINDOW_LOOK,
 		B_NORMAL_WINDOW_FEEL,
 		B_NOT_RESIZABLE|B_NOT_ZOOMABLE|B_NOT_CLOSABLE) {

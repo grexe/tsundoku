@@ -1,4 +1,4 @@
-1	Turkish	application/x-vnd.sen-labs.Tsundoku	2450431064
+1	Turkish	application/x-vnd.sen-labs.Toji	2450431064
  in	PrintSettingsWindow		içinde
 All pages	PrintSettingsWindow		Tüm sayfalar
 Color	PrintSettingsWindow		Renk
@@ -26,8 +26,8 @@ Zoom must be between 25 and 400!	PrintSettingsWindow		Yakınlaştırma 25 ve 400
 [link type 'movie' not supported]	PDFView		['film' bağlantı türü desteklenmiyor]
 [unknown link]	PDFView		[bilinmeyen bağlantı]
 Annotation	PDFView		Ek açıklama
-Tsundoku reading file: 	PDFView		Tsundoku dosyayı okuyor:
-Tsundoku: Launch	PDFView		Tsundoku: Çalıştır
+Toji reading file: 	PDFView		Toji dosyayı okuyor:
+Toji: Launch	PDFView		Toji: Çalıştır
 Cancel	PDFView		İptal
 Copy link	PDFView		Bağlantıyı kopyala
 Delete	PDFView		Sil
@@ -55,8 +55,8 @@ Save selected attachment to file	AttachmentView		Seçili eki dosyaya kaydet
 Save selected attachments into directory	AttachmentView		Seçili ekleri dizine kaydet
 Saving attachment(s):	AttachmentView		Ek(ler) kaydediliyor:
 Abort	PrintingProgressWindow		İptal et
-Tsundoku printing	PrintingProgressWindow		Tsundoku yazdırıyor
-Tsundoku printing document: 	PrintingProgressWindow		Tsundoku belgeyi yazdırıyor:
+Toji printing	PrintingProgressWindow		Toji yazdırıyor
+Toji printing document: 	PrintingProgressWindow		Toji belgeyi yazdırıyor:
 Page:	PrintingProgressWindow		Sayfa:
 Page: %d	PrintingProgressWindow		Sayfa: %d
 Stop	PrintingProgressWindow		Durdur
@@ -90,7 +90,7 @@ Title:	FileInfoWindow		Başlık:
 Type	FileInfoWindow		Tür
 Version:	FileInfoWindow		Sürüm:
 Yes	FileInfoWindow		Evet
-About Tsundoku…	PDFWindow		Tsundoku hakkında…
+About Toji…	PDFWindow		Toji hakkında…
 Add	PDFWindow		Ekle
 Add circle annotation	PDFWindow		Daire
 Add comment text annotation	PDFWindow		Metin
@@ -120,7 +120,7 @@ Add widget annotation	PDFWindow		Uygulamacık
 Back	PDFWindow		Geri
 Back in page history list	PDFWindow		Sayfa geçmişi listesinde geri
 Bookmark	PDFWindow		Yer İmleri
-Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Şu anda Tsundoku'de açık olan bir PDF dosyasının üzerine yazılamaz. Lütfen başka bir dosya adı seçin.
+Can not overwrite a PDF file that's currently opened in Toji! Please choose another file name.	PDFWindow		Şu anda Toji'de açık olan bir PDF dosyasının üzerine yazılamaz. Lütfen başka bir dosya adı seçin.
 Close	PDFWindow		Kapat
 Copy selection	PDFWindow		Seçimi kopyala
 Could not write PDF file!	PDFWindow		PDF dosyası yazılamadı!
@@ -221,8 +221,8 @@ Title:	AnnotationWindow		Başlık:
 User fonts	AnnotationWindow		Kullanıcı yazıtipleri
 Will take effect at next program launch.	AnnotationWindow		Bir sonraki başlatmada geçerli olacaktır.
 Alpha	BepdfApplication		Alfa
-Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku, XPDF %s temellidir, %s.
-Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Dosya açılamadı!
+Toji is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Toji, XPDF %s temellidir, %s.
+Toji: Error opening file!	BepdfApplication		Toji: Dosya açılamadı!
 Beta	BepdfApplication		Beta
 Close	BepdfApplication		Kapat
 Development	BepdfApplication		Geliştirme
@@ -236,7 +236,7 @@ Auto open	TraceWindow		Kendiliğinden aç
 Clear	TraceWindow		Temizle
 Error messages	TraceWindow		Hata iletileri
 Floating	TraceWindow		Yüzen pencere
-Tsundoku status	StatusWindow		Tsundoku durumu
+Toji status	StatusWindow		Toji durumu
 Enter Password	PasswordWindow		Parola girin
 OK	PasswordWindow		Tamam
 Owner password	PasswordWindow		Sahip şifresi

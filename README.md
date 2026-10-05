@@ -1,13 +1,13 @@
 <p align="center">
-  <img src="images/tsundoku-logo_small.jpg" alt="Tsundoku" width="320">
+  <img src="images/toji-logo_small.jpg" alt="Toji" width="320">
 </p>
 
-# Tsundoku™
+# Toji™
 
-*積ん読 (tsundoku): buying reading material and letting it pile up, unread, "for later".*
+*綴じ (toji): to bind, to stitch together, the way a book is bound. Toji binds the papers, books and comics you read to what is known about them.*
 
-Tsundoku is a document reader for [Haiku](https://www.haiku-os.org), made for the papers and documents we collect
-and mean to read someday. It is a fork of [BePDF](https://github.com/HaikuArchives/BePDF) that renders with
+Toji (formerly Tsundoku) is a document reader for [Haiku](https://www.haiku-os.org), made for the papers and documents we
+collect and mean to read. It is a fork of [BePDF](https://github.com/HaikuArchives/BePDF) that renders with
 [MuPDF](https://mupdf.com) instead of XPDF: faster, with better quality, and with support for many more formats than
 PDF: EPUB books, comics (CBZ, CBR, CB7, CBT, BBF), DjVu, XPS and images.
 
@@ -75,7 +75,7 @@ The sidebar is wider by default and collapses on its own if the document has nei
   history ends when the document is saved.
 - **Saving:** File > Save (Cmd+S) adds the changes to the end of a PDF file, so its attributes stay as they are. For a file that
   cannot be written (system directory, the title says "read-only") or that MuPDF had to repair, Save and File > Save as…
-  (Cmd+Shift+S) write a copy, with the attributes of the original, and Tsundoku goes on with the copy.
+  (Cmd+Shift+S) write a copy, with the attributes of the original, and Toji goes on with the copy.
 - **Where they are kept:** annotations of a PDF are PDF annotations that other readers show. Books, comics and DjVu cannot take
   them in the file, so they are kept in the attribute `SEN:annotations`, and they go along when the file is copied.
 
@@ -109,7 +109,7 @@ The model, the storage and the access from other programs: [docs/reference/annot
 ### Scripting
 
 Other programs (and `hey`) can read and change the annotations and bookmarks of the document in a window, go to a page or to an
-annotation, and save: `hey Tsundoku do AddAnnotation of Document of Window 0 with kind=highlight and quote="the words" and
+annotation, and save: `hey Toji do AddAnnotation of Document of Window 0 with kind=highlight and quote="the words" and
 page=3`. See [docs/reference/scripting.md](docs/reference/scripting.md).
 
 ### Printing and information
@@ -121,29 +121,29 @@ page=3`. See [docs/reference/scripting.md](docs/reference/scripting.md).
 
 What a document says about itself (title, author, series, language, publisher, date, ISBN, ...) is written to separate BFS
 attributes of the file with the names of the established ontologies, so that Tracker can show them as columns and queries can
-find them. Settings are stored in `~/config/settings/Tsundoku`, separate from BePDF.
+find them. Settings are stored in `~/config/settings/Toji`, separate from BePDF.
 
 The names and where each value comes from: [docs/reference/metadata.md](docs/reference/metadata.md).
 
 ## Why a fork?
 
-Tsundoku is the reader of [SEN](https://github.com/sen-laboratories) (Semantic Extensions Native), which adds semantic
+Toji is the reader of [SEN](https://github.com/sen-laboratories) (Semantic Extensions Native), which adds semantic
 relations between files and documents to Haiku. Reading is where relations become useful, so the reader needs to take
 part in them:
 
 - **Navigation:** SEN navigators hand over a target, e.g. the page of a bookmark or reference in a relation, and
-  Tsundoku jumps right there. The target is a Web Annotation target (`oa:hasTarget`: a page, a region on it, the words, an EPUB CFI) or the identifier of
+  Toji jumps right there. The target is a Web Annotation target (`oa:hasTarget`: a page, a region on it, the words, an EPUB CFI) or the identifier of
   an annotation.
 - **Annotations as data:** annotations are described with the W3C Web Annotation model and kept where SEN can find them, even
   without opening the document; every annotation has an identifier, and a scripting suite lets other programs read and change
   them.
 
 Such extensions do not belong into a general purpose reader, so this is an independent fork with its own name,
-application signature (`application/x-vnd.sen-labs.Tsundoku`) and release cycle.
+application signature (`application/x-vnd.sen-labs.Toji`) and release cycle.
 
 ## Status
 
-Tsundoku is in preview: formats and attribute names may still change before 1.0.
+Toji is in preview: formats and attribute names may still change before 1.0.
 
 - **Not there yet:** line widths and fill colors, the fonts of a
   document in the file info, fixed-layout EPUB, DRM, JPEG XL and HEIC pages (no translator on Haiku), margin notes.
@@ -151,11 +151,11 @@ Tsundoku is in preview: formats and attribute names may still change before 1.0.
 
 ## Installing
 
-Tsundoku and the MuPDF library it needs are in the package repository of SEN Labs:
+Toji and the MuPDF library it needs are in the package repository of SEN Labs:
 
 ```
 pkgman add-repo https://kiri.sen-labs.org/x86_64
-pkgman install tsundoku
+pkgman install toji
 ```
 
 Each release on GitHub also has the package as a file.
@@ -168,26 +168,26 @@ uses are taken from the system:
 
 ```
 pkgman install libarchive_devel djvu_devel libzip_devel libxml2_devel freetype_devel harfbuzz_devel openjpeg_devel jbig2dec_devel brotli_devel libjpeg_turbo_devel
-git clone https://github.com/sen-laboratories/tsundoku
-cd tsundoku
+git clone https://github.com/sen-laboratories/toji
+cd toji
 ./build.sh
 ```
 
 This downloads MuPDF 1.28.5 to `3rd-party/` and builds its libraries once (this takes a while), then builds the
-application into `dist/Tsundoku`, which needs to stay next to the `docs` folder there. To use another build of
+application into `dist/Toji`, which needs to stay next to the `docs` folder there. To use another build of
 MuPDF set `MUPDF_DIR`.
 
-To build an installable package (`tsundoku-<version>-<arch>.hpkg`) from the result, run `./package.sh`. Copy it to
+To build an installable package (`toji-<version>-<arch>.hpkg`) from the result, run `./package.sh`. Copy it to
 `~/config/packages` to install it for your user.
 
 The user guide is in [docs/guide](docs/guide) (Markdown); `docs/guide/build.sh` makes HTML, EPUB, PDF and DjVu from it (CI does too,
 and the package has the PDF). "Help" in the application opens it.
 
-Bug reports and ideas: [issues](https://github.com/sen-laboratories/tsundoku/issues).
+Bug reports and ideas: [issues](https://github.com/sen-laboratories/toji/issues).
 
 ## Credits and license
 
-Tsundoku is free software under the GNU Affero General Public License, version 3 or any later version (see
+Toji is free software under the GNU Affero General Public License, version 3 or any later version (see
 `LICENSE`). It is based on BePDF, which is under the GNU GPL version 2 or any later version, and renders with MuPDF,
 which is under the GNU AGPL version 3.
 
@@ -199,15 +199,15 @@ which is under the GNU AGPL version 3.
 - and the contributors to [BePDF](https://github.com/HaikuArchives/BePDF), among them Humdinger (the toolbar icons), Augustin Cavalier,
   Markus Himmel and the translators
 
-Tsundoku™, SEN™ and SEN Labs™ are names of SEN Labs e.U.; see [TRADEMARKS.md](TRADEMARKS.md) for what you may do with them.
+Toji™, SEN™ and SEN Labs™ are names of SEN Labs e.U.; see [TRADEMARKS.md](TRADEMARKS.md) for what you may do with them.
 
-**The logo and the artwork made for Tsundoku** (`images/`, the program icon) are under [CC BY 4.0](LICENSES/CC-BY-4.0.txt); that
-does not give rights to the names Tsundoku and SEN. The documentation is under the same license as the program.
+**The logo and the artwork made for Toji** (`images/`, the program icon) are under [CC BY 4.0](LICENSES/CC-BY-4.0.txt); that
+does not give rights to the names Toji and SEN. The documentation is under the same license as the program.
 
 MuPDF, © Artifex Software, Inc. The notes on how it is used on Haiku are in [MUPDF-NOTES.md](MUPDF-NOTES.md).
 
 **The reusable parts are MIT.** The folder [`lib/`](lib/) has the code that SEN and other programs can use without the AGPL:
 the Web Annotation model, bookmarks, the readers for EPUB, `ComicInfo.xml` and BBF metadata, and EPUB CFIs. It is under the MIT
-license ([lib/LICENSE](lib/LICENSE)) and does not depend on MuPDF or on Tsundoku's sources. Every source file carries an
+license ([lib/LICENSE](lib/LICENSE)) and does not depend on MuPDF or on Toji's sources. Every source file carries an
 [SPDX](https://spdx.dev) license identifier line (`AGPL-3.0-or-later` or `MIT`) that tools can read, and `reuse lint` checks it; the license
 texts are in [LICENSES/](LICENSES/).

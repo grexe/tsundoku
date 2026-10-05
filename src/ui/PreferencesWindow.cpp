@@ -103,7 +103,7 @@ void PreferencesWindow::SetupView() {
 		new BMessage(REPLACE_ATTRIBUTES_CHANGED));
 	replaceAttributes->SetValue(settings->GetLegacyAttributes() == 2);
 	replaceAttributes->SetToolTip(B_TRANSLATE("Files that BePDF has opened have attributes with its own names "
-		"(META:title, META:author, ...). Tsundoku writes the same information with standard names (dc:title, "
+		"(META:title, META:author, ...). Toji writes the same information with standard names (dc:title, "
 		"dc:creator, ...) in any case. The legacy attributes are kept unless this is on: then they are removed."));
 
 	BCheckBox *upgradeIds = new BCheckBox("upgradeIds",

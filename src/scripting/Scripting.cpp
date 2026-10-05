@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
- * Tsundoku: a universal document reader for Haiku, extended for SEN.
+ * Toji: a universal document reader for Haiku, extended for SEN.
  * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
  *
  * Based on BePDF:
@@ -47,7 +47,7 @@ extern "C" {
 
 namespace Scripting {
 
-const char* const kSuite = "suite/vnd.sen-labs.Tsundoku";
+const char* const kSuite = "suite/vnd.sen-labs.Toji";
 
 enum {
 	kPath, kTitle, kType, kPageCount, kTextSize, kPageProperty, kSelection, kGoto, kSave, kUndo, kRedo,

@@ -1,5 +1,5 @@
 /*
- * Tsundoku: a universal document reader for Haiku, extended for SEN.
+ * Toji: a universal document reader for Haiku, extended for SEN.
  * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
  *
  * Based on BePDF:
@@ -22,7 +22,7 @@
 // (hey can only do part of this: it does not nest the specifiers of a CREATE).
 //
 //   g++ -o ScriptingTest ScriptingTest.cpp -lbe
-//   Tsundoku gutenprint-users-manual.pdf &      (any PDF whose page 2 has the word "Krawitz"; the test adds and removes
+//   Toji gutenprint-users-manual.pdf &      (any PDF whose page 2 has the word "Krawitz"; the test adds and removes
 //   ./ScriptingTest                              annotations and bookmarks, and does not save)
 //
 // Prints one line for each check and exits with the number of checks that failed.
@@ -155,9 +155,9 @@ int
 main()
 {
 	BApplication app("application/x-vnd.sen-labs.ScriptingTest");
-	sTarget = BMessenger("application/x-vnd.sen-labs.Tsundoku");
+	sTarget = BMessenger("application/x-vnd.sen-labs.Toji");
 	if (!sTarget.IsValid()) {
-		printf("Tsundoku is not running\n");
+		printf("Toji is not running\n");
 		return 1;
 	}
 
@@ -182,6 +182,7 @@ main()
 
 	// annotations: the counts before
 	int32 before = Number(Items(B_COUNT_PROPERTIES, "Annotation"));
+	int32 beforeOnPage2 = CountOnPage("Annotation", 2);
 	Check("COUNT Annotation", before >= 0);
 	{
 		BMessage count = Items(B_COUNT_PROPERTIES, "Annotation");
@@ -235,7 +236,7 @@ main()
 		BMessage count = Items(B_COUNT_PROPERTIES, "Annotation");
 		count.AddString("context", "page");
 		count.AddInt32("page", 2);
-		Check("COUNT on page 2 is 2", Number(count) == 2);
+		Check("COUNT on page 2 grew by 2", Number(count) == beforeOnPage2 + 2);
 		BMessage shown = Items(B_COUNT_PROPERTIES, "Annotation");
 		shown.AddString("context", "page");
 		Check("COUNT with context=page uses the page that is shown (3)", Number(shown) >= 1);

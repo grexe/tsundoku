@@ -1,11 +1,13 @@
-name			tsundoku
+name			toji
 version			@VERSION@
 architecture	@ARCH@
 summary			"A universal document reader for Haiku, extended for SEN"
-description		"Tsundoku is a document reader for Haiku, based on BePDF and
-rendering with MuPDF. It reads PDF files and adds support for the semantic
-relations of SEN (Semantic Extensions Native), e.g. jumping to a page handed
-over by a relation. Settings and per-file bookmarks stay compatible with BePDF."
+description		"Toji is a document reader for Haiku, based on BePDF and rendering with
+MuPDF. It reads PDF files, EPUB books, comics (CBZ, CBR, CB7, CBT, BBF), DjVu
+documents and more, lets you select, search and mark text, add notes and
+shapes and keep bookmarks, and writes what a document says about itself to
+the attributes of the file. Annotations are Web Annotations that SEN (Semantic
+Extensions Native) and other programs can read and control by scripting."
 packager		"Gregor B. Rosenauer <semantic.extensions@gmail.com>"
 vendor			"SEN Labs e.U."
 copyrights		{
@@ -21,11 +23,14 @@ licenses		{
 	"MIT"
 }
 urls			{
-	"https://github.com/sen-laboratories/tsundoku"
+	"https://github.com/sen-laboratories/toji"
+}
+replaces		{
+	tsundoku
 }
 provides		{
-	tsundoku = @VERSION@
-	app:Tsundoku = @VERSION@
+	toji = @VERSION@
+	app:Toji = @VERSION@
 }
 requires		{
 	haiku

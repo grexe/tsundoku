@@ -34,7 +34,7 @@
 #define B_TRANSLATION_CONTEXT "StatusWindow"
 
 StatusWindow::StatusWindow(const char *text, BRect aRect)
-	: BWindow(aRect, B_TRANSLATE("Tsundoku status"),
+	: BWindow(aRect, B_TRANSLATE("Toji status"),
 		B_MODAL_WINDOW ,
 		B_NOT_RESIZABLE|B_NOT_ZOOMABLE|B_NOT_CLOSABLE) {
 

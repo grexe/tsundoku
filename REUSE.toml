@@ -1,7 +1,7 @@
 version = 1
-SPDX-PackageName = "Tsundoku"
+SPDX-PackageName = "Toji"
 SPDX-PackageSupplier = "SEN Labs e.U."
-SPDX-PackageDownloadLocation = "https://github.com/sen-laboratories/tsundoku"
+SPDX-PackageDownloadLocation = "https://github.com/sen-laboratories/toji"
 
 # The program and what belongs to it: AGPL-3.0-or-later (BePDF is GPL-2.0-or-later, which allows it; MuPDF is AGPL-3.0).
 # The source files say so themselves (SPDX-License-Identifier in the header); these are the files that cannot.
@@ -16,10 +16,10 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Gregor B. Rosenauer & Claude, and the authors of BePDF (see README.md)"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
 
-# The logo, the name's artwork and the icons that were made for Tsundoku: CC BY 4.0. (This does not give rights to the name
-# Tsundoku or to SEN as trademarks.)
+# The logo, the name's artwork and the icons that were made for Toji: CC BY 4.0. (This does not give rights to the name
+# Toji or to SEN as trademarks.)
 [[annotations]]
-path = ["images/**", "src/graphics/tsundoku.hvif"]
+path = ["images/**", "src/graphics/toji.hvif"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Gregor B. Rosenauer & Claude"
 SPDX-License-Identifier = "CC-BY-4.0"

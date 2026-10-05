@@ -1,8 +1,8 @@
 # lib: reusable components (MIT)
 
 The code in this folder is licensed under the **MIT License** (see [LICENSE](LICENSE); the header of each
-file has the SPDX identifier `MIT`). It was written for Tsundoku, but it has no part of Tsundoku's user interface and does not use
-MuPDF, so that SEN (enrichment plugins, navigators, ...) and other programs can use it without taking on the AGPL of Tsundoku.
+file has the SPDX identifier `MIT`). It was written for Toji, but it has no part of Toji's user interface and does not use
+MuPDF, so that SEN (enrichment plugins, navigators, ...) and other programs can use it without taking on the AGPL of Toji.
 
 | File | What it does | Needs |
 |------|--------------|-------|
@@ -15,9 +15,9 @@ MuPDF, so that SEN (enrichment plugins, navigators, ...) and other programs can 
 
 ## The rule
 
-**Nothing in this folder may include or link code with a copyleft license** (Tsundoku's own sources, MuPDF, DjVuLibre, ...).
-Everything it depends on is permissive (Haiku, libzip, libxml2). Tsundoku (AGPL-3.0-or-later) uses these files; they do not use
-Tsundoku. A new file here gets the MIT header; a file that needs MuPDF stays in `src/`.
+**Nothing in this folder may include or link code with a copyleft license** (Toji's own sources, MuPDF, DjVuLibre, ...).
+Everything it depends on is permissive (Haiku, libzip, libxml2). Toji (AGPL-3.0-or-later) uses these files; they do not use
+Toji. A new file here gets the MIT header; a file that needs MuPDF stays in `src/`.
 
 ## Using it
 

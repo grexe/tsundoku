@@ -10,7 +10,7 @@
 # with "make build=release libs", see build.sh, if MUPDF_DIR is set.
 
 # The name of the binary.
-NAME = Tsundoku
+NAME = Toji
 TARGET_DIR= ../dist
 
 # The type of binary, must be one of:
@@ -21,7 +21,7 @@ TARGET_DIR= ../dist
 TYPE = APP
 
 # 	If you plan to use localization, specify the application's MIME signature.
-APP_MIME_SIG = application/x-vnd.sen-labs.Tsundoku
+APP_MIME_SIG = application/x-vnd.sen-labs.Toji
 
 #	The following lines tell Pe and Eddie where the SRCS, RDEFS, and RSRCS are
 #	so that Pe and Eddie can fill them in for you.
@@ -81,7 +81,7 @@ SRCS = annotations/AnnotationsView.cpp \
 
 #	Specify the resource definition files to use. Full or relative paths can be
 #	used.
-RDEFS = app/Tsundoku.rdef
+RDEFS = app/Toji.rdef
 
 #	Specify the resource files to use. Full or relative paths can be used.
 #	Both RDEFS and RSRCS can be utilized in the same Makefile.

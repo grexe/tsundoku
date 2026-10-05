@@ -485,7 +485,7 @@ public:
 	friend class PrintView;
 	friend class FindThread;
 
-#ifdef TSUNDOKU_TESTING
+#ifdef TOJI_TESTING
 	// drives the view without mouse and keyboard, see PDFView.cpp
 	void TestCommand(BMessage* message);
 #endif

@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
- * Tsundoku: a universal document reader for Haiku, extended for SEN.
+ * Toji: a universal document reader for Haiku, extended for SEN.
  * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
  *
  * Based on BePDF:
@@ -87,7 +87,7 @@ WarningCallback(void*, const char* message)
 static void
 LogError(fz_context* context, const char* what)
 {
-	fprintf(stderr, "Tsundoku: %s: %s\n", what, fz_caught_message(context));
+	fprintf(stderr, "Toji: %s: %s\n", what, fz_caught_message(context));
 }
 
 
@@ -2233,7 +2233,7 @@ Document::Save()
 }
 
 
-// copies all attributes (bookmarks and position of Tsundoku, the type, ...) from one file to the other
+// copies all attributes (bookmarks and position of Toji, the type, ...) from one file to the other
 void
 CopyAttributes(const char* from, const char* to)
 {

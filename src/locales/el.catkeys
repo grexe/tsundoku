@@ -1,4 +1,4 @@
-1	Greek (Modern)	application/x-vnd.sen-labs.Tsundoku	2450431064
+1	Greek (Modern)	application/x-vnd.sen-labs.Toji	2450431064
  in	PrintSettingsWindow		σε
 All pages	PrintSettingsWindow		Όλες οι σελίδες
 Color	PrintSettingsWindow		Χρώμα
@@ -26,8 +26,8 @@ Zoom must be between 25 and 400!	PrintSettingsWindow		Η τιμή της μεγ�
 [link type 'movie' not supported]	PDFView		[οι σύνδεσμοι τύπου ταινία δεν υποστηρίζονται]
 [unknown link]	PDFView		[άγνωστος σύνδεσμος]
 Annotation	PDFView		Περίληψη
-Tsundoku reading file: 	PDFView		Το Tsundoku διαβάζει το αρχείο: 
-Tsundoku: Launch	PDFView		Tsundoku: Εκκίνηση
+Toji reading file: 	PDFView		Το Toji διαβάζει το αρχείο: 
+Toji: Launch	PDFView		Toji: Εκκίνηση
 Cancel	PDFView		Ακύρωση
 Copy link	PDFView		Αντιγραφή συνδέσμου
 Delete	PDFView		Διαγραφή
@@ -55,8 +55,8 @@ Save selected attachment to file	AttachmentView		Αποθήκευση επιλε
 Save selected attachments into directory	AttachmentView		Αποθήκευση επιλεγμένου συνημμένου σε κατάλογο
 Saving attachment(s):	AttachmentView		Αποθήκευση συνημμένου(-ων):
 Abort	PrintingProgressWindow		Ακύρωση
-Tsundoku printing	PrintingProgressWindow		Το Tsundoku εκτυπώνει
-Tsundoku printing document: 	PrintingProgressWindow		Το Tsundoku εκτυπώνει το έγγραφο: 
+Toji printing	PrintingProgressWindow		Το Toji εκτυπώνει
+Toji printing document: 	PrintingProgressWindow		Το Toji εκτυπώνει το έγγραφο: 
 Page:	PrintingProgressWindow		Σελίδα:
 Page: %d	PrintingProgressWindow		Σελίδα: %d
 Stop	PrintingProgressWindow		Σταμάτημα
@@ -90,7 +90,7 @@ Title:	FileInfoWindow		Τίτλος:
 Type	FileInfoWindow		Είδος
 Version:	FileInfoWindow		Έκδοση:
 Yes	FileInfoWindow		Ναι
-About Tsundoku…	PDFWindow		Σχετικά με το Tsundoku…
+About Toji…	PDFWindow		Σχετικά με το Toji…
 Add	PDFWindow		Προσθήκη
 Add circle annotation	PDFWindow		Επισημείωση κύκλου
 Add comment text annotation	PDFWindow		Επισημείωση σχολίου
@@ -120,7 +120,7 @@ Add widget annotation	PDFWindow		Επισημείωση widget
 Back	PDFWindow		Πίσω
 Back in page history list	PDFWindow		Πίσω βάσει ιστορικού σελίδων
 Bookmark	PDFWindow		Σελιδοδείκτης
-Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Δεν είναι δυνατή η αντικατάσταση ενός αρχείου PDF το οποίο είναι ήδη ανοικτό στο Tsundoku! Παρακαλώ επιλέξτε άλλο όνομα αρχείου.
+Can not overwrite a PDF file that's currently opened in Toji! Please choose another file name.	PDFWindow		Δεν είναι δυνατή η αντικατάσταση ενός αρχείου PDF το οποίο είναι ήδη ανοικτό στο Toji! Παρακαλώ επιλέξτε άλλο όνομα αρχείου.
 Close	PDFWindow		Κλείσιμο
 Copy selection	PDFWindow		Αντιγραφή επιλογής
 Could not write PDF file!	PDFWindow		Δεν ήταν δυνατή η αποθήκευση του αρχείου PDF!
@@ -221,8 +221,8 @@ Title:	AnnotationWindow		Τίτλος:
 User fonts	AnnotationWindow		Γραμματοσειρές χρήστη
 Will take effect at next program launch.	AnnotationWindow		Θα εφαρμοστεί στην επόμενη έναρξη του προγράμματος.
 Alpha	BepdfApplication		Alpha
-Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Το Tsundoku είναι βασισμένο στο XPDF %s, %s.
-Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Σφάλμα ανοίγματος αρχείου!
+Toji is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Το Toji είναι βασισμένο στο XPDF %s, %s.
+Toji: Error opening file!	BepdfApplication		Toji: Σφάλμα ανοίγματος αρχείου!
 Beta	BepdfApplication		Beta
 Close	BepdfApplication		Κλείσιμο
 Development	BepdfApplication		Έκδοση ανάπτυξης
@@ -236,7 +236,7 @@ Auto open	TraceWindow		Αυτόματο άνοιγμα
 Clear	TraceWindow		Καθάρισμα
 Error messages	TraceWindow		Μηνύματα σφαλμάτων
 Floating	TraceWindow		Αιωρούμενη
-Tsundoku status	StatusWindow		Κατάσταση του Tsundoku
+Toji status	StatusWindow		Κατάσταση του Toji
 Enter Password	PasswordWindow		Εισάγετε κωδικό πρόσβασης
 OK	PasswordWindow		Εντάξει
 Owner password	PasswordWindow		Κωδικός πρόσβασης κατόχου

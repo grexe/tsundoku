@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
- * Tsundoku: a universal document reader for Haiku, extended for SEN.
+ * Toji: a universal document reader for Haiku, extended for SEN.
  * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
  *
  * Based on BePDF:
@@ -103,7 +103,7 @@ PageRenderer::Start(CachedPage* page, int pageNo, int zoomDPI, int rotation, thr
 		mBitmap = new BBitmap(BRect(0, 0, width - 1, height - 1), B_RGB32);
 		if (mBitmap->InitCheck() != B_OK) {
 			// out of memory, e.g. a large page with a high zoom: show a white pixel instead of crashing
-			fprintf(stderr, "Tsundoku: cannot allocate a bitmap of %dx%d pixels\n", width, height);
+			fprintf(stderr, "Toji: cannot allocate a bitmap of %dx%d pixels\n", width, height);
 			delete mBitmap;
 			width = height = 1;
 			mWidth = mHeight = 1;
@@ -258,7 +258,7 @@ PageRenderer::RenderToBitmap(Document* document, int pageNo, const fz_matrix& ma
 		fz_drop_page(context, page);
 	}
 	fz_catch(context) {
-		fprintf(stderr, "Tsundoku: cannot render page %d: %s\n", pageNo, fz_caught_message(context));
+		fprintf(stderr, "Toji: cannot render page %d: %s\n", pageNo, fz_caught_message(context));
 		ok = false;
 	}
 
@@ -311,7 +311,7 @@ PageRenderer::Render()
 			fz_drop_page(context, page);
 		}
 		fz_catch(context) {
-			fprintf(stderr, "Tsundoku: cannot read text of page %d: %s\n", mPageNo,
+			fprintf(stderr, "Toji: cannot read text of page %d: %s\n", mPageNo,
 				fz_caught_message(context));
 		}
 

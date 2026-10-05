@@ -1,6 +1,6 @@
 # Settings
 
-**Edit > Settings** opens the preferences. They are stored in `~/config/settings/Tsundoku`, separate from BePDF.
+**Edit > Settings** opens the preferences. They are stored in `~/config/settings/Toji`, separate from BePDF.
 
 ## Document
 
@@ -9,9 +9,9 @@
 - **Open in workspace:** which workspace a new window opens in.
 - **Author:** the name that goes into the annotations you make.
 - **Replace legacy attributes with standard ones:** files that BePDF has opened have attributes with BePDF's own names
-  (`META:title`, `META:author`, ...). Tsundoku writes the same information with standard names (`dc:title`, `dc:creator`, ...) in
+  (`META:title`, `META:author`, ...). Toji writes the same information with standard names (`dc:title`, `dc:creator`, ...) in
   any case. The legacy attributes are kept, so you can go back to BePDF, unless this is on: then their values are moved to the
-  standard names and the old ones are removed. The first time Tsundoku sees such a file it asks what you want and remembers.
+  standard names and the old ones are removed. The first time Toji sees such a file it asks what you want and remembers.
 - **Describe annotations of other programs in the file's attributes:** when a PDF is opened, its annotations are described in the
   attribute `SEN:annotations`, and those that have no name get an identifier. The PDF file itself is not changed.
 

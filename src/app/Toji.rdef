@@ -16,7 +16,7 @@ resource app_version {
 	long_info = "Document reader with SEN extensions"
 };
 
-resource app_signature "application/x-vnd.sen-labs.Tsundoku";
+resource app_signature "application/x-vnd.sen-labs.Toji";
 
 resource file_types message {
 	"types" = "application/pdf",

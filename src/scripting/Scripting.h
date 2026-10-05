@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
- * Tsundoku: a universal document reader for Haiku, extended for SEN.
+ * Toji: a universal document reader for Haiku, extended for SEN.
  * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
  *
  * Based on BePDF:
@@ -31,7 +31,7 @@
 class BMessage;
 class PDFWindow;
 
-// The scripting suite of Tsundoku, "suite/vnd.sen-labs.Tsundoku", on the window (`hey Tsundoku get Path of Document of
+// The scripting suite of Toji, "suite/vnd.sen-labs.Toji", on the window (`hey Toji get Path of Document of
 // Window 0`). The objects are the document, its pages, its annotations and its bookmarks:
 //
 //   Document         Path, Title, Type, PageCount, TextSize, Page (also SET: goes to the page), Selection
@@ -47,7 +47,7 @@ class PDFWindow;
 //
 // The annotations and bookmarks that are counted, listed or addressed by index are those of the whole document
 // (context=document, the default) or of one page (context=page, and page=N, the page that is shown if it is not given):
-// `hey Tsundoku count Annotation of Document of Window 0 with context=page and page=3`.
+// `hey Toji count Annotation of Document of Window 0 with context=page and page=3`.
 // What is changed goes through the same code as what the user does, so it can be undone and counts as unsaved.
 namespace Scripting {
 

@@ -1,20 +1,20 @@
-1	Dutch	application/x-vnd.sen-labs.Tsundoku	2450431064
+1	Dutch	application/x-vnd.sen-labs.Toji	2450431064
 Close	BepdfApplication		Sluiten
 Error	BepdfApplication		Fout
 Beta	BepdfApplication		Beta
 Gamma	BepdfApplication		Gamma
 Golden Master	BepdfApplication		Gouden Master
-Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Fout bij openen van bestand!
+Toji: Error opening file!	BepdfApplication		Toji: Fout bij openen van bestand!
 Alpha	BepdfApplication		Alpha
 Version	BepdfApplication		Versie
 Development	BepdfApplication		Ontwikkeling
 Unknown	BepdfApplication		Onbekend
 Final	BepdfApplication		Laatste
-Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku is gebaseerd op XPDF% s,% s.
+Toji is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Toji is gebaseerd op XPDF% s,% s.
 Show bookmarks	PDFWindow		Show bookmarks
 of %d	PDFWindow		of %d
 Zoom in	PDFWindow		Zoom in
-About Tsundoku…	PDFWindow		About Tsundoku…
+About Toji…	PDFWindow		About Toji…
 Go to next page	PDFWindow		Go to next page
 View	PDFWindow		View
 Show annotation tool bar	PDFWindow		Show annotation tool bar
@@ -68,7 +68,7 @@ Rotation	PDFWindow		Rotation
 Last	PDFWindow		Last
 Add stamp annotation	PDFWindow		Add stamp annotation
 Add squiggly annotation	PDFWindow		Add squiggly annotation
-Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.
+Can not overwrite a PDF file that's currently opened in Toji! Please choose another file name.	PDFWindow		Can not overwrite a PDF file that's currently opened in Toji! Please choose another file name.
 Copy selection	PDFWindow		Copy selection
 Add free text annotation	PDFWindow		Add free text annotation
 Next	PDFWindow		Next
@@ -116,7 +116,7 @@ Open in new window…	PDFWindow		Open in new window…
 Add highlight annotation	PDFWindow		Add highlight annotation
 Add file attachment annotation	PDFWindow		Add file attachment annotation
 Go to page %d	PDFView		Go to page %d
-Tsundoku: Launch	PDFView		Tsundoku: Launch
+Toji: Launch	PDFView		Toji: Launch
 Copy link	PDFView		Copy link
 Saving file attachment:	PDFView		Saving file attachment:
 Open in new window	PDFView		Open in new window
@@ -132,7 +132,7 @@ Delete	PDFView		Delete
 Leave annotation editing mode	PDFView		Leave annotation editing mode
 [internal link]	PDFView		[internal link]
 OK	PDFView		OK
-Tsundoku reading file: 	PDFView		Tsundoku reading file: 
+Toji reading file: 	PDFView		Toji reading file: 
 Edit	PDFView		Edit
 Keywords:	FileInfoWindow		Sleutelwoorden:
 Subject:	FileInfoWindow		Onderwerp:
@@ -219,8 +219,8 @@ Edit title for bookmark	OutlinesWindow		Edit title for bookmark
 No title	OutlinesWindow		No title
 User defined	OutlinesWindow		User defined
 OK	OutlinesWindow		OK
-Tsundoku printing document: 	PrintingProgressWindow		Tsundoku printing document: 
-Tsundoku printing	PrintingProgressWindow		Tsundoku printing
+Toji printing document: 	PrintingProgressWindow		Toji printing document: 
+Toji printing	PrintingProgressWindow		Toji printing
 Stop	PrintingProgressWindow		Stop
 Abort	PrintingProgressWindow		Abort
 Page:	PrintingProgressWindow		Page:
@@ -247,7 +247,7 @@ Description	AttachmentView		Beschrijving
 <empty>	AttachmentView		<leeg>
 Search string not found.	PDFSearch		Search string not found.
 OK	PDFSearch		OK
-Tsundoku status	StatusWindow		Tsundoku status
+Toji status	StatusWindow		Toji status
 User password	PasswordWindow		User password
 Enter Password	PasswordWindow		Enter Password
 Owner password	PasswordWindow		Owner password

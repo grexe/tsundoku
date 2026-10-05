@@ -1,4 +1,4 @@
-1	Hindi	application/x-vnd.sen-labs.Tsundoku	2450431064
+1	Hindi	application/x-vnd.sen-labs.Toji	2450431064
  in	PrintSettingsWindow		mein
 All pages	PrintSettingsWindow		Sabhee prshthon
 Color	PrintSettingsWindow		Rang
@@ -26,8 +26,8 @@ Zoom must be between 25 and 400!	PrintSettingsWindow		Zoom 25 aur 400 ke beech h
 [link type 'movie' not supported]	PDFView		[link prakaar philm samarthit nahin]
 [unknown link]	PDFView		[agyaat link]
 Annotation	PDFView		Tipanee
-Tsundoku reading file: 	PDFView		Tsundoku pathan file:
-Tsundoku: Launch	PDFView		Tsundoku: prakshepan
+Toji reading file: 	PDFView		Toji pathan file:
+Toji: Launch	PDFView		Toji: prakshepan
 Cancel	PDFView		Radh karana
 Copy link	PDFView		pratiroop jodana
 Delete	PDFView		Hataana
@@ -55,8 +55,8 @@ Save selected attachment to file	AttachmentView		file ke lie chayanit anulagnak 
 Save selected attachments into directory	AttachmentView		nirdeshika mein chayanit anulagnakon ko sahejen
 Saving attachment(s):	AttachmentView		anulagnak sahejana:
 Abort	PrintingProgressWindow		nirast karen
-Tsundoku printing	PrintingProgressWindow		Tsundoku ki chapae
-Tsundoku printing document: 	PrintingProgressWindow		Tsundoku chapne ki dastaveez:
+Toji printing	PrintingProgressWindow		Toji ki chapae
+Toji printing document: 	PrintingProgressWindow		Toji chapne ki dastaveez:
 Page:	PrintingProgressWindow		Prsth:
 Page: %d	PrintingProgressWindow		Prsth: %d
 Stop	PrintingProgressWindow		Ruken
@@ -90,7 +90,7 @@ Title:	FileInfoWindow		sheershak:
 Type	FileInfoWindow		Prakaar
 Version:	FileInfoWindow		sanskaran:
 Yes	FileInfoWindow		Haan
-About Tsundoku…	PDFWindow		Tsundoku ke barein mein...
+About Toji…	PDFWindow		Toji ke barein mein...
 Add	PDFWindow		jodana
 Add circle annotation	PDFWindow		vrtt tipanee  jodein
 Add comment text annotation	PDFWindow		paath tipanee jodein
@@ -120,7 +120,7 @@ Add widget annotation	PDFWindow		widget tipanee jodein
 Back	PDFWindow		Vaapas
 Back in page history list	PDFWindow		prshth itihaas soochee mein vaapas
 Bookmark	PDFWindow		Bookmark
-Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		vartamaan mein Tsundoku mein kholee gaee pdf fail ko adhilekhit nahin kiya ja sakata hai! krpaya koee aur file naam chunen.
+Can not overwrite a PDF file that's currently opened in Toji! Please choose another file name.	PDFWindow		vartamaan mein Toji mein kholee gaee pdf fail ko adhilekhit nahin kiya ja sakata hai! krpaya koee aur file naam chunen.
 Close	PDFWindow		Band kare
 Copy selection	PDFWindow		Chayan ka pratilipi kare
 Could not write PDF file!	PDFWindow		PDF file nahin likh sakte
@@ -221,8 +221,8 @@ Title:	AnnotationWindow		Sheershak:
 User fonts	AnnotationWindow		Upayogakarta lipi
 Will take effect at next program launch.	AnnotationWindow		agale kaaryakram ke shubhaarambh par prabhaavee hoga.
 Alpha	BepdfApplication		Alpha
-Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku XPDF %s, %s. par aadhaarit hai
-Tsundoku: Error opening file!	BepdfApplication		Tsundoku: file kholane mein truti!
+Toji is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Toji XPDF %s, %s. par aadhaarit hai
+Toji: Error opening file!	BepdfApplication		Toji: file kholane mein truti!
 Beta	BepdfApplication		Beta
 Close	BepdfApplication		band kare
 Development	BepdfApplication		vikaas
@@ -236,7 +236,7 @@ Auto open	TraceWindow		svachaalit kholein
 Clear	TraceWindow		saanf
 Error messages	TraceWindow		truti sandesh
 Floating	TraceWindow		chal
-Tsundoku status	StatusWindow		Tsundoku stithi
+Toji status	StatusWindow		Toji stithi
 Enter Password	PasswordWindow		Passowrd darj karen
 OK	PasswordWindow		Theek
 Owner password	PasswordWindow		Maalik ka password

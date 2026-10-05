@@ -619,9 +619,9 @@ bool PDFWindow::ConfirmDiscardChanges(bool closing) {
 		B_WARNING_ALERT);
 	alert->SetShortcut(0, B_ESCAPE);
 	int32 choice;
-#ifdef TSUNDOKU_TESTING
-	if (getenv("TSUNDOKU_AUTOCHOICE") != NULL) {
-		choice = atoi(getenv("TSUNDOKU_AUTOCHOICE"));
+#ifdef TOJI_TESTING
+	if (getenv("TOJI_AUTOCHOICE") != NULL) {
+		choice = atoi(getenv("TOJI_AUTOCHOICE"));
 		delete alert;
 	} else
 #endif
@@ -1174,7 +1174,7 @@ BMenuBar* PDFWindow::BuildMenu()
 			.AddItem(B_TRANSLATE("Visit homepage" B_UTF8_ELLIPSIS), HOME_PAGE_CMD)
 			.AddItem(B_TRANSLATE("Issue tracker" B_UTF8_ELLIPSIS), BUG_REPORT_CMD)
 			.AddSeparator()
-			.AddItem(B_TRANSLATE("About Tsundoku" B_UTF8_ELLIPSIS), ABOUT_APP_CMD)
+			.AddItem(B_TRANSLATE("About Toji" B_UTF8_ELLIPSIS), ABOUT_APP_CMD)
 		.End();
 
 		mZoomMenu->SetRadioMode (true);
@@ -1509,7 +1509,7 @@ PDFWindow::SetPage(int32 page) {
 }
 
 
-#ifdef TSUNDOKU_TESTING
+#ifdef TOJI_TESTING
 // hey sends numbers as text
 static int32
 TestInt(BMessage* message, const char* name, int32 fallback)
@@ -1817,13 +1817,13 @@ PDFWindow::MessageReceived(BMessage* message)
 		OpenHelp();
 		break;
 	case ONLINE_HELP_CMD:
-		LaunchHTMLBrowser("https://github.com/sen-laboratories/tsundoku/tree/main/docs/guide");
+		LaunchHTMLBrowser("https://github.com/sen-laboratories/toji/tree/main/docs/guide");
 		break;
 	case HOME_PAGE_CMD:
-		LaunchHTMLBrowser("https://github.com/sen-laboratories/tsundoku");
+		LaunchHTMLBrowser("https://github.com/sen-laboratories/toji");
 		break;
 	case BUG_REPORT_CMD:
-		LaunchHTMLBrowser("https://github.com/sen-laboratories/tsundoku/issues/");
+		LaunchHTMLBrowser("https://github.com/sen-laboratories/toji/issues/");
 		break;
 	case PREFERENCES_FILE_CMD:
 		mPreferencesItem->SetEnabled(false);
@@ -1849,7 +1849,7 @@ PDFWindow::MessageReceived(BMessage* message)
 		break;
 	case LEGACY_ATTRIBUTES_CMD: {
 		BAlert* alert = new BAlert(B_TRANSLATE("Attributes of BePDF"),
-			B_TRANSLATE("This file has attributes that BePDF wrote (META:title, bepdf:bookmarks, ...). Tsundoku "
+			B_TRANSLATE("This file has attributes that BePDF wrote (META:title, bepdf:bookmarks, ...). Toji "
 				"writes the same information with standard names (dc:title, dc:creator, ...) and as annotations, "
 				"and does so in any case.\n\nWhat should happen to the legacy attributes? You can change this "
 				"later in the preferences."),
@@ -2083,7 +2083,7 @@ PDFWindow::MessageReceived(BMessage* message)
 		}
 		break;
 
-#ifdef TSUNDOKU_TESTING
+#ifdef TOJI_TESTING
 	case 'TSTX': {
 			BString cmd;
 			message->FindString("cmd", &cmd);
@@ -2323,9 +2323,9 @@ void
 PDFWindow::OpenHelp()
 {
 	// the user guide that is shipped with the program (built from docs/guide), else the online one
-	if (!OpenPDFHelp(B_TRANSLATE_COMMENT("tsundoku-guide.pdf",
+	if (!OpenPDFHelp(B_TRANSLATE_COMMENT("toji-guide.pdf",
 			"Replace with the PDF name of the help document, if there is one for your language.")))
-		LaunchHTMLBrowser("https://github.com/sen-laboratories/tsundoku/tree/main/docs/guide");
+		LaunchHTMLBrowser("https://github.com/sen-laboratories/toji/tree/main/docs/guide");
 }
 
 

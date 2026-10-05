@@ -335,7 +335,7 @@ PDFView::UpdatePanelDirectory(BPath* path) {
 void
 PDFView::MakeTitleString(BPath* path) {
 	delete mTitle;
-	mTitle = new BString("Tsundoku: ");
+	mTitle = new BString("Toji: ");
 
 	BString title = mDoc->Metadata(FZ_META_INFO_TITLE);
 	if (title.Length() > 0)
@@ -443,7 +443,7 @@ PDFView::RestoreWindowFrame(BWindow* w) {
 ///////////////////////////////////////////////////////////////////////////
 bool
 PDFView::LoadFile(entry_ref *ref, FileAttributes *fileAttributes, const char *ownerPassword, const char *userPassword, bool init, bool *encrypted) {
-	BString s(B_TRANSLATE("Tsundoku reading file: "));
+	BString s(B_TRANSLATE("Toji reading file: "));
 	s += ref->name;
 	ShowLoadProgressStatusWindow statusWindow(s.String());
 	EndDoc();
@@ -473,9 +473,9 @@ PDFView::LoadFile(entry_ref *ref, FileAttributes *fileAttributes, const char *ow
 		}
 		return false;
 	}
-#ifdef TSUNDOKU_TESTING
+#ifdef TOJI_TESTING
 	// tests say what to do with legacy attributes (keep or replace) instead of asking
-	if (const char* forced = getenv("TSUNDOKU_LEGACY"))
+	if (const char* forced = getenv("TOJI_LEGACY"))
 		gApp->GetSettings()->SetLegacyAttributes(strcmp(forced, "replace") == 0 ? 2 : 1);
 #endif
 	BepdfApplication::UpdateFileAttributes(mDoc, ref);
@@ -3366,8 +3366,8 @@ PDFView::ConfirmEditable()
 {
 	if (mDoc->IsWritable() || mReadOnlyWarned)
 		return true;
-#ifdef TSUNDOKU_TESTING
-	if (getenv("TSUNDOKU_AUTOCONFIRM") != NULL)
+#ifdef TOJI_TESTING
+	if (getenv("TOJI_AUTOCONFIRM") != NULL)
 		return true;
 #endif
 
@@ -4196,8 +4196,8 @@ PDFView::UpdateSettings(GlobalSettings* settings) {
 }
 
 
-#ifdef TSUNDOKU_TESTING
-// Test hook: "hey Tsundoku 'TSTX' to Window 0 with cmd=select with x1=.. " drives the view like the user does and
+#ifdef TOJI_TESTING
+// Test hook: "hey Toji 'TSTX' to Window 0 with cmd=select with x1=.. " drives the view like the user does and
 // writes what happened to /tmp/ts_test.out.
 static void
 TestLog(const char* format, ...)

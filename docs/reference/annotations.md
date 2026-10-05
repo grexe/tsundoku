@@ -1,6 +1,6 @@
 # Annotations: model, storage and access from other programs
 
-How Tsundoku keeps and describes annotations. For how to use them, see the [README](../../README.md#annotating).
+How Toji keeps and describes annotations. For how to use them, see the [README](../../README.md#annotating).
 
 ## Where annotations live
 

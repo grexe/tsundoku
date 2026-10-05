@@ -42,7 +42,7 @@ public:
 
 // How long things take after a change, in the test build only: TimingStart() starts the clock, TimingMark() writes
 // the time since to /tmp/ts_timing.log.
-#ifdef TSUNDOKU_TESTING
+#ifdef TOJI_TESTING
 void TimingStart();
 void TimingMark(const char* what);
 #else

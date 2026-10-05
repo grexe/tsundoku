@@ -1,11 +1,11 @@
 #!/bin/sh
-# Builds the Tsundoku HPKG from dist/ (run ./build.sh first).
+# Builds the Toji HPKG from dist/ (run ./build.sh first).
 # The package is written to the repository root; set REVISION to override the revision (default 1).
 set -e
 cd "$(dirname "$0")"
 
-APP=dist/Tsundoku
-RDEF=src/app/Tsundoku.rdef
+APP=dist/Toji
+RDEF=src/app/Toji.rdef
 [ -f "$APP" ] || { echo "$APP not found, run ./build.sh first" >&2; exit 1; }
 
 # The package requires the mupdf1.28 package. A binary that has MuPDF built in (./build.sh without the
@@ -24,26 +24,26 @@ grep -q 'variety[[:space:]]*=[[:space:]]*B_APPV_DEVELOPMENT' $RDEF && VERSION="$
 VERSION="$VERSION-${REVISION:-1}"
 ARCH=$(getarch)
 
-# The app finds the start page next to itself, so it goes into apps/Tsundoku.
+# The app finds the start page next to itself, so it goes into apps/Toji.
 STAGE=package-build
 rm -rf $STAGE
-mkdir -p $STAGE/apps/Tsundoku $STAGE/data/deskbar/menu/Applications
-cp -a $APP dist/license $STAGE/apps/Tsundoku/
+mkdir -p $STAGE/apps/Toji $STAGE/data/deskbar/menu/Applications
+cp -a $APP dist/license $STAGE/apps/Toji/
 # the texts of the licenses of what is in the package (AGPL for the program, MIT for lib/, CC BY 4.0 for the artwork)
-cp -a LICENSES/. $STAGE/apps/Tsundoku/license/
-cp -a lib/LICENSE $STAGE/apps/Tsundoku/license/MIT-lib-LICENSE
+cp -a LICENSES/. $STAGE/apps/Toji/license/
+cp -a lib/LICENSE $STAGE/apps/Toji/license/MIT-lib-LICENSE
 mkdir -p $STAGE/data/licenses
 cp -a dist/license/AGPL-3.0 "$STAGE/data/licenses/GNU AGPL v3"
-mkdir $STAGE/apps/Tsundoku/docs
+mkdir $STAGE/apps/Toji/docs
 # the user guide (built from docs/guide by CI, or by build.sh there) is also the start page, shown when no file is given; the
 # package is made without it if it is not there
-for guide in docs/guide/build/tsundoku-guide.pdf docs/guide/build/tsundoku-guide.epub; do
-	[ -f "$guide" ] && cp -a "$guide" $STAGE/apps/Tsundoku/docs/
+for guide in docs/guide/build/toji-guide.pdf docs/guide/build/toji-guide.epub; do
+	[ -f "$guide" ] && cp -a "$guide" $STAGE/apps/Toji/docs/
 done
-ln -s ../../../../apps/Tsundoku/Tsundoku $STAGE/data/deskbar/menu/Applications/Tsundoku
+ln -s ../../../../apps/Toji/Toji $STAGE/data/deskbar/menu/Applications/Toji
 sed -e "s|@VERSION@|$VERSION|g" -e "s|@ARCH@|$ARCH|g" package/PackageInfo.in > $STAGE/.PackageInfo
 
-PACKAGE=tsundoku-$VERSION-$ARCH.hpkg
+PACKAGE=toji-$VERSION-$ARCH.hpkg
 rm -f $PACKAGE
 package create -C $STAGE $PACKAGE
 rm -rf $STAGE

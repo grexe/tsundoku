@@ -43,7 +43,7 @@ void ExitBePDF()
 }
 
 
-#ifdef TSUNDOKU_TESTING
+#ifdef TOJI_TESTING
 #include <OS.h>
 #include <stdio.h>
 

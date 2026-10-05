@@ -4,7 +4,7 @@
 set -e
 cd "$(dirname "$0")"
 OUT=build
-NAME=tsundoku-guide
+NAME=toji-guide
 mkdir -p "$OUT"
 CHAPTERS="metadata.yaml $(ls [0-9][0-9]-*.md)"
 COMMON="-f markdown+smart --number-sections --toc --toc-depth=2"
@@ -15,7 +15,7 @@ echo "HTML"
 pandoc $CHAPTERS $COMMON -t html5 -s --embed-resources --css=guide.css -o "$OUT/$NAME.html"
 
 echo "EPUB 3"
-pandoc $CHAPTERS $COMMON -t epub3 --css=guide.css --epub-cover-image=../../images/tsundoku-logo_small.jpg \
+pandoc $CHAPTERS $COMMON -t epub3 --css=guide.css --epub-cover-image=../../images/toji-logo_small.jpg \
 	-o "$OUT/$NAME.epub"
 
 if command -v typst >/dev/null; then
