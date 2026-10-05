@@ -18,11 +18,12 @@ made they are written to `SEN:annotations` too, so that they can be found and us
 
 ## Identifiers
 
-Every annotation has an identifier. A PDF annotation that was made by another program has none (the `/NM` of the PDF is empty);
-when such a file is opened the annotations get a UUID and the file is saved, so that SEN and others can refer to them in the
-standard way (the setting "Give annotations of other programs an identifier", on by default; a file that cannot be written is
-left as it is). The same can be done from outside with the scripting suite (`UpgradeAnnotations`, see
-[scripting.md](scripting.md)).
+Every annotation has an identifier. A PDF annotation that was made by another program has none (the `/NM` of the PDF is empty).
+When such a file is opened its annotations are described in `SEN:annotations` (the PDF file itself is not changed) and those
+without a name get a UUID, which is kept in the attribute together with a key of the annotation (page, kind, place, text), so
+that the same annotation has the same identifier the next time. The identifiers go into the PDF when it is saved. This is the
+setting "Describe annotations of other programs in the file's attributes" (on by default). The same can be done from outside with
+the scripting suite (`UpgradeAnnotations`, see [scripting.md](scripting.md)).
 
 ## Bookmarks
 

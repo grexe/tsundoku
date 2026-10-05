@@ -148,6 +148,8 @@ BuildPdfAnnotation(Document* document, int pageNo, fz_page* page, fz_stext_page*
 		annotation->AddString("id", IdentifierIri(a.id.String()));
 	annotation->AddString("type", kAnnotation);
 	annotation->AddString("oa:motivatedBy", motivation);
+	// (to give an annotation that has no name of its own the same identifier when the file is opened again)
+	annotation->AddString("sen:key", ForeignAnnotationKey(pageNo, a));
 	AddCreator(annotation, a.author.String(), 0);
 	if (!a.contents.IsEmpty())
 		AddTextualBody(annotation, a.contents.String());

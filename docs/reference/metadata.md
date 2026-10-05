@@ -11,10 +11,13 @@ What Tsundoku writes to the BFS attributes of a file, and how places in a docume
   only the application needs).
 - The attributes are defined for the file types (so that Tracker offers them as columns), and the indices are made on the
   volume.
-- What BePDF made up (`META:*`, `bepdf:*`) is not used any more. A file that has the old `META:` attributes is **left as it
-  is** (Tsundoku writes no metadata to it) unless the setting "Replace existing attributes with standard ones" is on: then the
-  values are moved to the standard names (`META:title` to `dc:title`, ...) and the old attributes are taken away. The setting
-  is off by default. While it is off, the columns of the old names stay defined for PDF files.
+- What BePDF made up (`META:*`, `bepdf:*`) is not used any more, but it is read: legacy bookmarks and the place where you
+  stopped reading are taken over, and the standard attributes are written to such a file in any case. The legacy attributes
+  **stay in place**, so that users can go back to BePDF, unless the user chooses to replace them: the first time a file with
+  legacy attributes is opened Tsundoku asks (Keep them / Replace them, recommended), and the answer is the setting "Replace
+  legacy attributes with standard ones" in the preferences. When they are replaced the values are moved to the standard names
+  (`META:title` to `dc:title`, ...) and the legacy attributes are taken away. While they are kept, the columns of the old names
+  stay defined for PDF files.
 
 ## Attributes
 

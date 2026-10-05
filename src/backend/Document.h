@@ -116,6 +116,10 @@ struct DocAnnotationEntry {
 	BString       excerpt;        // the text a mark covers, or the note
 };
 
+// A key for a PDF annotation that has no name: the same annotation has the same key when the file is opened again.
+class BString;
+BString ForeignAnnotationKey(int page, const struct DocAnnotation& annotation);
+
 class BMessage;
 class BbfInfo;
 class ComicInfo;
@@ -351,10 +355,11 @@ public:
 	int          AnnotationCount();
 	void         SyncAnnotationCount(const char* path);
 
-	// Gives the annotations of a PDF file that have no name (the /NM of the PDF; programs that do not know of identifiers
-	// make them) a UUID, so that the annotations can be referred to in the standard way, and saves the file, which also
-	// describes the annotations in SEN:annotations. Returns how many were named; nothing is done (0) if the file cannot
-	// be saved.
+	// Describes the annotations of a PDF file in the attribute SEN:annotations (the file itself is not changed) and gives those
+	// that have no name (the /NM of the PDF; programs that do not know of identifiers make none) a UUID in memory, so that
+	// the annotations can be referred to in the standard way. The identifiers are kept in the attribute (with a key made of
+	// the page, the kind, the place and the text), so that the same annotation gets the same identifier when the file is
+	// opened again; they go into the file when it is saved. Returns how many were named.
 	int          UpgradeAnnotationIds();
 
 	bool         HasUnsavedChanges();

@@ -33,6 +33,10 @@ namespace Bookmarks {
 // the anchor of a place in a book (empty if the bookmark is of a page), one entry of each for a bookmark.
 void Read(const char* path, BMessage* bookmarks);
 
+// The bookmarks that BePDF kept in the attribute bepdf:bookmarks, in the same form (they are written as annotations when the
+// window is closed).
+void ReadLegacy(const char* path, BMessage* bookmarks);
+
 // Replaces the bookmarks of the file by these (the other annotations are left as they are).
 bool Write(const char* path, const BMessage& bookmarks);
 

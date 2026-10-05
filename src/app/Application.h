@@ -91,6 +91,11 @@ public:
 	static void UpdateAttr(BNode &node, const char* name, type_code type, off_t offset, void* buffer, size_t length);
 	static void UpdatePublished(BNode &node, const char* date);
 	static void UpdateFileAttributes(Document* doc, entry_ref* ref);
+	// Whether the file has attributes from BePDF (META:title, bepdf:zoom, ...). The setting LegacyAttributes (0 = not asked yet,
+	// 1 = keep them besides the standard ones, 2 = replace them) says what to do with them.
+	static bool FileHasLegacyAttributes(entry_ref* ref);
+	// Replaces the legacy attributes of the file by the standard ones if the setting says so.
+	static void ApplyLegacyChoice(entry_ref* ref);
 	
 private:
 	const char* GetVersion(BString &version);

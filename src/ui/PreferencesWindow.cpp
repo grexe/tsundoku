@@ -97,19 +97,20 @@ void PreferencesWindow::SetupView() {
 	windowPos->SetValue(settings->GetRestoreWindowFrame());
 
 	BCheckBox *replaceAttributes = new BCheckBox("replaceAttributes",
-		B_TRANSLATE("Replace existing attributes with standard ones"),
+		B_TRANSLATE("Replace legacy attributes with standard ones"),
 		new BMessage(REPLACE_ATTRIBUTES_CHANGED));
-	replaceAttributes->SetValue(settings->GetReplaceFileAttributes());
-	replaceAttributes->SetToolTip(B_TRANSLATE("Files that have the attributes of BePDF or older versions (META:title, "
-		"META:author, ...) are left as they are, unless this is on: then their values are moved to the standard names "
-		"(dc:title, dc:creator, ...)."));
+	replaceAttributes->SetValue(settings->GetLegacyAttributes() == 2);
+	replaceAttributes->SetToolTip(B_TRANSLATE("Files that BePDF has opened have attributes with its own names "
+		"(META:title, META:author, ...). Tsundoku writes the same information with standard names (dc:title, "
+		"dc:creator, ...) in any case. The legacy attributes are kept unless this is on: then they are removed."));
 
 	BCheckBox *upgradeIds = new BCheckBox("upgradeIds",
-		B_TRANSLATE("Give annotations of other programs an identifier"),
+		B_TRANSLATE("Describe annotations of other programs in the file's attributes"),
 		new BMessage(UPGRADE_IDS_CHANGED));
 	upgradeIds->SetValue(settings->GetUpgradeAnnotationIds());
-	upgradeIds->SetToolTip(B_TRANSLATE("When a PDF file is opened, the annotations that have no name get one, so that "
-		"other programs can refer to them. This saves the file."));
+	upgradeIds->SetToolTip(B_TRANSLATE("When a PDF file is opened, its annotations are described in the attribute "
+		"SEN:annotations, and those that have no name get an identifier, so that other programs can refer to them. "
+		"The PDF file is not changed."));
 
 	BPopUpMenu *openMenu = new BPopUpMenu("openMenu");
 	mOpenInWorkspace = new BMenuField("mOpeninWorkspace",
@@ -264,7 +265,7 @@ void PreferencesWindow::MessageReceived(BMessage *msg) {
 		break;
 	case RESTORE_WINDOW_FRAME_CHANGED: mSettings->SetRestoreWindowFrame(IsOn(msg));
 		break;
-	case REPLACE_ATTRIBUTES_CHANGED: mSettings->SetReplaceFileAttributes(IsOn(msg));
+	case REPLACE_ATTRIBUTES_CHANGED: mSettings->SetLegacyAttributes(IsOn(msg) ? 2 : 1);
 		break;
 	case UPGRADE_IDS_CHANGED: mSettings->SetUpgradeAnnotationIds(IsOn(msg));
 		break;

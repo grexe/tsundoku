@@ -380,8 +380,11 @@ static int32
 Position(int32 form, const BMessage* specifier, int32 n)
 {
 	int32 index;
-	if (form == B_INDEX_SPECIFIER && specifier->FindInt32("index", &index) == B_OK)
+	if (form == B_INDEX_SPECIFIER && specifier->FindInt32("index", &index) == B_OK) {
+		if (index < 0)
+			index += n;		// (-1 is the last)
 		return index >= 0 && index < n ? index : -1;
+	}
 	if (form == B_REVERSE_INDEX_SPECIFIER && specifier->FindInt32("index", &index) == B_OK)
 		return index >= 0 && index < n ? n - 1 - index : -1;
 	return -1;

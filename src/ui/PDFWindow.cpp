@@ -22,6 +22,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <Alert.h>
+#include <Invoker.h>
 #include <ctype.h>
 
 // BeOS
@@ -1843,6 +1845,28 @@ PDFWindow::MessageReceived(BMessage* message)
 			mPSWMessenger = new BMessenger(w);
 		}
 		break;
+	case LEGACY_ATTRIBUTES_CMD: {
+		BAlert* alert = new BAlert(B_TRANSLATE("Attributes of BePDF"),
+			B_TRANSLATE("This file has attributes that BePDF wrote (META:title, bepdf:bookmarks, ...). Tsundoku "
+				"writes the same information with standard names (dc:title, dc:creator, ...) and as annotations, "
+				"and does so in any case.\n\nWhat should happen to the legacy attributes? You can change this "
+				"later in the preferences."),
+			B_TRANSLATE("Keep them"), B_TRANSLATE("Replace them (recommended)"), NULL, B_WIDTH_AS_USUAL,
+			B_IDEA_ALERT);
+		alert->SetShortcut(0, B_ESCAPE);
+		alert->ButtonAt(0)->MakeDefault(true);
+		alert->Go(new BInvoker(new BMessage(LEGACY_ATTRIBUTES_ANSWER_CMD), this));
+		break;
+	}
+	case LEGACY_ATTRIBUTES_ANSWER_CMD: {
+		int32 which = 0;
+		message->FindInt32("which", &which);
+		gApp->GetSettings()->SetLegacyAttributes(which == 1 ? 2 : 1);
+		entry_ref ref;
+		if (mCurrentFile.GetRef(&ref) == B_OK)
+			BepdfApplication::ApplyLegacyChoice(&ref);
+		break;
+	}
 	case SHOW_BOOKMARKS_CMD:
 		if (mShowLeftPanel && mLayerView->Selection() == BOOKMARKS_PANEL)
 			HideLeftPanel();

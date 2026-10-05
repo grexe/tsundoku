@@ -105,6 +105,23 @@ Read(const char* path, BMessage* bookmarks)
 }
 
 
+void
+ReadLegacy(const char* path, BMessage* bookmarks)
+{
+	bookmarks->MakeEmpty();
+	BNode node(path);
+	attr_info info;
+	if (node.InitCheck() != B_OK || node.GetAttrInfo("bepdf:bookmarks", &info) != B_OK || info.size <= 0
+		|| info.size > 1024 * 1024)
+		return;
+	char* buffer = new char[info.size];
+	if (node.ReadAttr("bepdf:bookmarks", B_MESSAGE_TYPE, 0, buffer, info.size) != info.size
+		|| bookmarks->Unflatten(buffer) != B_OK)
+		bookmarks->MakeEmpty();
+	delete[] buffer;
+}
+
+
 bool
 Write(const char* path, const BMessage& bookmarks)
 {

@@ -470,6 +470,18 @@ PDFView::LoadFile(entry_ref *ref, FileAttributes *fileAttributes, const char *ow
 		return false;
 	}
 	BepdfApplication::UpdateFileAttributes(mDoc, ref);
+	// the first time a file with attributes of BePDF is seen, the user is asked what to do with them
+	if (gApp->GetSettings()->GetLegacyAttributes() == 0 && BepdfApplication::FileHasLegacyAttributes(ref)) {
+#ifdef TSUNDOKU_TESTING
+		const char* forced = getenv("TSUNDOKU_LEGACY");
+		if (forced != NULL) {
+			gApp->GetSettings()->SetLegacyAttributes(strcmp(forced, "replace") == 0 ? 2 : 1);
+			BepdfApplication::ApplyLegacyChoice(ref);
+		} else
+#endif
+		if (Window() != NULL)
+			Window()->PostMessage(PDFWindow::LEGACY_ATTRIBUTES_CMD);
+	}
 
 	float left, top;
 	LoadFileSettings(ref, fileAttributes, left, top);

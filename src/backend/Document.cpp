@@ -18,6 +18,8 @@
  */
 
 #include "Document.h"
+#include <map>
+#include "WebAnnotation.h"
 #include "Globals.h"
 
 #include "BbfInfo.h"
@@ -2115,14 +2117,47 @@ Document::SyncAnnotationCount(const char* path)
 }
 
 
+BString
+ForeignAnnotationKey(int page, const DocAnnotation& a)
+{
+	char key[160];
+	snprintf(key, sizeof(key), "%d|%d|%.0f,%.0f,%.0f,%.0f|", page, a.type, a.rect.x0, a.rect.y0, a.rect.x1, a.rect.y1);
+	BString result(key);
+	result.Append(a.contents.String(), a.contents.Length() < 48 ? a.contents.Length() : 48);
+	return result;
+}
+
+
 int
 Document::UpgradeAnnotationIds()
 {
-	if (!fIsPDF || !fCanSave)
+	if (!fIsPDF)
 		return 0;
 
+	// the identifiers that were given before, with the keys of their annotations
+	std::map<BString, BString> given;
+	{
+		BNode node(fPath.String());
+		attr_info info;
+		if (node.InitCheck() == B_OK && node.GetAttrInfo("SEN:annotations", &info) == B_OK && info.size > 0
+			&& info.size < 16 * 1024 * 1024) {
+			char* buffer = new char[info.size];
+			BMessage archive;
+			if (node.ReadAttr("SEN:annotations", info.type, 0, buffer, info.size) == info.size
+				&& archive.Unflatten(buffer) == B_OK) {
+				BMessage item;
+				for (int32 i = 0; archive.FindMessage("oa:Annotation", i, &item) == B_OK; i++) {
+					BString key, id;
+					if (item.FindString("sen:key", &key) == B_OK && item.FindString("id", &id) == B_OK)
+						given[key] = WebAnnotation::IdentifierUuid(id.String());
+				}
+			}
+			delete[] buffer;
+		}
+	}
+
 	DocumentLocker locker(this);
-	int named = 0;
+	int named = 0, total = 0;
 	for (int pageNo = 1; pageNo <= fPageCount; pageNo++) {
 		if (!PageMayHaveAnnotations(pageNo))
 			continue;
@@ -2133,13 +2168,25 @@ Document::UpgradeAnnotationIds()
 			pdf_page* pdfPage = pdf_page_from_fz_page(fContext, page);
 			for (pdf_annot* annot = pdf_first_annot(fContext, pdfPage); annot != NULL;
 					annot = pdf_next_annot(fContext, annot)) {
-				if (!IsListedAnnotation(pdf_annot_type(fContext, annot)))
+				int type = pdf_annot_type(fContext, annot);
+				if (!IsListedAnnotation(type))
 					continue;
+				total++;
 				const char* nm = pdf_annot_name(fContext, annot);
 				if (nm != NULL && nm[0] != '\0')
 					continue;
+				DocAnnotation probe;
+				probe.type = type;
+				probe.rect = pdf_bound_annot(fContext, annot);
+				const char* contents = pdf_annot_contents(fContext, annot);
+				probe.contents = contents != NULL ? contents : "";
+				BString key = ForeignAnnotationKey(pageNo, probe);
+				std::map<BString, BString>::iterator found = given.find(key);
 				char id[48];
-				NewAnnotationId(id, sizeof(id));
+				if (found != given.end())
+					strlcpy(id, found->second.String(), sizeof(id));
+				else
+					NewAnnotationId(id, sizeof(id));
 				pdf_set_annot_name(fContext, annot, id);
 				named++;
 			}
@@ -2150,10 +2197,9 @@ Document::UpgradeAnnotationIds()
 		fz_drop_page(fContext, page);
 	}
 
-	if (named > 0) {
-		fModified = true;
-		Save();
-	}
+	// the description in the attribute (only if there is something to say, or it is not up to date)
+	if (total > 0 || !given.empty())
+		WriteWebAnnotations(fPath.String());
 	return named;
 }
 

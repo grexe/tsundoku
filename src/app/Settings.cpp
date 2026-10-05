@@ -186,6 +186,30 @@ ReadMessageAttribute(BNode& node, const char* name, BMessage* message)
 }
 
 
+// what BePDF kept in separate attributes, as the message that the view state is now
+static void
+ReadLegacyViewState(BNode& node, BMessage* state)
+{
+	int16 zoom;
+	int32 i;
+	float f;
+	if (node.ReadAttr("bepdf:zoom", B_INT16_TYPE, 0, &zoom, sizeof(zoom)) == sizeof(zoom))
+		state->AddInt16("zoom", zoom);
+	if (node.ReadAttr("bepdf:rotation", B_INT32_TYPE, 0, &i, sizeof(i)) == sizeof(i))
+		state->AddInt32("rotation", i);
+	if (node.ReadAttr("bepdf:page", B_INT32_TYPE, 0, &i, sizeof(i)) == sizeof(i))
+		state->AddInt32("page", i);
+	if (node.ReadAttr("bepdf:left", B_FLOAT_TYPE, 0, &f, sizeof(f)) == sizeof(f))
+		state->AddFloat("left", f);
+	if (node.ReadAttr("bepdf:top", B_FLOAT_TYPE, 0, &f, sizeof(f)) == sizeof(f))
+		state->AddFloat("top", f);
+	BMessage anchor;
+	ReadMessageAttribute(node, "bepdf:anchor", &anchor);
+	if (!anchor.IsEmpty())
+		state->AddMessage("anchor", &anchor);
+}
+
+
 bool FileAttributes::Read(entry_ref *ref, GlobalSettings *s) {
 	BNode node(ref);
 	reading = -1;
@@ -208,6 +232,8 @@ bool FileAttributes::Read(entry_ref *ref, GlobalSettings *s) {
 
 	BMessage state;
 	ReadMessageAttribute(node, kViewStateAttribute, &state);
+	if (state.IsEmpty())
+		ReadLegacyViewState(node, &state);
 
 	int16 zoom;
 	hasZoom = state.FindInt16("zoom", &zoom) == B_OK;
@@ -253,6 +279,8 @@ bool FileAttributes::Read(entry_ref *ref, GlobalSettings *s) {
 	// the bookmarks of the reader
 	BPath path(ref);
 	Bookmarks::Read(path.Path(), &bookmarks);
+	if (bookmarks.IsEmpty())
+		Bookmarks::ReadLegacy(path.Path(), &bookmarks);
 	return true;
 }
 
@@ -292,5 +320,13 @@ bool FileAttributes::Write(entry_ref *ref, GlobalSettings *s) {
 
 	BPath path(ref);
 	Bookmarks::Write(path.Path(), bookmarks);
+
+	// the attributes of BePDF are removed if the user chose to replace them (their values are in the new ones now)
+	if (s->GetLegacyAttributes() == 2) {
+		static const char* const kLegacy[] = { "bepdf:pos_x", "bepdf:pos_y", "bepdf:width", "bepdf:height", "bepdf:zoom",
+			"bepdf:rotation", "bepdf:page", "bepdf:left", "bepdf:top", "bepdf:bookmarks", "bepdf:anchor" };
+		for (size_t i = 0; i < sizeof(kLegacy) / sizeof(kLegacy[0]); i++)
+			node.RemoveAttr(kLegacy[i]);
+	}
 	return true;
 }

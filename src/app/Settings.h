@@ -86,7 +86,7 @@
                                                                                                     \
   do(bool,    Bool,   RestorePageNumber,      restorePageNumber,                              true) \
   do(bool,    Bool,   RestoreWindowFrame,     restoreWindowFrame,                            false) \
-  do(bool,    Bool,   ReplaceFileAttributes,  replaceFileAttributes,                        false) \
+  do(int8,    Int8,   LegacyAttributes,       legacyAttributes,                                  0) \
   do(bool,    Bool,   UpgradeAnnotationIds,   upgradeAnnotationIds,                           true) \
   do(bool,    Bool,   ShowLeftPanel,          showLeftPanel,                                  true) \
   do(bool,    Bool,   QuasiFullscreenMode,    quasiFullscreenMode,                            true) \

@@ -27,7 +27,7 @@ bookmark the name is its label.
 | `Selection` | GET | the selected text |
 | `Goto` | DO | `page=N` |
 | `Save`, `Undo`, `Redo` | DO | as the menu entries |
-| `UpgradeAnnotations` | DO | gives annotations that have no identifier one and saves the file; returns how many |
+| `UpgradeAnnotations` | DO | describes the annotations of a PDF in `SEN:annotations` and gives those without an identifier one (the PDF file is not changed); returns how many were named |
 | `AddAnnotation`, `AddBookmark` | DO | make one (see below) |
 
 ### Page
@@ -66,8 +66,9 @@ whole document in any case.
 
 ## Making annotations
 
-`CREATE` of `Annotation` or `Bookmark` on the document works for code. `hey` cannot nest the specifiers of a CREATE, so `do
-AddAnnotation` and `do AddBookmark` do the same:
+`CREATE` of `Annotation` or `Bookmark` works for code (the specifiers `Annotation`, `Document`, `Window 0`, in that order, as
+`tests/ScriptingTest.cpp` does it). `hey` cannot nest the specifiers of a CREATE, so `do AddAnnotation` and `do AddBookmark` do
+the same:
 
 | `kind` | Fields |
 |--------|--------|
@@ -77,6 +78,11 @@ AddAnnotation` and `do AddBookmark` do the same:
 | `ink` | `page`, `points` (an array of `BPoint`), `color` |
 
 The result is the identifier of the new annotation. A bookmark takes `label` and `page`.
+
+## Tests
+
+`tests/ScriptingTest.cpp` uses the scripting messages directly (nested specifiers, filtering by context and page, SET, DELETE,
+Undo, Goto) and prints one line per check: `tests/run_scripting_test.sh <file.pdf>` on Haiku.
 
 ## Examples
 

@@ -263,7 +263,7 @@ InstallMimeTypes(const entry_ref* application, bool keepLegacyColumns)
 	// The same attributes for PDF files. What the type had (the PDF: attributes of the producer and the dates) stays; the
 	// META: attributes of PDF files, which BePDF made up, are the properties of the ontologies now (dc:title, dc:creator,
 	// dc:subject, dc:description, schema:numberOfPages, and PDF:creator for the program that made the document). The files
-	// are not changed unless the user wants that (the setting), so their columns stay as long as it is off.
+	// are not changed unless the user wants that (the setting), so their columns stay as long as they are kept.
 	{
 		BMessage pdfNew;
 		const char* name;
@@ -401,7 +401,7 @@ BepdfApplication::BepdfApplication()
 
 	BPath path(mAppPath);
 	LoadSettings();
-	InstallMimeTypes(mAppRef.device >= 0 ? &mAppRef : NULL, !mSettings->GetReplaceFileAttributes());
+	InstallMimeTypes(mAppRef.device >= 0 ? &mAppRef : NULL, mSettings->GetLegacyAttributes() != 2);
 
 	InitBePDF();
 }
@@ -1018,6 +1018,28 @@ MoveLegacyAttributes(BNode& node)
 
 
 ///////////////////////////////////////////////////////////
+bool
+BepdfApplication::FileHasLegacyAttributes(entry_ref* ref)
+{
+	BNode node(ref);
+	if (node.InitCheck() != B_OK)
+		return false;
+	attr_info info;
+	return HasLegacyAttributes(node) || node.GetAttrInfo("bepdf:bookmarks", &info) == B_OK
+		|| node.GetAttrInfo("bepdf:page", &info) == B_OK;
+}
+
+
+void
+BepdfApplication::ApplyLegacyChoice(entry_ref* ref)
+{
+	BNode node(ref);
+	if (node.InitCheck() == B_OK && gApp->GetSettings()->GetLegacyAttributes() == 2)
+		MoveLegacyAttributes(node);
+}
+
+
+///////////////////////////////////////////////////////////
 void
 BepdfApplication::UpdateAttr(BNode &node, const char *name, type_code type, off_t offset, void *buffer, size_t length) {
 	char dummy[10];
@@ -1058,13 +1080,10 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 	if (settings->GetUpgradeAnnotationIds())
 		doc->UpgradeAnnotationIds();
 
-	// A file that has the attributes of BePDF (and of older versions of this program) is left as it is, unless the user wants
-	// them replaced by the standard ones: then the values are moved.
-	if (HasLegacyAttributes(node)) {
-		if (!settings->GetReplaceFileAttributes())
-			return;
+	// A file that has the attributes of BePDF (and of older versions of this program) gets the standard ones as well. The old
+	// ones stay (so that the user can go back), unless the user chose to replace them: then the values are moved.
+	if (settings->GetLegacyAttributes() == 2 && HasLegacyAttributes(node))
 		MoveLegacyAttributes(node);
-	}
 
 	const bool force_overwrite = (modifiers() & B_COMMAND_KEY) == B_COMMAND_KEY;
 
