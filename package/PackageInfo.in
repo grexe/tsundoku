@@ -20,7 +20,7 @@ licenses		{
 	"GNU AGPL v3"
 }
 urls			{
-	"https://github.com/grexe/tsundoku"
+	"https://github.com/sen-laboratories/tsundoku"
 }
 provides		{
 	tsundoku = @VERSION@

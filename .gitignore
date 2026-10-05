@@ -7,3 +7,4 @@ dist/Tsundoku
 *.hpkg
 package-build/
 3rd-party/
+.DS_Store

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="Tsundoku.png" alt="Tsundoku" width="320">
+  <img src="images/tsundoku-logo_small.jpg" alt="Tsundoku" width="320">
 </p>
 
 # Tsundoku
@@ -217,7 +217,7 @@ uses are taken from the system:
 
 ```
 pkgman install libarchive_devel djvu_devel libzip_devel libxml2_devel freetype_devel harfbuzz_devel openjpeg_devel jbig2dec_devel brotli_devel libjpeg_turbo_devel
-git clone https://github.com/grexe/tsundoku
+git clone https://github.com/sen-laboratories/tsundoku
 cd tsundoku
 ./build.sh
 ```
@@ -232,7 +232,7 @@ To build an installable package (`tsundoku-<version>-<arch>.hpkg`) from the resu
 Tsundoku has no manual of its own yet. Since it works like BePDF, use the [BePDF manual](http://haikuarchives.github.io/BePDF/English/table_of_contents.html)
 for now; "Help" in the application opens it as well.
 
-Bug reports and ideas: [issues](https://github.com/grexe/tsundoku/issues).
+Bug reports and ideas: [issues](https://github.com/sen-laboratories/tsundoku/issues).
 
 ## Credits and license
 

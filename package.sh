@@ -5,7 +5,7 @@ set -e
 cd "$(dirname "$0")"
 
 APP=dist/Tsundoku
-RDEF=tsundoku/beos/Tsundoku.rdef
+RDEF=src/app/Tsundoku.rdef
 [ -f "$APP" ] || { echo "$APP not found, run ./build.sh first" >&2; exit 1; }
 
 # The package requires the mupdf1.28 package. A binary that has MuPDF built in (./build.sh without the

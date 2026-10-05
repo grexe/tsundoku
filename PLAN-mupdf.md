@@ -23,7 +23,7 @@ the HaikuPorts libraries (see M0 results). The text below keeps the reasoning.
    viewing, navigation, search and outline have parity, then merge to `main` and release as 0.2.0. Editing may come
    later (see M4), which would make 0.2.0 view-only for annotations.
 
-## Where XPDF is used today (21k lines in `tsundoku/beos`)
+## Where XPDF is used today (21k lines in `src/app`)
 
 | Area | Files | Lines | What happens to it |
 |------|-------|-------|--------------------|

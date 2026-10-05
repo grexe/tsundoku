@@ -43,4 +43,4 @@ case "$CC" in
 		;;
 esac
 
-make -C tsundoku -j"$(nproc)" "$@"
+make -C src -j"$(nproc)" "$@"

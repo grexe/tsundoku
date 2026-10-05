@@ -32,51 +32,51 @@ APP_MIME_SIG = application/x-vnd.sen-labs.Tsundoku
 #	means this Makefile will not work correctly if two source files with the
 #	same name (source.c or source.cpp) are included from different directories.
 #	Also note that spaces in folder names do not work well with this Makefile.
-SRCS = beos/AnnotationsView.cpp \
-	beos/AttachmentsView.cpp \
-	beos/BusyWindow.cpp \
-	beos/CachedPage.cpp \
-	beos/Document.cpp \
-	beos/DjvuDocument.cpp \
-	beos/DocumentDraw.cpp \
-	beos/DocumentReflow.cpp \
-	beos/DocumentWeb.cpp \
-	beos/EntryChangedMonitor.cpp \
-	beos/BbfInfo.cpp \
-	beos/ComicArchive.cpp \
-	beos/ComicInfo.cpp \
-	beos/EpubCfi.cpp \
-	beos/EpubInfo.cpp \
-	beos/FileInfoWindow.cpp \
-	beos/FindTextWindow.cpp \
-	beos/Globals.cpp \
-	beos/Application.cpp \
-	beos/History.cpp \
-	beos/LayoutUtils.cpp \
-	beos/NoteWindow.cpp \
-	beos/OutlinesWindow.cpp \
-	beos/PageLayout.cpp \
-	beos/PDFPrint.cpp \
-	beos/PDFSearch.cpp \
-	beos/PDFView.cpp \
-	beos/PDFWindow.cpp \
-	beos/PageRenderer.cpp \
-	beos/PasswordWindow.cpp \
-	beos/PreferencesWindow.cpp \
-	beos/SidebarTabView.cpp \
-	beos/PrintSettingsWindow.cpp \
-	beos/PrintingProgressWindow.cpp \
-	beos/Settings.cpp \
-	beos/StatusWindow.cpp \
-	beos/TraceWindow.cpp \
-	beos/WebAnnotation.cpp \
-	beos/utils/EntryMenuItem.cpp \
-	beos/utils/ResourceLoader.cpp \
-	beos/utils/Thread.cpp
+SRCS = app/AnnotationsView.cpp \
+	app/AttachmentsView.cpp \
+	app/BusyWindow.cpp \
+	app/CachedPage.cpp \
+	app/Document.cpp \
+	app/DjvuDocument.cpp \
+	app/DocumentDraw.cpp \
+	app/DocumentReflow.cpp \
+	app/DocumentWeb.cpp \
+	app/EntryChangedMonitor.cpp \
+	app/BbfInfo.cpp \
+	app/ComicArchive.cpp \
+	app/ComicInfo.cpp \
+	app/EpubCfi.cpp \
+	app/EpubInfo.cpp \
+	app/FileInfoWindow.cpp \
+	app/FindTextWindow.cpp \
+	app/Globals.cpp \
+	app/Application.cpp \
+	app/History.cpp \
+	app/LayoutUtils.cpp \
+	app/NoteWindow.cpp \
+	app/OutlinesWindow.cpp \
+	app/PageLayout.cpp \
+	app/PDFPrint.cpp \
+	app/PDFSearch.cpp \
+	app/PDFView.cpp \
+	app/PDFWindow.cpp \
+	app/PageRenderer.cpp \
+	app/PasswordWindow.cpp \
+	app/PreferencesWindow.cpp \
+	app/SidebarTabView.cpp \
+	app/PrintSettingsWindow.cpp \
+	app/PrintingProgressWindow.cpp \
+	app/Settings.cpp \
+	app/StatusWindow.cpp \
+	app/TraceWindow.cpp \
+	app/WebAnnotation.cpp \
+	app/utils/EntryMenuItem.cpp \
+	app/utils/ResourceLoader.cpp \
+	app/utils/Thread.cpp
 
 #	Specify the resource definition files to use. Full or relative paths can be
 #	used.
-RDEFS = beos/Tsundoku.rdef
+RDEFS = app/Tsundoku.rdef
 
 #	Specify the resource files to use. Full or relative paths can be used.
 #	Both RDEFS and RSRCS can be utilized in the same Makefile.

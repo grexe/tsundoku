@@ -1793,10 +1793,10 @@ PDFWindow::MessageReceived(BMessage* message)
 		LaunchHTMLBrowser("http://haikuarchives.github.io/BePDF/English/table_of_contents.html");
 		break;
 	case HOME_PAGE_CMD:
-		LaunchHTMLBrowser("https://github.com/grexe/tsundoku");
+		LaunchHTMLBrowser("https://github.com/sen-laboratories/tsundoku");
 		break;
 	case BUG_REPORT_CMD:
-		LaunchHTMLBrowser("https://github.com/grexe/tsundoku/issues/");
+		LaunchHTMLBrowser("https://github.com/sen-laboratories/tsundoku/issues/");
 		break;
 	case PREFERENCES_FILE_CMD:
 		mPreferencesItem->SetEnabled(false);
