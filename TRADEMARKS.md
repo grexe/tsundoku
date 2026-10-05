@@ -35,6 +35,8 @@ names, too.
 
 ## Notes
 
+- Other parties use or have registered the word *Tsundoku* in other fields and countries (clothing, shops, books, and software in
+  France). SEN Labs claims no rights against them, and this policy is only about this software.
 - *Tsundoku* is also an ordinary Japanese word (積ん読, letting books pile up unread), and other programs use it as a name. SEN
   Labs claims it only as the name of this document reader for Haiku, not as a word.
 - Questions, and requests for another use: open an issue on

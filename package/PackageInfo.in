@@ -18,6 +18,7 @@ copyrights		{
 }
 licenses		{
 	"GNU AGPL v3"
+	"MIT"
 }
 urls			{
 	"https://github.com/sen-laboratories/tsundoku"

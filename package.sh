@@ -29,6 +29,9 @@ STAGE=package-build
 rm -rf $STAGE
 mkdir -p $STAGE/apps/Tsundoku $STAGE/data/deskbar/menu/Applications
 cp -a $APP dist/license $STAGE/apps/Tsundoku/
+# the texts of the licenses of what is in the package (AGPL for the program, MIT for lib/, CC BY 4.0 for the artwork)
+cp -a LICENSES/. $STAGE/apps/Tsundoku/license/
+cp -a lib/LICENSE $STAGE/apps/Tsundoku/license/MIT-lib-LICENSE
 mkdir -p $STAGE/data/licenses
 cp -a dist/license/AGPL-3.0 "$STAGE/data/licenses/GNU AGPL v3"
 mkdir $STAGE/apps/Tsundoku/docs
