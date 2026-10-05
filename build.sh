@@ -44,3 +44,9 @@ case "$CC" in
 esac
 
 make -C src -j"$(nproc)" "$@"
+
+# The user guide is the start page of the program and is found in docs/ next to it (CI builds it, see docs/guide/build.sh)
+if [ -f docs/guide/build/toji-guide.pdf ]; then
+	mkdir -p dist/docs
+	cp -f docs/guide/build/toji-guide.pdf dist/docs/
+fi
