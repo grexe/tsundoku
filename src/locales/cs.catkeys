@@ -1,4 +1,4 @@
-1	Czech	application/x-vnd.sen-labs.Toji	2450431064
+1	Czech	application/x-vnd.sen-labs.Tsundoku	2450431064
  in	PrintSettingsWindow		 v
 All pages	PrintSettingsWindow		Všechny stránky
 Color	PrintSettingsWindow		Barevný
@@ -26,8 +26,8 @@ Zoom must be between 25 and 400!	PrintSettingsWindow		Zvětšení musí být mez
 [link type 'movie' not supported]	PDFView		[typ odkazu 'film' není podporován]
 [unknown link]	PDFView		[neznámý odkaz]
 Annotation	PDFView		Poznámka
-Toji reading file: 	PDFView		Toji načítá soubor:
-Toji: Launch	PDFView		Toji: Spustit
+Tsundoku reading file: 	PDFView		Tsundoku načítá soubor:
+Tsundoku: Launch	PDFView		Tsundoku: Spustit
 Cancel	PDFView		Zrušit
 Copy link	PDFView		Kopírovat odkaz
 Delete	PDFView		Smazat
@@ -55,8 +55,8 @@ Save selected attachment to file	AttachmentView		Uložit zvolené přílohy do s
 Save selected attachments into directory	AttachmentView		Uložit zvolené přílohy do adresáře
 Saving attachment(s):	AttachmentView		Ukládám přílohy:
 Abort	PrintingProgressWindow		Přerušit
-Toji printing	PrintingProgressWindow		Toji tiskne
-Toji printing document: 	PrintingProgressWindow		Toji tiskne dokument:
+Tsundoku printing	PrintingProgressWindow		Tsundoku tiskne
+Tsundoku printing document: 	PrintingProgressWindow		Tsundoku tiskne dokument:
 Page:	PrintingProgressWindow		Stránka:
 Page: %d	PrintingProgressWindow		Stránka: %d
 Stop	PrintingProgressWindow		Zastavit
@@ -90,7 +90,7 @@ Title:	FileInfoWindow		Název:
 Type	FileInfoWindow		Typ
 Version:	FileInfoWindow		Verze:
 Yes	FileInfoWindow		Ano
-About Toji…	PDFWindow		O Toji…
+About Tsundoku…	PDFWindow		O Tsundoku…
 Add	PDFWindow		Přidat
 Add circle annotation	PDFWindow		Přidat kruh
 Add comment text annotation	PDFWindow		Přidat komentář
@@ -120,7 +120,7 @@ Add widget annotation	PDFWindow		Přidat widgetovou poznámku
 Back	PDFWindow		Zpět
 Back in page history list	PDFWindow		Zpět v historii stránek
 Bookmark	PDFWindow		Záložka
-Can not overwrite a PDF file that's currently opened in Toji! Please choose another file name.	PDFWindow		Nelze přepisovat PDF soubor, který je otevřen v Toji! Zvolte jiný soubor.
+Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Nelze přepisovat PDF soubor, který je otevřen v Tsundoku! Zvolte jiný soubor.
 Close	PDFWindow		Zavřít
 Copy selection	PDFWindow		Kopírovat výběr
 Could not write PDF file!	PDFWindow		PDF soubor nelze zapsat!
@@ -221,8 +221,8 @@ Title:	AnnotationWindow		Název:
 User fonts	AnnotationWindow		Uživatelská písma
 Will take effect at next program launch.	AnnotationWindow		Projeví se při příštím spuštění programu.
 Alpha	BepdfApplication		Alfa
-Toji is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Toji je založeno na XPDF %s, %s.
-Toji: Error opening file!	BepdfApplication		Toji: Chyba otevření souboru!
+Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku je založeno na XPDF %s, %s.
+Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Chyba otevření souboru!
 Beta	BepdfApplication		Beta
 Close	BepdfApplication		Zavřít
 Development	BepdfApplication		Vývoj
@@ -236,7 +236,7 @@ Auto open	TraceWindow		Automaticky otevřít
 Clear	TraceWindow		Vymazat
 Error messages	TraceWindow		Chybové hlášky
 Floating	TraceWindow		Plovoucí
-Toji status	StatusWindow		Toji stav
+Tsundoku status	StatusWindow		Tsundoku stav
 Enter Password	PasswordWindow		Vložit heslo
 OK	PasswordWindow		OK
 Owner password	PasswordWindow		Heslo vlastníka

@@ -1,4 +1,4 @@
-1	Spanish	application/x-vnd.sen-labs.Toji	2450431064
+1	Spanish	application/x-vnd.sen-labs.Tsundoku	2450431064
  in	PrintSettingsWindow		 en
 All pages	PrintSettingsWindow		Todas las páginas
 Color	PrintSettingsWindow		Color
@@ -26,8 +26,8 @@ Zoom must be between 25 and 400!	PrintSettingsWindow		El nivel de aumento debe e
 [link type 'movie' not supported]	PDFView		[enlace tipo 'animación' no soportado]
 [unknown link]	PDFView		[enlace desconocido]
 Annotation	PDFView		Anotación
-Toji reading file: 	PDFView		Toji leyendo archivo: 
-Toji: Launch	PDFView		Toji: Lanzar
+Tsundoku reading file: 	PDFView		Tsundoku leyendo archivo: 
+Tsundoku: Launch	PDFView		Tsundoku: Lanzar
 Cancel	PDFView		Cancelar
 Copy link	PDFView		Copiar enlace
 Delete	PDFView		Borrar
@@ -55,8 +55,8 @@ Save selected attachment to file	AttachmentView		Guardar adjunto seleccionado a 
 Save selected attachments into directory	AttachmentView		Guardar adjuntos seleccionados en el directorio
 Saving attachment(s):	AttachmentView		Guardando adjunto(s):
 Abort	PrintingProgressWindow		Cancelar
-Toji printing	PrintingProgressWindow		Toji imprimiendo
-Toji printing document: 	PrintingProgressWindow		Toji imprimiendo documento: 
+Tsundoku printing	PrintingProgressWindow		Tsundoku imprimiendo
+Tsundoku printing document: 	PrintingProgressWindow		Tsundoku imprimiendo documento: 
 Page:	PrintingProgressWindow		Página:
 Page: %d	PrintingProgressWindow		Página: %d
 Stop	PrintingProgressWindow		Detener
@@ -90,7 +90,7 @@ Title:	FileInfoWindow		Título:
 Type	FileInfoWindow		Tipo
 Version:	FileInfoWindow		Versión:
 Yes	FileInfoWindow		Sí
-About Toji…	PDFWindow		Acerca de Toji…
+About Tsundoku…	PDFWindow		Acerca de Tsundoku…
 Add	PDFWindow		Insertar
 Add circle annotation	PDFWindow		Añadir círculo de anotación
 Add comment text annotation	PDFWindow		Insertar anotación de comentario de texto
@@ -120,7 +120,7 @@ Add widget annotation	PDFWindow		Insertar artilugio de anotación
 Back	PDFWindow		Atrás
 Back in page history list	PDFWindow		Atrás en el historial de página
 Bookmark	PDFWindow		Marcador
-Can not overwrite a PDF file that's currently opened in Toji! Please choose another file name.	PDFWindow		No se puede sobre escribir un PDF que está actualmetne en uso. Por favor, elige otro nombre de archivo.
+Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		No se puede sobre escribir un PDF que está actualmetne en uso. Por favor, elige otro nombre de archivo.
 Close	PDFWindow		Cerrar
 Copy selection	PDFWindow		Copiar selección
 Could not write PDF file!	PDFWindow		No se puede escribir el archivo PDF.
@@ -221,8 +221,8 @@ Title:	AnnotationWindow		Título:
 User fonts	AnnotationWindow		Fuentes de usuario
 Will take effect at next program launch.	AnnotationWindow		Se aplicará en el próximo arranque del programa.
 Alpha	BepdfApplication		Alfa
-Toji is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Toji está basado en XPDF %s, %s.
-Toji: Error opening file!	BepdfApplication		Toji: Error al abrir archivo
+Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku está basado en XPDF %s, %s.
+Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Error al abrir archivo
 Beta	BepdfApplication		Beta
 Close	BepdfApplication		Cerrar
 Development	BepdfApplication		Desarrollo
@@ -236,7 +236,7 @@ Auto open	TraceWindow		Auto apertura
 Clear	TraceWindow		Limpiar
 Error messages	TraceWindow		Mensajes de error
 Floating	TraceWindow		Flotante
-Toji status	StatusWindow		Estado de Toji
+Tsundoku status	StatusWindow		Estado de Tsundoku
 Enter Password	PasswordWindow		Introducir contraseña
 OK	PasswordWindow		Aceptar
 Owner password	PasswordWindow		Contaseña del propietario

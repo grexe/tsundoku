@@ -1,4 +1,4 @@
-1	Indonesian	application/x-vnd.sen-labs.Toji	2450431064
+1	Indonesian	application/x-vnd.sen-labs.Tsundoku	2450431064
  in	PrintSettingsWindow		dalam
 All pages	PrintSettingsWindow		Semua halaman
 Color	PrintSettingsWindow		Warna
@@ -26,8 +26,8 @@ Zoom must be between 25 and 400!	PrintSettingsWindow		Perbesaran harus diantara 
 [link type 'movie' not supported]	PDFView		[tipe tautan 'film' tidak didukung]
 [unknown link]	PDFView		[tautan tak-diketahui]
 Annotation	PDFView		Anotasi
-Toji reading file: 	PDFView		Toji membaca file:
-Toji: Launch	PDFView		Toji: Luncurkan
+Tsundoku reading file: 	PDFView		Tsundoku membaca file:
+Tsundoku: Launch	PDFView		Tsundoku: Luncurkan
 Cancel	PDFView		Batal
 Copy link	PDFView		Salin Tautan
 Delete	PDFView		Hapus
@@ -55,8 +55,8 @@ Save selected attachment to file	AttachmentView		Simpan lampiran yang dipilih ke
 Save selected attachments into directory	AttachmentView		Simpan lampiran yang dipilih ke dalam direktori
 Saving attachment(s):	AttachmentView		Simpan lampiran:
 Abort	PrintingProgressWindow		Batal
-Toji printing	PrintingProgressWindow		Pencetakan Toji
-Toji printing document: 	PrintingProgressWindow		Pencetakan dokumen Toji:
+Tsundoku printing	PrintingProgressWindow		Pencetakan Tsundoku
+Tsundoku printing document: 	PrintingProgressWindow		Pencetakan dokumen Tsundoku:
 Page:	PrintingProgressWindow		Halaman:
 Page: %d	PrintingProgressWindow		Halaman: %d
 Stop	PrintingProgressWindow		Berhenti
@@ -90,7 +90,7 @@ Title:	FileInfoWindow		Judul:
 Type	FileInfoWindow		Tipe
 Version:	FileInfoWindow		Versi:
 Yes	FileInfoWindow		Ya
-About Toji…	PDFWindow		Tentang Toji…
+About Tsundoku…	PDFWindow		Tentang Tsundoku…
 Add	PDFWindow		Tambah
 Add circle annotation	PDFWindow		Tambahkan anotasi lingkaran
 Add comment text annotation	PDFWindow		Tambahkan anotasi teks komentar
@@ -120,7 +120,7 @@ Add widget annotation	PDFWindow		Tambahkan anotasi widget
 Back	PDFWindow		Kembali
 Back in page history list	PDFWindow		Kembali ke daftar riwayat halaman
 Bookmark	PDFWindow		Penunjuk halaman buku
-Can not overwrite a PDF file that's currently opened in Toji! Please choose another file name.	PDFWindow		Tidak dapat menimpa file PDF yang saat ini dibuka di Toji! Silakan pilih nama file lain.
+Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Tidak dapat menimpa file PDF yang saat ini dibuka di Tsundoku! Silakan pilih nama file lain.
 Close	PDFWindow		Tutup
 Copy selection	PDFWindow		Salin pilihan
 Could not write PDF file!	PDFWindow		Tidak dapat menulis file PDF!
@@ -221,8 +221,8 @@ Title:	AnnotationWindow		Judul:
 User fonts	AnnotationWindow		Huruf user
 Will take effect at next program launch.	AnnotationWindow		Akan berlaku pada peluncuran program berikutnya.
 Alpha	BepdfApplication		Alfa
-Toji is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Toji didasarkan pada XPDF %s, %s.
-Toji: Error opening file!	BepdfApplication		Toji: Ada kesalahan saat buka berkas!
+Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku didasarkan pada XPDF %s, %s.
+Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Ada kesalahan saat buka berkas!
 Beta	BepdfApplication		Beta
 Close	BepdfApplication		Tutup
 Development	BepdfApplication		Pengembangan
@@ -236,7 +236,7 @@ Auto open	TraceWindow		buka Auto
 Clear	TraceWindow		Bersih
 Error messages	TraceWindow		Pesan kesalahan
 Floating	TraceWindow		Mengambang
-Toji status	StatusWindow		status Toji
+Tsundoku status	StatusWindow		status Tsundoku
 Enter Password	PasswordWindow		Masukkan sandi
 OK	PasswordWindow		OKE
 Owner password	PasswordWindow		Sandi pemilik

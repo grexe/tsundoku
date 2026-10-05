@@ -1,4 +1,4 @@
-1	Japanese	application/x-vnd.sen-labs.Toji	2450431064
+1	Japanese	application/x-vnd.sen-labs.Tsundoku	2450431064
  in	PrintSettingsWindow		 インチ
 All pages	PrintSettingsWindow		すべてのページ
 Color	PrintSettingsWindow		カラー
@@ -26,8 +26,8 @@ Zoom must be between 25 and 400!	PrintSettingsWindow		倍率は 25 ～ 400の間
 [link type 'movie' not supported]	PDFView		['movie'リンクタイプはサポートされていません]
 [unknown link]	PDFView		[不明なリンク]
 Annotation	PDFView		注釈
-Toji reading file: 	PDFView		Toji ファイルを読み込んでいます: 
-Toji: Launch	PDFView		Toji: 開始
+Tsundoku reading file: 	PDFView		Tsundoku ファイルを読み込んでいます: 
+Tsundoku: Launch	PDFView		Tsundoku: 開始
 Cancel	PDFView		中止
 Copy link	PDFView		リンク先のロケーションをコピー
 Delete	PDFView		削除
@@ -55,8 +55,8 @@ Save selected attachment to file	AttachmentView		ファイルに選択した添�
 Save selected attachments into directory	AttachmentView		ディレクトリに選択した添付ファイルを保存
 Saving attachment(s):	AttachmentView		添付ファイルの保存中:
 Abort	PrintingProgressWindow		中止
-Toji printing	PrintingProgressWindow		Toji 印刷
-Toji printing document: 	PrintingProgressWindow		Toji 印刷文書: 
+Tsundoku printing	PrintingProgressWindow		Tsundoku 印刷
+Tsundoku printing document: 	PrintingProgressWindow		Tsundoku 印刷文書: 
 Page:	PrintingProgressWindow		ページ:
 Page: %d	PrintingProgressWindow		ページ: %d
 Stop	PrintingProgressWindow		停止
@@ -90,7 +90,7 @@ Title:	FileInfoWindow		タイトル:
 Type	FileInfoWindow		種類
 Version:	FileInfoWindow		PDF のバージョン:
 Yes	FileInfoWindow		はい
-About Toji…	PDFWindow		Toji について…
+About Tsundoku…	PDFWindow		Tsundoku について…
 Add	PDFWindow		追加
 Add circle annotation	PDFWindow		円の追加
 Add comment text annotation	PDFWindow		コメントの追加
@@ -120,7 +120,7 @@ Add widget annotation	PDFWindow		ウィジェットの追加
 Back	PDFWindow		前の表示に移動
 Back in page history list	PDFWindow		前の画面
 Bookmark	PDFWindow		しおり
-Can not overwrite a PDF file that's currently opened in Toji! Please choose another file name.	PDFWindow		Toji で開いた PDF ファイルが上書きできません! 別のファイル名を選んでください。
+Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Tsundoku で開いた PDF ファイルが上書きできません! 別のファイル名を選んでください。
 Close	PDFWindow		閉じる
 Copy selection	PDFWindow		選択部分をコピー
 Could not write PDF file!	PDFWindow		PDF ファイルを書き込めません!
@@ -186,10 +186,10 @@ Show annotation toolbar	PDFWindow		注釈ツールバーの表示
 Show attachments	PDFWindow		添付ファイルを表示
 Show bookmarks	PDFWindow		しおりを表示
 Show error messages	PDFWindow		エラーメッセージを表示
-Show help…	PDFWindow		Toji のヘルプ…
+Show help…	PDFWindow		Tsundoku のヘルプ…
 Show page list	PDFWindow		ページリストを表示
 View	PDFWindow		表示
-Visit homepage…	PDFWindow		Toji ホームページへアクセス…
+Visit homepage…	PDFWindow		Tsundoku ホームページへアクセス…
 Warning	PDFWindow		警告
 Zoom	PDFWindow		ズーム
 Zoom in	PDFWindow		ズームイン
@@ -221,8 +221,8 @@ Title:	AnnotationWindow		タイトル:
 User fonts	AnnotationWindow		ユーザフォント
 Will take effect at next program launch.	AnnotationWindow		次回起動時に有効になります。
 Alpha	BepdfApplication		α
-Toji is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Toji は XPDF %s, %s を基にしています。
-Toji: Error opening file!	BepdfApplication		Toji: エラー! ファイルを開けません
+Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku は XPDF %s, %s を基にしています。
+Tsundoku: Error opening file!	BepdfApplication		Tsundoku: エラー! ファイルを開けません
 Beta	BepdfApplication		β
 Close	BepdfApplication		閉じる
 Development	BepdfApplication		開発版
@@ -236,7 +236,7 @@ Auto open	TraceWindow		自動表示
 Clear	TraceWindow		消去
 Error messages	TraceWindow		エラーメッセージ
 Floating	TraceWindow		手前に表示
-Toji status	StatusWindow		Toji ステータス
+Tsundoku status	StatusWindow		Tsundoku ステータス
 Enter Password	PasswordWindow		パスワードの入力
 OK	PasswordWindow		OK
 Owner password	PasswordWindow		マスタパスワード

@@ -1,4 +1,4 @@
-1	Romanian	application/x-vnd.sen-labs.Toji	2450431064
+1	Romanian	application/x-vnd.sen-labs.Tsundoku	2450431064
  in	PrintSettingsWindow		în
 All pages	PrintSettingsWindow		Toate paginile
 Color	PrintSettingsWindow		Culoare
@@ -26,8 +26,8 @@ Zoom must be between 25 and 400!	PrintSettingsWindow		Focalizarea trebuie să fi
 [link type 'movie' not supported]	PDFView		[legătura de tip 'movie' nu este suportată]
 [unknown link]	PDFView		[legătură necunoscută]
 Annotation	PDFView		Adnotare
-Toji reading file: 	PDFView		Fișierul de citire Toji:
-Toji: Launch	PDFView		Toji: Lansare
+Tsundoku reading file: 	PDFView		Fișierul de citire Tsundoku:
+Tsundoku: Launch	PDFView		Tsundoku: Lansare
 Cancel	PDFView		Anulează
 Copy link	PDFView		Copiază legătura
 Delete	PDFView		Șterge
@@ -55,8 +55,8 @@ Save selected attachment to file	AttachmentView		Salvează atașamentul selectat
 Save selected attachments into directory	AttachmentView		Salvează atașamentele selectate în dosar
 Saving attachment(s):	AttachmentView		Se salvează atașamentul(ele):
 Abort	PrintingProgressWindow		Anulează
-Toji printing	PrintingProgressWindow		Tipărire Toji
-Toji printing document: 	PrintingProgressWindow		Document Toji de tipărit:
+Tsundoku printing	PrintingProgressWindow		Tipărire Tsundoku
+Tsundoku printing document: 	PrintingProgressWindow		Document Tsundoku de tipărit:
 Page:	PrintingProgressWindow		Pagină:
 Page: %d	PrintingProgressWindow		Pagină: %d
 Stop	PrintingProgressWindow		Oprește
@@ -90,7 +90,7 @@ Title:	FileInfoWindow		Titlu:
 Type	FileInfoWindow		Tip
 Version:	FileInfoWindow		Versiune:
 Yes	FileInfoWindow		Da
-About Toji…	PDFWindow		Despre Toji…
+About Tsundoku…	PDFWindow		Despre Tsundoku…
 Add	PDFWindow		Adaugă
 Add circle annotation	PDFWindow		Adaugă adnotare cerc
 Add comment text annotation	PDFWindow		Adaugă adnotare comentariu text
@@ -120,7 +120,7 @@ Add widget annotation	PDFWindow		Adaugă adnotare widget
 Back	PDFWindow		Înapoi
 Back in page history list	PDFWindow		Înapoi în lista de istoric a paginii
 Bookmark	PDFWindow		Favorit
-Can not overwrite a PDF file that's currently opened in Toji! Please choose another file name.	PDFWindow		Nu se poate suprascrie un fișier PDF care este deschis în prezent în Toji! Alegeți un alt nume de fișier.
+Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Nu se poate suprascrie un fișier PDF care este deschis în prezent în Tsundoku! Alegeți un alt nume de fișier.
 Close	PDFWindow		Închide
 Copy selection	PDFWindow		Copiază selecția
 Could not write PDF file!	PDFWindow		Nu s-a putut scrie fișierul PDF!
@@ -221,8 +221,8 @@ Title:	AnnotationWindow		Titlu:
 User fonts	AnnotationWindow		Fonturi de utilizator
 Will take effect at next program launch.	AnnotationWindow		Va intra în vigoare la următoarea lansare a programului.
 Alpha	BepdfApplication		Alfa
-Toji is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Toji este bazat pe XPDF %s, %s.
-Toji: Error opening file!	BepdfApplication		Toji: Eroare la deschiderea fișierului!
+Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku este bazat pe XPDF %s, %s.
+Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Eroare la deschiderea fișierului!
 Beta	BepdfApplication		Beta
 Close	BepdfApplication		Închide
 Development	BepdfApplication		Dezvoltare
@@ -236,7 +236,7 @@ Auto open	TraceWindow		Deschide automat
 Clear	TraceWindow		Eliberare
 Error messages	TraceWindow		Mesaje de eroare
 Floating	TraceWindow		Plutitor
-Toji status	StatusWindow		Stare Toji
+Tsundoku status	StatusWindow		Stare Tsundoku
 Enter Password	PasswordWindow		Introduceți parola
 OK	PasswordWindow		OK
 Owner password	PasswordWindow		Parolă deținător

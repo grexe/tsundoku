@@ -1,4 +1,4 @@
-1	Thai	application/x-vnd.sen-labs.Toji	2450431064
+1	Thai	application/x-vnd.sen-labs.Tsundoku	2450431064
  in	PrintSettingsWindow		ใน
 All pages	PrintSettingsWindow		ทุกหน้า
 Color	PrintSettingsWindow		สี
@@ -26,8 +26,8 @@ Zoom must be between 25 and 400!	PrintSettingsWindow		การขยายจ�
 [link type 'movie' not supported]	PDFView		ไม่รองรับประเภทลิงก์ 'ภาพยนตร์']
 [unknown link]	PDFView		[ลิงค์ที่ไม่รู้จัก]
 Annotation	PDFView		คำอธิบายประกอบ
-Toji reading file: 	PDFView		อ่านไฟล์ Toji:
-Toji: Launch	PDFView		Toji: เปิด
+Tsundoku reading file: 	PDFView		อ่านไฟล์ Tsundoku:
+Tsundoku: Launch	PDFView		Tsundoku: เปิด
 Cancel	PDFView		ยกเลิก
 Copy link	PDFView		คัดลอกลิงค์
 Delete	PDFView		ลบ
@@ -55,8 +55,8 @@ Save selected attachment to file	AttachmentView		บันทึกไฟล์�
 Save selected attachments into directory	AttachmentView		บันทึกไฟล์แนบที่เลือกไว้ในไดเรกทอรี
 Saving attachment(s):	AttachmentView		กำลังบันทึกไฟล์แนบ:
 Abort	PrintingProgressWindow		ยกเลิก
-Toji printing	PrintingProgressWindow		การพิมพ์ Toji
-Toji printing document: 	PrintingProgressWindow		เอกสารการพิมพ์ Toji:
+Tsundoku printing	PrintingProgressWindow		การพิมพ์ Tsundoku
+Tsundoku printing document: 	PrintingProgressWindow		เอกสารการพิมพ์ Tsundoku:
 Page:	PrintingProgressWindow		หน้า:
 Page: %d	PrintingProgressWindow		หน้า: %d
 Stop	PrintingProgressWindow		หยุด
@@ -90,7 +90,7 @@ Title:	FileInfoWindow		ชื่อ:
 Type	FileInfoWindow		ชนิด
 Version:	FileInfoWindow		เวอร์ชั่น:
 Yes	FileInfoWindow		ใช่
-About Toji…	PDFWindow		เกี่ยวกับ Toji…
+About Tsundoku…	PDFWindow		เกี่ยวกับ Tsundoku…
 Add	PDFWindow		เพิ่ม
 Add circle annotation	PDFWindow		เพิ่มคำอธิบายประกอบวงกลม
 Add comment text annotation	PDFWindow		เพิ่มคำอธิบายประกอบข้อความความคิดเห็น
@@ -120,7 +120,7 @@ Add widget annotation	PDFWindow		เพิ่มคำอธิบายปร�
 Back	PDFWindow		ย้อนกลับ
 Back in page history list	PDFWindow		ย้อนกลับไปในรายการประวัติหน้า
 Bookmark	PDFWindow		คั่นหน้า
-Can not overwrite a PDF file that's currently opened in Toji! Please choose another file name.	PDFWindow		ไม่สามารถเขียนทับไฟล์ PDF ที่เปิดอยู่ใน Toji ได้ในขณะนี้! กรุณาเลือกชื่อไฟล์อื่น
+Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		ไม่สามารถเขียนทับไฟล์ PDF ที่เปิดอยู่ใน Tsundoku ได้ในขณะนี้! กรุณาเลือกชื่อไฟล์อื่น
 Close	PDFWindow		ปิด
 Copy selection	PDFWindow		คัดลอกส่วนที่เลือก
 Could not write PDF file!	PDFWindow		ไม่สามารถเขียนไฟล์ PDF ได้!
@@ -221,8 +221,8 @@ Title:	AnnotationWindow		ชื่อ:
 User fonts	AnnotationWindow		แบบอักษรของผู้ใช้
 Will take effect at next program launch.	AnnotationWindow		จะมีผลเมื่อเปิดตัวโปรแกรมครั้งต่อไป
 Alpha	BepdfApplication		อัลฟา
-Toji is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Toji ขึ้นอยู่กับ XPDF %s, %s.
-Toji: Error opening file!	BepdfApplication		Toji: เกิดข้อผิดพลาดในการเปิดไฟล์!
+Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku ขึ้นอยู่กับ XPDF %s, %s.
+Tsundoku: Error opening file!	BepdfApplication		Tsundoku: เกิดข้อผิดพลาดในการเปิดไฟล์!
 Beta	BepdfApplication		เบต้า
 Close	BepdfApplication		ปิด
 Development	BepdfApplication		พัฒนา
@@ -236,7 +236,7 @@ Auto open	TraceWindow		เปิดอัตโนมัติ
 Clear	TraceWindow		ลบ
 Error messages	TraceWindow		ข้อความผิดพลาด
 Floating	TraceWindow		ลอยตัว
-Toji status	StatusWindow		สถานะ Toji
+Tsundoku status	StatusWindow		สถานะ Tsundoku
 Enter Password	PasswordWindow		ใส่รหัสผ่าน
 OK	PasswordWindow		ตกลง
 Owner password	PasswordWindow		รหัสผ่านของเจ้าของ

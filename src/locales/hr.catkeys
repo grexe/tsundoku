@@ -1,20 +1,20 @@
-1	Croatian	application/x-vnd.sen-labs.Toji	2450431064
+1	Croatian	application/x-vnd.sen-labs.Tsundoku	2450431064
 Close	BepdfApplication		Zatvori
 Error	BepdfApplication		Greška
 Beta	BepdfApplication		Beta
 Gamma	BepdfApplication		Gama
 Golden Master	BepdfApplication		Golden Master
-Toji: Error opening file!	BepdfApplication		Toji: Greška pri otvaranju datoteke!
+Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Greška pri otvaranju datoteke!
 Alpha	BepdfApplication		Alfa
 Version	BepdfApplication		Inačica
 Development	BepdfApplication		Razvoj
 Unknown	BepdfApplication		Nepoznato
 Final	BepdfApplication		Završno
-Toji is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Toji je baziran na XPDF-u %s, %s.
+Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku je baziran na XPDF-u %s, %s.
 Show bookmarks	PDFWindow		Show bookmarks
 of %d	PDFWindow		of %d
 Zoom in	PDFWindow		Zoom in
-About Toji…	PDFWindow		O Toji-u…
+About Tsundoku…	PDFWindow		O Tsundoku-u…
 Go to next page	PDFWindow		Go to next page
 View	PDFWindow		View
 Show annotation tool bar	PDFWindow		Show annotation tool bar
@@ -68,7 +68,7 @@ Rotation	PDFWindow		Rotation
 Last	PDFWindow		Last
 Add stamp annotation	PDFWindow		Add stamp annotation
 Add squiggly annotation	PDFWindow		Add squiggly annotation
-Can not overwrite a PDF file that's currently opened in Toji! Please choose another file name.	PDFWindow		Can not overwrite a PDF file that's currently opened in Toji! Please choose another file name.
+Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.
 Copy selection	PDFWindow		Copy selection
 Add free text annotation	PDFWindow		Add free text annotation
 Next	PDFWindow		Next
@@ -116,7 +116,7 @@ Open in new window…	PDFWindow		Open in new window…
 Add highlight annotation	PDFWindow		Add highlight annotation
 Add file attachment annotation	PDFWindow		Add file attachment annotation
 Go to page %d	PDFView		Idi na stranicu %d
-Toji: Launch	PDFView		Toji: Pokreni
+Tsundoku: Launch	PDFView		Tsundoku: Pokreni
 Copy link	PDFView		Kopiraj poveznicu
 Saving file attachment:	PDFView		Spremam datoteku privitka:
 Open in new window	PDFView		Otvori u novom prozoru
@@ -132,7 +132,7 @@ Delete	PDFView		Izbriši
 Leave annotation editing mode	PDFView		Leave annotation editing mode
 [internal link]	PDFView		[internal link]
 OK	PDFView		U redu
-Toji reading file: 	PDFView		Toji reading file: 
+Tsundoku reading file: 	PDFView		Tsundoku reading file: 
 Edit	PDFView		Uredi
 Keywords:	FileInfoWindow		Ključne riječi:
 Subject:	FileInfoWindow		Subject:
@@ -219,8 +219,8 @@ Edit title for bookmark	OutlinesWindow		Uredite naslov bilješke
 No title	OutlinesWindow		Nema naslova
 User defined	OutlinesWindow		Definirao korisnik
 OK	OutlinesWindow		U redu
-Toji printing document: 	PrintingProgressWindow		Toji printing document: 
-Toji printing	PrintingProgressWindow		Toji printing
+Tsundoku printing document: 	PrintingProgressWindow		Tsundoku printing document: 
+Tsundoku printing	PrintingProgressWindow		Tsundoku printing
 Stop	PrintingProgressWindow		Stop
 Abort	PrintingProgressWindow		Abort
 Page:	PrintingProgressWindow		Page:
@@ -247,7 +247,7 @@ Description	AttachmentView		Opis
 <empty>	AttachmentView		<empty>
 Search string not found.	PDFSearch		Search string not found.
 OK	PDFSearch		U redu
-Toji status	StatusWindow		Toji status
+Tsundoku status	StatusWindow		Tsundoku status
 User password	PasswordWindow		Lozinka korisnika
 Enter Password	PasswordWindow		Unesi lozinku
 Owner password	PasswordWindow		Lozinka vlasnika

@@ -1,4 +1,4 @@
-1	English (British)	application/x-vnd.sen-labs.Toji	2450431064
+1	English (British)	application/x-vnd.sen-labs.Tsundoku	2450431064
  in	PrintSettingsWindow		in
 All pages	PrintSettingsWindow		All pages
 Color	PrintSettingsWindow		Color
@@ -26,8 +26,8 @@ Zoom must be between 25 and 400!	PrintSettingsWindow		Zoom must be between 25 an
 [link type 'movie' not supported]	PDFView		[link type 'movie' not supported]
 [unknown link]	PDFView		[unknown link]
 Annotation	PDFView		Annotation
-Toji reading file: 	PDFView		Toji reading file:
-Toji: Launch	PDFView		Toji: Launch
+Tsundoku reading file: 	PDFView		Tsundoku reading file:
+Tsundoku: Launch	PDFView		Tsundoku: Launch
 Cancel	PDFView		Cancel
 Copy link	PDFView		Copy link
 Delete	PDFView		Delete
@@ -55,8 +55,8 @@ Save selected attachment to file	AttachmentView		Save selected attachment to fil
 Save selected attachments into directory	AttachmentView		Save selected attachments into directory
 Saving attachment(s):	AttachmentView		Saving attachment(s):
 Abort	PrintingProgressWindow		Abort
-Toji printing	PrintingProgressWindow		Toji printing
-Toji printing document: 	PrintingProgressWindow		Toji printing document:
+Tsundoku printing	PrintingProgressWindow		Tsundoku printing
+Tsundoku printing document: 	PrintingProgressWindow		Tsundoku printing document:
 Page:	PrintingProgressWindow		Page:
 Page: %d	PrintingProgressWindow		Page: %d
 Stop	PrintingProgressWindow		Stop
@@ -90,7 +90,7 @@ Title:	FileInfoWindow		Title:
 Type	FileInfoWindow		Type
 Version:	FileInfoWindow		Version:
 Yes	FileInfoWindow		Yes
-About Toji…	PDFWindow		About Toji…
+About Tsundoku…	PDFWindow		About Tsundoku…
 Add	PDFWindow		Add
 Add circle annotation	PDFWindow		Add circle annotation
 Add comment text annotation	PDFWindow		Add comment text annotation
@@ -120,7 +120,7 @@ Add widget annotation	PDFWindow		Add widget annotation
 Back	PDFWindow		Back
 Back in page history list	PDFWindow		Back in page history list
 Bookmark	PDFWindow		Bookmark
-Can not overwrite a PDF file that's currently opened in Toji! Please choose another file name.	PDFWindow		Can not overwrite a PDF file that's currently opened in Toji! Please choose another file name.
+Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.
 Close	PDFWindow		Close
 Copy selection	PDFWindow		Copy selection
 Could not write PDF file!	PDFWindow		Could not write PDF file!
@@ -221,8 +221,8 @@ Title:	AnnotationWindow		Title:
 User fonts	AnnotationWindow		User fonts
 Will take effect at next program launch.	AnnotationWindow		Will take effect at next program launch.
 Alpha	BepdfApplication		Alpha
-Toji is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Toji is based on XPDF %s, %s.
-Toji: Error opening file!	BepdfApplication		Toji: Error opening file!
+Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku is based on XPDF %s, %s.
+Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Error opening file!
 Beta	BepdfApplication		Beta
 Close	BepdfApplication		Close
 Development	BepdfApplication		Development
@@ -236,7 +236,7 @@ Auto open	TraceWindow		Auto open
 Clear	TraceWindow		Clear
 Error messages	TraceWindow		Error messages
 Floating	TraceWindow		Floating
-Toji status	StatusWindow		Toji status
+Tsundoku status	StatusWindow		Tsundoku status
 Enter Password	PasswordWindow		Enter Password
 OK	PasswordWindow		Alright
 Owner password	PasswordWindow		Owner password
