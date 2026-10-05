@@ -37,8 +37,7 @@ rests on the mark. A selection over several pages gets a mark on each page.
 ## Margin notes
 
 A mark can carry a note. Select the text and choose **Edit > Add margin note** (Cmd+Shift+N), or press the **Note** button while
-text is selected: the text is highlighted and a window asks for the note. A small note appears in the margin, beside the page at the height of the mark (in the margin of
-the page itself if the window has no room beside it). Rest the pointer on it to read the note: a dotted line shows to which words it
+text is selected: the text is highlighted and a window asks for the note. A small note appears in the white margin at the right border of the page, at the height of the mark. Rest the pointer on it to read the note: a dotted line shows to which words it
 belongs. Click it to edit.
 
 In a book (EPUB) the **Note** button arms the next selection of text for a margin note, since there are no notes that sit on

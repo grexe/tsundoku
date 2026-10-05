@@ -962,8 +962,8 @@ PDFView::Draw(BRect updateRect)
 		}
 		for (size_t i = 0; i < mSlots.size(); i++) {
 			PageSlot* slot = mSlots[i];
-			BRect area(slot->origin.x - 1, slot->origin.y - 1, slot->origin.x + slot->page->GetWidth() + 20,
-				slot->origin.y + slot->page->GetHeight());	// (and the notes beside the page)
+			BRect area(slot->origin.x - 1, slot->origin.y - 1, slot->origin.x + slot->page->GetWidth(),
+				slot->origin.y + slot->page->GetHeight());
 			if (!area.Intersects(updateRect))
 				continue;
 			// the members stand for this page while it is drawn
@@ -1205,6 +1205,23 @@ PDFView::BeginSelection(BPoint point, bool rectangle) {
 	SetMouseEventMask(B_POINTER_EVENTS);
 }
 
+// Opens the note or the text on the page at a point of the view for editing, if there is one.
+bool
+PDFView::EditNoteAt(BPoint point)
+{
+	const DocAnnotation* note = OnAnnotation(point);
+	if (note == NULL || (note->kind != kAnnotNote && note->kind != kAnnotText))
+		return false;
+	BMessage edit(EDIT_NOTE_MSG);
+	edit.AddInt32("page", ActivePage());
+	edit.AddInt32("index", note->index);
+	edit.AddString("text", note->contents.String());
+	if (Window() != NULL)
+		Window()->PostMessage(&edit, this);
+	return true;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////
 void
 PDFView::MouseDown (BPoint point) {
@@ -1251,18 +1268,8 @@ PDFView::MouseDown (BPoint point) {
 	}
 
 	// a double click on a note or a text opens it for editing
-	if (buttons == B_PRIMARY_MOUSE_BUTTON && clicks >= 2 && !SelectingText()) {
-		const DocAnnotation* note = OnAnnotation(point);
-		if (note != NULL && (note->kind == kAnnotNote || note->kind == kAnnotText)) {
-			BMessage edit(EDIT_NOTE_MSG);
-			edit.AddInt32("page", ActivePage());
-			edit.AddInt32("index", note->index);
-			edit.AddString("text", note->contents);
-			if (Window() != NULL)
-				Window()->PostMessage(&edit, this);
-			return;
-		}
-	}
+	if (buttons == B_PRIMARY_MOUSE_BUTTON && clicks >= 2 && !SelectingText() && EditNoteAt(point))
+		return;
 
 	// a click on an annotation that can be moved selects it, and a drag from there moves it; elsewhere the click
 	// has its usual meaning
@@ -1300,6 +1307,9 @@ PDFView::MouseDown (BPoint point) {
 				SelectionChanged();
 				break;
 			}
+			// a click outside the selected text lets go of the selection
+			if (mSelected == SELECTED)
+				SelectNone();
 			// follow link or move view
 			SetAction(MOVE_ACTION);
 			if (!HandleLink(point)) {
@@ -3237,8 +3247,8 @@ PDFView::MarginNoteBoxes(std::vector<MarginBox>* boxes)
 		}
 	}
 	const float kSize = 14;
-	// beside the page if the view has room for that, else in the margin of the page at its right edge
-	float left = MarginNotesOutside() ? mWidth + 4 : mWidth - kSize - 3;
+	// in the white margin at the right border of the page
+	float left = mWidth - kSize - 3;
 	float lastBottom = -1000;
 	for (size_t i = 0; i < items.size(); i++) {
 		float y = items[i].y > lastBottom + 2 ? items[i].y : lastBottom + 2;
@@ -3261,13 +3271,6 @@ PDFView::MarginNoteAt(BPoint point)
 			return boxes[i].annotation;
 	}
 	return NULL;
-}
-
-
-bool
-PDFView::MarginNotesOutside() const
-{
-	return mCanvasWidth - (mLeft + mWidth) >= 14 + 8;
 }
 
 
@@ -4830,7 +4833,10 @@ PDFView::TestCommand(BMessage* message)
 		MarginNoteBoxes(&boxes);
 		mMarginHover = n >= 0 && n < (int32)boxes.size() ? boxes[n].annotation : NULL;
 		Invalidate();
-		TestLog("hovermargin: %d boxes, outside %d", (int)boxes.size(), (int)MarginNotesOutside());
+		TestLog("hovermargin: %d boxes", (int)boxes.size());
+	} else if (cmd == "editnote") {
+		// as a double click at (x1, y1) does
+		TestLog("editnote: %d", (int)EditNoteAt(BPoint(x1, y1)));
 	} else if (cmd == "notebutton") {
 		NoteButton();
 		TestLog("notebutton: armed state %d", ArmedState());

@@ -184,10 +184,10 @@ private:
 	// the note in the margin at a point of the view, on whichever page it is (and that page)
 	const DocAnnotation* MarginNoteAtView(BPoint point, PageSlot** slot);
 	const DocAnnotation* mMarginHover;	// the note that the pointer is on (only compared, it may be gone)
-	bool MarginNotesOutside() const;	// the notes are beside the page, in the gray area: there is room for them
 	void DrawMarginNotes(BRect updateRect);
 	void MarkSelection(MarkupType type, uint32 rgb, bool note);
 	void EditNewestNote(int page);
+	bool EditNoteAt(BPoint point);	// a note or text at a point of the view is opened for editing
 	bool SelectingText() const;	// the mouse selects text: Option is down, or the marker is armed
 	void ApplyArmedMarkup();
 	void ToolsChanged();		// tells the window (the buttons of the toolbar)
