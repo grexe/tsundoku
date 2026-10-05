@@ -34,9 +34,10 @@ with the file.
 - **Native BFS metadata:** title, author, series, language, ISBN, date, the number of pages and more are written as BFS attributes
   with standard names (`dc:title`, `dc:creator`, `schema:isbn`, ...), so Tracker can show them as columns and queries can find
   files. Where you stopped reading is kept with the file.
-- **Links to places:** a place in a document is a link, `toji:///path/doc.pdf#page=5`, using the standard fragments (pages, regions,
-  text fragments, EPUB CFI) and annotation identifiers. **Copy link to this place** makes one, and `Toji <link>` or `open <link>`
-  follows it, so a note, a mail or another program can point right into a document.
+- **Places in documents:** Toji opens a document at an exact place (a page, a region, words, an EPUB position, an annotation) with
+  the standard fragments, from the command line (`Toji <file>#page=5`), from a message or with `Goto` in the scripting suite.
+  **Copy link to this place** makes a `toji:` link for it. These links hold a file path, which can change; stable links that name a
+  document by its SEN:ID (a `sen://` handler) are coming with SEN.
 - **Scripting:** the document, its pages, annotations and bookmarks can be read and changed with `hey Toji ...` or with scripting
   messages from your own programs (get and set the note or the words of a mark, create annotations, go to a place, save).
 

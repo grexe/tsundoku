@@ -3,6 +3,10 @@
 A link is a URI that opens a document at an exact place. Programs hand them around as text (a message, a note, a web page), and
 Toji makes them from what you are looking at.
 
+> **Note:** a `toji:` link holds the path of the file, which is brittle when files are moved. Stable links that name a document by
+> its SEN:ID (TSID) will be a `sen://` handler in SEN; it will pass the place (the fragment below) to Toji, which opens it as it does
+> here. The fragment is the part that stays.
+
 ```
 toji:///boot/home/papers/x.pdf#page=5
 toji:///boot/home/papers/x.pdf#page=5&xywh=percent:10,20,30,40

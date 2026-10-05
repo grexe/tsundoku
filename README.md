@@ -119,9 +119,10 @@ The model, the storage and the access from other programs: [docs/reference/annot
 
 ### Links to places
 
-A place in a document is a link: `toji:///path/doc.pdf#page=5`, with the standard fragments for pages, regions, words, EPUB
+A place in a document can be a link: `toji:///path/doc.pdf#page=5`, with the standard fragments for pages, regions, words, EPUB
 positions and annotations. **Edit > Copy link to this place** makes one, and `Toji <link>` or `open <link>` follows it
-([docs/reference/links.md](docs/reference/links.md)).
+([docs/reference/links.md](docs/reference/links.md)). These links hold a file path, so they break when the file moves; links by
+a stable SEN:ID (`sen://`) are planned for SEN, which will hand the place to Toji.
 
 ### Scripting
 
