@@ -1,4 +1,6 @@
 /*  
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
  * BePDF: The PDF reader for Haiku.
  * 	 Copyright (C) 1997 Benoit Triquet.
  * 	 Copyright (C) 1998-2000 Hubert Figuiere.

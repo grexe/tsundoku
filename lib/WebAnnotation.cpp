@@ -1,24 +1,10 @@
 /*
- * Tsundoku: a universal document reader for Haiku, extended for SEN.
- * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
- *
- * Based on BePDF:
- * 	 Copyright (C) 1997 Benoit Triquet.
- * 	 Copyright (C) 1998-2000 Hubert Figuiere.
- * 	 Copyright (C) 2000-2011 Michael Pfeiffer.
- * 	 Copyright (C) 2013 waddlesplash.
- *
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero
- * General Public License as published by the Free Software Foundation, either version 3 of the License, or (at
- * your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
- * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public
- * License for more details.
+ * SPDX-License-Identifier: MIT
+ * Copyright (C) 2026 Gregor B. Rosenauer & Claude
  */
-
-
 #include "WebAnnotation.h"
+
+#include <stdint.h>
 
 #include <math.h>
 #include <stdlib.h>
@@ -137,6 +123,30 @@ FileIri(const char* path)
 	return iri;
 }
 
+
+
+
+void
+NewId(char* id, size_t size)
+{
+	unsigned char bytes[16];
+	bool random = false;
+	FILE* file = fopen("/dev/urandom", "rb");
+	if (file != NULL) {
+		random = fread(bytes, 1, sizeof(bytes), file) == sizeof(bytes);
+		fclose(file);
+	}
+	if (!random) {
+		srand((unsigned)time(NULL) ^ (unsigned)(uintptr_t)id);
+		for (size_t i = 0; i < sizeof(bytes); i++)
+			bytes[i] = (unsigned char)rand();
+	}
+	bytes[6] = (bytes[6] & 0x0f) | 0x40;	// version 4
+	bytes[8] = (bytes[8] & 0x3f) | 0x80;
+	snprintf(id, size, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", bytes[0],
+		bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7], bytes[8], bytes[9], bytes[10],
+		bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]);
+}
 
 
 

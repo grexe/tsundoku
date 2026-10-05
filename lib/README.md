@@ -1,0 +1,25 @@
+# lib: reusable components (MIT)
+
+The code in this folder is licensed under the **MIT License** (see [LICENSE](LICENSE); each file says
+`SPDX-License-Identifier: MIT`). It was written for Tsundoku, but it has no part of Tsundoku's user interface and does not use
+MuPDF, so that SEN (enrichment plugins, navigators, ...) and other programs can use it without taking on the AGPL of Tsundoku.
+
+| File | What it does | Needs |
+|------|--------------|-------|
+| `WebAnnotation` | the W3C Web Annotation model in BMessages (`oa:`), JSON-LD, identifiers, selectors | Haiku API |
+| `Bookmarks` | the bookmarks of a file as `oa:bookmarking` annotations in `SEN:annotations` | Haiku API, WebAnnotation |
+| `EpubInfo` | what an EPUB says about itself (package document, cover) | libzip, libxml2 |
+| `EpubCfi` | EPUB Canonical Fragment Identifiers: make and resolve | libzip, libxml2 |
+| `ComicInfo` | `ComicInfo.xml` (ComicRack and the comic managers) | libxml2 |
+| `BbfInfo` | the index of a Bound Book Format (`.bbf`) file | Haiku API |
+
+## The rule
+
+**Nothing in this folder may include or link code with a copyleft license** (Tsundoku's own sources, MuPDF, DjVuLibre, ...).
+Everything it depends on is permissive (Haiku, libzip, libxml2). Tsundoku (AGPL-3.0-or-later) uses these files; they do not use
+Tsundoku. A new file here gets the MIT header; a file that needs MuPDF stays in `src/`.
+
+## Using it
+
+Add the files you need to a Makefile (the headers are included as `"WebAnnotation.h"`, so give the folder as an include path).
+`WebAnnotation::NewId()` makes the UUIDs for annotation identifiers.

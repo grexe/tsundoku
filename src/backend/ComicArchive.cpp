@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
  * Tsundoku: a universal document reader for Haiku, extended for SEN.
  * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
  *
@@ -18,6 +20,7 @@
  */
 
 #include "ComicArchive.h"
+#include "ComicInfo.h"
 
 #include "BbfInfo.h"
 
@@ -862,5 +865,42 @@ IsJunk(const char* name)
 		part = slash + 1;
 	}
 }
+
+// The text of the file ComicInfo.xml (its name may be written in another case), empty if there is none.
+ComicInfo*
+ReadComicInfo(fz_context* context, fz_archive* archive)
+{
+	const char* name = NULL;
+	int count = fz_count_archive_entries(context, archive);
+	for (int i = 0; i < count; i++) {
+		const char* entry = fz_list_archive_entry(context, archive, i);
+		if (entry != NULL && strcasecmp(entry, "ComicInfo.xml") == 0) {
+			name = entry;
+			break;
+		}
+	}
+	if (name == NULL)
+		return NULL;
+
+	fz_buffer* buffer = NULL;
+	ComicInfo* info = NULL;
+	bool failed = false;
+	fz_var(buffer);
+	fz_try(context) {
+		buffer = fz_read_archive_entry(context, archive, name);
+	}
+	fz_catch(context) {
+		failed = true;
+	}
+	if (buffer != NULL) {
+		unsigned char* data = NULL;
+		size_t size = fz_buffer_storage(context, buffer, &data);
+		if (!failed && data != NULL)
+			info = ComicInfo::Parse((const char*)data, size);
+		fz_drop_buffer(context, buffer);
+	}
+	return info;
+}
+
 
 }	// namespace ComicArchive

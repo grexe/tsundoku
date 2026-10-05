@@ -1,22 +1,7 @@
 /*
- * Tsundoku: a universal document reader for Haiku, extended for SEN.
- * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
- *
- * Based on BePDF:
- * 	 Copyright (C) 1997 Benoit Triquet.
- * 	 Copyright (C) 1998-2000 Hubert Figuiere.
- * 	 Copyright (C) 2000-2011 Michael Pfeiffer.
- * 	 Copyright (C) 2013 waddlesplash.
- *
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero
- * General Public License as published by the Free Software Foundation, either version 3 of the License, or (at
- * your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
- * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public
- * License for more details.
+ * SPDX-License-Identifier: MIT
+ * Copyright (C) 2026 Gregor B. Rosenauer & Claude
  */
-
 #include "ComicInfo.h"
 
 #include "BbfInfo.h"
@@ -96,51 +81,13 @@ Join(const std::vector<BString>& list)
 }
 
 
-// The text of the file ComicInfo.xml (its name may be written in another case), empty if there is none.
-static BString
-ReadFile(fz_context* context, fz_archive* archive)
-{
-	const char* name = NULL;
-	int count = fz_count_archive_entries(context, archive);
-	for (int i = 0; i < count; i++) {
-		const char* entry = fz_list_archive_entry(context, archive, i);
-		if (entry != NULL && strcasecmp(entry, "ComicInfo.xml") == 0) {
-			name = entry;
-			break;
-		}
-	}
-	if (name == NULL)
-		return BString();
-
-	fz_buffer* buffer = NULL;
-	BString result;
-	bool failed = false;
-	fz_var(buffer);
-	fz_try(context) {
-		buffer = fz_read_archive_entry(context, archive, name);
-	}
-	fz_catch(context) {
-		failed = true;
-	}
-	if (buffer != NULL) {
-		unsigned char* data = NULL;
-		size_t size = fz_buffer_storage(context, buffer, &data);
-		if (!failed && data != NULL && size <= kMaxSize)
-			result.SetTo((const char*)data, (int32)size);
-		fz_drop_buffer(context, buffer);
-	}
-	return result;
-}
-
-
 ComicInfo*
-ComicInfo::Read(fz_context* context, fz_archive* archive)
+ComicInfo::Parse(const char* xml, size_t size)
 {
-	BString text = ReadFile(context, archive);
-	if (text.Length() == 0)
+	if (xml == NULL || size == 0 || size > kMaxSize)
 		return NULL;
 
-	xmlDoc* doc = xmlReadMemory(text.String(), text.Length(), "ComicInfo.xml", NULL,
+	xmlDoc* doc = xmlReadMemory(xml, (int)size, "ComicInfo.xml", NULL,
 		XML_PARSE_NONET | XML_PARSE_NOERROR | XML_PARSE_NOWARNING | XML_PARSE_NOBLANKS);
 	if (doc == NULL)
 		return NULL;

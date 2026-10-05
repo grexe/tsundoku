@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
  * Tsundoku: a universal document reader for Haiku, extended for SEN.
  * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
  *
@@ -27,6 +29,7 @@
 // of a fz_try() block.
 
 #include "Document.h"
+#include "WebAnnotation.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -43,7 +46,6 @@ extern "C" {
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "Document"
 
-void NewAnnotationId(char* id, size_t size);		// Document.cpp
 
 
 // The size of things that are the same size on every page: a page of 600 by 800 points (like the pages of most PDF
@@ -117,7 +119,7 @@ bool
 Document::StoreAddDrawn(int pageNo, StoredAnnotation* a, const char* operation)
 {
 	char id[48];
-	NewAnnotationId(id, sizeof(id));
+	WebAnnotation::NewId(id, sizeof(id));
 	a->id = id;
 	const char* author = getenv("USER");
 	a->author = author != NULL ? author : "";

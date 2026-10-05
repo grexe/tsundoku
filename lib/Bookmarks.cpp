@@ -1,23 +1,7 @@
 /*
- * Tsundoku: a universal document reader for Haiku, extended for SEN.
- * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
- *
- * Based on BePDF:
- * 	 Copyright (C) 1997 Benoit Triquet.
- * 	 Copyright (C) 1998-2000 Hubert Figuiere.
- * 	 Copyright (C) 2000-2011 Michael Pfeiffer.
- * 	 Copyright (C) 2013 waddlesplash.
- *
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero
- * General Public License as published by the Free Software Foundation, either version 3 of the License, or (at
- * your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
- * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public
- * License for more details.
+ * SPDX-License-Identifier: MIT
+ * Copyright (C) 2026 Gregor B. Rosenauer & Claude
  */
-
-
 #include "Bookmarks.h"
 
 #include "WebAnnotation.h"
@@ -32,8 +16,6 @@
 #include <fs_attr.h>
 
 #include <vector>
-
-void NewAnnotationId(char* id, size_t size);		// Document.cpp
 
 static const char* const kAttribute = "SEN:annotations";
 static const int32 kVersion = 2;
@@ -181,7 +163,7 @@ Write(const char* path, const BMessage& bookmarks)
 		}
 		if (mark.id.Length() == 0) {
 			char id[48];
-			NewAnnotationId(id, sizeof(id));
+			WebAnnotation::NewId(id, sizeof(id));
 			mark.id = id;
 		}
 

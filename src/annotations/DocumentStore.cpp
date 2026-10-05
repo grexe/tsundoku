@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
  * Tsundoku: a universal document reader for Haiku, extended for SEN.
  * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
  *
@@ -51,7 +53,6 @@ extern "C" {
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "Document"
 
-void NewAnnotationId(char* id, size_t size);		// Document.cpp
 void CopyAttributes(const char* from, const char* to);
 
 // The annotations of a book are kept in this attribute of its file, as W3C Web Annotations (WebAnnotation.h). The
@@ -1027,7 +1028,7 @@ Document::StoreAddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int 
 
 	StoredAnnotation a;
 	char id[48];
-	NewAnnotationId(id, sizeof(id));
+	WebAnnotation::NewId(id, sizeof(id));
 	a.id = id;
 	a.markup = type;
 	a.color = ((uint32)(color[0] * 255 + 0.5f) << 16) | ((uint32)(color[1] * 255 + 0.5f) << 8)

@@ -199,3 +199,9 @@ which is under the GNU AGPL version 3.
 - and the contributors to [BePDF](https://github.com/HaikuArchives/BePDF)
 
 MuPDF, © Artifex Software, Inc. The notes on how it is used on Haiku are in [MUPDF-NOTES.md](MUPDF-NOTES.md).
+
+**The reusable parts are MIT.** The folder [`lib/`](lib/) has the code that SEN and other programs can use without the AGPL:
+the Web Annotation model, bookmarks, the readers for EPUB, `ComicInfo.xml` and BBF metadata, and EPUB CFIs. It is under the MIT
+license ([lib/LICENSE](lib/LICENSE)) and does not depend on MuPDF or on Tsundoku's sources. Every source file carries an
+[SPDX](https://spdx.dev) identifier (`SPDX-License-Identifier: AGPL-3.0-or-later` or `MIT`) that tools can read; the license
+texts are in [LICENSES/](LICENSES/).

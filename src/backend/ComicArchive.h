@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
  * Tsundoku: a universal document reader for Haiku, extended for SEN.
  * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
  *
@@ -22,6 +24,8 @@
 
 #include <mupdf/fitz.h>
 
+class ComicInfo;
+
 // Comic book archives (CBZ, CBR, CB7, CBT): MuPDF reads the pages (an archive of images) and reads ZIP and TAR on
 // its own. RAR and 7z come from libarchive, which this adds to MuPDF as an archive handler, and the archive is
 // shown to MuPDF without what file managers put into it (__MACOSX, ._*, .DS_Store), which would be pages otherwise.
@@ -35,6 +39,9 @@ bool IsComicFile(const char* path);
 
 // Opens the archive of a comic book without the junk. Throws if the file is no archive.
 fz_archive* Open(fz_context* context, const char* path);
+
+// What the archive says about itself in its ComicInfo.xml (a file of the archive, named in any case), NULL if it has none.
+ComicInfo* ReadComicInfo(fz_context* context, fz_archive* archive);
 
 // Whether the name of an entry is junk of a file manager (__MACOSX, ._*, .DS_Store, Thumbs.db, desktop.ini).
 bool IsJunk(const char* name);

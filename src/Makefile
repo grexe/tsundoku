@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 ## Haiku Generic Makefile v2.6 ##
 
 ## Fill in this file to specify the project being created, and the referenced
@@ -39,16 +40,16 @@ SRCS = annotations/AnnotationsView.cpp \
 	backend/Document.cpp \
 	backend/DjvuDocument.cpp \
 	annotations/DocumentDraw.cpp \
-	annotations/Bookmarks.cpp \
+	../lib/Bookmarks.cpp \
 	annotations/DocumentStore.cpp \
 	layout/DocumentLayout.cpp \
 	annotations/DocumentWeb.cpp \
 	app/EntryChangedMonitor.cpp \
-	metadata/BbfInfo.cpp \
+	../lib/BbfInfo.cpp \
 	backend/ComicArchive.cpp \
-	metadata/ComicInfo.cpp \
-	annotations/EpubCfi.cpp \
-	metadata/EpubInfo.cpp \
+	../lib/ComicInfo.cpp \
+	../lib/EpubCfi.cpp \
+	../lib/EpubInfo.cpp \
 	ui/FileInfoWindow.cpp \
 	ui/FindTextWindow.cpp \
 	app/Globals.cpp \
@@ -72,7 +73,7 @@ SRCS = annotations/AnnotationsView.cpp \
 	app/Settings.cpp \
 	ui/StatusWindow.cpp \
 	ui/TraceWindow.cpp \
-	annotations/WebAnnotation.cpp \
+	../lib/WebAnnotation.cpp \
 	ui/EntryMenuItem.cpp \
 	app/ResourceLoader.cpp \
 	app/Thread.cpp

@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
 resource app_flags B_MULTIPLE_LAUNCH;
 
 resource app_version {

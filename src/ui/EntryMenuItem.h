@@ -1,4 +1,6 @@
 /*  
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
 	BeOS Front-end to PDF file reader xpdf.
  	Copyright (C) 2003 Michael Pfeiffer
 

@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
  * Tsundoku: a universal document reader for Haiku, extended for SEN.
  * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
  *
@@ -163,7 +165,7 @@ Document::Open(const char* path, const char* password, Document** _document, flo
 			fz_archive* archive = ComicArchive::Open(context, path);
 			fz_try(context) {
 				document = fz_open_document_with_stream_and_dir(context, path, NULL, archive);
-				comic = ComicInfo::Read(context, archive);
+				comic = ComicArchive::ReadComicInfo(context, archive);
 				// a file in the Bound Book Format has its own metadata and sections
 				bbf = BbfInfo::Read(path);
 				if (comic == NULL && bbf != NULL)
@@ -834,31 +836,6 @@ Document::SaveAttachment(int index, const char* path)
 ///////////////////////////////////////////////////////////////////////////
 // Annotations
 
-// A new name for an annotation that nobody else has: 128 random bits in the form of a UUID. Other programs and
-// SEN refer to the annotation with it, so it has to stay with the annotation in the file.
-void
-NewAnnotationId(char* id, size_t size)
-{
-	unsigned char bytes[16];
-	bool random = false;
-	FILE* file = fopen("/dev/urandom", "rb");
-	if (file != NULL) {
-		random = fread(bytes, 1, sizeof(bytes), file) == sizeof(bytes);
-		fclose(file);
-	}
-	if (!random) {
-		srand((unsigned)time(NULL) ^ (unsigned)(uintptr_t)id);
-		for (size_t i = 0; i < sizeof(bytes); i++)
-			bytes[i] = (unsigned char)rand();
-	}
-	bytes[6] = (bytes[6] & 0x0f) | 0x40;	// version 4
-	bytes[8] = (bytes[8] & 0x3f) | 0x80;
-	snprintf(id, size, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", bytes[0],
-		bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7], bytes[8], bytes[9], bytes[10],
-		bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]);
-}
-
-
 static const int kMaxAnnotationQuads = 512;
 static const int kMaxInkPoints = 20000;
 static const int kMaxInkStrokes = 2000;
@@ -1112,7 +1089,7 @@ Document::AddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int count
 
 	const char* author = getenv("USER");
 	char annotationId[48];
-	NewAnnotationId(annotationId, sizeof(annotationId));
+	WebAnnotation::NewId(annotationId, sizeof(annotationId));
 	DocumentLocker locker(this);
 	fz_page* page = NULL;
 	int ok = 0;
@@ -1414,7 +1391,7 @@ Document::AddNote(int pageNo, fz_point where, const char* text)
 	ColorFloats(0xffeb3b, color);
 	const char* author = getenv("USER");
 	char annotationId[48];
-	NewAnnotationId(annotationId, sizeof(annotationId));
+	WebAnnotation::NewId(annotationId, sizeof(annotationId));
 	DocumentLocker locker(this);
 	fz_page* page = NULL;
 	int ok = 0;
@@ -1474,7 +1451,7 @@ Document::AddFreeText(int pageNo, fz_point where, const char* text)
 	float black[3] = { 0, 0, 0 };
 	const char* author = getenv("USER");
 	char annotationId[48];
-	NewAnnotationId(annotationId, sizeof(annotationId));
+	WebAnnotation::NewId(annotationId, sizeof(annotationId));
 	DocumentLocker locker(this);
 	fz_page* page = NULL;
 	int ok = 0;
@@ -1530,7 +1507,7 @@ Document::AddShape(int pageNo, ShapeType type, fz_point from, fz_point to, uint3
 	ColorFloats(rgb, color);
 	const char* author = getenv("USER");
 	char annotationId[48];
-	NewAnnotationId(annotationId, sizeof(annotationId));
+	WebAnnotation::NewId(annotationId, sizeof(annotationId));
 	DocumentLocker locker(this);
 	fz_page* page = NULL;
 	int ok = 0;
@@ -1587,7 +1564,7 @@ Document::AddInk(int pageNo, const fz_point* points, int count, uint32 rgb)
 	ColorFloats(rgb, color);
 	const char* author = getenv("USER");
 	char annotationId[48];
-	NewAnnotationId(annotationId, sizeof(annotationId));
+	WebAnnotation::NewId(annotationId, sizeof(annotationId));
 	DocumentLocker locker(this);
 	fz_page* page = NULL;
 	int ok = 0;
@@ -2186,7 +2163,7 @@ Document::UpgradeAnnotationIds()
 				if (found != given.end())
 					strlcpy(id, found->second.String(), sizeof(id));
 				else
-					NewAnnotationId(id, sizeof(id));
+					WebAnnotation::NewId(id, sizeof(id));
 				pdf_set_annot_name(fContext, annot, id);
 				named++;
 			}

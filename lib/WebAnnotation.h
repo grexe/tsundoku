@@ -1,23 +1,7 @@
 /*
- * Tsundoku: a universal document reader for Haiku, extended for SEN.
- * 	 Copyright (C) 2026 Gregor B. Rosenauer & Claude
- *
- * Based on BePDF:
- * 	 Copyright (C) 1997 Benoit Triquet.
- * 	 Copyright (C) 1998-2000 Hubert Figuiere.
- * 	 Copyright (C) 2000-2011 Michael Pfeiffer.
- * 	 Copyright (C) 2013 waddlesplash.
- *
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero
- * General Public License as published by the Free Software Foundation, either version 3 of the License, or (at
- * your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
- * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public
- * License for more details.
+ * SPDX-License-Identifier: MIT
+ * Copyright (C) 2026 Gregor B. Rosenauer & Claude
  */
-
-
 #ifndef _WEB_ANNOTATION_H_
 #define _WEB_ANNOTATION_H_
 
@@ -114,6 +98,9 @@ bool    SvgBoundingBox(const char* svg, float box[4], float viewBox[4], bool* ha
 // the CSS for the color of a mark of a motivation, and the color in some CSS (the first #rrggbb)
 BString ColorStyle(const char* motivation, uint32 color);
 bool    ColorOfStyle(const char* css, uint32* color);
+
+// A new identifier for an annotation: a random (version 4) UUID, as text (size 37 or more).
+void    NewId(char* id, size_t size);
 
 // The identifier as an IRI, and the UUID in an identifier that is one (urn:uuid:..., or the UUID itself)
 BString IdentifierIri(const char* id);
