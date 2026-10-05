@@ -516,7 +516,7 @@ void BepdfApplication::AboutRequested()
 	}
 
 	BString version;
-	BString str("Tsundoku\n\n");
+	BString str("Tsundoku™\n\n");
 	str += B_TRANSLATE("a universal document reader based on BePDF, extended for SEN");
 	str += "\n";
 	str += B_TRANSLATE("Version");
@@ -532,6 +532,8 @@ void BepdfApplication::AboutRequested()
 	str += BString().SetToFormat(B_TRANSLATE_COMMENT("Tsundoku renders with MuPDF %s, %s.", "MuPDF version, copyright"),
 		FZ_VERSION, "© Artifex Software, Inc.");
 
+	str += "\n\n";
+	str += B_TRANSLATE("Tsundoku™, SEN™ and SEN Labs™ are names of SEN Labs e.U.");
 	str += licenseCopyright;
 
 	float spacing = be_control_look->DefaultLabelSpacing();

@@ -7,7 +7,7 @@ SPDX-PackageDownloadLocation = "https://github.com/sen-laboratories/tsundoku"
 # The source files say so themselves (SPDX-License-Identifier in the header); these are the files that cannot.
 [[annotations]]
 path = [
-	"README.md", "TODO.md", "PLAN-mupdf.md", "MUPDF-NOTES.md", "LICENSE",
+	"README.md", "TRADEMARKS.md", "TODO.md", "PLAN-mupdf.md", "MUPDF-NOTES.md", "LICENSE",
 	"build.sh", "package.sh", "package/**", ".github/**", ".gitignore", ".gitattributes", "REUSE.toml",
 	"docs/**", "tests/**", "dist/license/**",
 	"src/locales/**", "src/graphics/*.iom",

@@ -2,7 +2,7 @@
   <img src="images/tsundoku-logo_small.jpg" alt="Tsundoku" width="320">
 </p>
 
-# Tsundoku
+# Tsundoku™
 
 *積ん読 (tsundoku): buying reading material and letting it pile up, unread, "for later".*
 
@@ -198,6 +198,8 @@ which is under the GNU AGPL version 3.
 - © 1997 Benoit Triquet
 - and the contributors to [BePDF](https://github.com/HaikuArchives/BePDF), among them Humdinger (the toolbar icons), Augustin Cavalier,
   Markus Himmel and the translators
+
+Tsundoku™, SEN™ and SEN Labs™ are names of SEN Labs e.U.; see [TRADEMARKS.md](TRADEMARKS.md) for what you may do with them.
 
 **The logo and the artwork made for Tsundoku** (`images/`, the program icon) are under [CC BY 4.0](LICENSES/CC-BY-4.0.txt); that
 does not give rights to the names Tsundoku and SEN. The documentation is under the same license as the program.
