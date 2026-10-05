@@ -7,6 +7,8 @@ cd "$(dirname "$0")"
 OUT=build
 NAME=toji-guide
 mkdir -p "$OUT"
+# the logo is kept in images/ of the repository; the guide needs it next to its own pictures (not committed twice)
+cp ../../images/toji-logo.png images/toji-logo.png
 CHAPTERS="metadata.yaml $(ls [0-9][0-9]-*.md)"
 COMMON="-f markdown+smart --number-sections --toc --toc-depth=2"
 

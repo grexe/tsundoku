@@ -10,3 +10,4 @@ package-build/
 .DS_Store
 docs/guide/build/
 dist/docs/
+docs/guide/images/toji-logo.png

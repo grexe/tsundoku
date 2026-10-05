@@ -45,6 +45,7 @@
 #include <Button.h>
 #include <LayoutBuilder.h>
 #include <Messenger.h>
+#include <TranslationUtils.h>
 #include <fs_index.h>
 #include <Mime.h>
 #include <MimeType.h>
@@ -514,6 +515,39 @@ private:
 	float mStripeWidth;
 };
 
+///////////////////////////////////////////////////////////
+// the logo, scaled to the room it has (it is a picture with a white background, shown as a card)
+class AboutLogoView : public BView {
+public:
+	AboutLogoView(BBitmap *logo, float height)
+		: BView("logo", B_WILL_DRAW), mLogo(logo)
+	{
+		float width = height;
+		if (mLogo != NULL && mLogo->Bounds().Height() > 0)
+			width = floorf(height * (mLogo->Bounds().Width() + 1) / (mLogo->Bounds().Height() + 1));
+		SetViewUIColor(B_PANEL_BACKGROUND_COLOR);
+		SetExplicitMinSize(BSize(width, height));
+		SetExplicitMaxSize(BSize(width, height));
+		SetExplicitPreferredSize(BSize(width, height));
+	}
+
+	~AboutLogoView() { delete mLogo; }
+
+	void Draw(BRect)
+	{
+		if (mLogo == NULL)
+			return;
+		BRect b = Bounds();
+		SetDrawingMode(B_OP_COPY);
+		DrawBitmap(mLogo, mLogo->Bounds(), b, B_FILTER_BITMAP_BILINEAR);
+		SetHighColor(tint_color(ViewColor(), B_DARKEN_2_TINT));
+		StrokeRect(b);
+	}
+
+private:
+	BBitmap *mLogo;
+};
+
 static BMessenger sAboutWindow;
 static const char *kTitleFamily = "Noto Emoji";
 static const char *kTitleStyle = "Bold";
@@ -591,19 +625,10 @@ void BepdfApplication::AboutRequested()
 	v->SetExplicitMinSize(BSize(textWidth, textHeight));
 	v->SetExplicitMaxSize(BSize(textWidth, textHeight));
 
-	// app icon for the stripe, 96px, so the full-detail variant of the icon
-	BBitmap *icon = NULL;
-	BResources *resources = BApplication::AppResources();
-	size_t iconSize = 0;
-	const void *iconData = resources ? resources->LoadResource(B_VECTOR_ICON_TYPE, "BEOS:ICON", &iconSize) : NULL;
-	if (iconData != NULL) {
-		BSize size = BControlLook::ComposeIconSize(96);
-		icon = new BBitmap(BRect(0, 0, size.width - 1, size.height - 1), B_RGBA32);
-		if (BIconUtils::GetVectorIcon((const uint8 *)iconData, iconSize, icon) != B_OK) {
-			delete icon;
-			icon = NULL;
-		}
-	}
+	// the logo is a file next to the program (docs/toji-logo.png, in the package); without it the window has none
+	BPath logoPath(mAppPath);
+	logoPath.Append("docs/toji-logo.png");
+	BBitmap *logo = BTranslationUtils::GetBitmap(logoPath.Path());
 
 	BWindow *about = new BWindow(BRect(0, 0, 100, 100), B_TRANSLATE("About Toji"),
 		B_TITLED_WINDOW_LOOK, B_NORMAL_WINDOW_FEEL,
@@ -613,9 +638,14 @@ void BepdfApplication::AboutRequested()
 	ok->MakeDefault(true);
 
 	BLayoutBuilder::Group<>(about, B_HORIZONTAL, 0)
-		.Add(new AboutStripeView(icon))
+		.Add(new AboutStripeView(NULL))
 		.AddGroup(B_VERTICAL, spacing)
 			.SetInsets(spacing * 2)
+			.AddGroup(B_HORIZONTAL)
+				.AddGlue()
+				.Add(new AboutLogoView(logo, 200))
+				.AddGlue()
+			.End()
 			.Add(v)
 			.AddGroup(B_HORIZONTAL)
 				.AddGlue()

@@ -4,6 +4,8 @@ Toji is a document reader for Haiku. The name is Japanese (綴じ) and means bin
 bound. Toji binds the papers, books and comics you read to what is known about them: the attributes of the file, your marks
 and notes, and the relations of SEN. (Until version 0.9 the program was called Tsundoku.)
 
+![The logo of Toji: books bound together, with bookmarks.](images/toji-logo.png){width=28%}
+
 Toji started as a fork of BePDF and renders with MuPDF. It reads
 
 - PDF files (also encrypted ones),

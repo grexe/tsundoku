@@ -44,6 +44,7 @@ mkdir $STAGE/apps/Toji/docs
 for guide in docs/guide/build/toji-start.pdf docs/guide/build/toji-guide.pdf docs/guide/build/toji-guide.epub; do
 	[ -f "$guide" ] && cp -a "$guide" $STAGE/apps/Toji/docs/
 done
+cp -a images/toji-logo.png $STAGE/apps/Toji/docs/
 ln -s ../../../../apps/Toji/Toji $STAGE/data/deskbar/menu/Applications/Toji
 sed -e "s|@VERSION@|$VERSION|g" -e "s|@ARCH@|$ARCH|g" package/PackageInfo.in > $STAGE/.PackageInfo
 

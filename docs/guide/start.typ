@@ -4,13 +4,13 @@
 // The start page of Toji: shown when the program is started without a file (the user guide is in the Help menu).
 // typst compile --root ../.. start.typ build/toji-start.pdf
 #set document(title: "Toji", author: "SEN Labs e.U.")
-#set page(paper: "a4", margin: (x: 2.5cm, y: 2.5cm), fill: rgb("#faf9f4"))
+#set page(paper: "a4", margin: (x: 2.5cm, y: 2.5cm), fill: white)
 #set text(font: "Libertinus Serif", size: 11pt, lang: "en")
 #set par(justify: false, leading: 0.7em)
 
 #align(center)[
   #v(1.2cm)
-  #image("/images/toji-logo.png", height: 11cm)
+  #image("/images/toji-logo.png", height: 12cm)
   #v(1.2cm)
   #text(size: 12pt, tracking: 0.08em)[A DOCUMENT READER FOR HAIKU]
   #v(1.6cm)

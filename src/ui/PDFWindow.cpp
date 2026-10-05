@@ -2378,7 +2378,7 @@ PDFWindow::MessageReceived(BMessage* message)
 			} else if (cmd.StartsWith("do_")) {
 				// any command of the window by name
 				static const struct { const char* name; uint32 what; } commands[] = {
-					{ "fileinfo", FILE_INFO_CMD }, { "righttoleft", RIGHT_TO_LEFT_CMD }, { "toptobottom", TOP_TO_BOTTOM_CMD }, { "undo", UNDO_CMD }, { "redo", REDO_CMD }, { "save", SAVE_FILE_CMD }, { "preferences", PREFERENCES_FILE_CMD },
+					{ "fileinfo", FILE_INFO_CMD }, { "righttoleft", RIGHT_TO_LEFT_CMD }, { "toptobottom", TOP_TO_BOTTOM_CMD }, { "undo", UNDO_CMD }, { "redo", REDO_CMD }, { "save", SAVE_FILE_CMD }, { "preferences", PREFERENCES_FILE_CMD }, { "about", ABOUT_APP_CMD },
 					{ "printsettings", PRINT_SETTINGS_CMD }, { "rotate", ROTATE_CLOCKWISE_CMD },
 					{ "flowsingle", FLOW_SINGLE_CMD }, { "flowdouble", FLOW_DOUBLE_CMD }, { "flowcontinuous", FLOW_CONTINUOUS_CMD }, { "fitwidth", FIT_TO_PAGE_WIDTH_CMD }, { "fitpage", FIT_TO_PAGE_CMD },
 					{ "back", HISTORY_BACK_CMD }, { "forward", HISTORY_FORWARD_CMD },
