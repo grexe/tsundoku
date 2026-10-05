@@ -373,7 +373,7 @@ public:
 	void         SyncAnnotationCount(const char* path);
 
 	// Describes the annotations of a PDF file in the attribute SEN:annotations (the file itself is not changed) and gives those
-	// that have no name (the /NM of the PDF; programs that do not know of identifiers make none) a UUID in memory, so that
+	// that have no name (the /NM of the PDF; programs that do not know of identifiers make none) an identifier (a TSID) in memory, so that
 	// the annotations can be referred to in the standard way. The identifiers are kept in the attribute (with a key made of
 	// the page, the kind, the place and the text), so that the same annotation gets the same identifier when the file is
 	// opened again; they go into the file when it is saved. Returns how many were named.

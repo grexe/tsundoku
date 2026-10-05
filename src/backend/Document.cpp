@@ -2199,7 +2199,7 @@ Document::UpgradeAnnotationIds()
 				for (int32 i = 0; archive.FindMessage("oa:Annotation", i, &item) == B_OK; i++) {
 					BString key, id;
 					if (item.FindString("sen:key", &key) == B_OK && item.FindString("id", &id) == B_OK)
-						given[key] = WebAnnotation::IdentifierUuid(id.String());
+						given[key] = WebAnnotation::IdentifierKey(id.String());
 				}
 			}
 			delete[] buffer;

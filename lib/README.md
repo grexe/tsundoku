@@ -22,4 +22,4 @@ Toji. A new file here gets the MIT header; a file that needs MuPDF stays in `src
 ## Using it
 
 Add the files you need to a Makefile (the headers are included as `"WebAnnotation.h"`, so give the folder as an include path).
-`WebAnnotation::NewId()` makes the UUIDs for annotation identifiers.
+`WebAnnotation::NewId()` makes the identifiers of annotations: TSIDs, the compact time-sorted numbers of SEN:ID.

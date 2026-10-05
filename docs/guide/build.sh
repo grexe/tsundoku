@@ -1,5 +1,6 @@
 #!/bin/sh
-# Builds the user guide from the Markdown chapters: HTML (one file), EPUB 3, PDF and DjVu, in build/.
+# Builds the user guide from the Markdown chapters: HTML (one file), EPUB 3, PDF and DjVu, in build/, and the start page
+# (start.typ, a PDF that opens when the program is started without a file).
 # Needs pandoc, typst (the PDF engine) and pdf2djvu (DjVu); the formats whose tool is missing are skipped.
 set -e
 cd "$(dirname "$0")"
@@ -19,6 +20,8 @@ pandoc $CHAPTERS $COMMON -t epub3 --css=guide.css --epub-cover-image=../../image
 	-o "$OUT/$NAME.epub"
 
 if command -v typst >/dev/null; then
+	echo "Start page"
+	typst compile --root ../.. start.typ "$OUT/toji-start.pdf"
 	echo "PDF"
 	pandoc $CHAPTERS $COMMON --pdf-engine=typst -V papersize=a4 -V lang=en -o "$OUT/$NAME.pdf"
 	if command -v pdf2djvu >/dev/null; then

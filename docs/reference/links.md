@@ -12,7 +12,7 @@ toji:///boot/home/papers/x.pdf#page=5
 toji:///boot/home/papers/x.pdf#page=5&xywh=percent:10,20,30,40
 toji:///boot/home/papers/x.pdf#page=5:~:text=the%20words
 toji:///boot/home/books/a%20book.epub#epubcfi(/6/4[chap01]!/4/10)
-toji:///boot/home/papers/x.pdf#annotation=6f0c3e1a-9b2f-4f6e-8a41-0d6a1c1f7a11
+toji:///boot/home/papers/x.pdf#annotation=5981772104558870528
 ```
 
 The part before `#` is the file: an absolute path, percent-encoded (`%20` for a space). A `file:` URI or a plain path with the
@@ -29,7 +29,7 @@ It uses the fragment identifiers that exist for this, so the places mean the sam
 | `xywh=percent:x,y,w,h` | W3C Media Fragments | a region of the page, in percent of it (`oa:FragmentSelector`) |
 | `epubcfi(...)` | EPUB Canonical Fragment Identifier | a place in an EPUB, whatever the text size |
 | `:~:text=[prefix-,]words[,-suffix]` | Text Fragments | the words (`oa:TextQuoteSelector`); a comma or hyphen in the words is encoded |
-| `annotation=<uuid>` | (Toji's term) | an annotation, by its identifier (see [annotations.md](annotations.md#identifiers)) |
+| `annotation=<tsid>` | (Toji's term) | an annotation, by its identifier (see [annotations.md](annotations.md#identifiers)) |
 
 `page=5&xywh=...` combines, and the text directive comes last: `page=5:~:text=...`.
 

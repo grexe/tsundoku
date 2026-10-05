@@ -988,6 +988,51 @@ MakeSidebarIcon(int size)
 }
 
 
+// A small arrow in the corner of a toolbar icon says that the button opens a menu (the colors of the marker, the shapes).
+static BBitmap*
+WithMenuArrow(BBitmap* icon)
+{
+	if (icon == NULL)
+		return NULL;
+	BRect bounds = icon->Bounds();
+	BBitmap* bitmap = new BBitmap(bounds, B_RGBA32, true);
+	BView* view = new BView(bounds, "menu icon", B_FOLLOW_NONE, B_WILL_DRAW);
+	bitmap->AddChild(view);
+	bitmap->Lock();
+
+	view->SetDrawingMode(B_OP_COPY);
+	view->SetHighColor(0, 0, 0, 0);
+	view->FillRect(bounds);
+	view->SetDrawingMode(B_OP_ALPHA);
+	view->SetBlendingMode(B_PIXEL_ALPHA, B_ALPHA_OVERLAY);
+	view->DrawBitmap(icon, BPoint(0, 0));
+
+	// the arrow, drawn in whole pixels (a triangle of 7 by 4)
+	view->SetDrawingMode(B_OP_COPY);
+	rgb_color light = { 255, 255, 255, 255 };
+	rgb_color ink = tint_color(ui_color(B_PANEL_TEXT_COLOR), B_LIGHTEN_1_TINT);
+	float centerX = floorf(bounds.right) - 3;
+	float top = floorf(bounds.bottom) - 4;
+	for (int row = 0; row < 5; row++) {
+		// a light row above and around keeps the arrow readable over the icon
+		float half = 4 - row;
+		view->SetHighColor(light);
+		view->StrokeLine(BPoint(centerX - half - 1, top + row - 1), BPoint(centerX + half + 1, top + row - 1));
+	}
+	for (int row = 0; row < 4; row++) {
+		float half = 3 - row;
+		view->SetHighColor(ink);
+		view->StrokeLine(BPoint(centerX - half, top + row), BPoint(centerX + half, top + row));
+	}
+
+	view->Sync();
+	bitmap->Unlock();
+	bitmap->RemoveChild(view);
+	delete view;
+	return bitmap;
+}
+
+
 // The icon of a page flow: one page, two side by side, or pages below each other that go on beyond the icon.
 static BBitmap*
 MakeFlowIcon(PageFlow flow, int size)
@@ -1249,11 +1294,11 @@ BToolBar* PDFWindow::BuildToolBar()
 	mToolBar->AddSeparator();
 
 	// marking and annotating: each button arms what the next click or selection works with (Escape lets go)
-	mToolBar->AddAction(MARKER_MENU_CMD, this, LoadVectorIcon("ANNOT_HIGHLIGHT"),
+	mToolBar->AddAction(MARKER_MENU_CMD, this, WithMenuArrow(LoadVectorIcon("ANNOT_HIGHLIGHT")),
 		B_TRANSLATE("Marker: choose a color, then select the text"), NULL, true);
 	mToolBar->AddAction(NOTE_BUTTON_CMD, this, LoadVectorIcon("ANNOT_NOTE"),
 		B_TRANSLATE("Note: select text for a margin note, or click on the page"), NULL, true);
-	mToolBar->AddAction(SHAPES_MENU_CMD, this, LoadVectorIcon("ART_RECTS"),
+	mToolBar->AddAction(SHAPES_MENU_CMD, this, WithMenuArrow(LoadVectorIcon("ART_RECTS")),
 		B_TRANSLATE("Text, shapes and drawing: choose one, then click or drag on the page"), NULL, true);
 
 	mToolBar->AddSeparator();
@@ -1978,7 +2023,7 @@ PDFWindow::MessageReceived(BMessage* message)
 		int32 page = 0, index = -1;
 		BString id;
 		if (message->FindString("id", &id) == B_OK && id.Length() > 0) {
-			id = WebAnnotation::IdentifierUuid(id.String());
+			id = WebAnnotation::IdentifierKey(id.String());
 			int foundPage = 0, foundIndex = -1;
 			if (!mMainView->GetDocument()->FindAnnotationById(id.String(), &foundPage, &foundIndex)) {
 				beep();

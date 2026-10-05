@@ -45,8 +45,10 @@ esac
 
 make -C src -j"$(nproc)" "$@"
 
-# The user guide is the start page of the program and is found in docs/ next to it (CI builds it, see docs/guide/build.sh)
-if [ -f docs/guide/build/toji-guide.pdf ]; then
-	mkdir -p dist/docs
-	cp -f docs/guide/build/toji-guide.pdf dist/docs/
-fi
+# The start page and the user guide are found in docs/ next to the program (CI builds them, see docs/guide/build.sh)
+mkdir -p dist/docs
+for pdf in toji-start.pdf toji-guide.pdf; do
+	[ -f docs/guide/build/$pdf ] && cp -f docs/guide/build/$pdf dist/docs/
+done
+
+true

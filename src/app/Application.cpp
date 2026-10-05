@@ -87,7 +87,7 @@ static const char * licenseCopyright =
 //   oa:hasTarget    a message with oa:hasSelector entries: an oa:FragmentSelector (page=5, an EPUB CFI), an
 //                   oa:TextQuoteSelector (the words), which may be refined by another selector (oa:refinedBy);
 //   oa:motivatedBy  (a string, with oa:hasTarget) the passage that the words name is also marked, not saved;
-//   oa:Annotation   the identifier of an annotation (an IRI: urn:uuid:...): the document goes to it and selects it.
+//   oa:Annotation   the identifier of an annotation (an IRI: urn:sen:<tsid>): the document goes to it and selects it.
 static const char *TARGET_MSG_KEY = "oa:hasTarget";
 static const char *MOTIVATION_MSG_KEY = "oa:motivatedBy";
 static const char *ANNOTATION_MSG_KEY = "oa:Annotation";
@@ -415,7 +415,7 @@ BepdfApplication::BepdfApplication()
 	}
 
 	mDefaultPDF = mAppPath;
-	mDefaultPDF.Append("docs/toji-guide.pdf");		// the user guide is the start page
+	mDefaultPDF.Append("docs/toji-start.pdf");		// the start page (the user guide is in the Help menu)
 
 	BPath path(mAppPath);
 	LoadSettings();

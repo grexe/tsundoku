@@ -3,7 +3,7 @@
 ## Keyboard
 
 | Key | Action |
-|---|---|
+|:---|:---|
 | Cmd+S, Cmd+Shift+S | Save, Save as |
 | Cmd+R | Reload |
 | Cmd+P | Print |
@@ -27,7 +27,7 @@
 ## Mouse
 
 | | |
-|---|---|
+|:---|:---|
 | Drag | move the page |
 | Option+drag | select text |
 | Option+Shift+drag | select a rectangle (copies the picture, too) |

@@ -181,6 +181,10 @@ private:
 	};
 	void MarginNoteBoxes(std::vector<MarginBox>* boxes);	// of the active page, in the coordinates of its bitmap
 	const DocAnnotation* MarginNoteAt(BPoint point);	// point in the coordinates of the bitmap of the active page
+	// the note in the margin at a point of the view, on whichever page it is (and that page)
+	const DocAnnotation* MarginNoteAtView(BPoint point, PageSlot** slot);
+	const DocAnnotation* mMarginHover;	// the note that the pointer is on (only compared, it may be gone)
+	bool MarginNotesOutside() const;	// the notes are beside the page, in the gray area: there is room for them
 	void DrawMarginNotes(BRect updateRect);
 	void MarkSelection(MarkupType type, uint32 rgb, bool note);
 	void EditNewestNote(int page);

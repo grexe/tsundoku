@@ -15,11 +15,11 @@
 //   toji:///boot/home/papers/x.pdf#page=5
 //   toji:///boot/home/papers/x.pdf#page=5&xywh=percent:10,20,30,40
 //   toji:///boot/home/papers/x.pdf#page=5:~:text=the%20words
-//   toji:///boot/home/papers/x.pdf#annotation=6f0c3e1a-...
+//   toji:///boot/home/papers/x.pdf#annotation=5981772104558870528
 //
 // The part after # is made of the fragment identifiers that exist for this: RFC 3778 (page=), W3C Media Fragments (xywh=),
 // the EPUB CFI (epubcfi(...)) and the Text Fragments of the web platform (:~:text=prefix-,words,-suffix); only the annotation
-// is a term of ours (the identifier of an annotation, the UUID of urn:uuid:...). They are the same places as the selectors of
+// is a term of ours (the identifier of an annotation, the TSID of urn:sen:...). They are the same places as the selectors of
 // the W3C Web Annotation model (oa:FragmentSelector, oa:TextQuoteSelector). A link can also be a file: URI or a plain path with
 // such a fragment.
 namespace DeepLink {
@@ -33,7 +33,7 @@ struct Place {
 	BString	quote;				// words (a text fragment), with some of the text before and after them
 	BString	prefix, suffix;
 	BString	cfi;				// epubcfi(...) of an EPUB
-	BString	annotation;			// the UUID of an annotation
+	BString	annotation;			// the identifier (TSID) of an annotation
 
 	Place() : page(0), hasRegion(false)
 	{

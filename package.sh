@@ -39,9 +39,9 @@ cp -a lib/LICENSE $STAGE/apps/Toji/license/MIT-lib-LICENSE
 mkdir -p $STAGE/data/licenses
 cp -a dist/license/AGPL-3.0 "$STAGE/data/licenses/GNU AGPL v3"
 mkdir $STAGE/apps/Toji/docs
-# the user guide (built from docs/guide by CI, or by build.sh there) is also the start page, shown when no file is given; the
-# package is made without it if it is not there
-for guide in docs/guide/build/toji-guide.pdf docs/guide/build/toji-guide.epub; do
+# the start page (shown when no file is given) and the user guide (Help), built from docs/guide by CI or by build.sh there; the
+# package is made without them if they are not there
+for guide in docs/guide/build/toji-start.pdf docs/guide/build/toji-guide.pdf docs/guide/build/toji-guide.epub; do
 	[ -f "$guide" ] && cp -a "$guide" $STAGE/apps/Toji/docs/
 done
 ln -s ../../../../apps/Toji/Toji $STAGE/data/deskbar/menu/Applications/Toji

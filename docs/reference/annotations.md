@@ -6,7 +6,7 @@ How Toji keeps and describes annotations. For how to use them, see the [README](
 
 | Document | Where the annotations are |
 |----------|---------------------------|
-| PDF | Real PDF annotations in the file; other readers show them. Every annotation gets a unique name (the `/NM` of the PDF, a UUID) when it is created, so that other programs can refer to it. |
+| PDF | Real PDF annotations in the file; other readers show them. Every annotation gets a unique name (the `/NM` of the PDF, a TSID) when it is created, so that other programs can refer to it. |
 | EPUB, comics (CBZ, CBR, CB7, CBT, BBF), DjVu | The attribute `SEN:annotations` of the file (these formats cannot take annotations), with `SEN:annotationCount` (the number, an integer so that it can be indexed; not there if there are none). |
 
 The attribute is a standard message that other applications can use for the same purpose, like the styles of StyledEdit are
@@ -20,10 +20,12 @@ made they are written to `SEN:annotations` too, so that they can be found and us
 
 Every annotation has an identifier. A PDF annotation that was made by another program has none (the `/NM` of the PDF is empty).
 When such a file is opened its annotations are described in `SEN:annotations` (the PDF file itself is not changed) and those
-without a name get a UUID, which is kept in the attribute together with a key of the annotation (page, kind, place, text), so
+without a name get an identifier, which is kept in the attribute together with a key of the annotation (page, kind, place, text), so
 that the same annotation has the same identifier the next time. The identifiers go into the PDF when it is saved. This is the
 setting "Describe annotations of other programs in the file's attributes" (on by default). The same can be done from outside with
 the scripting suite (`UpgradeAnnotations`, see [scripting.md](scripting.md)).
+
+The identifiers are TSIDs, the compact time-sorted numbers that SEN uses for `SEN:ID` (39 bits of time in units of 10 ms, 10 bits for the machine, 15 random bits, written as a decimal number such as `5981772104558870528`). They are about half as long as a UUID and sort by the time they were made. As an IRI an annotation is `urn:sen:<tsid>`; identifiers that other programs made (`urn:uuid:...`) are kept as they are.
 
 ## Bookmarks
 
@@ -81,7 +83,7 @@ Other applications (SEN) open a document at a place with `B_REFS_RECEIVED`; ther
   that was named. `xywh=` and an `oa:SvgSelector` (its bounding box is taken, in the units of its `viewBox`, relative to the
   page) go to the page and mark the place for a moment.
 - with `oa:motivatedBy`, the passage that the words name is also marked (not saved).
-- or `oa:Annotation` with the identifier of an annotation (`urn:uuid:...`): the document goes there and selects it.
+- or `oa:Annotation` with the identifier of an annotation (`urn:sen:<tsid>`): the document goes there and selects it.
 
 Annotations can be read and changed with the scripting suite: [scripting.md](scripting.md). There are no change notices; the
 attribute `SEN:annotations` is what to watch.

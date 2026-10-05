@@ -48,7 +48,7 @@ extern const char* const kConformsToMediaFragments;	// W3C Media Fragments: xywh
 // (a text quote selector, with some of the text before and after it) and, for an EPUB, by its CFI; where it was
 // (chapter, place in it) are hints for finding it quickly, which are not part of the model (sen:chapter, ...).
 struct Mark {
-	BString id;				// a UUID; the identifier of the annotation is urn:uuid:<id>
+	BString id;				// a TSID; the identifier of the annotation is urn:sen:<id>
 	BString motivation;
 	uint32  color;			// 0xRRGGBB
 	bool    hasColor;
@@ -103,12 +103,15 @@ bool    SvgBoundingBox(const char* svg, float box[4], float viewBox[4], bool* ha
 BString ColorStyle(const char* motivation, uint32 color);
 bool    ColorOfStyle(const char* css, uint32* color);
 
-// A new identifier for an annotation: a random (version 4) UUID, as text (size 37 or more).
+// A new identifier for an annotation: a TSID, the compact time-sorted identifier of SEN:ID (a decimal number of up to 20
+// digits, as text; size 21 or more).
 void    NewId(char* id, size_t size);
 
-// The identifier as an IRI, and the UUID in an identifier that is one (urn:uuid:..., or the UUID itself)
+// The identifier as an IRI (urn:sen:<tsid>), and the identifier in an IRI of ours (or in a urn:uuid:..., which other programs
+// make); an identifier without a scheme is returned as it is.
+extern const char* const kIdentifierPrefix;
 BString IdentifierIri(const char* id);
-BString IdentifierUuid(const char* iri);
+BString IdentifierKey(const char* iri);
 
 // the IRI of a file: file:///boot/home/a%20book.epub
 BString FileIri(const char* path);

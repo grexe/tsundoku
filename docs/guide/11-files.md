@@ -5,8 +5,8 @@ in Tracker takes everything along. (On a volume that is not BFS the attributes a
 
 ## What it writes
 
-| Attribute | |
-|---|---|
+| Attributes | What they hold |
+|:---|:---|
 | `dc:title`, `dc:creator`, `dc:subject`, `dc:description`, `dc:publisher`, `dc:language`, `dc:date`, `dc:identifier` | what the document says about itself (Dublin Core) |
 | `dcterms:isPartOf`, `schema:position` | the series and the number in it |
 | `schema:isbn`, `schema:numberOfPages` | the ISBN and the number of pages |

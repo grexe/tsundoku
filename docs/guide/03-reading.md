@@ -28,7 +28,7 @@ If a file has a password, Toji asks for it.
 **View** has three ways to show pages:
 
 | | |
-|---|---|
+|:---|:---|
 | **Single page** | one page at a time |
 | **Double-sided** | two pages side by side like the pages of a book; **Title page alone** lets the first page stand alone, as in a book |
 | **Continuous** | all pages one below the other, scrolled through |

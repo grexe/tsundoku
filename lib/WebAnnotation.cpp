@@ -10,7 +10,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
+#include <sys/time.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <Node.h>
 #include <TypeConstants.h>
@@ -126,26 +129,63 @@ FileIri(const char* path)
 
 
 
-void
-NewId(char* id, size_t size)
+const char* const kIdentifierPrefix = "urn:sen:";
+
+// A TSID (time-sorted unique identifier, the format of SEN:ID): 39 bits of time in units of 10 ms since 1970, 10 bits for the
+// machine and 15 random bits, as a decimal number. It is made like the generator of SEN, and is strictly increasing in a
+// program, so that two annotations that are made in the same 10 ms still differ.
+static const int kTimeBits = 39;
+static const int kMachineBits = 10;
+static const int kRandomBits = 64 - kTimeBits - kMachineBits;
+
+static uint64_t
+RandomBits(int bits)
 {
-	unsigned char bytes[16];
+	uint64_t value = 0;
 	bool random = false;
 	FILE* file = fopen("/dev/urandom", "rb");
 	if (file != NULL) {
-		random = fread(bytes, 1, sizeof(bytes), file) == sizeof(bytes);
+		random = fread(&value, sizeof(value), 1, file) == 1;
 		fclose(file);
 	}
 	if (!random) {
-		srand((unsigned)time(NULL) ^ (unsigned)(uintptr_t)id);
-		for (size_t i = 0; i < sizeof(bytes); i++)
-			bytes[i] = (unsigned char)rand();
+		srand((unsigned)time(NULL) ^ (unsigned)(uintptr_t)&value);
+		value = ((uint64_t)rand() << 32) ^ (uint64_t)rand();
 	}
-	bytes[6] = (bytes[6] & 0x0f) | 0x40;	// version 4
-	bytes[8] = (bytes[8] & 0x3f) | 0x80;
-	snprintf(id, size, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", bytes[0],
-		bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7], bytes[8], bytes[9], bytes[10],
-		bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]);
+	return value & (UINT64_MAX >> (64 - bits));
+}
+
+static uint64_t
+MachineId()
+{
+	// the same on every start: a hash (FNV-1a) of the name of the machine
+	char host[256] = "";
+	gethostname(host, sizeof(host) - 1);
+	uint64_t hash = 1469598103934665603ULL;
+	for (const char* c = host; *c != '\0'; c++)
+		hash = (hash ^ (unsigned char)*c) * 1099511628211ULL;
+	return (hash ^ (hash >> kMachineBits) ^ (hash >> (2 * kMachineBits))) & (UINT64_MAX >> (64 - kMachineBits));
+}
+
+void
+NewId(char* id, size_t size)
+{
+	static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+	static uint64_t last = 0;
+	static uint64_t machine = MachineId();
+
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	uint64_t units = ((uint64_t)now.tv_sec * 1000 + now.tv_usec / 1000) / 10;
+	units &= UINT64_MAX >> (64 - kTimeBits);
+
+	pthread_mutex_lock(&lock);
+	uint64_t value = (units << (kMachineBits + kRandomBits)) | (machine << kRandomBits) | RandomBits(kRandomBits);
+	if (value <= last)
+		value = last + 1;
+	last = value;
+	pthread_mutex_unlock(&lock);
+	snprintf(id, size, "%llu", (unsigned long long)value);
 }
 
 
@@ -155,16 +195,18 @@ IdentifierIri(const char* id)
 {
 	BString result(id);
 	if (result.Length() > 0 && result.FindFirst(':') < 0)
-		result.Prepend("urn:uuid:");
+		result.Prepend(kIdentifierPrefix);
 	return result;
 }
 
 
 BString
-IdentifierUuid(const char* iri)
+IdentifierKey(const char* iri)
 {
 	BString result(iri);
-	if (result.IFindFirst("urn:uuid:") == 0)
+	if (result.IFindFirst(kIdentifierPrefix) == 0)
+		result.Remove(0, strlen(kIdentifierPrefix));
+	else if (result.IFindFirst("urn:uuid:") == 0)
 		result.Remove(0, 9);
 	return result;
 }
@@ -638,7 +680,7 @@ UnarchiveMark(const BMessage& annotation, Mark* mark)
 	BString id;
 	if (annotation.FindString("id", &id) != B_OK)
 		return false;
-	mark->id = IdentifierUuid(id.String());
+	mark->id = IdentifierKey(id.String());
 	if (annotation.FindString("oa:motivatedBy", &mark->motivation) != B_OK)
 		mark->motivation = kHighlighting;
 

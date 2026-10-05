@@ -253,6 +253,7 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 	mReadOnlyWarned = false;
 	mTool = kToolNone;
 	mMarkupArmed = false;
+	mMarginHover = NULL;
 	mArmedNote = false;
 	mArmedType = kMarkupHighlight;
 	mArmedColor = 0xffeb3b;
@@ -961,8 +962,8 @@ PDFView::Draw(BRect updateRect)
 		}
 		for (size_t i = 0; i < mSlots.size(); i++) {
 			PageSlot* slot = mSlots[i];
-			BRect area(slot->origin.x - 1, slot->origin.y - 1, slot->origin.x + slot->page->GetWidth(),
-				slot->origin.y + slot->page->GetHeight());
+			BRect area(slot->origin.x - 1, slot->origin.y - 1, slot->origin.x + slot->page->GetWidth() + 20,
+				slot->origin.y + slot->page->GetHeight());	// (and the notes beside the page)
 			if (!area.Intersects(updateRect))
 				continue;
 			// the members stand for this page while it is drawn
@@ -1236,11 +1237,27 @@ PDFView::MouseDown (BPoint point) {
 
 	// a click on the note in the margin opens it for editing
 	if (buttons == B_PRIMARY_MOUSE_BUTTON && !SelectingText()) {
-		if (const DocAnnotation* margin = MarginNoteAt(CorrectMousePos(point))) {
+		PageSlot* noteSlot = NULL;
+		if (const DocAnnotation* margin = MarginNoteAtView(point, &noteSlot)) {
+			ActivateSlot(noteSlot);
 			BMessage edit(EDIT_NOTE_MSG);
 			edit.AddInt32("page", ActivePage());
 			edit.AddInt32("index", margin->index);
 			edit.AddString("text", margin->contents);
+			if (Window() != NULL)
+				Window()->PostMessage(&edit, this);
+			return;
+		}
+	}
+
+	// a double click on a note or a text opens it for editing
+	if (buttons == B_PRIMARY_MOUSE_BUTTON && clicks >= 2 && !SelectingText()) {
+		const DocAnnotation* note = OnAnnotation(point);
+		if (note != NULL && (note->kind == kAnnotNote || note->kind == kAnnotText)) {
+			BMessage edit(EDIT_NOTE_MSG);
+			edit.AddInt32("page", ActivePage());
+			edit.AddInt32("index", note->index);
+			edit.AddString("text", note->contents);
 			if (Window() != NULL)
 				Window()->PostMessage(&edit, this);
 			return;
@@ -1392,8 +1409,14 @@ PDFView::MouseMoved (BPoint point, uint32 transit, const BMessage *msg) {
 
 	switch (mMouseAction) {
 		case NO_ACTION:
-			if (!mDragStarted)
+			if (!mDragStarted) {
 				DisplayLink(point);
+				const DocAnnotation* hover = transit == B_EXITED_VIEW ? NULL : MarginNoteAtView(point, NULL);
+				if (hover != mMarginHover) {
+					mMarginHover = hover;
+					Invalidate();
+				}
+			}
 			break;
 		case MOVE_ACTION: // move view
 		{
@@ -3214,11 +3237,13 @@ PDFView::MarginNoteBoxes(std::vector<MarginBox>* boxes)
 		}
 	}
 	const float kSize = 14;
+	// beside the page if the view has room for that, else in the margin of the page at its right edge
+	float left = MarginNotesOutside() ? mWidth + 4 : mWidth - kSize - 3;
 	float lastBottom = -1000;
 	for (size_t i = 0; i < items.size(); i++) {
 		float y = items[i].y > lastBottom + 2 ? items[i].y : lastBottom + 2;
 		MarginBox box;
-		box.box = BRect(mWidth - kSize - 3, y, mWidth - 4, y + kSize - 3);
+		box.box = BRect(left, y, left + kSize - 1, y + kSize - 3);
 		box.annotation = items[i].annotation;
 		boxes->push_back(box);
 		lastBottom = box.box.bottom;
@@ -3239,6 +3264,32 @@ PDFView::MarginNoteAt(BPoint point)
 }
 
 
+bool
+PDFView::MarginNotesOutside() const
+{
+	return mCanvasWidth - (mLeft + mWidth) >= 14 + 8;
+}
+
+
+const DocAnnotation*
+PDFView::MarginNoteAtView(BPoint point, PageSlot** found)
+{
+	for (size_t i = 0; i < mSlots.size(); i++) {
+		SlotScope scope(this, mSlots[i]);
+		std::vector<MarginBox> boxes;
+		MarginNoteBoxes(&boxes);
+		for (size_t k = 0; k < boxes.size(); k++) {
+			if (boxes[k].box.OffsetByCopy(mLeft, mTop).Contains(point)) {
+				if (found != NULL)
+					*found = mSlots[i];
+				return boxes[k].annotation;
+			}
+		}
+	}
+	return NULL;
+}
+
+
 void
 PDFView::DrawMarginNotes(BRect)
 {
@@ -3250,7 +3301,16 @@ PDFView::DrawMarginNotes(BRect)
 	rgb_color edge = { 150, 120, 20, 255 };
 	for (size_t i = 0; i < boxes.size(); i++) {
 		BRect box = boxes[i].box.OffsetByCopy(mLeft, mTop);
-		SetHighColor(fill);
+		bool hover = boxes[i].annotation == mMarginHover;
+		// the pointer on a note shows what it belongs to: a dotted line from the end of the marked words
+		if (hover && !boxes[i].annotation->quads.empty()) {
+			BRect words = mPage->PageToDev(boxes[i].annotation->quads[0]).OffsetByCopy(mLeft, mTop);
+			float y = (words.top + words.bottom) / 2;
+			SetHighColor(edge);
+			for (float x = words.right + 2; x < box.left - 1; x += 3)
+				StrokeLine(BPoint(x, y), BPoint(x, y));
+		}
+		SetHighColor(hover ? tint_color(fill, B_LIGHTEN_1_TINT) : fill);
 		FillRoundRect(box, 2, 2);
 		SetHighColor(edge);
 		StrokeRoundRect(box, 2, 2);
@@ -4763,6 +4823,14 @@ PDFView::TestCommand(BMessage* message)
 	} else if (cmd == "marginnote") {
 		MarginNoteOnSelection();
 		TestLog("marginnote: unsaved changes %d", (int)mDoc->HasUnsavedChanges());
+	} else if (cmd == "hovermargin") {
+		// the pointer on the n-th note of the margin of the active page (-1: none)
+		int32 n = (int32)TestNumber(message, "n");
+		std::vector<MarginBox> boxes;
+		MarginNoteBoxes(&boxes);
+		mMarginHover = n >= 0 && n < (int32)boxes.size() ? boxes[n].annotation : NULL;
+		Invalidate();
+		TestLog("hovermargin: %d boxes, outside %d", (int)boxes.size(), (int)MarginNotesOutside());
 	} else if (cmd == "notebutton") {
 		NoteButton();
 		TestLog("notebutton: armed state %d", ArmedState());
