@@ -715,6 +715,7 @@ bool PDFWindow::CancelCommand(BMessage* msg) {
 			case ADD_ANNOTATION_CMD:
 			case MARKER_MENU_CMD:
 			case ADD_MARGIN_NOTE_CMD:
+			case COPY_PLACE_LINK_CMD:
 			case SHOW_MARGIN_NOTES_CMD:
 			case NOTE_BUTTON_CMD:
 			case SHAPES_MENU_CMD:
@@ -1091,6 +1092,7 @@ BMenuBar* PDFWindow::BuildMenu()
 			.AddItem(B_TRANSLATE("Redo"), REDO_CMD, 'Z', B_SHIFT_KEY)
 			.AddSeparator()
 			.AddItem(B_TRANSLATE("Copy"), COPY_SELECTION_CMD, 'C')
+			.AddItem(B_TRANSLATE("Copy link to this place"), COPY_PLACE_LINK_CMD, 'L', B_SHIFT_KEY)
 			.AddSeparator()
 			.AddItem(B_TRANSLATE("Select all"), SELECT_ALL_CMD, 'A')
 			.AddItem(B_TRANSLATE("Select none"), SELECT_NONE_CMD, 'A', B_SHIFT_KEY)
@@ -1620,6 +1622,9 @@ PDFWindow::MessageReceived(BMessage* message)
 		break;
 	case ADD_MARGIN_NOTE_CMD:
 		mMainView->MarginNoteOnSelection();
+		break;
+	case COPY_PLACE_LINK_CMD:
+		mMainView->CopyPlaceLink();
 		break;
 	case SHOW_MARGIN_NOTES_CMD:
 		mMainView->SetMarginNotesShown(!mMainView->MarginNotesShown());

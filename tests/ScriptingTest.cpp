@@ -33,6 +33,7 @@
 #include <Rect.h>
 #include <String.h>
 
+#include <OS.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -199,6 +200,40 @@ ShapeChecks()
 }
 
 
+// links to places (lib/DeepLink.h): the link to the page that is shown, and going to a place that a link names
+static void
+LinkChecks()
+{
+	BMessage reply;
+	BMessage set = DocumentProperty(B_SET_PROPERTY, "Page");
+	set.AddInt32("data", 5);
+	Send(set, &reply);
+	BString link = Text(DocumentProperty(B_GET_PROPERTY, "Link"));
+	Check("GET Link is a toji: link", link.FindFirst("toji://") == 0);
+	Check("the link has the page", link.FindFirst("#page=5") >= 0);
+
+	BMessage go = DocumentProperty(B_EXECUTE_PROPERTY, "Goto");
+	go.AddString("uri", "toji:///x/y.pdf#page=9");
+	Check("EXECUTE Goto with a link", Send(go, &reply));
+	snooze(500000);
+	Check("the page is 9", Number(DocumentProperty(B_GET_PROPERTY, "Page")) == 9);
+
+	set = DocumentProperty(B_SET_PROPERTY, "Page");
+	set.AddInt32("data", 1);
+	Send(set, &reply);
+	go = DocumentProperty(B_EXECUTE_PROPERTY, "Goto");
+	go.AddString("uri", "toji:///x/y.pdf#:~:text=Krawitz");
+	Check("EXECUTE Goto with the words of a link", Send(go, &reply));
+	snooze(1500000);
+	Check("the words are selected, and the link says so",
+		Text(DocumentProperty(B_GET_PROPERTY, "Link")).FindFirst(":~:text=Krawitz") >= 0);
+
+	BMessage bad = DocumentProperty(B_EXECUTE_PROPERTY, "Goto");
+	bad.AddString("uri", "http://example.org/");
+	Check("another kind of link is refused", !Send(bad, &reply));
+}
+
+
 int
 main(int argc, char** argv)
 {
@@ -209,6 +244,11 @@ main(int argc, char** argv)
 		return 1;
 	}
 
+	if (argc > 1 && strcmp(argv[1], "links") == 0) {
+		LinkChecks();
+		printf("%d checks, %d failed\n", sChecks, sFailed);
+		return sFailed;
+	}
 	if (argc > 1 && strcmp(argv[1], "shapes") == 0) {
 		ShapeChecks();
 		printf("%d checks, %d failed\n", sChecks, sFailed);

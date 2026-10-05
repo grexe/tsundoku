@@ -77,6 +77,7 @@
 #include "WebAnnotation.h"
 #include "EpubInfo.h"
 #include "PDFView.h"
+#include "DeepLink.h"
 #include "PrintingProgressWindow.h"
 #include "ResourceLoader.h"
 #include "StatusWindow.h"
@@ -103,6 +104,7 @@ static const int kZoomDPI[MAX_ZOOM - MIN_ZOOM + 1] = {
 #define NOTE_ENTERED_MSG               'ntnt'
 #define CHANGE_COLOR_MSG               'chcl'
 #define CHANGE_STYLE_MSG               'chst'
+#define COPY_PLACE_LINK_MSG            'cpPl'
 #define ADD_TOOL_MSG                   'adtl'
 #define ARM_MARKUP_MSG                 'armM'
 #define CREATE_TEXT_MSG                'crtx'
@@ -641,6 +643,9 @@ void PDFView::MessageReceived(BMessage *msg) {
 			AnnotationsChanged();
 		break;
 	}
+	case COPY_PLACE_LINK_MSG:
+		CopyPlaceLink();
+		break;
 	case CHANGE_STYLE_MSG: {
 		// the line width and the fill of a shape
 		int32 page = 0, index = -1, rgb = 0;
@@ -1771,6 +1776,9 @@ PDFView::ShowPopUpMenu(BPoint point, const DocLink* link, const DocAnnotation* a
 	i = new BMenuItem(B_TRANSLATE("Select all"), new BMessage(SELECT_ALL_MSG));
 	i->SetTarget(this);
 	i->SetEnabled(canCopy);
+	menu->AddItem(i);
+	i = new BMenuItem(B_TRANSLATE("Copy link to this place"), new BMessage(COPY_PLACE_LINK_MSG));
+	i->SetTarget(this);
 	menu->AddItem(i);
 
 	if (mDoc->CanEditAnnotations()) {
@@ -3082,6 +3090,49 @@ PDFView::EditNewestNote(int page)
 	edit.AddString("text", "");
 	if (Window() != NULL)
 		Window()->PostMessage(&edit, this);
+}
+
+
+BString
+PDFView::LinkToHere()
+{
+	DeepLink::Place place;
+	if (mDoc == NULL)
+		return BString();
+	// in a book the pages change with the text size, the place is told by the text
+	place.page = mDoc->IsReflowable() ? 0 : ActivePage();
+	if (const DocAnnotation* annotation = SelectedAnnotation()) {
+		place.annotation = annotation->id;
+	} else if (HasTextSelection()) {
+		if (BString* text = GetSelectedText()) {
+			text->ReplaceAll("\r", " ");
+			text->ReplaceAll("\n", " ");
+			while (text->FindFirst("  ") >= 0)
+				text->ReplaceAll("  ", " ");
+			text->Trim();
+			if (text->Length() > 150)
+				text->Truncate(150);
+			place.quote = *text;
+			delete text;
+		}
+	} else if (mDoc->IsReflowable()) {
+		TextAnchor anchor;
+		if (mDoc->MakeAnchor(ActivePage(), &anchor)) {
+			place.cfi = anchor.cfi;
+			if (place.cfi.IsEmpty())
+				place.quote = anchor.quote;
+		}
+	}
+	return DeepLink::Make(mDoc->Path(), place);
+}
+
+
+void
+PDFView::CopyPlaceLink()
+{
+	BString link = LinkToHere();
+	if (link.Length() > 0)
+		CopyText(&link);
 }
 
 

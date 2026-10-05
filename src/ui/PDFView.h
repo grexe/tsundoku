@@ -479,6 +479,10 @@ public:
 	// the Note button: a margin note if text is selected, else a note on the page (or, where there are none, the next
 	// selection of text gets a margin note)
 	void NoteButton();
+	// The link (a toji: URI, see DeepLink.h) to the selected annotation, the selected words or the page that is shown (in a book
+	// its place in the text); and putting it on the clipboard.
+	BString LinkToHere();
+	void CopyPlaceLink();
 	bool MarginNotesShown() const;
 	void SetMarginNotesShown(bool shown);
 	// what is armed, for the toolbar: 0 nothing, 1 the marker, 2 the note, 3 another tool (text, shapes, drawing)

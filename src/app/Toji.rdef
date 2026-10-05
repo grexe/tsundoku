@@ -26,7 +26,8 @@ resource file_types message {
 	"types" = "application/x-cb7",
 	"types" = "application/x-cbt",
 	"types" = "application/x-bbf",
-	"types" = "image/vnd.djvu"
+	"types" = "image/vnd.djvu",
+	"types" = "application/x-vnd.Be.URL.toji"	// toji: links, see lib/DeepLink.h
 };
 
 resource(86, "NOTE_ANNOT") #'BBMP' archive BBitmap {

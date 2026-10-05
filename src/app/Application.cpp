@@ -54,6 +54,7 @@
 
 #include "PDFWindow.h"
 #include "Application.h"
+#include "DeepLink.h"
 #include "WebAnnotation.h"
 #include "ResourceLoader.h"
 #include "PasswordWindow.h"
@@ -341,9 +342,24 @@ InstallMimeTypes(const entry_ref* application, bool keepLegacyColumns)
 	// when the application is entered (mimeset -a). Nobody does that for an application that comes in a package
 	// or is built, so the entry is out of date after a new type has been added: Toji would not be offered for
 	// EPUB files (Open with...). It is entered here, if it is not a supporting application of a type it names.
+	// the links of Toji (toji:///path/doc.pdf#page=5, see lib/DeepLink.h): a program that opens such a link (a browser, a
+	// mail program) starts what is named for the type of the scheme. It is a type of our own, so Toji is the one for it.
+	BMimeType link("application/x-vnd.Be.URL.toji");
+	if (link.InitCheck() == B_OK) {
+		if (!link.IsInstalled()) {
+			link.Install();
+			link.SetShortDescription(B_TRANSLATE("Toji link"));
+			link.SetLongDescription(B_TRANSLATE("Link to a place in a document (toji:)"));
+		}
+		char preferred[B_MIME_TYPE_LENGTH];
+		if (link.GetPreferredApp(preferred) != B_OK)
+			link.SetPreferredApp(BEPDF_APP_SIG);
+	}
+
 	bool listed = true;
-	for (size_t i = 0; application != NULL && i <= kComicTypeCount && listed; i++) {
-		BMimeType type(i == 0 ? "application/epub+zip" : kComicTypes[i - 1].type);
+	for (size_t i = 0; application != NULL && i <= kComicTypeCount + 1 && listed; i++) {
+		BMimeType type(i == 0 ? "application/epub+zip" : i <= kComicTypeCount ? kComicTypes[i - 1].type
+			: "application/x-vnd.Be.URL.toji");
 		BMessage apps;
 		listed = false;
 		if (type.GetSupportingApps(&apps) == B_OK) {
@@ -886,9 +902,30 @@ BepdfApplication::ArgvReceived (int32 argc, char **argv)
 	int pg;
 	entry_ref fileToOpen;
 
+	// a link to a place: toji:///path/doc.pdf#page=5 (what another program opens when a toji: link is clicked), or file:
+	if (argc == 2 && DeepLink::IsLink(argv[1])) {
+		BString path;
+		DeepLink::Place place;
+		if (DeepLink::Parse(argv[1], &path, &place) && get_ref_for_path(path.String(), &fileToOpen) == B_OK) {
+			BMessage msg(B_REFS_RECEIVED);
+			msg.AddRef("refs", &fileToOpen);
+			BMessage target;
+			DeepLink::ToTarget(place, &target);
+			if (!target.IsEmpty())
+				msg.AddMessage(TARGET_MSG_KEY, &target);
+			if (place.annotation.Length() > 0)
+				msg.AddString(ANNOTATION_MSG_KEY, WebAnnotation::IdentifierIri(place.annotation.String()));
+			PostMessage(&msg);
+			mGotSomething = true;
+			return;
+		}
+		fprintf(stderr, "%s: cannot open the link: %s\n", argv[0], argv[1]);
+		exit(1);
+	}
+
 	// check command line
 	if (!(argc == 2 || argc == 3) || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
-		fprintf(stderr, "usage: %s [<file> [<page>]]\n", argv[0]);
+		fprintf(stderr, "usage: %s [<file> [<page>] | <toji: link>]\n", argv[0]);
 		exit(1);
 	}
 	// without a page the document opens where it was left, as it does from Tracker

@@ -27,6 +27,7 @@
 #include <OutlineListView.h>
 #include <Window.h>
 
+#include "DeepLink.h"
 #include "Document.h"
 #include "OutlinesWindow.h"
 #include "PDFView.h"
@@ -52,7 +53,7 @@ const char* const kSuite = "suite/vnd.sen-labs.Toji";
 
 enum {
 	kPath, kTitle, kType, kPageCount, kTextSize, kPageProperty, kSelection, kGoto, kSave, kUndo, kRedo,
-	kUpgrade, kAnnotations, kBookmarks, kPages, kAddAnnotation, kAddBookmark
+	kUpgrade, kAnnotations, kBookmarks, kPages, kAddAnnotation, kAddBookmark, kLink
 };
 
 static property_info sDocumentProperties[] = {
@@ -88,6 +89,8 @@ static property_info sDocumentProperties[] = {
 		"('points'); 'color' and 'text' are optional. Returns the identifier.", 0, { B_STRING_TYPE } },
 	{ "AddBookmark", { B_EXECUTE_PROPERTY, 0 }, { B_DIRECT_SPECIFIER, 0 },
 		"Makes a bookmark (what CREATE of Bookmark does): 'label' and 'page'.", 0 },
+	{ "Link", { B_GET_PROPERTY, 0 }, { B_DIRECT_SPECIFIER, 0 },
+		"The link (toji: URI) to the selected annotation or words, or to the page that is shown.", 0, { B_STRING_TYPE } },
 	{ 0 }
 };
 
@@ -1134,7 +1137,33 @@ DocumentHandler::MessageReceived(BMessage* message)
 			delete text;
 			break;
 		}
+		case kLink:
+			reply.AddString("result", view->LinkToHere());
+			break;
 		case kGoto: {
+			const char* uri;
+			if (message->FindString("uri", &uri) == B_OK && uri[0] != '\0') {
+				// a place in a link; the file that it names is not looked at
+				BString path;
+				DeepLink::Place place;
+				if (!DeepLink::Parse(uri, &path, &place)) {
+					ReplyError(message, B_BAD_VALUE, "that is no link of Toji");
+					break;
+				}
+				BMessage show(PDFWindow::SHOW_TARGET_CMD);
+				BMessage target;
+				DeepLink::ToTarget(place, &target);
+				if (!target.IsEmpty()) {
+					show.AddMessage("oa:hasTarget", &target);
+					fWindow->PostMessage(&show);
+				}
+				if (place.annotation.Length() > 0) {
+					BMessage annotation(PDFWindow::SHOW_ANNOTATION_CMD);
+					annotation.AddString("id", place.annotation);
+					fWindow->PostMessage(&annotation);
+				}
+				break;
+			}
 			double page;
 			if (!NumberField(message, "page", &page) || page < 1 || page > doc->PageCount()) {
 				ReplyError(message, B_BAD_VALUE, "give the page (page=N)");
