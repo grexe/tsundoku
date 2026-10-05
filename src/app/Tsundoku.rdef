@@ -5,11 +5,11 @@
 resource app_flags B_MULTIPLE_LAUNCH;
 
 resource app_version {
-	major  = 0,
-	middle = 9,
+	major  = 1,
+	middle = 0,
 	minor  = 0,
 
-	variety = B_APPV_FINAL,
+	variety = B_APPV_DEVELOPMENT,
 	internal = 0,
 
 	short_info = "Document reader",
