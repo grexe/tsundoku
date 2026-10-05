@@ -131,12 +131,14 @@ FileIri(const char* path)
 
 const char* const kIdentifierPrefix = "urn:sen:";
 
-// A TSID (time-sorted unique identifier, the format of SEN:ID): 39 bits of time in units of 10 ms since 1970, 10 bits for the
-// machine and 15 random bits, as a decimal number. It is made like the generator of SEN, and is strictly increasing in a
-// program, so that two annotations that are made in the same 10 ms still differ.
-static const int kTimeBits = 39;
+// A TSID (time-sorted unique identifier, the compact identifier of SEN): 42 bits of milliseconds since 2026-01-01 (good for 139
+// years), 10 bits for the machine and 12 for a counter, as 13 characters of Crockford's Base32. The layout is that of a Snowflake
+// ID. Without a server that hands out machine numbers the machine is a hash of the host name and the counter of a millisecond
+// starts at a random place, so that two programs that make an identifier in the same millisecond rarely agree. In a program the
+// identifiers only grow: a clock that goes back, or more than 2000 in a millisecond, moves on to the next millisecond.
+static const uint64_t kEpochMs = 1767225600000ULL;		// 2026-01-01T00:00:00Z
 static const int kMachineBits = 10;
-static const int kRandomBits = 64 - kTimeBits - kMachineBits;
+static const int kCounterBits = 12;
 
 static uint64_t
 RandomBits(int bits)
@@ -171,21 +173,33 @@ void
 NewId(char* id, size_t size)
 {
 	static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-	static uint64_t last = 0;
+	static uint64_t lastMs = 0;
+	static uint64_t counter = 0;
 	static uint64_t machine = MachineId();
 
 	struct timeval now;
 	gettimeofday(&now, NULL);
-	uint64_t units = ((uint64_t)now.tv_sec * 1000 + now.tv_usec / 1000) / 10;
-	units &= UINT64_MAX >> (64 - kTimeBits);
+	uint64_t ms = (uint64_t)now.tv_sec * 1000 + now.tv_usec / 1000;
+	if (ms < kEpochMs)
+		ms = kEpochMs;
 
 	pthread_mutex_lock(&lock);
-	uint64_t value = (units << (kMachineBits + kRandomBits)) | (machine << kRandomBits) | RandomBits(kRandomBits);
-	if (value <= last)
-		value = last + 1;
-	last = value;
+	if (ms > lastMs) {
+		lastMs = ms;
+		counter = RandomBits(kCounterBits - 1);		// the upper half stays free to count up
+	} else if (++counter >= (1ULL << kCounterBits)) {
+		lastMs++;
+		counter = RandomBits(kCounterBits - 1);
+	}
+	uint64_t value = ((lastMs - kEpochMs) << (kMachineBits + kCounterBits)) | (machine << kCounterBits) | counter;
 	pthread_mutex_unlock(&lock);
-	snprintf(id, size, "%llu", (unsigned long long)value);
+
+	static const char kAlphabet[] = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+	char text[14];
+	for (int i = 12; i >= 0; i--, value >>= 5)
+		text[i] = kAlphabet[value & 31];
+	text[13] = '\0';
+	snprintf(id, size, "%s", text);
 }
 
 

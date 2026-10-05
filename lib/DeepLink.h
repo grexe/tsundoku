@@ -15,7 +15,7 @@
 //   toji:///boot/home/papers/x.pdf#page=5
 //   toji:///boot/home/papers/x.pdf#page=5&xywh=percent:10,20,30,40
 //   toji:///boot/home/papers/x.pdf#page=5:~:text=the%20words
-//   toji:///boot/home/papers/x.pdf#annotation=5981772104558870528
+//   toji:///boot/home/papers/x.pdf#annotation=02SEHT4FEMN73
 //
 // The part after # is made of the fragment identifiers that exist for this: RFC 3778 (page=), W3C Media Fragments (xywh=),
 // the EPUB CFI (epubcfi(...)) and the Text Fragments of the web platform (:~:text=prefix-,words,-suffix); only the annotation

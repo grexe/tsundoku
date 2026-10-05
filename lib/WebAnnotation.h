@@ -103,8 +103,8 @@ bool    SvgBoundingBox(const char* svg, float box[4], float viewBox[4], bool* ha
 BString ColorStyle(const char* motivation, uint32 color);
 bool    ColorOfStyle(const char* css, uint32* color);
 
-// A new identifier for an annotation: a TSID, the compact time-sorted identifier of SEN:ID (a decimal number of up to 20
-// digits, as text; size 21 or more).
+// A new identifier for an annotation: a TSID, a compact time-sorted identifier (42 bits of milliseconds since 2026-01-01, 10 bits
+// for the machine, 12 for a counter) as 13 characters of Crockford's Base32, such as 0Q8F2H3K9X1ZM (size 14 or more).
 void    NewId(char* id, size_t size);
 
 // The identifier as an IRI (urn:sen:<tsid>), and the identifier in an IRI of ours (or in a urn:uuid:..., which other programs

@@ -25,7 +25,7 @@ that the same annotation has the same identifier the next time. The identifiers 
 setting "Describe annotations of other programs in the file's attributes" (on by default). The same can be done from outside with
 the scripting suite (`UpgradeAnnotations`, see [scripting.md](scripting.md)).
 
-The identifiers are TSIDs, the compact time-sorted numbers that SEN uses for `SEN:ID` (39 bits of time in units of 10 ms, 10 bits for the machine, 15 random bits, written as a decimal number such as `5981772104558870528`). They are about half as long as a UUID and sort by the time they were made. As an IRI an annotation is `urn:sen:<tsid>`; identifiers that other programs made (`urn:uuid:...`) are kept as they are.
+The identifiers are TSIDs, compact time-sorted identifiers in the layout of a Snowflake ID: 42 bits of milliseconds since 2026-01-01, 10 bits for the machine (a hash of its name) and 12 for a counter, written as 13 characters of Crockford's Base32, such as `02SEHT4FEMN73`. They are about a third as long as a UUID, sort by the time they were made, and cannot be mixed up with each other for a long time to come: in a program they only grow. As an IRI an annotation is `urn:sen:<tsid>`; identifiers that other programs made (`urn:uuid:...`) are kept as they are.
 
 ## Bookmarks
 

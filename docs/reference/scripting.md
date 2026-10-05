@@ -95,7 +95,7 @@ hey Toji count Annotation of Document of Window 0 with context=page and page=12
 hey Toji get Annotation of Document of Window 0
 hey Toji get Quote of Annotation 0 of Document of Window 0
 hey Toji set Text of Annotation 0 of Document of Window 0 to "check this"
-hey Toji do Goto of Annotation '"5981772104558870528"' of Document of Window 0
+hey Toji do Goto of Annotation '"02SEHT4FEMN73"' of Document of Window 0
 hey Toji do AddAnnotation of Document of Window 0 with kind=highlight and quote="the words" and page=3
 hey Toji do AddBookmark of Document of Window 0 with label=Chapter and page=40
 hey Toji delete Bookmark Chapter of Document of Window 0
