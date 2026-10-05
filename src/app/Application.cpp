@@ -140,12 +140,10 @@ int main()
 
 
 
-// What a book says about itself, as BFS attributes. Nothing is invented for books: the names are the properties of the
+// What a document says about itself, as BFS attributes. Nothing is invented: the names are the properties of the
 // ontologies that are in use everywhere, with the prefix that is commonly used for each of them: dc: (Dublin Core
 // elements), dcterms: (Dublin Core terms) and schema: (schema.org); foaf: and others come the same way when they are
-// needed. The attributes of application/pdf are left as they are, since the files and Tracker know them (META:title,
-// META:author, META:keyw, META:pages are the same as dc:title, dc:creator, dc:subject, schema:numberOfPages); they are
-// written for books as well, so that a column or a query works for both.
+// needed. Where there is no such property the prefix is SEN: (or PDF: for what only a PDF file has).
 struct BookAttribute {
 	const char* name;
 	const char* label;
@@ -154,6 +152,10 @@ struct BookAttribute {
 };
 
 static const BookAttribute kBookAttributes[] = {
+	{ "dc:title", B_TRANSLATE_MARK("Title"), B_STRING_TYPE, 150 },
+	{ "dc:creator", B_TRANSLATE_MARK("Author"), B_STRING_TYPE, 150 },
+	{ "dc:subject", B_TRANSLATE_MARK("Keywords"), B_STRING_TYPE, 150 },
+	{ "schema:numberOfPages", B_TRANSLATE_MARK("Pages"), B_INT32_TYPE, 60 },
 	{ "dc:description", B_TRANSLATE_MARK("Description"), B_STRING_TYPE, 200 },
 	{ "dc:publisher", B_TRANSLATE_MARK("Publisher"), B_STRING_TYPE, 150 },
 	{ "dc:language", B_TRANSLATE_MARK("Language"), B_STRING_TYPE, 60 },
@@ -246,22 +248,30 @@ InstallMimeTypes(const entry_ref* application)
 		extensions.AddString("extensions", "epub");
 		epub.SetFileExtensions(&extensions);
 	}
-	// The attributes of a book are those that Tracker, queries and the file info know from PDF files (title, author,
-	// subject, creator, keywords), under the same names, so that a column or a query works for both; what only a book
-	// has is added in the same way.
-	BMimeType pdf("application/pdf");
 	BMessage pdfInfo, epubInfo;
-	if (pdf.GetAttrInfo(&pdfInfo) == B_OK) {
-		static const char* const shared[] = { "META:title", "META:author", "META:subject", "META:creator",
-			"META:keyw", "META:pages", NULL };
+	BMimeType pdf("application/pdf");
+	pdf.GetAttrInfo(&pdfInfo);
+	for (size_t i = 0; i < kBookAttributeCount; i++)
+		AddAttrInfo(&epubInfo, kBookAttributes[i].name, kBookAttributes[i].label, kBookAttributes[i].type,
+			kBookAttributes[i].width);
+	AddAttrInfo(&epubInfo, kAnnotationCountAttribute, B_TRANSLATE_MARK("Annotations"), B_INT32_TYPE, 70);
+	epub.SetAttrInfo(&epubInfo);
+
+	// The same attributes for PDF files. What the type had (the PDF: attributes of the producer and the dates) stays; the
+	// META: attributes of PDF files, which BePDF made up, are the properties of the ontologies now (dc:title, dc:creator,
+	// dc:subject, dc:description, schema:numberOfPages, and PDF:creator for the program that made the document).
+	{
+		BMessage pdfNew;
 		const char* name;
 		for (int32 i = 0; pdfInfo.FindString("attr:name", i, &name) == B_OK; i++) {
-			bool wanted = false;
-			for (int k = 0; shared[k] != NULL; k++) {
-				if (strcmp(name, shared[k]) == 0)
-					wanted = true;
+			if (strncmp(name, "META:", 5) == 0 || strcmp(name, kAnnotationCountAttribute) == 0 || strcmp(name, "PDF:creator") == 0)
+				continue;
+			bool ours = false;
+			for (size_t k = 0; k < kBookAttributeCount; k++) {
+				if (strcmp(name, kBookAttributes[k].name) == 0)
+					ours = true;
 			}
-			if (!wanted)
+			if (ours)
 				continue;
 			const char* publicName = name;
 			int32 type = B_STRING_TYPE, width = 150, alignment = B_ALIGN_LEFT;
@@ -273,39 +283,21 @@ InstallMimeTypes(const entry_ref* application)
 			pdfInfo.FindBool("attr:viewable", i, &viewable);
 			pdfInfo.FindBool("attr:editable", i, &editable);
 			pdfInfo.FindBool("attr:extra", i, &extra);
-			epubInfo.AddString("attr:name", name);
-			epubInfo.AddString("attr:public_name", publicName);
-			epubInfo.AddInt32("attr:type", type);
-			epubInfo.AddInt32("attr:width", width);
-			epubInfo.AddInt32("attr:alignment", alignment);
-			epubInfo.AddBool("attr:viewable", viewable);
-			epubInfo.AddBool("attr:editable", editable);
-			epubInfo.AddBool("attr:extra", extra);
+			pdfNew.AddString("attr:name", name);
+			pdfNew.AddString("attr:public_name", publicName);
+			pdfNew.AddInt32("attr:type", type);
+			pdfNew.AddInt32("attr:width", width);
+			pdfNew.AddInt32("attr:alignment", alignment);
+			pdfNew.AddBool("attr:viewable", viewable);
+			pdfNew.AddBool("attr:editable", editable);
+			pdfNew.AddBool("attr:extra", extra);
 		}
-	}
-	for (size_t i = 0; i < kBookAttributeCount; i++)
-		AddAttrInfo(&epubInfo, kBookAttributes[i].name, kBookAttributes[i].label, kBookAttributes[i].type,
-			kBookAttributes[i].width);
-	AddAttrInfo(&epubInfo, kAnnotationCountAttribute, B_TRANSLATE_MARK("Annotations"), B_INT32_TYPE, 70);
-	epub.SetAttrInfo(&epubInfo);
-
-	// the number of annotations is the same attribute for PDF files
-	{
-		bool known = false;
-		const char* name;
-		for (int32 i = 0; pdfInfo.FindString("attr:name", i, &name) == B_OK; i++) {
-			if (strcmp(name, kAnnotationCountAttribute) == 0)
-				known = true;
-		}
-		if (!known && pdfInfo.HasString("attr:name")) {
-			pdfInfo.AddString("attr:name", kAnnotationCountAttribute);
-			pdfInfo.AddString("attr:public_name", B_TRANSLATE("Annotations"));
-			pdfInfo.AddInt32("attr:type", B_INT32_TYPE);
-			pdfInfo.AddBool("attr:viewable", true);
-			pdfInfo.AddBool("attr:editable", false);
-			pdfInfo.AddInt32("attr:width", 70);
-			pdf.SetAttrInfo(&pdfInfo);
-		}
+		for (size_t i = 0; i < kBookAttributeCount; i++)
+			AddAttrInfo(&pdfNew, kBookAttributes[i].name, kBookAttributes[i].label, kBookAttributes[i].type,
+				kBookAttributes[i].width);
+		AddAttrInfo(&pdfNew, "PDF:creator", B_TRANSLATE_MARK("Creator"), B_STRING_TYPE, 120);
+		AddAttrInfo(&pdfNew, kAnnotationCountAttribute, B_TRANSLATE_MARK("Annotations"), B_INT32_TYPE, 70);
+		pdf.SetAttrInfo(&pdfNew);
 	}
 
 	BString rule;
@@ -941,15 +933,15 @@ static struct {
 	const char *pdf_name;
 	int32 type_code;
 } gAttrInfo[] = {
-	{"META:subject",    "Subject",     "Subject",      B_STRING_TYPE},
-	{"META:title",      "Title",       "Title",        B_STRING_TYPE},
-	{"META:creator",    "Creator",     "Creator",      B_STRING_TYPE},
-	{"META:author",     "Author",      "Author",       B_STRING_TYPE},
-	{"META:keyw",    	"Keywords",    "Keywords",     B_STRING_TYPE},
+	{"dc:description",    "Description", "Subject",      B_STRING_TYPE},
+	{"dc:title",          "Title",       "Title",        B_STRING_TYPE},
+	{"PDF:creator",       "Creator",     "Creator",      B_STRING_TYPE},
+	{"dc:creator",        "Author",      "Author",       B_STRING_TYPE},
+	{"dc:subject",        "Keywords",    "Keywords",     B_STRING_TYPE},
 	{"PDF:producer",    "Producer",    "Producer",     B_STRING_TYPE},
 	{"PDF:created",     "Created",     "CreationDate", B_TIME_TYPE},
 	{"PDF:modified",    "Modified",    "ModDate",      B_TIME_TYPE},
-	{"META:pages",      "Pages",       NULL,           B_INT32_TYPE},
+	{"schema:numberOfPages", "Pages",     NULL,           B_INT32_TYPE},
 	{NULL, NULL, NULL, 0}
 };
 
@@ -959,8 +951,8 @@ static void
 EnsureIndices(dev_t device)
 {
 	static const struct { const char* name; uint32 type; } kIndices[] = {
-		{ "META:title", B_STRING_TYPE }, { "META:author", B_STRING_TYPE }, { "META:subject", B_STRING_TYPE },
-		{ "META:creator", B_STRING_TYPE }, { "META:keyw", B_STRING_TYPE }, { "META:pages", B_INT32_TYPE },
+		{ "dc:title", B_STRING_TYPE }, { "dc:creator", B_STRING_TYPE }, { "dc:subject", B_STRING_TYPE },
+		{ "PDF:creator", B_STRING_TYPE }, { "schema:numberOfPages", B_INT32_TYPE },
 		{ "dc:description", B_STRING_TYPE }, { "dc:publisher", B_STRING_TYPE },
 		{ "dc:language", B_STRING_TYPE }, { "dc:identifier", B_STRING_TYPE }, { "schema:isbn", B_STRING_TYPE },
 		{ "dcterms:isPartOf", B_STRING_TYPE }, { "schema:position", B_DOUBLE_TYPE },
@@ -1034,7 +1026,7 @@ BepdfApplication::UpdateFileAttributes(Document *doc, entry_ref *ref) {
 	// an e-book. A book that is read at another text size says nothing about it.
 	if (!doc->IsReflowable() || doc->TextSize() == Document::kDefaultTextSize) {
 		int32 pages = (int32)doc->PageCount();
-		UpdateAttr(node, "META:pages", B_INT32_TYPE, 0, &pages, sizeof(int32));
+		UpdateAttr(node, "schema:numberOfPages", B_INT32_TYPE, 0, &pages, sizeof(int32));
 	}
 
 	for (int i = 0; gAttrInfo[i].name; i++) {

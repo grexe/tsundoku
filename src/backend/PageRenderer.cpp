@@ -345,8 +345,8 @@ PageRenderer::Notify(uint32 what)
 		return;
 
 	BMessage msg(what);
-	msg.AddInt32("bepdf:id", mRenderingThread);
-	msg.AddPointer("bepdf:bitmap", mBitmap);
+	msg.AddInt32("id", mRenderingThread);
+	msg.AddPointer("bitmap", mBitmap);
 	mListener.SendMessage(&msg);
 }
 
@@ -354,8 +354,8 @@ PageRenderer::Notify(uint32 what)
 void
 PageRenderer::GetParameter(BMessage* msg, thread_id* id, BBitmap** bitmap)
 {
-	if (B_OK != msg->FindInt32("bepdf:id", id))
+	if (B_OK != msg->FindInt32("id", id))
 		*id = -1;
-	if (B_OK != msg->FindPointer("bepdf:bitmap", (void**)bitmap))
+	if (B_OK != msg->FindPointer("bitmap", (void**)bitmap))
 		*bitmap = NULL;
 }

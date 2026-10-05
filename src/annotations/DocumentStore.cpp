@@ -24,6 +24,7 @@
 // Note: fz_try() uses setjmp()/longjmp(), so no C++ objects with destructors may be created or destroyed inside
 // of a fz_try() block.
 
+#include "Bookmarks.h"
 #include "Document.h"
 #include "EpubCfi.h"
 #include "EpubInfo.h"
@@ -228,7 +229,7 @@ Document::LoadStore()
 		BMessage item;
 		for (int32 i = 0; archive.FindMessage(WebAnnotation::kAnnotation, i, &item) == B_OK; i++) {
 			WebAnnotation::Mark mark;
-			if (!WebAnnotation::UnarchiveMark(item, &mark))
+			if (Bookmarks::IsBookmark(item) || !WebAnnotation::UnarchiveMark(item, &mark))
 				continue;
 			StoredAnnotation a;
 			FromMark(mark, &a);
@@ -247,10 +248,6 @@ Document::WriteStore(const char* path)
 	if (node.InitCheck() != B_OK)
 		return false;
 
-	if (fStore.empty()) {
-		node.RemoveAttr(kStoreAttribute);
-		return true;
-	}
 
 	// if SEN knows the file, its identifier is what the annotations are about
 	BString source = WebAnnotation::SenId(path);
@@ -264,6 +261,13 @@ Document::WriteStore(const char* path)
 		if (!source.IsEmpty())
 			WebAnnotation::SetSource(&item, source.String());
 		archive.AddMessage(WebAnnotation::kAnnotation, &item);
+	}
+
+	// the bookmarks of the reader are in the attribute as well
+	bool bookmarks = Bookmarks::Carry(path, &archive);
+	if (fStore.empty() && !bookmarks) {
+		node.RemoveAttr(kStoreAttribute);
+		return true;
 	}
 
 	ssize_t size = archive.FlattenedSize();

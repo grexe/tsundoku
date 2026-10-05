@@ -16,6 +16,15 @@ document.
 For a PDF file the annotations are described in the same form when they are handed on, and when the file is saved or a copy is
 made they are written to `SEN:annotations` too, so that they can be found and used without opening the PDF file.
 
+## Bookmarks
+
+The bookmarks of the reader (the sidebar's bookmarks list; Bookmark > Add) are annotations with the motivation
+`oa:bookmarking` in `SEN:annotations`, for every format, PDF too (the attribute of a PDF file holds its annotations as well,
+which are rewritten when it is saved, and the bookmarks stay). The label is the body. The target is the page (`page=3`, an
+`oa:FragmentSelector`) or, in a book, the place in the text (a `oa:TextQuoteSelector` and the EPUB CFI, see
+[metadata.md](metadata.md#anchors-in-books)). They are written when the file is closed, and are not counted in
+`SEN:annotationCount`.
+
 ## The Web Annotation model
 
 Annotations and deep links are described with the [W3C Web Annotation Data Model](https://www.w3.org/TR/annotation-model/)

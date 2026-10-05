@@ -576,22 +576,27 @@ ArchiveMark(const Mark& mark, BMessage* annotation)
 
 	// the target is the document that the annotation is stored with, so there is no source in it
 	BMessage target;
+	// (a bookmark of a page has no words, only the page)
+	const bool hasQuote = mark.quote.Length() > 0;
 	BMessage quote;
-	quote.AddString("type", kTextQuoteSelector);
-	quote.AddString("oa:exact", mark.quote);
-	if (mark.prefix.Length() > 0)
-		quote.AddString("oa:prefix", mark.prefix);
-	if (mark.suffix.Length() > 0)
-		quote.AddString("oa:suffix", mark.suffix);
+	if (hasQuote) {
+		quote.AddString("type", kTextQuoteSelector);
+		quote.AddString("oa:exact", mark.quote);
+		if (mark.prefix.Length() > 0)
+			quote.AddString("oa:prefix", mark.prefix);
+		if (mark.suffix.Length() > 0)
+			quote.AddString("oa:suffix", mark.suffix);
+	}
 	if (mark.textPage > 0) {
 		// a page of a document with fixed pages, and the words on it (as the marks of a PDF file are written)
 		BMessage pageSelector;
 		char pageValue[24];
 		snprintf(pageValue, sizeof(pageValue), "page=%d", (int)mark.textPage);
 		MakeFragmentSelector(&pageSelector, kConformsToPdf, pageValue);
-		pageSelector.AddMessage("oa:refinedBy", &quote);
+		if (hasQuote)
+			pageSelector.AddMessage("oa:refinedBy", &quote);
 		target.AddMessage("oa:hasSelector", &pageSelector);
-	} else
+	} else if (hasQuote)
 		target.AddMessage("oa:hasSelector", &quote);
 	if (mark.cfi.Length() > 0) {
 		BMessage cfi;
@@ -640,8 +645,14 @@ UnarchiveMark(const BMessage& annotation, Mark* mark)
 	mark->page = 0;
 	if (UnarchiveDrawn(annotation, target, mark))
 		return true;
-	if (mark->page > 0)
-		return false;	// a page, but no place on it
+	if (mark->page > 0) {
+		if (mark->motivation != kBookmarking)
+			return false;	// a page, but no place on it
+		// a bookmark of a page
+		mark->textPage = mark->page;
+		mark->page = 0;
+		return true;
+	}
 	target.FindInt32("sen:chapter", &mark->chapter);
 	target.FindFloat("sen:fraction", &mark->fraction);
 	target.FindFloat("sen:ypos", &mark->ypos);
@@ -660,7 +671,7 @@ UnarchiveMark(const BMessage& annotation, Mark* mark)
 				mark->cfi = value;
 		}
 	}
-	return mark->quote.Length() > 0;
+	return mark->quote.Length() > 0 || mark->motivation == kBookmarking;
 }
 
 

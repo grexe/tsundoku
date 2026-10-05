@@ -39,6 +39,7 @@ SRCS = annotations/AnnotationsView.cpp \
 	backend/Document.cpp \
 	backend/DjvuDocument.cpp \
 	annotations/DocumentDraw.cpp \
+	annotations/Bookmarks.cpp \
 	annotations/DocumentStore.cpp \
 	layout/DocumentLayout.cpp \
 	annotations/DocumentWeb.cpp \

@@ -40,7 +40,8 @@ How each format is read, and the file types: [docs/reference/formats.md](docs/re
 
 Switch it with the icon tabs or Cmd+1 to Cmd+4, show or hide it with Cmd+H.
 
-- **Bookmarks:** the outline of the document and your own. The outline follows the current page.
+- **Bookmarks:** the outline of the document and your own (annotations with the motivation `oa:bookmarking`). The outline
+  follows the current page.
 - **Pages:** the page list. For books it is an outline of chapters.
 - **Attachments:** the files embedded in a PDF, which can be saved.
 - **Annotations:** all annotations in columns for page, type and the text they mark or hold, sorted by clicking a title;

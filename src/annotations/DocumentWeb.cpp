@@ -21,6 +21,7 @@
 // Annotations and places as W3C Web Annotations (see WebAnnotation.h): any annotation of a document as a message in the
 // model, and the places that a message in the model points to (deep links).
 
+#include "Bookmarks.h"
 #include "Document.h"
 
 #include <Node.h>
@@ -296,7 +297,9 @@ Document::WriteWebAnnotations(const char* path)
 		fz_drop_page(fContext, page);
 	}
 
-	if (count == 0) {
+	// the bookmarks of the reader are in the attribute as well
+	bool bookmarks = Bookmarks::Carry(path, &archive);
+	if (count == 0 && !bookmarks) {
 		node.RemoveAttr("SEN:annotations");
 		return true;
 	}

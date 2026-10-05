@@ -6,28 +6,38 @@ What Tsundoku writes to the BFS attributes of a file, and how places in a docume
 ## Principles
 
 - What a document says about itself (title, author, series, ...) is written to **separate BFS attributes** of the file, and
-  nothing is invented for books: the names are the properties of the established ontologies with the prefix that is commonly
-  used for each. Where there is no established name, the prefix is `SEN:`.
-- The attributes are defined for the file type (so that Tracker offers them as columns), and the indices are made on the volume.
-- Everything BePDF stores (bookmarks and the position per file) is unchanged and compatible.
+  nothing is invented: the names are the properties of the established ontologies with the prefix that is commonly used for
+  each. Where there is no established name, the prefix is `SEN:` (`PDF:` for what only a PDF file has, `tsundoku:` for what
+  only the application needs).
+- The attributes are defined for the file types (so that Tracker offers them as columns), and the indices are made on the
+  volume.
+- What BePDF made up (`META:*`, `bepdf:*`) is not used any more; files that have those attributes show the new ones once they
+  are opened.
 
 ## Attributes
 
 | Attribute | What |
 |-----------|------|
-| `META:title`, `META:author`, `META:keyw`, `META:pages` | The attributes of `application/pdf` (they are dc:title, dc:creator, dc:subject and schema:numberOfPages), written for books, comics and DjVu as well, so that a column or a query works for all. The prefix `META:` is only kept for the attributes that exist already. |
-| `dc:description`, `dc:publisher`, `dc:language`, `dc:date`, `dc:identifier` | Dublin Core |
+| `dc:title`, `dc:creator`, `dc:subject` | title, author and keywords |
+| `dc:description`, `dc:publisher`, `dc:language`, `dc:date`, `dc:identifier` | Dublin Core (for a PDF file the description is its Subject) |
 | `dcterms:isPartOf` | the series |
 | `schema:isbn`, `schema:position` | [schema.org/Book](https://schema.org/Book): the ISBN, and the number in the series |
-| `SEN:annotations`, `SEN:annotationCount` | the annotations, and how many there are (see [annotations.md](annotations.md)) |
+| `schema:numberOfPages` | the number of pages (see below) |
+| `PDF:creator`, `PDF:producer`, `PDF:created`, `PDF:modified` | what only a PDF file has: the program that made the document and the one that made the PDF, and the dates |
+| `SEN:annotations`, `SEN:annotationCount` | the annotations and the bookmarks, and how many annotations there are (see [annotations.md](annotations.md)) |
 | `SEN:readingProgression` | `rtl`, `ltr`, `ttb` or `default` (see below) |
-| `bepdf:bookmarks`, `bepdf:anchor` | bookmarks and the place where you stopped reading (see below) |
+| `tsundoku:viewState` | where you stopped reading (see below) |
 
 Other prefixes such as `foaf:` come the same way when they are needed.
 
-`META:pages` of a book is the number of pages in the standard configuration (6 by 9 inches, the default text size), an estimate
-that stays the same for inventory and citations, as the shops give it for an e-book. It is not written when the book is first
-opened at another text size.
+`schema:numberOfPages` of a book is the number of pages in the standard configuration (6 by 9 inches, the default text size),
+an estimate that stays the same for inventory and citations, as the shops give it for an e-book. It is not written when the book
+is first opened at another text size.
+
+## View state
+
+`tsundoku:viewState` is one attribute (a message) with where you stopped reading: the page, the place on the page, zoom and
+rotation, the position and size of the window, and for a book the [anchor](#anchors-in-books) of the place in the text.
 
 ## Where the metadata comes from
 
@@ -60,7 +70,7 @@ size. An anchor has
   `epubcfi(/6/4[chap01]!/4/10,/1:3,/3:12)`, which other reading systems understand,
 - where it was (chapter, place in the chapter), to look there first.
 
-A mark keeps its anchor in `SEN:annotations`, a bookmark of yours in an extra `a` entry of `bepdf:bookmarks` (BePDF ignores it),
-and the place where you stopped reading in `bepdf:anchor`. They find their page again for the text size the book is shown at.
+A mark and a bookmark keep their anchor in `SEN:annotations`, and the place where you stopped reading is in
+`tsundoku:viewState`. They find their page again for the text size the book is shown at.
 If the words are not found any more (another version of the book), the CFI, which names a chapter by the id of its entry in the
 reading order, leads to the words that are there now.

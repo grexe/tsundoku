@@ -2183,6 +2183,22 @@ PDFWindow::MessageReceived(BMessage* message)
 				entered.AddString("label", text);
 				entered.AddInt32("pageNum", TestInt(message, "page", 1));
 				MessageReceived(&entered);
+			} else if (cmd == "bookmarkslist") {
+				// the bookmarks of the reader, as the sidebar has them
+				BMessage list;
+				bool ok = mOutlinesView->GetBookmarks(&list);
+				FILE* out = fopen("/tmp/ts_test.out", "a");
+				if (out != NULL) {
+					BString label;
+					int32 page = 0;
+					fprintf(out, "bookmarks: %s, %d\n", ok ? "ok" : "none", (int)list.CountNames(B_ANY_TYPE));
+					for (int32 i = 0; list.FindString("l", i, &label) == B_OK && list.FindInt32("p", i, &page) == B_OK; i++) {
+						BMessage anchor;
+						list.FindMessage("a", i, &anchor);
+						fprintf(out, "  [%s] page %d anchor %s\n", label.String(), (int)page, anchor.IsEmpty() ? "no" : "yes");
+					}
+					fclose(out);
+				}
 			} else if (cmd == "splitinfo") {
 				FILE* out = fopen("/tmp/ts_test.out", "a");
 				if (out != NULL) {

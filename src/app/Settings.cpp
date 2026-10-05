@@ -21,6 +21,7 @@
  */
 
 #include "Settings.h"
+#include "Bookmarks.h"
 #include <Message.h>
 #include <FindDirectory.h>
 #include <Path.h>
@@ -162,149 +163,134 @@ void FileAttributes::GetLeftTop(float &left, float &top) {
 	left = this->left; top = this->top;
 }
 
+// What is kept with the file besides what it says about itself: where the reader stopped (page, place on the page, zoom,
+// rotation, and for a book the anchor in the text, as the page changes with the text size) and the window. It is one
+// attribute, a message, of the application: tsundoku:viewState. The bookmarks of the reader are annotations
+// (oa:bookmarking) in SEN:annotations (Bookmarks.h).
+static const char* const kViewStateAttribute = "tsundoku:viewState";
+
+
+static void
+ReadMessageAttribute(BNode& node, const char* name, BMessage* message)
+{
+	message->MakeEmpty();
+	attr_info info;
+	if (node.GetAttrInfo(name, &info) != B_OK || info.size <= 0 || info.size > 65536)
+		return;
+	char* data = (char*)malloc(info.size);
+	if (data == NULL)
+		return;
+	if (node.ReadAttr(name, B_MESSAGE_TYPE, 0, data, info.size) != info.size || message->Unflatten(data) != B_OK)
+		message->MakeEmpty();
+	free(data);
+}
+
+
 bool FileAttributes::Read(entry_ref *ref, GlobalSettings *s) {
 	BNode node(ref);
 	reading = -1;
 	hasZoom = false;
-	if (node.InitCheck() == B_OK) {
-		// SEN:readingProgression: rtl, ltr or default (what the document itself says)
-		char direction[16];
-		ssize_t got = node.ReadAttr("SEN:readingProgression", B_STRING_TYPE, 0, direction, sizeof(direction) - 1);
-		if (got > 0) {
-			direction[got] = '\0';
-			if (strcasecmp(direction, "rtl") == 0)
-				reading = 1;
-			else if (strcasecmp(direction, "ltr") == 0)
-				reading = 0;
-			else if (strcasecmp(direction, "ttb") == 0)
-				reading = 2;
-		}
-		int16 zoom;
-		hasZoom = sizeof(zoom) == node.ReadAttr("bepdf:zoom", B_INT16_TYPE, 0, &zoom, sizeof(zoom));
-		if (!hasZoom) {
-			zoom = s->GetZoom();
-		}
-		int32 rotation, pos_x, pos_y, width, height;
-		if (sizeof(rotation) != node.ReadAttr("bepdf:rotation", B_INT32_TYPE, 0, &rotation, sizeof(rotation))) {
-			rotation = (int32)s->GetRotation();
-		}
-		if ((sizeof(pos_x) != node.ReadAttr("bepdf:pos_x", B_INT32_TYPE, 0, &pos_x, sizeof(pos_x))) ||
-		   (sizeof(pos_y) != node.ReadAttr("bepdf:pos_y", B_INT32_TYPE, 0, &pos_y, sizeof(pos_y)))) {
-			BPoint pos = s->GetWindowPosition();
-			pos_x = (int32)pos.x;
-			pos_y = (int32)pos.y;
-		}
-		if ((sizeof(width) != node.ReadAttr("bepdf:width", B_INT32_TYPE, 0, &width, sizeof(width))) ||
-			(sizeof(height) != node.ReadAttr("bepdf:height", B_INT32_TYPE, 0, &height, sizeof(height)))) {
-			float w, h;
-			s->GetWindowSize(w, h);
-			width = (int32)w; height = (int32)h;
-		}
-		if (sizeof(page) != node.ReadAttr("bepdf:page", B_INT32_TYPE, 0, &page, sizeof(page))) {
-			page = 1;
-		}
-		if (sizeof(left) != node.ReadAttr("bepdf:left", B_FLOAT_TYPE, 0, &left, sizeof(left))) {
-			left = 0;
-		}
-		if (sizeof(top) != node.ReadAttr("bepdf:top", B_FLOAT_TYPE, 0, &top, sizeof(top))) {
-			top = 0;
-		}
+	if (node.InitCheck() != B_OK)
+		return false;
 
-		if (s->GetRestoreWindowFrame()) {
-			s->SetWindowPosition(BPoint(pos_x, pos_y));
-			s->SetWindowSize(width, height);
-		}
-
-		if (s->GetRestorePageNumber()) {
-			s->SetZoom(zoom);
-			s->SetRotation(rotation);
-		}
-
-		// read bookmarks
-		ssize_t buf_size = 65536;
-		ssize_t attr_size = 0;
-		char *buffer = (char*)malloc(buf_size);
-		while (buffer) {
-			attr_size = node.ReadAttr("bepdf:bookmarks", B_MESSAGE_TYPE, 0, buffer, buf_size);
-			if (attr_size == buf_size) {
-				// resize buffer
-				buf_size += 65536;
-				buffer = (char*)realloc(buffer, buf_size);
-			} else {
-				// entire attribute read
-				break;
-			}
-		}
-		if (attr_size <= 0) {
-			bookmarks.MakeEmpty();
-		} else {
-			bookmarks.Unflatten(buffer);
-		}
-		if (buffer) free(buffer);
-
-		// where the reader stopped in a book
-		anchor.MakeEmpty();
-		attr_info info;
-		if (node.GetAttrInfo("bepdf:anchor", &info) == B_OK && info.size > 0 && info.size < 65536) {
-			char* data = (char*)malloc(info.size);
-			if (data != NULL) {
-				if (node.ReadAttr("bepdf:anchor", B_MESSAGE_TYPE, 0, data, info.size) == info.size)
-					anchor.Unflatten(data);
-				free(data);
-			}
-		}
-		return true;
+	// SEN:readingProgression: rtl, ltr or default (what the document itself says)
+	char direction[16];
+	ssize_t got = node.ReadAttr("SEN:readingProgression", B_STRING_TYPE, 0, direction, sizeof(direction) - 1);
+	if (got > 0) {
+		direction[got] = '\0';
+		if (strcasecmp(direction, "rtl") == 0)
+			reading = 1;
+		else if (strcasecmp(direction, "ltr") == 0)
+			reading = 0;
+		else if (strcasecmp(direction, "ttb") == 0)
+			reading = 2;
 	}
-	return false;
+
+	BMessage state;
+	ReadMessageAttribute(node, kViewStateAttribute, &state);
+
+	int16 zoom;
+	hasZoom = state.FindInt16("zoom", &zoom) == B_OK;
+	if (!hasZoom)
+		zoom = s->GetZoom();
+	int32 rotation;
+	if (state.FindInt32("rotation", &rotation) != B_OK)
+		rotation = (int32)s->GetRotation();
+	BPoint position = s->GetWindowPosition();
+	int32 pos_x = (int32)position.x, pos_y = (int32)position.y;
+	if (state.FindInt32("x", &pos_x) != B_OK || state.FindInt32("y", &pos_y) != B_OK) {
+		pos_x = (int32)position.x;
+		pos_y = (int32)position.y;
+	}
+	float w, h;
+	s->GetWindowSize(w, h);
+	int32 width = (int32)w, height = (int32)h;
+	if (state.FindInt32("width", &width) != B_OK || state.FindInt32("height", &height) != B_OK) {
+		width = (int32)w;
+		height = (int32)h;
+	}
+	if (state.FindInt32("page", &page) != B_OK)
+		page = 1;
+	if (state.FindFloat("left", &left) != B_OK)
+		left = 0;
+	if (state.FindFloat("top", &top) != B_OK)
+		top = 0;
+
+	if (s->GetRestoreWindowFrame()) {
+		s->SetWindowPosition(BPoint(pos_x, pos_y));
+		s->SetWindowSize(width, height);
+	}
+
+	if (s->GetRestorePageNumber()) {
+		s->SetZoom(zoom);
+		s->SetRotation(rotation);
+	}
+
+	// where the reader stopped in a book
+	anchor.MakeEmpty();
+	state.FindMessage("anchor", &anchor);
+
+	// the bookmarks of the reader
+	BPath path(ref);
+	Bookmarks::Read(path.Path(), &bookmarks);
+	return true;
 }
 
 bool FileAttributes::Write(entry_ref *ref, GlobalSettings *s) {
 	BNode node(ref);
-	if (node.InitCheck() == B_OK) {
-		int32 i;
-		BPoint pos = s->GetWindowPosition();
-		i = (int32)pos.x;
-		if (sizeof(int32) != node.WriteAttr("bepdf:pos_x", B_INT32_TYPE, 0, &i, sizeof(i))) return false;
-		i = (int32)pos.y;
-		if (sizeof(int32) != node.WriteAttr("bepdf:pos_y", B_INT32_TYPE, 0, &i, sizeof(i))) return false;
-		float width, height;
-		s->GetWindowSize(width, height);
-		i = (int32)width;
-		if (sizeof(int32) != node.WriteAttr("bepdf:width", B_INT32_TYPE, 0, &i, sizeof(i))) return false;
-		i = (int32)height;
-		if (sizeof(int32) != node.WriteAttr("bepdf:height", B_INT32_TYPE, 0, &i, sizeof(i))) return false;
-		// current page
-		int16 zoom = s->GetZoom();
-		if (sizeof(zoom) != node.WriteAttr("bepdf:zoom", B_INT16_TYPE, 0, &zoom, sizeof(zoom))) return false;
-		i = (int32)s->GetRotation();
-		if (sizeof(int32) != node.WriteAttr("bepdf:rotation", B_INT32_TYPE, 0, &i, sizeof(i))) return false;
-		if (sizeof(page) != node.WriteAttr("bepdf:page", B_INT32_TYPE, 0, &page, sizeof(page))) return false;
-		if (sizeof(left) != node.WriteAttr("bepdf:left", B_FLOAT_TYPE, 0, &left, sizeof(left))) return false;
-		if (sizeof(top) != node.WriteAttr("bepdf:top", B_FLOAT_TYPE, 0, &top, sizeof(top))) return false;
-		if (bookmarks.IsEmpty()) {
-			node.RemoveAttr("bepdf:bookmarks");
-		} else {
-			ssize_t size = bookmarks.FlattenedSize();
-			char *buffer = new char[size];
-			if (buffer && B_OK == bookmarks.Flatten(buffer, size)) {
-				node.WriteAttr("bepdf:bookmarks", B_MESSAGE_TYPE, 0, buffer, size);
-			}
-			delete []buffer;
-		}
-		if (reading >= 0) {
-			const char* direction = reading == 1 ? "rtl" : reading == 2 ? "ttb" : "ltr";
-			node.WriteAttr("SEN:readingProgression", B_STRING_TYPE, 0, direction, strlen(direction) + 1);
-		}
-		if (anchor.IsEmpty()) {
-			node.RemoveAttr("bepdf:anchor");
-		} else {
-			ssize_t size = anchor.FlattenedSize();
-			char *buffer = new char[size];
-			if (buffer && B_OK == anchor.Flatten(buffer, size))
-				node.WriteAttr("bepdf:anchor", B_MESSAGE_TYPE, 0, buffer, size);
-			delete []buffer;
-		}
-		return true;
+	if (node.InitCheck() != B_OK)
+		return false;
+
+	BMessage state;
+	BPoint pos = s->GetWindowPosition();
+	state.AddInt32("x", (int32)pos.x);
+	state.AddInt32("y", (int32)pos.y);
+	float width, height;
+	s->GetWindowSize(width, height);
+	state.AddInt32("width", (int32)width);
+	state.AddInt32("height", (int32)height);
+	state.AddInt16("zoom", (int16)s->GetZoom());
+	state.AddInt32("rotation", (int32)s->GetRotation());
+	state.AddInt32("page", page);
+	state.AddFloat("left", left);
+	state.AddFloat("top", top);
+	if (!anchor.IsEmpty())
+		state.AddMessage("anchor", &anchor);
+
+	ssize_t size = state.FlattenedSize();
+	char *buffer = new char[size];
+	bool ok = state.Flatten(buffer, size) == B_OK
+		&& node.WriteAttr(kViewStateAttribute, B_MESSAGE_TYPE, 0, buffer, size) == size;
+	delete []buffer;
+	if (!ok)
+		return false;
+
+	if (reading >= 0) {
+		const char* direction = reading == 1 ? "rtl" : reading == 2 ? "ttb" : "ltr";
+		node.WriteAttr("SEN:readingProgression", B_STRING_TYPE, 0, direction, strlen(direction) + 1);
 	}
-	return false;
+
+	BPath path(ref);
+	Bookmarks::Write(path.Path(), bookmarks);
+	return true;
 }
