@@ -7,7 +7,7 @@ How Tsundoku keeps and describes annotations. For how to use them, see the [READ
 | Document | Where the annotations are |
 |----------|---------------------------|
 | PDF | Real PDF annotations in the file; other readers show them. Every annotation gets a unique name (the `/NM` of the PDF, a UUID) when it is created, so that other programs can refer to it. |
-| EPUB, comics (CBZ, CBR, CB7, CBT, BBF), DjVu | The attribute `SEN:annotations` of the file (these formats cannot take annotations), with `SEN:annotationCount` (the number, an integer so that it can be indexed; not there if there are none). The older names `META:annotations` and `tsundoku:annotations` are still read. |
+| EPUB, comics (CBZ, CBR, CB7, CBT, BBF), DjVu | The attribute `SEN:annotations` of the file (these formats cannot take annotations), with `SEN:annotationCount` (the number, an integer so that it can be indexed; not there if there are none). |
 
 The attribute is a standard message that other applications can use for the same purpose, like the styles of StyledEdit are
 kept in an attribute. The annotations go along when the file is copied in Tracker, and File > Save as… copies them with the
