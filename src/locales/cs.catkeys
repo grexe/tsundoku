@@ -1,9 +1,9 @@
-1	Czech	application/x-vnd.sen-labs.Toji	3494065982
+1	Czech	application/x-vnd.sen-labs.Toji	3535354210
 Selection rectangle	AnnotationWindow		Obdélník výběru
 Toji reading file: 	PDFView		Toji načítá soubor:
 Cancel	PDFView		Zrušit
-a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Undo	PDFWindow		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Go to previous page	PDFWindow		Přejít na předchozí stránku
 Language	BepdfApplication		
 Subject:	FileInfoWindow		Předmět:
@@ -125,6 +125,7 @@ Series:	FileInfoWindow
 First	PDFWindow		První
 Copy link	PDFView		Kopírovat odkaz
 Add	PDFWindow		Přidat
+Mobipocket e-book	BepdfApplication		
 Open in new window…	PDFWindow		Otevřít v novém okně…
 Yellow	PDFView		
 OK	PDFSearch		OK
@@ -147,9 +148,9 @@ Final	BepdfApplication		Finální
 Show error messages	PDFWindow		Chybové hlášky
 Document	FileInfoWindow		Dokument
 Width: 	PrintSettingsWindow		Šířka:
+Show sidebar	PDFWindow		
 Author:	FileInfoWindow		Autor:
 Orange	PDFView		
-Show sidebar	PDFWindow		
 Annotations	BepdfApplication		
 Security	FileInfoWindow		Zabezpečení
 of %d	PDFWindow		z %d
@@ -236,6 +237,7 @@ Comic book (7z)	BepdfApplication
 Restore window position and size	AnnotationWindow		Obnovit umístění a velikost okna
 Rectangle	PDFView		
 Line	Document		
+Mobipocket e-book (MOBI)	BepdfApplication		
 Identifier	BepdfApplication		
 Margin note	PDFView		
 Modified:	FileInfoWindow		Upraveno:

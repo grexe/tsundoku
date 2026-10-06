@@ -21,6 +21,7 @@ resource app_signature "application/x-vnd.sen-labs.Toji";
 resource file_types message {
 	"types" = "application/pdf",
 	"types" = "application/epub+zip",
+	"types" = "application/x-mobipocket-ebook",
 	"types" = "application/vnd.comicbook+zip",
 	"types" = "application/vnd.comicbook-rar",
 	"types" = "application/x-cb7",

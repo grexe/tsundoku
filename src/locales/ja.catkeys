@@ -1,9 +1,9 @@
-1	Japanese	application/x-vnd.sen-labs.Toji	3494065982
+1	Japanese	application/x-vnd.sen-labs.Toji	3535354210
 Selection rectangle	AnnotationWindow		範囲指定設定
 Toji reading file: 	PDFView		Toji ファイルを読み込んでいます: 
 Cancel	PDFView		中止
-a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Undo	PDFWindow		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Go to previous page	PDFWindow		前ページに移動
 Language	BepdfApplication		
 Subject:	FileInfoWindow		サブタイトル:
@@ -125,6 +125,7 @@ Series:	FileInfoWindow
 First	PDFWindow		開始ページ
 Copy link	PDFView		リンク先のロケーションをコピー
 Add	PDFWindow		追加
+Mobipocket e-book	BepdfApplication		
 Open in new window…	PDFWindow		新しいウィンドウで開く…
 Yellow	PDFView		
 OK	PDFSearch		OK
@@ -147,9 +148,9 @@ Final	BepdfApplication		ファイナル
 Show error messages	PDFWindow		エラーメッセージを表示
 Document	FileInfoWindow		文書
 Width: 	PrintSettingsWindow		幅: 
+Show sidebar	PDFWindow		
 Author:	FileInfoWindow		作成者:
 Orange	PDFView		
-Show sidebar	PDFWindow		
 Annotations	BepdfApplication		
 Security	FileInfoWindow		セキュリティ
 of %d	PDFWindow		/ %d
@@ -236,6 +237,7 @@ Comic book (7z)	BepdfApplication
 Restore window position and size	AnnotationWindow		ウィンドウの位置とサイズを記憶する
 Rectangle	PDFView		
 Line	Document		
+Mobipocket e-book (MOBI)	BepdfApplication		
 Identifier	BepdfApplication		
 Margin note	PDFView		
 Modified:	FileInfoWindow		更新日:

@@ -1,9 +1,9 @@
-1	Finnish	application/x-vnd.sen-labs.Toji	3494065982
+1	Finnish	application/x-vnd.sen-labs.Toji	3535354210
 Selection rectangle	AnnotationWindow		Valintanelikulmio
 Toji reading file: 	PDFView		Toji lukee tiedostoa:
 Cancel	PDFView		Peru
-a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Undo	PDFWindow		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Go to previous page	PDFWindow		Siirry edelliselle sivulle
 Language	BepdfApplication		
 Subject:	FileInfoWindow		Aihe:
@@ -125,6 +125,7 @@ Series:	FileInfoWindow
 First	PDFWindow		Ensimmäinen
 Copy link	PDFView		Kopioi linkki
 Add	PDFWindow		Lisää
+Mobipocket e-book	BepdfApplication		
 Open in new window…	PDFWindow		Avaa uudessa ikkunassa…
 Yellow	PDFView		
 OK	PDFSearch		Valmis
@@ -147,9 +148,9 @@ Final	BepdfApplication		Lopullinen
 Show error messages	PDFWindow		Näytä virheilmoitukset
 Document	FileInfoWindow		Asiakirja
 Width: 	PrintSettingsWindow		Leveys:
+Show sidebar	PDFWindow		
 Author:	FileInfoWindow		Tekijä:
 Orange	PDFView		
-Show sidebar	PDFWindow		
 Annotations	BepdfApplication		
 Security	FileInfoWindow		Turvallisuus
 of %d	PDFWindow		/ %d
@@ -236,6 +237,7 @@ Comic book (7z)	BepdfApplication
 Restore window position and size	AnnotationWindow		Palauta ikkunan sijainti ja koko
 Rectangle	PDFView		
 Line	Document		
+Mobipocket e-book (MOBI)	BepdfApplication		
 Identifier	BepdfApplication		
 Margin note	PDFView		
 Modified:	FileInfoWindow		Muokattu:

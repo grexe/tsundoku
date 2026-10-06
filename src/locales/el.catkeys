@@ -1,9 +1,9 @@
-1	Greek (Modern)	application/x-vnd.sen-labs.Toji	3494065982
+1	Greek (Modern)	application/x-vnd.sen-labs.Toji	3535354210
 Selection rectangle	AnnotationWindow		Ορθογώνιο επιλογής
 Toji reading file: 	PDFView		Το Toji διαβάζει το αρχείο: 
 Cancel	PDFView		Ακύρωση
-a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Undo	PDFWindow		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Go to previous page	PDFWindow		Μετάβαση στην προηγούμενη σελίδα
 Language	BepdfApplication		
 Subject:	FileInfoWindow		Θέμα:
@@ -125,6 +125,7 @@ Series:	FileInfoWindow
 First	PDFWindow		Πρώτο
 Copy link	PDFView		Αντιγραφή συνδέσμου
 Add	PDFWindow		Προσθήκη
+Mobipocket e-book	BepdfApplication		
 Open in new window…	PDFWindow		Άνοιγμα σε νέο παράθυρο...
 Yellow	PDFView		
 OK	PDFSearch		Εντάξει
@@ -147,9 +148,9 @@ Final	BepdfApplication		Τελική έκδοση
 Show error messages	PDFWindow		Εμφάνιση σφαλμάτων
 Document	FileInfoWindow		Έγγραφο
 Width: 	PrintSettingsWindow		Πλάτος:
+Show sidebar	PDFWindow		
 Author:	FileInfoWindow		Συγγραφέας:
 Orange	PDFView		
-Show sidebar	PDFWindow		
 Annotations	BepdfApplication		
 Security	FileInfoWindow		Ασφάλεια
 of %d	PDFWindow		από %d
@@ -236,6 +237,7 @@ Comic book (7z)	BepdfApplication
 Restore window position and size	AnnotationWindow		Επαναφορά θέσης και μεγέθους παραθύρου
 Rectangle	PDFView		
 Line	Document		
+Mobipocket e-book (MOBI)	BepdfApplication		
 Identifier	BepdfApplication		
 Margin note	PDFView		
 Modified:	FileInfoWindow		Επεξεργάστηκε:

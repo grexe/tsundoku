@@ -1,9 +1,9 @@
-1	Russian	application/x-vnd.sen-labs.Toji	3494065982
+1	Russian	application/x-vnd.sen-labs.Toji	3535354210
 Selection rectangle	AnnotationWindow		Прямоугольное выделение
 Toji reading file: 	PDFView		Toji читает файл: 
 Cancel	PDFView		Отмена
-a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Undo	PDFWindow		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Go to previous page	PDFWindow		Перейти к пред. странице
 Language	BepdfApplication		
 Subject:	FileInfoWindow		Тема:
@@ -125,6 +125,7 @@ Series:	FileInfoWindow
 First	PDFWindow		Первая
 Copy link	PDFView		Копировать ссылку
 Add	PDFWindow		Добавить
+Mobipocket e-book	BepdfApplication		
 Open in new window…	PDFWindow		Открыть в новом окне…
 Yellow	PDFView		
 OK	PDFSearch		OK
@@ -147,9 +148,9 @@ Final	BepdfApplication		Final
 Show error messages	PDFWindow		Показать сообщения об ошибках
 Document	FileInfoWindow		Документ
 Width: 	PrintSettingsWindow		Ширина: 
+Show sidebar	PDFWindow		
 Author:	FileInfoWindow		Автор:
 Orange	PDFView		
-Show sidebar	PDFWindow		
 Annotations	BepdfApplication		
 Security	FileInfoWindow		Безопасность
 of %d	PDFWindow		из %d
@@ -236,6 +237,7 @@ Comic book (7z)	BepdfApplication
 Restore window position and size	AnnotationWindow		Восстановить положение окна и размер
 Rectangle	PDFView		
 Line	Document		
+Mobipocket e-book (MOBI)	BepdfApplication		
 Identifier	BepdfApplication		
 Margin note	PDFView		
 Modified:	FileInfoWindow		Изменен:

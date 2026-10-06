@@ -681,7 +681,7 @@ ResolveAnnotation(Document* document, std::map<int, fz_stext_page*>& cache, cons
 		int spine = 0;
 		BString words;
 		float fraction = 0;
-		if (EpubCfi::Resolve(document->Path(), *document->Epub(), a.cfi.String(), &spine, &words, &fraction)
+		if (EpubCfi::Resolve(document->ContentPath(), *document->Epub(), a.cfi.String(), &spine, &words, &fraction)
 			&& !words.IsEmpty()) {
 			moved.chapter = spine;
 			moved.fraction = fraction;
@@ -939,7 +939,7 @@ Document::MakeAnchor(int page, TextAnchor* anchor)
 	anchor->quote = words;
 	anchor->cfi = "";
 	if (fEpub != NULL)
-		EpubCfi::Create(fPath.String(), *fEpub, chapter, words.String(), anchor->fraction, &anchor->cfi);
+		EpubCfi::Create(ContentPath(), *fEpub, chapter, words.String(), anchor->fraction, &anchor->cfi);
 	return true;
 }
 
@@ -1068,7 +1068,7 @@ Document::StoreAddMarkup(int pageNo, MarkupType type, const fz_quad* quads, int 
 
 	// where it is in the book, in a form that other programs know
 	if (fEpub != NULL)
-		EpubCfi::Create(fPath.String(), *fEpub, chapter, quote.String(), a.fraction, &a.cfi, &a.prefix, &a.suffix);
+		EpubCfi::Create(ContentPath(), *fEpub, chapter, quote.String(), a.fraction, &a.cfi, &a.prefix, &a.suffix);
 
 	const char* names[] = { B_TRANSLATE("Add highlight"), B_TRANSLATE("Add underline"),
 		B_TRANSLATE("Add strike out"), B_TRANSLATE("Add squiggly line") };

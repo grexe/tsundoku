@@ -405,7 +405,7 @@ Document::ResolveTarget(const BMessage& target, DocTarget* result)
 		int spine = 0;
 		BString words;
 		float fraction = 0;
-		if (EpubCfi::Resolve(fPath.String(), *fEpub, result->cfi.String(), &spine, &words, &fraction)) {
+		if (EpubCfi::Resolve(ContentPath(), *fEpub, result->cfi.String(), &spine, &words, &fraction)) {
 			TextAnchor anchor;
 			anchor.chapter = spine;
 			anchor.fraction = fraction;

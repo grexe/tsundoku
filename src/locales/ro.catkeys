@@ -1,9 +1,9 @@
-1	Romanian	application/x-vnd.sen-labs.Toji	3494065982
+1	Romanian	application/x-vnd.sen-labs.Toji	3535354210
 Selection rectangle	AnnotationWindow		Selecție dreptunghi
 Toji reading file: 	PDFView		Fișierul de citire Toji:
 Cancel	PDFView		Anulează
-a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Undo	PDFWindow		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Go to previous page	PDFWindow		Mergi la pagina anterioară
 Language	BepdfApplication		
 Subject:	FileInfoWindow		Subiect:
@@ -125,6 +125,7 @@ Series:	FileInfoWindow
 First	PDFWindow		Primul
 Copy link	PDFView		Copiază legătura
 Add	PDFWindow		Adaugă
+Mobipocket e-book	BepdfApplication		
 Open in new window…	PDFWindow		Deschide în fereastră nouă...
 Yellow	PDFView		
 OK	PDFSearch		OK
@@ -147,9 +148,9 @@ Final	BepdfApplication		Final
 Show error messages	PDFWindow		Afișează mesajele de eroare
 Document	FileInfoWindow		Document
 Width: 	PrintSettingsWindow		Lățime:
+Show sidebar	PDFWindow		
 Author:	FileInfoWindow		Autor:
 Orange	PDFView		
-Show sidebar	PDFWindow		
 Annotations	BepdfApplication		
 Security	FileInfoWindow		Securitate
 of %d	PDFWindow		din %d
@@ -236,6 +237,7 @@ Comic book (7z)	BepdfApplication
 Restore window position and size	AnnotationWindow		Restaurează poziția și dimensiunea ferestrei
 Rectangle	PDFView		
 Line	Document		
+Mobipocket e-book (MOBI)	BepdfApplication		
 Identifier	BepdfApplication		
 Margin note	PDFView		
 Modified:	FileInfoWindow		Modificat:

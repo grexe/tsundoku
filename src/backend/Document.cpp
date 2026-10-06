@@ -29,6 +29,7 @@
 #include "ComicInfo.h"
 #include "DjvuDocument.h"
 #include "EpubInfo.h"
+#include "Mobi.h"
 
 #include <math.h>
 #include <time.h>
@@ -38,8 +39,15 @@
 #include <string.h>
 #include <strings.h>
 
+#include <Directory.h>
+#include <Entry.h>
 #include <File.h>
+#include <FindDirectory.h>
+#include <OS.h>
+#include <Path.h>
 #include <Catalog.h>
+#include <string>
+#include <unistd.h>
 #include <Node.h>
 #include <TypeConstants.h>
 #include <fs_attr.h>
@@ -135,6 +143,66 @@ OpenZippedFictionBook(fz_context* context, const char* path)
 }
 
 
+// A Mobipocket book is made into an EPUB in a file of the temporary directory for the time that it is open: MuPDF reads that. 0 if the
+// file is not such a book, 1 if the EPUB is made, -1 if it cannot be read (it has DRM, or a kind of compression that is not read).
+static int
+MakeMobiEpub(const char* path, BString* epubPath)
+{
+	unsigned char head[68];
+	BFile in(path, B_READ_ONLY);
+	if (in.InitCheck() != B_OK || in.Read(head, sizeof(head)) != (ssize_t)sizeof(head)
+		|| !Mobi::LooksLikeMobi(head, sizeof(head)))
+		return 0;
+	off_t size = 0;
+	in.GetSize(&size);
+	if (size <= 0 || size > 512 * 1024 * 1024)
+		return -1;
+	std::string data((size_t)size, '\0');
+	if (in.ReadAt(0, &data[0], (size_t)size) != (ssize_t)size)
+		return -1;
+	Mobi::Book book;
+	switch (Mobi::Read((const unsigned char*)data.data(), data.size(), &book)) {
+		case Mobi::kOk:
+			break;
+		case Mobi::kEncrypted:
+			fprintf(stderr, "%s: this book is protected (DRM) and cannot be opened\n", path);
+			return -1;
+		case Mobi::kUnsupported:
+			fprintf(stderr, "%s: this kind of Mobipocket book (Huffman compression or the new format) is not read yet\n", path);
+			return -1;
+		default:
+			fprintf(stderr, "%s: not a Mobipocket book that can be read\n", path);
+			return -1;
+	}
+	std::string epub = Mobi::MakeEpub(book);
+	BPath temporary;
+	if (find_directory(B_SYSTEM_TEMP_DIRECTORY, &temporary) != B_OK)
+		return -1;
+	// what an earlier session left (it ended without closing the book) is removed
+	{
+		BDirectory directory(temporary.Path());
+		BEntry entry;
+		time_t now = time(NULL);
+		while (directory.GetNextEntry(&entry) == B_OK) {
+			char leaf[B_FILE_NAME_LENGTH];
+			time_t modified;
+			if (entry.GetName(leaf) == B_OK && strncmp(leaf, "toji-mobi-", 10) == 0 && entry.GetModificationTime(&modified) == B_OK
+				&& now - modified > 6 * 3600)
+				entry.Remove();
+		}
+	}
+	char name[96];
+	static int32 counter = 0;
+	snprintf(name, sizeof(name), "toji-mobi-%d-%d-%d.epub", (int)getpid(), (int)atomic_add(&counter, 1), (int)(real_time_clock() & 0xFFFF));
+	temporary.Append(name);
+	BFile out(temporary.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
+	if (out.InitCheck() != B_OK || out.Write(epub.data(), epub.size()) != (ssize_t)epub.size())
+		return -1;
+	*epubPath = temporary.Path();
+	return 1;
+}
+
+
 Document::OpenResult
 Document::Open(const char* path, const char* password, Document** _document, float textSize)
 {
@@ -153,6 +221,8 @@ Document::Open(const char* path, const char* password, Document** _document, flo
 	ComicInfo* comic = NULL;
 	BbfInfo* bbf = NULL;
 	bool isComic = ComicArchive::IsComicFile(path);
+	BString contentPath;
+	int mobi = isComic ? 0 : MakeMobiEpub(path, &contentPath);
 
 	fz_var(document);
 	fz_var(comic);
@@ -177,7 +247,11 @@ Document::Open(const char* path, const char* password, Document** _document, flo
 			fz_catch(context) {
 				fz_rethrow(context);
 			}
-		} else if (IsZippedFictionBook(path))
+		} else if (mobi < 0)
+			fz_throw(context, FZ_ERROR_FORMAT, "the Mobipocket book cannot be read");
+		else if (mobi > 0)
+			document = fz_open_document(context, contentPath.String());
+		else if (IsZippedFictionBook(path))
 			document = OpenZippedFictionBook(context, path);
 		else if (Djvu::IsDjvuFile(path))
 			document = Djvu::Open(context, path);
@@ -195,6 +269,8 @@ Document::Open(const char* path, const char* password, Document** _document, flo
 	}
 
 	if (failed || needsPassword) {
+		if (mobi > 0)
+			BEntry(contentPath.String()).Remove();
 		delete comic;
 		delete bbf;
 		fz_drop_document(context, document);
@@ -202,7 +278,7 @@ Document::Open(const char* path, const char* password, Document** _document, flo
 		return failed ? kFailed : kNeedsPassword;
 	}
 
-	Document* result = new Document(context, document, path, textSize);
+	Document* result = new Document(context, document, path, textSize, mobi > 0 ? contentPath.String() : NULL);
 	result->fComic = comic;
 	result->fBbf = bbf;
 	if (result->fPageCount <= 0) {
@@ -214,7 +290,7 @@ Document::Open(const char* path, const char* password, Document** _document, flo
 }
 
 
-Document::Document(fz_context* context, fz_document* document, const char* path, float textSize)
+Document::Document(fz_context* context, fz_document* document, const char* path, float textSize, const char* contentPath)
 	:
 	fRefs(1),
 	fContext(context),
@@ -232,6 +308,7 @@ Document::Document(fz_context* context, fz_document* document, const char* path,
 	fReflowable(false),
 	fTextSize(kDefaultTextSize),
 	fEpub(NULL),
+	fContentPath(contentPath != NULL ? contentPath : ""),
 	fComic(NULL),
 	fBbf(NULL),
 	fIsComic(ComicArchive::IsComicFile(path)),
@@ -292,7 +369,7 @@ Document::Document(fz_context* context, fz_document* document, const char* path,
 		// the marks are kept in an attribute of the file, the metadata is in its package document
 		fCanSave = true;
 		LoadStore();
-		fEpub = EpubInfo::Read(path);
+		fEpub = EpubInfo::Read(ContentPath());
 	} else if (FixedStore()) {
 		// the annotations of a comic book or a DjVu file are kept in an attribute of the file, too
 		fCanSave = true;
@@ -320,6 +397,8 @@ Document::~Document()
 {
 	fLock.Lock();
 	delete fEpub;
+	if (fContentPath.Length() > 0)
+		BEntry(fContentPath.String()).Remove();
 	delete fComic;
 	delete fBbf;
 	fz_drop_document(fContext, fDocument);

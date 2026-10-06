@@ -339,6 +339,23 @@ InstallMimeTypes(const entry_ref* application, bool keepLegacyColumns)
 		}
 	}
 
+	// Mobipocket books: the same attributes as for EPUB (the database may know the type: then its names stay)
+	BMimeType mobi("application/x-mobipocket-ebook");
+	if (mobi.InitCheck() == B_OK) {
+		if (!mobi.IsInstalled() && mobi.Install() == B_OK) {
+			mobi.SetShortDescription(B_TRANSLATE("Mobipocket e-book"));
+			mobi.SetLongDescription(B_TRANSLATE("Mobipocket e-book (MOBI)"));
+			BMessage extensions;
+			extensions.AddString("extensions", "mobi");
+			extensions.AddString("extensions", "prc");
+			mobi.SetFileExtensions(&extensions);
+		}
+		mobi.SetAttrInfo(&epubInfo);
+		BString mobiRule;
+		if (mobi.GetSnifferRule(&mobiRule) != B_OK || mobiRule.Length() == 0)
+			mobi.SetSnifferRule("1.0 [60] ('BOOKMOBI')");
+	}
+
 	// The database knows what an application supports from the entry of its signature, which is only made
 	// when the application is entered (mimeset -a). Nobody does that for an application that comes in a package
 	// or is built, so the entry is out of date after a new type has been added: Toji would not be offered for

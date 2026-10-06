@@ -1,9 +1,9 @@
-1	Friulian	application/x-vnd.sen-labs.Toji	3494065982
+1	Friulian	application/x-vnd.sen-labs.Toji	3535354210
 Selection rectangle	AnnotationWindow		Retangul di selezion
 Toji reading file: 	PDFView		Toji leture file:
 Cancel	PDFView		Anule
-a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Undo	PDFWindow		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Go to previous page	PDFWindow		Va ae pagjine precedente
 Language	BepdfApplication		
 Subject:	FileInfoWindow		Ogjet:
@@ -125,6 +125,7 @@ Series:	FileInfoWindow
 First	PDFWindow		Prin
 Copy link	PDFView		Copie colegament
 Add	PDFWindow		Zonte
+Mobipocket e-book	BepdfApplication		
 Open in new window…	PDFWindow		Vierç intun gnûf barcon…
 Yellow	PDFView		
 OK	PDFSearch		Va ben
@@ -147,9 +148,9 @@ Final	BepdfApplication		Finâl
 Show error messages	PDFWindow		Mostre messaçs di erôr
 Document	FileInfoWindow		Document
 Width: 	PrintSettingsWindow		Largjece:
+Show sidebar	PDFWindow		
 Author:	FileInfoWindow		Autôr:
 Orange	PDFView		
-Show sidebar	PDFWindow		
 Annotations	BepdfApplication		
 Security	FileInfoWindow		Sigurece
 of %d	PDFWindow		di %d
@@ -236,6 +237,7 @@ Comic book (7z)	BepdfApplication
 Restore window position and size	AnnotationWindow		Ripristine posizion e dimension dal barcon
 Rectangle	PDFView		
 Line	Document		
+Mobipocket e-book (MOBI)	BepdfApplication		
 Identifier	BepdfApplication		
 Margin note	PDFView		
 Modified:	FileInfoWindow		Modificât:

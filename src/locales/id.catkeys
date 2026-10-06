@@ -1,9 +1,9 @@
-1	Indonesian	application/x-vnd.sen-labs.Toji	3494065982
+1	Indonesian	application/x-vnd.sen-labs.Toji	3535354210
 Selection rectangle	AnnotationWindow		Seleksi persegi
 Toji reading file: 	PDFView		Toji membaca file:
 Cancel	PDFView		Batal
-a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Undo	PDFWindow		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Go to previous page	PDFWindow		ke halaman sebelumnya
 Language	BepdfApplication		
 Subject:	FileInfoWindow		Subyek:
@@ -125,6 +125,7 @@ Series:	FileInfoWindow
 First	PDFWindow		Pertama
 Copy link	PDFView		Salin Tautan
 Add	PDFWindow		Tambah
+Mobipocket e-book	BepdfApplication		
 Open in new window…	PDFWindow		Buka di jendela baru…
 Yellow	PDFView		
 OK	PDFSearch		OKE
@@ -147,9 +148,9 @@ Final	BepdfApplication		Final
 Show error messages	PDFWindow		Tampilkan pesan kesalahan
 Document	FileInfoWindow		Dokumen
 Width: 	PrintSettingsWindow		Width:
+Show sidebar	PDFWindow		
 Author:	FileInfoWindow		Penulis:
 Orange	PDFView		
-Show sidebar	PDFWindow		
 Annotations	BepdfApplication		
 Security	FileInfoWindow		Keamanan
 of %d	PDFWindow		dari %d
@@ -236,6 +237,7 @@ Comic book (7z)	BepdfApplication
 Restore window position and size	AnnotationWindow		Kembalikan posisi dan ukuran jendela
 Rectangle	PDFView		
 Line	Document		
+Mobipocket e-book (MOBI)	BepdfApplication		
 Identifier	BepdfApplication		
 Margin note	PDFView		
 Modified:	FileInfoWindow		Diubah:

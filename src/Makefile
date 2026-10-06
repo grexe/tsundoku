@@ -52,6 +52,7 @@ SRCS = annotations/AnnotationsView.cpp \
 	../lib/ComicInfo.cpp \
 	../lib/EpubCfi.cpp \
 	../lib/EpubInfo.cpp \
+	../lib/Mobi.cpp \
 	ui/FileInfoWindow.cpp \
 	ui/FindTextWindow.cpp \
 	app/Globals.cpp \

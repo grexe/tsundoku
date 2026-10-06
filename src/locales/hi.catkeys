@@ -1,9 +1,9 @@
-1	Hindi	application/x-vnd.sen-labs.Toji	3494065982
+1	Hindi	application/x-vnd.sen-labs.Toji	3535354210
 Selection rectangle	AnnotationWindow		Chayaan Aayat
 Toji reading file: 	PDFView		Toji pathan file:
 Cancel	PDFView		Radh karana
-a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Undo	PDFWindow		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Go to previous page	PDFWindow		pichhale prshth par jaen
 Language	BepdfApplication		
 Subject:	FileInfoWindow		Vishay:
@@ -125,6 +125,7 @@ Series:	FileInfoWindow
 First	PDFWindow		Pratham
 Copy link	PDFView		pratiroop jodana
 Add	PDFWindow		jodana
+Mobipocket e-book	BepdfApplication		
 Open in new window…	PDFWindow		Nayee window mein kholee...
 Yellow	PDFView		
 OK	PDFSearch		Theek
@@ -147,9 +148,9 @@ Final	BepdfApplication		Antim
 Show error messages	PDFWindow		Truti sandesh dikhaen
 Document	FileInfoWindow		dastaavez
 Width: 	PrintSettingsWindow		chaudaee:
+Show sidebar	PDFWindow		
 Author:	FileInfoWindow		Lekhak:
 Orange	PDFView		
-Show sidebar	PDFWindow		
 Annotations	BepdfApplication		
 Security	FileInfoWindow		Suraksha
 of %d	PDFWindow		% d ka
@@ -236,6 +237,7 @@ Comic book (7z)	BepdfApplication
 Restore window position and size	AnnotationWindow		window kee sthiti aur aakaar ko punarsthaapit karen
 Rectangle	PDFView		
 Line	Document		
+Mobipocket e-book (MOBI)	BepdfApplication		
 Identifier	BepdfApplication		
 Margin note	PDFView		
 Modified:	FileInfoWindow		Sanshodhit:

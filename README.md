@@ -28,6 +28,7 @@ PDF: EPUB books, comics (CBZ, CBR, CB7, CBT, BBF), DjVu, XPS and images.
 |--------|-------|
 | PDF | encrypted and password protected files too; annotations are real PDF annotations |
 | EPUB | laid out for a text size, anchored marks and bookmarks, metadata in file attributes |
+| Mobipocket (MOBI) | read by Toji's own reader (`lib/Mobi.cpp`, MIT) and shown like an EPUB; no DRM, no KF8-only books yet |
 | Comics: CBZ, CBR, CB7, CBT, BBF | double pages, manga (right to left) and webtoons (top to bottom), `ComicInfo.xml` |
 | DjVu | text layer, outline, links, metadata, text marks |
 | FictionBook (`.fbz`, `.fb2.zip`), XPS, images | through MuPDF |
@@ -101,7 +102,7 @@ What is available where:
 | | Text marks | Notes, text, shapes, drawings |
 |---|---|---|
 | PDF | yes | yes |
-| EPUB | yes | no (the pages change with the text size) |
+| EPUB, Mobipocket | yes | no (the pages change with the text size) |
 | Comics | no (no text) | yes |
 | DjVu | yes | yes |
 

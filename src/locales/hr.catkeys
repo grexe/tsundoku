@@ -1,9 +1,9 @@
-1	Croatian	application/x-vnd.sen-labs.Toji	3494065982
+1	Croatian	application/x-vnd.sen-labs.Toji	3535354210
 Selection rectangle	AnnotationWindow		Selection rectangle
 Toji reading file: 	PDFView		Toji reading file: 
 Cancel	PDFView		Otkaži
-a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Undo	PDFWindow		
+a universal document reader based on BePDF, extended for SEN	BepdfApplication		
 Go to previous page	PDFWindow		Go to previous page
 Language	BepdfApplication		
 Subject:	FileInfoWindow		Subject:
@@ -125,6 +125,7 @@ Series:	FileInfoWindow
 First	PDFWindow		First
 Copy link	PDFView		Kopiraj poveznicu
 Add	PDFWindow		Dodaj
+Mobipocket e-book	BepdfApplication		
 Open in new window…	PDFWindow		Open in new window…
 Yellow	PDFView		
 OK	PDFSearch		U redu
@@ -147,9 +148,9 @@ Final	BepdfApplication		Završno
 Show error messages	PDFWindow		Show error messages
 Document	FileInfoWindow		Dokument
 Width: 	PrintSettingsWindow		Width: 
+Show sidebar	PDFWindow		
 Author:	FileInfoWindow		Autor:
 Orange	PDFView		
-Show sidebar	PDFWindow		
 Annotations	BepdfApplication		
 Security	FileInfoWindow		Sigurnost
 of %d	PDFWindow		of %d
@@ -236,6 +237,7 @@ Comic book (7z)	BepdfApplication
 Restore window position and size	AnnotationWindow		Obnovi poziciju i veličinu prozora
 Rectangle	PDFView		
 Line	Document		
+Mobipocket e-book (MOBI)	BepdfApplication		
 Identifier	BepdfApplication		
 Margin note	PDFView		
 Modified:	FileInfoWindow		Izmjenjeno:

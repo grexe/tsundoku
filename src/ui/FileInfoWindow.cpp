@@ -213,6 +213,8 @@ void FileInfoWindow::Refresh(BEntry *file, Document *doc) {
 	}
 
 	BString format = doc->Format();
+	if (strcmp(doc->ContentPath(), doc->Path()) != 0)
+		format = "Mobipocket";	// (made an EPUB for the time it is open)
 	if (format.Length() > 0)
 		AddPair(document, new BStringView("", B_TRANSLATE("Format:")), new BStringView("", format.String()));
 
@@ -238,7 +240,7 @@ void FileInfoWindow::Refresh(BEntry *file, Document *doc) {
 			{ B_TRANSLATE("ISBN:"), epub->isbn },
 			{ B_TRANSLATE("Subjects:"), epub->Subjects() },
 			{ B_TRANSLATE("Description:"), epub->description },
-			{ B_TRANSLATE("EPUB version:"), epub->version }
+			{ B_TRANSLATE("EPUB version:"), strcmp(doc->ContentPath(), doc->Path()) == 0 ? epub->version : BString() }
 		};
 		for (size_t i = 0; i < sizeof(rows) / sizeof(rows[0]); i++) {
 			if (rows[i].value.Length() == 0)
@@ -253,7 +255,7 @@ void FileInfoWindow::Refresh(BEntry *file, Document *doc) {
 
 		std::vector<uint8> data;
 		if (epub->coverMember.Length() > 0 && path.InitCheck() == B_OK
-			&& EpubInfo::ReadMember(path.Path(), epub->coverMember.String(), &data) && !data.empty()) {
+			&& EpubInfo::ReadMember(doc->ContentPath(), epub->coverMember.String(), &data) && !data.empty()) {
 			BMemoryIO io(&data[0], data.size());
 			if (BBitmap* bitmap = BTranslationUtils::GetBitmap(&io))
 				cover = new CoverView(bitmap);

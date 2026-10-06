@@ -5,7 +5,7 @@ You can mark text and add notes and shapes to pages. Which tools a document offe
 | | Marks on text | Notes, text, shapes, drawings |
 |:---|:---|:---|
 | PDF | yes | yes |
-| EPUB | yes | no (the pages change with the text size) |
+| EPUB, Mobipocket | yes | no (the pages change with the text size) |
 | Comics | no (there is no text) | yes |
 | DjVu | yes | yes |
 

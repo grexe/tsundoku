@@ -227,6 +227,8 @@ public:
 	BLocker*     Lock() { return &fLock; }
 
 	const char*  Path() const { return fPath.String(); }
+	// the file that has the content as an EPUB: a book of another format (Mobipocket) is made one for the time that it is open
+	const char*  ContentPath() const { return fContentPath.Length() > 0 ? fContentPath.String() : fPath.String(); }
 	int          PageCount() const { return fPageCount; }
 	bool         IsPDF() const { return fIsPDF; }
 
@@ -396,7 +398,7 @@ public:
 
 private:
 	~Document();
-	Document(fz_context* context, fz_document* document, const char* path, float textSize);
+	Document(fz_context* context, fz_document* document, const char* path, float textSize, const char* contentPath = NULL);
 	void ListPage(int pageNo, std::vector<DocAnnotationEntry>& entries);
 
 	// the marks of a reflowable document (see DocumentStore.cpp) and the annotations of a comic book (DocumentDraw.cpp)
@@ -463,6 +465,7 @@ private:
 	bool            fReflowable;
 	float           fTextSize;
 	EpubInfo*       fEpub;
+	BString         fContentPath;
 	ComicInfo*      fComic;
 	BbfInfo*        fBbf;
 	bool            fIsComic;

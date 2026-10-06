@@ -5463,7 +5463,7 @@ PDFView::TestCommand(BMessage* message)
 		BString words;
 		float fraction = 0;
 		bool ok = mDoc->Epub() != NULL
-			&& EpubCfi::Resolve(mDoc->Path(), *mDoc->Epub(), text.String(), &spine, &words, &fraction);
+			&& EpubCfi::Resolve(mDoc->ContentPath(), *mDoc->Epub(), text.String(), &spine, &words, &fraction);
 		TestLog("cfiresolve [%s]: %s spine %d fraction %g words [%s]", text.String(), ok ? "ok" : "failed", spine,
 			fraction, words.String());
 	} else if (cmd == "anchor") {
