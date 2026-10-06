@@ -1,257 +1,361 @@
-1	Swedish	application/x-vnd.sen-labs.Tsundoku	2450431064
- in	PrintSettingsWindow		i
-All pages	PrintSettingsWindow		Alla sidor
-Color	PrintSettingsWindow		Färg
-DPI	PrintSettingsWindow		DPI
-Even pages	PrintSettingsWindow		Jämna sidor
-Gray scale	PrintSettingsWindow		Gråskala
-Height: 	PrintSettingsWindow		Höjd:
-Max. printer resolution	PrintSettingsWindow		Högsta skrivarupplösning
-Mode	PrintSettingsWindow		Läge
-Normal	PrintSettingsWindow		Normal
-Odd pages	PrintSettingsWindow		Ojämna sidor
-OK	PrintSettingsWindow		OK
-Order	PrintSettingsWindow		Ordning
-Page	PrintSettingsWindow		Sida
-Pages	PrintSettingsWindow		Sidor
-Print	PrintSettingsWindow		Skriv ut
-Print settings	PrintSettingsWindow		Utskriftsinställningar
-Reverse	PrintSettingsWindow		Omkasta
-Rotation	PrintSettingsWindow		Rotation
-Width: 	PrintSettingsWindow		Bredd:
-Wrong parameter!	PrintSettingsWindow		Fel parameter!
-Zoom (%)	PrintSettingsWindow		Zoom (%)
-Zoom must be between 25 and 400!	PrintSettingsWindow		Zoomläget måste vara mellan 25 och 400!
-[internal link]	PDFView		[intern länk]
-[link type 'movie' not supported]	PDFView		[länktypen 'video' stöds inte]
-[unknown link]	PDFView		[okänd länk]
-Annotation	PDFView		Kommentar
-Tsundoku reading file: 	PDFView		Tsundoku läser fil:
-Tsundoku: Launch	PDFView		Tsundoku: Starta
-Cancel	PDFView		Avbryt
-Copy link	PDFView		Kopiera länk
-Delete	PDFView		Ta bort
-Edit	PDFView		Redigera
-Execute the command:	PDFView		Kör kommandot:
-Go to page %d	PDFView		Gå till sida %d
-Leave annotation editing mode	PDFView		Lämna redigeringsläge för kommentar
-OK	PDFView		OK
-Open in new window	PDFView		Öppna i nytt fönster
-Properties	PDFView		Alternativ
-Save file attachment as…	PDFView		Spara bifogad fil som...
-Saving file attachment:	PDFView		Sparar bifogad fil:
-Unknown link action type: '%s'	PDFView		Okänd åtgärdstyp för länk: '%s'
-<empty>	OutlinesWindow		<tomt>
-Document	OutlinesWindow		Dokument
-Edit title for bookmark	OutlinesWindow		Ändra titel för bokmärke
-No title	OutlinesWindow		Ingen titel
-OK	OutlinesWindow		OK
-User defined	OutlinesWindow		Användaredefinerad
-<empty>	AttachmentView		<tom>
-Description	AttachmentView		Beskrivning
-File name	AttachmentView		Filnamn
-Save attachment(s) as	AttachmentView		Spara bilagor som
-Save selected attachment to file	AttachmentView		Spara markerad bilaga till fil
-Save selected attachments into directory	AttachmentView		Spara markerad bilaga till mapp
-Saving attachment(s):	AttachmentView		Sparar bilagor:
-Abort	PrintingProgressWindow		Avbryt
-Tsundoku printing	PrintingProgressWindow		Tsundoku skriver ut
-Tsundoku printing document: 	PrintingProgressWindow		Tsundoku skriver ut dokument
-Page:	PrintingProgressWindow		Sida:
-Page: %d	PrintingProgressWindow		Sida: %d
-Stop	PrintingProgressWindow		Stoppa
-Abort	FileInfoWindow		Avbryt
-Allowed	FileInfoWindow		Tillåtet
-Annotations:	FileInfoWindow		Annotationer:
-Author:	FileInfoWindow		Författare:
-Copy & paste:	FileInfoWindow		Kopiera och klistra in:
-Created:	FileInfoWindow		Skapad:
-Creator:	FileInfoWindow		Skapare:
-Denied	FileInfoWindow		Nekad
-Document	FileInfoWindow		Dokument
-Editing:	FileInfoWindow		Redigering:
-Embedded name	FileInfoWindow		Inbäddat namn
-Encrypted:	FileInfoWindow		Kryptering:
-File info	FileInfoWindow		Filinformation
-Filename:	FileInfoWindow		Filnamn:
-Fonts of this page	FileInfoWindow		Typsnitt på denna sida
-Keywords:	FileInfoWindow		Nyckelord:
-Linearized:	FileInfoWindow		Linjäriserad:
-Modified:	FileInfoWindow		Modifierad:
-Name	FileInfoWindow		Namn
-No	FileInfoWindow		Nej
-Path:	FileInfoWindow		Sökväg:
-Printing:	FileInfoWindow		Utskrift:
-Producer:	FileInfoWindow		Producent:
-Security	FileInfoWindow		Säkerhet
-Show all fonts	FileInfoWindow		Visa alla typsnitt
-Subject:	FileInfoWindow		Ämne:
-Title:	FileInfoWindow		Titel:
-Type	FileInfoWindow		Typ
-Version:	FileInfoWindow		Version:
-Yes	FileInfoWindow		Ja
-About Tsundoku…	PDFWindow		Om Tsundoku…
-Add	PDFWindow		Lägg till
-Add circle annotation	PDFWindow		Lägg till cirkelannotation
-Add comment text annotation	PDFWindow		Lägg till kommentar för textannotation
-Add file attachment annotation	PDFWindow		Lägg till annotation för bifogad fil
-Add free text annotation	PDFWindow		Lägg till annotation för fritext
-Add help text annotation	PDFWindow		Lägg till annotation för hjälptext
-Add highlight annotation	PDFWindow		Lägg till annotation för överstrykning
-Add ink annotation	PDFWindow		Lägg till bläckannotation
-Add insert text annotation	PDFWindow		Lägg till textannotation
-Add key text annotation	PDFWindow		Lägg till nyckeltextannotation
-Add line annotation	PDFWindow		Lägg till linjeannotation
-Add link annotation	PDFWindow		Lägg till länkannotation
-Add movie annotation	PDFWindow		Lägg till filmannotation
-Add new paragraph text annotation	PDFWindow		Lägg till annotation för ny textparagraf
-Add note text annotation	PDFWindow		Lägg till annotation för textanteckning
-Add paragraph text annotation	PDFWindow		Lägg till annotation för textparagraf
-Add popup annotation	PDFWindow		Lägg till popup-annotation
-Add printer mark annotation	PDFWindow		Lägg till annotation för boktryckarmärke
-Add sound annotation	PDFWindow		Lägg till ljudannotation
-Add square annotation	PDFWindow		Lägg till rektangulär annotation
-Add squiggly annotation	PDFWindow		Lägg till annotation för snirklig linje
-Add stamp annotation	PDFWindow		Lägg till stämpelannotation
-Add strikeout annotation	PDFWindow		Lägg till överstrykningsannotation
-Add trapnet annotation	PDFWindow		Lägg till fältsnittsannotation
-Add underline annotation	PDFWindow		Lägg till ‎understruken annotering
-Add widget annotation	PDFWindow		Lägg till komponentannotation
-Back	PDFWindow		Bakåt
-Back in page history list	PDFWindow		Tillbaka i sidohistorikslistan
-Bookmark	PDFWindow		Bokmärke
-Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Kan inte skriva över en PDF-fil som för närvarande är öppnad i Tsundoku! Vänligen välj ett annat filnamn.
-Close	PDFWindow		Stäng
-Copy selection	PDFWindow		Kopiera markering
-Could not write PDF file!	PDFWindow		Kunde inte skriva PDF-fil!
-Custom zoom factor (%d%%)	PDFWindow		Anpassad zoomfaktor (%d%%)
-Delete	PDFWindow		Ta bort
-Edit	PDFWindow		Redigera
-Editing of annotations in an encrypted PDF file isn't supported yet!	PDFWindow		Redigering av annotationer i en krypterad PDF-fil stöds inte.
-English.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	English.pdf
-File	PDFWindow		Arkiv
-File info…	PDFWindow		Filinformation…
-Find	PDFWindow		Sök
-Find next	PDFWindow		Sök nästa
-Find next…	PDFWindow		Sök nästa…
-Find…	PDFWindow		Sök…
-First	PDFWindow		Första
-Fit to page	PDFWindow		Anpassa till sidan
-Fit to page width	PDFWindow		Anpassa till sidans bredd
-Forward	PDFWindow		Framåt
-Forward in page history list	PDFWindow		Framåt i sidhistoriken
-Fullscreen	PDFWindow		Fullskärm
-Fullscreen mode	PDFWindow		Fullskärmsläge
-Go back 10 pages	PDFWindow		Gå tillbaka 10 sidor
-Go forward 10 pages	PDFWindow		Gå framåt 10 sidor
-Go to end of document	PDFWindow		Gå till slutet av dokumentet
-Go to next page	PDFWindow		Gå till nästa sida
-Go to previous page	PDFWindow		Gå till föregående sida
-Go to start of document	PDFWindow		Gå till början av dokumentet
-Help	PDFWindow		Hjälp
-Hide side bar	PDFWindow		Göm statusfältet
-Issue tracker…	PDFWindow		Felrapporteringssystem...
-Jump to page	PDFWindow		Hoppa till sida
-Last	PDFWindow		Sista
-Leave annotation editing mode	PDFWindow		Lämna läge för annotationsredigering
-Next	PDFWindow		Nästa
-of %d	PDFWindow		av %d
-OK	PDFWindow		OK
-Online help…	PDFWindow		Onlinehjälp...
-Open file	PDFWindow		Öppna fil
-Open in new window…	PDFWindow		Öppna i nytt fönster...
-Open…	PDFWindow		Öppna…
-Page	PDFWindow		Sida
-Page %d	PDFWindow		Sida %d
-Page setup…	PDFWindow		Utskriftsformat...
-PDF file successfully written!	PDFWindow		PDF-filen skrevs framgångsrikt!
-Preferences…	PDFWindow		Inställningar...
-Previous	PDFWindow		Föregående
-Print	PDFWindow		Skriv ut
-Print…	PDFWindow		Skriv ut...
-Quit	PDFWindow		Avsluta
-Reload	PDFWindow		Ladda om
-Reload file	PDFWindow		Ladda om fil
-Rotate clockwise	PDFWindow		Rotera medurs
-Rotate counter-clockwise	PDFWindow		Rotera moturs
-Rotation	PDFWindow		Rotation
-Save as…	PDFWindow		Spara som…
-Save file as	PDFWindow		Spara fil som
-Saving copy of PDF file:	PDFWindow		Sparar kopia av PDF-filen:
-Search	PDFWindow		Sök
-Select all	PDFWindow		Markera alla
-Select none	PDFWindow		Markera ingen
-Show annotation tool bar	PDFWindow		Visa annotationsverktygsfältet
-Show annotation toolbar	PDFWindow		Visa annotationsverktygsfältet
-Show attachments	PDFWindow		Visa bilagor
-Show bookmarks	PDFWindow		Visa bokmärken
-Show error messages	PDFWindow		Visa felmeddelanden
-Show help…	PDFWindow		Visa hjälpen…
-Show page list	PDFWindow		Visa sidlistan
-View	PDFWindow		Visa
-Visit homepage…	PDFWindow		Besök hemsidan...
-Warning	PDFWindow		Varning
-Zoom	PDFWindow		Zooma
-Zoom in	PDFWindow		Zooma in
-Zoom out	PDFWindow		Zooma ut
-Align:	AnnotationWindow		Justera:
-Annotation	AnnotationWindow		Annotation
-Asian fonts	AnnotationWindow		Asiatiska fonter
-Author	AnnotationWindow		Upphovman
-Automatic	AnnotationWindow		Automatiskt
-current	AnnotationWindow		aktuell
-Date:	AnnotationWindow		Datum:
-Display	AnnotationWindow		Visa
-Document	AnnotationWindow		Dokument
-Filled rectangle	AnnotationWindow		Fylld rektangel
-Font:	AnnotationWindow		Typsnitt:
-Fullscreen mode	AnnotationWindow		Fullskärmsläge
-Invert vertical mouse scrolling	AnnotationWindow		Invertera vertikal muskskrollning
-Open in workspace:	AnnotationWindow		Öppna på arbetsyta:
-Preferences	AnnotationWindow		Inställningar
-Restore page number	AnnotationWindow		Återställ sidnumrering
-Restore window position and size	AnnotationWindow		Återställ fönsterposition och storlek
+1	Swedish	application/x-vnd.sen-labs.Toji	453287713
 Selection rectangle	AnnotationWindow		Markeringsrektangel
-Show document view only	AnnotationWindow		Visa endast dokumentvyn
-Show toolbar, statusbar and scrollbars, too	AnnotationWindow		Visa verktygsfält, statusfält och rullningslist
-Size:	AnnotationWindow		Storlek:
-Stroked rectangle	AnnotationWindow		Streckad rektangel
-System fonts	AnnotationWindow		Systemteckensnitt
-Title:	AnnotationWindow		Titel:
-User fonts	AnnotationWindow		Användarvalda fonter
-Will take effect at next program launch.	AnnotationWindow		Kommer att ta effekt vid nästa programstart.
-Alpha	BepdfApplication		Alfa
-Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku är baserad på XPDF %s, %s.
-Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Fel vid öppnande av fil!
-Beta	BepdfApplication		Beta
-Close	BepdfApplication		Stäng
-Development	BepdfApplication		Utveckling
-Error	BepdfApplication		Fel
-Final	BepdfApplication		Slutgiltig
-Gamma	BepdfApplication		Gamma
-Golden Master	BepdfApplication		Gyllene Master
-Unknown	BepdfApplication		Okänd
-Version	BepdfApplication		Version
-Auto open	TraceWindow		Öppna automatiskt
-Clear	TraceWindow		Rensa
-Error messages	TraceWindow		Felmeddelanden
-Floating	TraceWindow		Flytande
-Tsundoku status	StatusWindow		Tsundoku status
-Enter Password	PasswordWindow		Ange lösenord
-OK	PasswordWindow		OK
-Owner password	PasswordWindow		Ägarlösenord
-User password	PasswordWindow		Användarlösenord
-Find	FindTextWindow		Sök
-Find text	FindTextWindow		Sök efter text
-Find: 	FindTextWindow		Sök:
-Ignore case	FindTextWindow		Ignorera skiftläge
-Options	FindTextWindow		Alternativ
-Page:	FindTextWindow		Sida:
-Page: %d	FindTextWindow		Sida: %d
-Search backwards	FindTextWindow		Sök baklänges
-Stop	FindTextWindow		Stopp
-OK	PDFSearch		OK
-Search string not found.	PDFSearch		Söksträngen hittades inte.
-Error getting page number!	BepdfApplication		
-Invalid file reference received!	BepdfApplication		
+Toji reading file: 	PDFView		Toji läser fil:
+Cancel	PDFView		Avbryt
 a universal document reader based on BePDF, extended for SEN	BepdfApplication		
+Undo	PDFWindow		
+Go to previous page	PDFWindow		Gå till föregående sida
+Language	BepdfApplication		
+Subject:	FileInfoWindow		Ämne:
+Filled rectangle	AnnotationWindow		Fylld rektangel
+Current	PDFView		
+Owner password	PasswordWindow		Ägarlösenord
+ISBN	BepdfApplication		
+Strike out selection	PDFWindow		
+Pink	PDFView		
+Replace legacy attributes with standard ones	AnnotationWindow		
+OK	BepdfApplication		
+Text, shapes and drawing: choose one, then click or drag on the page	PDFWindow		
+Copy link to this place	PDFView		
+Add highlight	Document		
+Cancel	PDFWindow		
+Page	AnnotationsView		
+Delete	PDFWindow		Ta bort
+Note	PDFView		
+Color	PrintSettingsWindow		Färg
+View	PDFWindow		Visa
+Search string not found.	PDFSearch		Söksträngen hittades inte.
+Normal	PrintSettingsWindow		Normal
+Copy	PDFWindow		
+No fill	PDFView		
+Redo	PDFWindow		
+File attachment	Document		
+Age rating:	FileInfoWindow		
+Zoom in	PDFWindow		Zooma in
+Notes: a margin note for selected text, a note or a text on the page	PDFWindow		
+Page:	FindTextWindow		Sida:
+Rotation	PrintSettingsWindow		Rotation
+Gamma	BepdfApplication		Gamma
+Error messages	TraceWindow		Felmeddelanden
+Jump to page	PDFWindow		Hoppa till sida
+Move annotation	Document		
+DjVu document	BepdfApplication		
+Edit note…	PDFView		
+Fullscreen mode	AnnotationWindow		Fullskärmsläge
+Author	BepdfApplication		
+Single page	PDFWindow		
+Mode	PrintSettingsWindow		Läge
+Publisher	BepdfApplication		
+Save as…	PDFWindow		Spara som…
+Issue tracker…	PDFWindow		Felrapporteringssystem...
+Printing:	FileInfoWindow		Utskrift:
+Add ellipse	Document		
+The document could not be saved.	PDFWindow		
+Copy link to this place	PDFWindow		
+Top to bottom	PDFWindow		
+Zoom must be between 25 and 400!	PrintSettingsWindow		Zoomläget måste vara mellan 25 och 400!
+Open…	PDFWindow		Öppna…
+ (annotated)	PDFWindow		
+Show toolbar, statusbar and scrollbars, too	AnnotationWindow		Visa verktygsfält, statusfält och rullningslist
+Show page list	PDFWindow		Visa sidlistan
+current	AnnotationWindow		aktuell
+OK	PasswordWindow		OK
+Document	OutlinesWindow		Dokument
+Invert vertical mouse scrolling	AnnotationWindow		Invertera vertikal muskskrollning
+Page setup…	PDFWindow		Utskriftsformat...
+Text	Document		
+Stroked rectangle	AnnotationWindow		Streckad rektangel
+OK	NoteWindow		
+Find: 	FindTextWindow		Sök:
+Zoom	PDFWindow		Zooma
+Larger text	PDFWindow		
+ISBN:	FileInfoWindow		
+Text	PDFView		
+Text	PDFWindow		
+Open in workspace:	AnnotationWindow		Öppna på arbetsyta:
+This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.	PDFWindow		
+Go to next page	PDFWindow		Gå till nästa sida
+Restore page number	AnnotationWindow		Återställ sidnumrering
+Last	PDFWindow		Sista
+Hide sidebar	PDFWindow		
+Add line	Document		
+Find next	PDFWindow		Sök nästa
+Arrow	PDFWindow		
+Series number	BepdfApplication		
+Note	Document		
+All pages	PrintSettingsWindow		Alla sidor
+Describe annotations of other programs in the file's attributes	AnnotationWindow		
+Go to start of document	PDFWindow		Gå till början av dokumentet
+Pages	BepdfApplication		
+Highlight	PDFView		
+Go forward 10 pages	PDFWindow		Gå framåt 10 sidor
+Go back 10 pages	PDFWindow		Gå tillbaka 10 sidor
+Fit to page width	PDFWindow		Anpassa till sidans bredd
+Toji link	BepdfApplication		
+DPI	PrintSettingsWindow		DPI
+Find…	PDFWindow		Sök…
+Title page alone	PDFWindow		
+Odd pages	PrintSettingsWindow		Ojämna sidor
+Laying out the book…	PDFView		
+Show bookmarks	PDFWindow		Visa bokmärken
+Description	BepdfApplication		
+Max. printer resolution	PrintSettingsWindow		Högsta skrivarupplösning
+Strike out	PDFView		
+Reading direction	BepdfApplication		
+Edit text…	PDFView		
+Delete annotation	PDFView		
+Quit	PDFWindow		Avsluta
+About Toji	BepdfApplication		
+The copy could not be saved.	PDFWindow		
+Fullscreen mode	PDFWindow		Fullskärmsläge
+File	PDFWindow		Arkiv
+Options	FindTextWindow		Alternativ
+Find text	FindTextWindow		Sök efter text
+Clear	TraceWindow		Rensa
+toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
+Print	PrintSettingsWindow		Skriv ut
+Enter Password	PasswordWindow		Ange lösenord
+Online help…	PDFWindow		Onlinehjälp...
+Rectangle	Document		
+Copy	PDFView		
+Filename:	FileInfoWindow		Filnamn:
+Series:	FileInfoWindow		
+First	PDFWindow		Första
+Copy link	PDFView		Kopiera länk
+Add	PDFWindow		Lägg till
+Open in new window…	PDFWindow		Öppna i nytt fönster...
+Yellow	PDFView		
+OK	PDFSearch		OK
+Add arrow	Document		
+Version	BepdfApplication		Version
+Zoom (%)	PrintSettingsWindow		Zoom (%)
+Files that BePDF has opened have attributes with its own names (META:title, META:author, ...). Toji writes the same information with standard names (dc:title, dc:creator, ...) in any case. The legacy attributes are kept unless this is on: then they are removed.	AnnotationWindow		
+Custom zoom factor (%d%%)	PDFWindow		Anpassad zoomfaktor (%d%%)
+Arrow	Document		
+Abort	PrintingProgressWindow		Avbryt
+Add drawing	Document		
+Go to end of document	PDFWindow		Gå till slutet av dokumentet
+Beta	BepdfApplication		Beta
+Auto open	TraceWindow		Öppna automatiskt
+Back	PDFWindow		Bakåt
+Pages	PrintSettingsWindow		Sidor
+Upgrade	PDFWindow		
+%1 (p%2)	PDFWindow	Name of a bookmark: the section (1) and the page (2)	
+Final	BepdfApplication		Slutgiltig
+Show error messages	PDFWindow		Visa felmeddelanden
+Document	FileInfoWindow		Dokument
+Width: 	PrintSettingsWindow		Bredd:
+Author:	FileInfoWindow		Författare:
+Orange	PDFView		
+Show sidebar	PDFWindow		
+Annotations	BepdfApplication		
+Security	FileInfoWindow		Säkerhet
+of %d	PDFWindow		av %d
+Keywords	BepdfApplication		
+Denied	FileInfoWindow		Nekad
+Order	PrintSettingsWindow		Ordning
+Add strike out	Document		
+Highlight	Document		
+Show annotations	PDFWindow		
+Published	BepdfApplication		
+Resize annotation	Document		
+Stamp	Document		
+Page: %d	FindTextWindow		Sida: %d
+Add underline	Document		
+Page	PDFWindow		Sida
+Producer:	FileInfoWindow		Producent:
+Page list	PDFWindow		
+Title	BepdfApplication		
+(read-only)	PDFView		
+Keywords:	FileInfoWindow		Nyckelord:
+Annotation	Document		
+Blue	PDFView		
+Forward in page history list	PDFWindow		Framåt i sidhistoriken
+Page:	PrintingProgressWindow		Sida:
+Find next…	PDFWindow		Sök nästa…
+Ellipse	PDFView		
+Change color	Document		
+Change note	Document		
+Display	AnnotationWindow		Visa
+Line width	PDFView		
+Right to left	PDFWindow		
+Visit homepage…	PDFWindow		Besök hemsidan...
+Even pages	PrintSettingsWindow		Jämna sidor
+Stop	FindTextWindow		Stopp
+Subjects:	FileInfoWindow		
+Marker: choose a color, then select the text	PDFWindow		
+Bookmarks	BepdfApplication		
+Print	PDFWindow		Skriv ut
+Find previous…	PDFWindow		
+Line	PDFWindow		
+ in	PrintSettingsWindow		i
+Unknown	BepdfApplication		Okänd
+Show margin notes	PDFWindow		
+Bookmark	PDFWindow		Bokmärke
+The file could not be saved.	AttachmentsView		
+Note	NoteWindow		
+Next	PDFWindow		Nästa
+Drawing	PDFView		
+Reverse	PrintSettingsWindow		Omkasta
+Close	BepdfApplication		Stäng
+Keep	PDFWindow		
+Page: %d	PrintingProgressWindow		Sida: %d
+Note	PDFWindow		
+Strike out	Document		
+Rotate counter-clockwise	PDFWindow		Rotera moturs
+Select none	PDFWindow		Markera ingen
+Format:	FileInfoWindow		
+Smaller text	PDFWindow		
+Alpha	BepdfApplication		Alfa
+<empty>	OutlinesWindow		<tomt>
+1 annotation	AnnotationsView		
+Add squiggly line	Document		
+Language:	FileInfoWindow		
+Annotations	PDFWindow		
+Forward	PDFWindow		Framåt
+Electronic publication (EPUB)	BepdfApplication		
+OK	AttachmentsView		
+Toji status	StatusWindow		Toji status
+Golden Master	BepdfApplication		Gyllene Master
+Bookmarks	PDFWindow		
+Comic book (ZIP)	BepdfApplication		
+%d points	PDFView		
+Show or hide the sidebar	PDFWindow		
+Delete annotation	Document		
+Author	AnnotationWindow		Upphovman
+Comic book (TAR)	BepdfApplication		
+Publisher:	FileInfoWindow		
+Green	PDFView		
+Zoom out	PDFWindow		Zooma ut
+Add margin note	PDFWindow		
+Continuous	PDFWindow		
+Comic book (7z)	BepdfApplication		
+Restore window position and size	AnnotationWindow		Återställ fönsterposition och storlek
+Rectangle	PDFView		
+Line	Document		
+Identifier	BepdfApplication		
+Margin note	PDFView		
+Modified:	FileInfoWindow		Modifierad:
+Arrow	PDFView		
+Description:	FileInfoWindow		
+Add	PDFView		
+Save	PDFWindow		
+About Toji…	PDFWindow		Om Toji…
+Go to page %d	PDFView		Gå till sida %d
+Ellipse	Document		
+OK	OutlinesWindow		OK
+Reading:	FileInfoWindow		
+Ellipse	PDFWindow		
+Annotations:	FileInfoWindow		Annotationer:
+Published:	FileInfoWindow		
+Select all	PDFWindow		Markera alla
+Fill	PDFView		
+OK	PDFWindow		OK
+Previous	PDFWindow		Föregående
+Search	PDFWindow		Sök
+File info	FileInfoWindow		Filinformation
+OK	PrintSettingsWindow		OK
+Series	BepdfApplication		
+They can only be kept in a copy of the file.	PDFWindow		
+annotations	AnnotationsView		
+Open file	PDFWindow		Öppna fil
+Preferences	AnnotationWindow		Inställningar
+Toji™, SEN™ and SEN Labs™ are names of SEN Labs e.U.	BepdfApplication		
+Print settings	PrintSettingsWindow		Utskriftsinställningar
+Excerpt	AnnotationsView		
+Back in page history list	PDFWindow		Tillbaka i sidohistorikslistan
+Creator	BepdfApplication		
+Copy	TraceWindow		
+The document has unsaved changes (annotations).	PDFWindow		
+Find	PDFWindow		Sök
+Double-sided	PDFWindow		
+Yes	FileInfoWindow		Ja
+[unknown link]	PDFView		[okänd länk]
+Cancel	NoteWindow		
+Select all	PDFView		
+Floating	TraceWindow		Flytande
+Link to a place in a document (toji:)	BepdfApplication		
+Stop	PrintingProgressWindow		Stoppa
+Show attachments	PDFWindow		Visa bilagor
+Show help…	PDFWindow		Visa hjälpen…
+Edit	PDFWindow		Redigera
+Toji printing	PrintingProgressWindow		Toji skriver ut
+Search backwards	FindTextWindow		Sök baklänges
+Highlight selection	PDFWindow		
+EPUB version:	FileInfoWindow		
+Reload	PDFWindow		Ladda om
+Add text	Document		
+Underline selection	PDFWindow		
+Toji renders with MuPDF %s, %s.	BepdfApplication	MuPDF version, copyright	
+Red	PDFView		
+Help	PDFWindow		Hjälp
+Rotation	PDFWindow		Rotation
+Show document view only	AnnotationWindow		Visa endast dokumentvyn
+Encrypted:	FileInfoWindow		Kryptering:
+Web:	FileInfoWindow		
+Gray scale	PrintSettingsWindow		Gråskala
+Save…	AttachmentsView		
+Note on the page	PDFView		
+Type	AnnotationsView		
+Close	PDFWindow		Stäng
+Color	PDFView		
+No title	OutlinesWindow		Ingen titel
+Page	PrintSettingsWindow		Sida
+Discard	PDFWindow		
+Created:	FileInfoWindow		Skapad:
+Open in new window	PDFView		Öppna i nytt fönster
+Height: 	PrintSettingsWindow		Höjd:
+Text on the page	PDFView		
+File info…	PDFWindow		Filinformation…
+This file is read-only. You can add annotations, but to keep them you have to save a copy with “Save as…”.	PDFView		
+Allowed	FileInfoWindow		Tillåtet
+Comic book (RAR)	BepdfApplication		
+Development	BepdfApplication		Utveckling
+Add note	Document		
+Attributes of BePDF	PDFWindow		
+No	FileInfoWindow		Nej
+Pages:	FileInfoWindow		
+Edit note	Document		
+Reload file	PDFWindow		Ladda om fil
+Fit to page	PDFWindow		Anpassa till sidan
+Document	AnnotationWindow		Dokument
+Continue	PDFView		
+Settings…	PDFWindow		
+Print…	PDFWindow		Skriv ut...
+Path:	FileInfoWindow		Sökväg:
+Page %d	PDFWindow		Sida %d
+Copy & paste:	FileInfoWindow		Kopiera och klistra in:
+Edit title for bookmark	OutlinesWindow		Ändra titel för bokmärke
+Toji printing document: 	PrintingProgressWindow		Toji skriver ut dokument
+Chapter	PDFWindow		
+Comic book (BBF)	BepdfApplication		
+EPUB e-book	BepdfApplication		
+Title:	FileInfoWindow		Titel:
+Fullscreen	PDFWindow		Fullskärm
+Underline	Document		
+Add rectangle	Document		
+User defined	OutlinesWindow		Användaredefinerad
+No annotations	AnnotationsView		
+Line	PDFView		
+Change line	Document		
+Copy as Web Annotation	PDFView		
+Attachments	PDFWindow		
+right to left	FileInfoWindow		
+Editing:	FileInfoWindow		Redigering:
+Drawing	Document		
+Invalid file reference received!	BepdfApplication		
+Squiggly line	Document		
+Toji: Error opening file!	BepdfApplication		Toji: Fel vid öppnande av fil!
+User password	PasswordWindow		Användarlösenord
+Identifier:	FileInfoWindow		
+Find	FindTextWindow		Sök
+Ignore case	FindTextWindow		Ignorera skiftläge
+Creator:	FileInfoWindow		Skapare:
+Error	BepdfApplication		Fel
+When a PDF file is opened, its annotations are described in the attribute SEN:annotations, and those that have no name get an identifier, so that other programs can refer to them. The PDF file is not changed.	AnnotationWindow		
+Wrong parameter!	PrintSettingsWindow		Fel parameter!
+Rotate clockwise	PDFWindow		Rotera medurs
+Drawing	PDFWindow		
+Rectangle	PDFWindow		
+Underline	PDFView		
+Artists:	FileInfoWindow		

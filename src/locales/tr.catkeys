@@ -1,257 +1,361 @@
-1	Turkish	application/x-vnd.sen-labs.Tsundoku	2450431064
- in	PrintSettingsWindow		içinde
-All pages	PrintSettingsWindow		Tüm sayfalar
-Color	PrintSettingsWindow		Renk
-DPI	PrintSettingsWindow		DPI
-Even pages	PrintSettingsWindow		Çift numaralı sayfalar
-Gray scale	PrintSettingsWindow		Gri tonlu
-Height: 	PrintSettingsWindow		Yükseklik:
-Max. printer resolution	PrintSettingsWindow		En çok yazıcı çözünürlüğü
-Mode	PrintSettingsWindow		Kip
-Normal	PrintSettingsWindow		Normal
-Odd pages	PrintSettingsWindow		Tek numaralı sayfalar
-OK	PrintSettingsWindow		Tamam
-Order	PrintSettingsWindow		Sıra
-Page	PrintSettingsWindow		Sayfa
-Pages	PrintSettingsWindow		Sayfalar
-Print	PrintSettingsWindow		Yazdır
-Print settings	PrintSettingsWindow		Yazdırma ayarları
-Reverse	PrintSettingsWindow		Tersi
-Rotation	PrintSettingsWindow		Döndürme
-Width: 	PrintSettingsWindow		Genişlik:
-Wrong parameter!	PrintSettingsWindow		Yanlış parametre!
-Zoom (%)	PrintSettingsWindow		Yakınlaştırma (%)
-Zoom must be between 25 and 400!	PrintSettingsWindow		Yakınlaştırma 25 ve 400 arasında olmalıdır!
-[internal link]	PDFView		[iç bağ]
-[link type 'movie' not supported]	PDFView		['film' bağlantı türü desteklenmiyor]
-[unknown link]	PDFView		[bilinmeyen bağlantı]
-Annotation	PDFView		Ek açıklama
-Tsundoku reading file: 	PDFView		Tsundoku dosyayı okuyor:
-Tsundoku: Launch	PDFView		Tsundoku: Çalıştır
-Cancel	PDFView		İptal
-Copy link	PDFView		Bağlantıyı kopyala
-Delete	PDFView		Sil
-Edit	PDFView		Düzenle
-Execute the command:	PDFView		Bu komutu çalıştır:
-Go to page %d	PDFView		%d. sayfaya git
-Leave annotation editing mode	PDFView		Düzenleme kipinden çık
-OK	PDFView		Tamam
-Open in new window	PDFView		Yeni pencerede aç
-Properties	PDFView		Özellikler
-Save file attachment as…	PDFView		Dosya ekini farklı kaydet…
-Saving file attachment:	PDFView		Dosya eki kaydediliyor:
-Unknown link action type: '%s'	PDFView		Bilinmeyen bağlantı eylem türü: '%s'
-<empty>	OutlinesWindow		<boş>
-Document	OutlinesWindow		Belge
-Edit title for bookmark	OutlinesWindow		Yer imi başlığını düzenle
-No title	OutlinesWindow		Başlık yok
-OK	OutlinesWindow		Tamam
-User defined	OutlinesWindow		Kullanıcı tanımlı
-<empty>	AttachmentView		<boş>
-Description	AttachmentView		Açıklama
-File name	AttachmentView		Dosya adı
-Save attachment(s) as	AttachmentView		Ek(ler)i farklı kaydet
-Save selected attachment to file	AttachmentView		Seçili eki dosyaya kaydet
-Save selected attachments into directory	AttachmentView		Seçili ekleri dizine kaydet
-Saving attachment(s):	AttachmentView		Ek(ler) kaydediliyor:
-Abort	PrintingProgressWindow		İptal et
-Tsundoku printing	PrintingProgressWindow		Tsundoku yazdırıyor
-Tsundoku printing document: 	PrintingProgressWindow		Tsundoku belgeyi yazdırıyor:
-Page:	PrintingProgressWindow		Sayfa:
-Page: %d	PrintingProgressWindow		Sayfa: %d
-Stop	PrintingProgressWindow		Durdur
-Abort	FileInfoWindow		İptal et
-Allowed	FileInfoWindow		İzin veriliyor
-Annotations:	FileInfoWindow		Ek açıklamalar:
-Author:	FileInfoWindow		Yazar:
-Copy & paste:	FileInfoWindow		Kopyala ve yapıştır:
-Created:	FileInfoWindow		Oluşturulma:
-Creator:	FileInfoWindow		Oluşturan:
-Denied	FileInfoWindow		İzin verilmiyor
-Document	FileInfoWindow		Belge
-Editing:	FileInfoWindow		Düzenleniyor:
-Embedded name	FileInfoWindow		Gömülü ad
-Encrypted:	FileInfoWindow		Şifrelenmiş:
-File info	FileInfoWindow		Dosya bilgisi
-Filename:	FileInfoWindow		Dosya adı:
-Fonts of this page	FileInfoWindow		Yazıtipleri
-Keywords:	FileInfoWindow		Anahtar sözcükler:
-Linearized:	FileInfoWindow		Doğrusallaştırılmış:
-Modified:	FileInfoWindow		Değiştirilme:
-Name	FileInfoWindow		Ad
-No	FileInfoWindow		Hayır
-Path:	FileInfoWindow		Yol:
-Printing:	FileInfoWindow		Yazdırma:
-Producer:	FileInfoWindow		Prodüktör:
-Security	FileInfoWindow		Güvenlik
-Show all fonts	FileInfoWindow		Tüm yazıtiplerini göster
-Subject:	FileInfoWindow		Konu:
-Title:	FileInfoWindow		Başlık:
-Type	FileInfoWindow		Tür
-Version:	FileInfoWindow		Sürüm:
-Yes	FileInfoWindow		Evet
-About Tsundoku…	PDFWindow		Tsundoku hakkında…
-Add	PDFWindow		Ekle
-Add circle annotation	PDFWindow		Daire
-Add comment text annotation	PDFWindow		Metin
-Add file attachment annotation	PDFWindow		Dosya eki
-Add free text annotation	PDFWindow		Serbest metin
-Add help text annotation	PDFWindow		Yardım metni
-Add highlight annotation	PDFWindow		Vurgulama
-Add ink annotation	PDFWindow		Mürekkep
-Add insert text annotation	PDFWindow		Metin ekle imi
-Add key text annotation	PDFWindow		Anahtar metin
-Add line annotation	PDFWindow		Çizgi
-Add link annotation	PDFWindow		Bağlantı
-Add movie annotation	PDFWindow		Film
-Add new paragraph text annotation	PDFWindow		Yeni paragraf metni
-Add note text annotation	PDFWindow		Not metni
-Add paragraph text annotation	PDFWindow		Paragraf metni
-Add popup annotation	PDFWindow		Açılır pencere
-Add printer mark annotation	PDFWindow		Yazıcı imi
-Add sound annotation	PDFWindow		Ses
-Add square annotation	PDFWindow		Kare
-Add squiggly annotation	PDFWindow		Dalgalı alt çizgiler
-Add stamp annotation	PDFWindow		Damga
-Add strikeout annotation	PDFWindow		Üstünü çiz
-Add trapnet annotation	PDFWindow		Kapan ağı
-Add underline annotation	PDFWindow		Altını çiz
-Add widget annotation	PDFWindow		Uygulamacık
-Back	PDFWindow		Geri
-Back in page history list	PDFWindow		Sayfa geçmişi listesinde geri
-Bookmark	PDFWindow		Yer İmleri
-Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Şu anda Tsundoku'de açık olan bir PDF dosyasının üzerine yazılamaz. Lütfen başka bir dosya adı seçin.
-Close	PDFWindow		Kapat
-Copy selection	PDFWindow		Seçimi kopyala
-Could not write PDF file!	PDFWindow		PDF dosyası yazılamadı!
-Custom zoom factor (%d%%)	PDFWindow		Özel yakınlaştırma çarpanı (%d%%)
-Delete	PDFWindow		Sil
-Edit	PDFWindow		Düzen
-Editing of annotations in an encrypted PDF file isn't supported yet!	PDFWindow		Şifreli bir PDF dosyasındaki ek açıklamaların düzenlenmesi henüz olanaklı değil!
-English.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	English.pdf
-File	PDFWindow		Dosya
-File info…	PDFWindow		Dosya bilgisi …
-Find	PDFWindow		Bul
-Find next	PDFWindow		Sonrakini bul
-Find next…	PDFWindow		Sonrakini bul…
-Find…	PDFWindow		Bul…
-First	PDFWindow		İlk
-Fit to page	PDFWindow		Sayfaya sığdır
-Fit to page width	PDFWindow		Sayfa genişliğine sığdır
-Forward	PDFWindow		İleri
-Forward in page history list	PDFWindow		Sayfa geçmişi listesinde ileri
-Fullscreen	PDFWindow		Tam ekran
-Fullscreen mode	PDFWindow		Tam ekran kipi
-Go back 10 pages	PDFWindow		10 sayfa geri git
-Go forward 10 pages	PDFWindow		10 sayfa ileri git
-Go to end of document	PDFWindow		Belgenin sonuna git
-Go to next page	PDFWindow		Sonraki sayfaya git
-Go to previous page	PDFWindow		Önceki sayfaya git
-Go to start of document	PDFWindow		Belgenin başlangıcına git
-Help	PDFWindow		Yardım
-Hide side bar	PDFWindow		Yan paneli gizle
-Issue tracker…	PDFWindow		Hata izleyicisi…
-Jump to page	PDFWindow		Sayfaya atla
-Last	PDFWindow		Son
-Leave annotation editing mode	PDFWindow		Düzenleme kipinden çık
-Next	PDFWindow		Sonraki
-of %d	PDFWindow		/%d
-OK	PDFWindow		Tamam
-Online help…	PDFWindow		Çevrimiçi yardım…
-Open file	PDFWindow		Dosya aç
-Open in new window…	PDFWindow		Yeni pencerede aç…
-Open…	PDFWindow		Aç…
-Page	PDFWindow		Sayfa
-Page %d	PDFWindow		Sayfa %d
-Page setup…	PDFWindow		Sayfa yapısı…
-PDF file successfully written!	PDFWindow		PDF dosyası başarıyla yazıldı!
-Preferences…	PDFWindow		Tercihler…
-Previous	PDFWindow		Önceki
-Print	PDFWindow		Yazdır
-Print…	PDFWindow		Yazdır…
-Quit	PDFWindow		Çık
-Reload	PDFWindow		Yeniden yükle
-Reload file	PDFWindow		Dosyayı yeniden yükle
-Rotate clockwise	PDFWindow		Saat yönünde döndür
-Rotate counter-clockwise	PDFWindow		Saat yönünün tersine döndür
-Rotation	PDFWindow		Döndürme
-Save as…	PDFWindow		Farklı kaydet…
-Save file as	PDFWindow		Dosyayı farklı kaydet
-Saving copy of PDF file:	PDFWindow		PDF dosyasının bir kopyası kaydediliyor:
-Search	PDFWindow		Arama
-Select all	PDFWindow		Tümünü seç
-Select none	PDFWindow		Hiçbirini seçme
-Show annotation tool bar	PDFWindow		Ek açıklama araç çubuğunu göster
-Show annotation toolbar	PDFWindow		Ek açıklama araç çubuğunu göster
-Show attachments	PDFWindow		Ekleri göster
-Show bookmarks	PDFWindow		Yer imlerini göster
-Show error messages	PDFWindow		Hata iletilerini göster
-Show help…	PDFWindow		Yardımı göster…
-Show page list	PDFWindow		Sayfa listesini göster
-View	PDFWindow		Görüntü
-Visit homepage…	PDFWindow		Ana sayfayı ziyaret et
-Warning	PDFWindow		Uyarı
-Zoom	PDFWindow		Yakınlaştırma
-Zoom in	PDFWindow		Yakınlaştır
-Zoom out	PDFWindow		Uzaklaştır
-Align:	AnnotationWindow		Hizala:
-Annotation	AnnotationWindow		Ek açıklama
-Asian fonts	AnnotationWindow		Asya yazıtipleri
-Author	AnnotationWindow		Yazar
-Automatic	AnnotationWindow		Otomatik
-current	AnnotationWindow		şu anki
-Date:	AnnotationWindow		Tarih:
-Display	AnnotationWindow		Görüntüleme
-Document	AnnotationWindow		Belge
-Filled rectangle	AnnotationWindow		Dolu dikdörtgen
-Font:	AnnotationWindow		Yazıtipi:
-Fullscreen mode	AnnotationWindow		Tam ekran kipi
-Invert vertical mouse scrolling	AnnotationWindow		Dikey fare kaydırmasını tersine çevir
-Open in workspace:	AnnotationWindow		Şu çalışma alanında aç:
-Preferences	AnnotationWindow		Tercihler
-Restore page number	AnnotationWindow		Sayfa numarasını hatırla
-Restore window position and size	AnnotationWindow		Pencere konumunu ve boyutunu hatırla
+1	Turkish	application/x-vnd.sen-labs.Toji	453287713
 Selection rectangle	AnnotationWindow		Seçim dörtgeni
-Show document view only	AnnotationWindow		Yalnızca belgeyi göster
-Show toolbar, statusbar and scrollbars, too	AnnotationWindow		Araç, durum ve kaydırma çubuklarını da göster
-Size:	AnnotationWindow		Boyut:
-Stroked rectangle	AnnotationWindow		Çerçeveli dikdörtgen
-System fonts	AnnotationWindow		Sistem yazıtipleri
-Title:	AnnotationWindow		Başlık:
-User fonts	AnnotationWindow		Kullanıcı yazıtipleri
-Will take effect at next program launch.	AnnotationWindow		Bir sonraki başlatmada geçerli olacaktır.
-Alpha	BepdfApplication		Alfa
-Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku, XPDF %s temellidir, %s.
-Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Dosya açılamadı!
-Beta	BepdfApplication		Beta
-Close	BepdfApplication		Kapat
-Development	BepdfApplication		Geliştirme
-Error	BepdfApplication		Hata
-Final	BepdfApplication		Final
-Gamma	BepdfApplication		Gama
-Golden Master	BepdfApplication		Altın kopya
-Unknown	BepdfApplication		Bilinmeyen
-Version	BepdfApplication		Sürüm
-Auto open	TraceWindow		Kendiliğinden aç
-Clear	TraceWindow		Temizle
-Error messages	TraceWindow		Hata iletileri
-Floating	TraceWindow		Yüzen pencere
-Tsundoku status	StatusWindow		Tsundoku durumu
-Enter Password	PasswordWindow		Parola girin
-OK	PasswordWindow		Tamam
-Owner password	PasswordWindow		Sahip şifresi
-User password	PasswordWindow		Kullanıcı şifresi
-Find	FindTextWindow		Bul
-Find text	FindTextWindow		Metin bul
-Find: 	FindTextWindow		Bul:
-Ignore case	FindTextWindow		BÜYÜK/küçük harf yoksay
-Options	FindTextWindow		Seçenekler
-Page:	FindTextWindow		Sayfa:
-Page: %d	FindTextWindow		Sayfa: %d
-Search backwards	FindTextWindow		Geriye doğru ara
-Stop	FindTextWindow		Dur
-OK	PDFSearch		Tamam
-Search string not found.	PDFSearch		Arama dizisi bulunamadı.
-Error getting page number!	BepdfApplication		
-Invalid file reference received!	BepdfApplication		
+Toji reading file: 	PDFView		Toji dosyayı okuyor:
+Cancel	PDFView		İptal
 a universal document reader based on BePDF, extended for SEN	BepdfApplication		
+Undo	PDFWindow		
+Go to previous page	PDFWindow		Önceki sayfaya git
+Language	BepdfApplication		
+Subject:	FileInfoWindow		Konu:
+Filled rectangle	AnnotationWindow		Dolu dikdörtgen
+Current	PDFView		
+Owner password	PasswordWindow		Sahip şifresi
+ISBN	BepdfApplication		
+Strike out selection	PDFWindow		
+Pink	PDFView		
+Replace legacy attributes with standard ones	AnnotationWindow		
+OK	BepdfApplication		
+Text, shapes and drawing: choose one, then click or drag on the page	PDFWindow		
+Copy link to this place	PDFView		
+Add highlight	Document		
+Cancel	PDFWindow		
+Page	AnnotationsView		
+Delete	PDFWindow		Sil
+Note	PDFView		
+Color	PrintSettingsWindow		Renk
+View	PDFWindow		Görüntü
+Search string not found.	PDFSearch		Arama dizisi bulunamadı.
+Normal	PrintSettingsWindow		Normal
+Copy	PDFWindow		
+No fill	PDFView		
+Redo	PDFWindow		
+File attachment	Document		
+Age rating:	FileInfoWindow		
+Zoom in	PDFWindow		Yakınlaştır
+Notes: a margin note for selected text, a note or a text on the page	PDFWindow		
+Page:	FindTextWindow		Sayfa:
+Rotation	PrintSettingsWindow		Döndürme
+Gamma	BepdfApplication		Gama
+Error messages	TraceWindow		Hata iletileri
+Jump to page	PDFWindow		Sayfaya atla
+Move annotation	Document		
+DjVu document	BepdfApplication		
+Edit note…	PDFView		
+Fullscreen mode	AnnotationWindow		Tam ekran kipi
+Author	BepdfApplication		
+Single page	PDFWindow		
+Mode	PrintSettingsWindow		Kip
+Publisher	BepdfApplication		
+Save as…	PDFWindow		Farklı kaydet…
+Issue tracker…	PDFWindow		Hata izleyicisi…
+Printing:	FileInfoWindow		Yazdırma:
+Add ellipse	Document		
+The document could not be saved.	PDFWindow		
+Copy link to this place	PDFWindow		
+Top to bottom	PDFWindow		
+Zoom must be between 25 and 400!	PrintSettingsWindow		Yakınlaştırma 25 ve 400 arasında olmalıdır!
+Open…	PDFWindow		Aç…
+ (annotated)	PDFWindow		
+Show toolbar, statusbar and scrollbars, too	AnnotationWindow		Araç, durum ve kaydırma çubuklarını da göster
+Show page list	PDFWindow		Sayfa listesini göster
+current	AnnotationWindow		şu anki
+OK	PasswordWindow		Tamam
+Document	OutlinesWindow		Belge
+Invert vertical mouse scrolling	AnnotationWindow		Dikey fare kaydırmasını tersine çevir
+Page setup…	PDFWindow		Sayfa yapısı…
+Text	Document		
+Stroked rectangle	AnnotationWindow		Çerçeveli dikdörtgen
+OK	NoteWindow		
+Find: 	FindTextWindow		Bul:
+Zoom	PDFWindow		Yakınlaştırma
+Larger text	PDFWindow		
+ISBN:	FileInfoWindow		
+Text	PDFView		
+Text	PDFWindow		
+Open in workspace:	AnnotationWindow		Şu çalışma alanında aç:
+This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.	PDFWindow		
+Go to next page	PDFWindow		Sonraki sayfaya git
+Restore page number	AnnotationWindow		Sayfa numarasını hatırla
+Last	PDFWindow		Son
+Hide sidebar	PDFWindow		
+Add line	Document		
+Find next	PDFWindow		Sonrakini bul
+Arrow	PDFWindow		
+Series number	BepdfApplication		
+Note	Document		
+All pages	PrintSettingsWindow		Tüm sayfalar
+Describe annotations of other programs in the file's attributes	AnnotationWindow		
+Go to start of document	PDFWindow		Belgenin başlangıcına git
+Pages	BepdfApplication		
+Highlight	PDFView		
+Go forward 10 pages	PDFWindow		10 sayfa ileri git
+Go back 10 pages	PDFWindow		10 sayfa geri git
+Fit to page width	PDFWindow		Sayfa genişliğine sığdır
+Toji link	BepdfApplication		
+DPI	PrintSettingsWindow		DPI
+Find…	PDFWindow		Bul…
+Title page alone	PDFWindow		
+Odd pages	PrintSettingsWindow		Tek numaralı sayfalar
+Laying out the book…	PDFView		
+Show bookmarks	PDFWindow		Yer imlerini göster
+Description	BepdfApplication		
+Max. printer resolution	PrintSettingsWindow		En çok yazıcı çözünürlüğü
+Strike out	PDFView		
+Reading direction	BepdfApplication		
+Edit text…	PDFView		
+Delete annotation	PDFView		
+Quit	PDFWindow		Çık
+About Toji	BepdfApplication		
+The copy could not be saved.	PDFWindow		
+Fullscreen mode	PDFWindow		Tam ekran kipi
+File	PDFWindow		Dosya
+Options	FindTextWindow		Seçenekler
+Find text	FindTextWindow		Metin bul
+Clear	TraceWindow		Temizle
+toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
+Print	PrintSettingsWindow		Yazdır
+Enter Password	PasswordWindow		Parola girin
+Online help…	PDFWindow		Çevrimiçi yardım…
+Rectangle	Document		
+Copy	PDFView		
+Filename:	FileInfoWindow		Dosya adı:
+Series:	FileInfoWindow		
+First	PDFWindow		İlk
+Copy link	PDFView		Bağlantıyı kopyala
+Add	PDFWindow		Ekle
+Open in new window…	PDFWindow		Yeni pencerede aç…
+Yellow	PDFView		
+OK	PDFSearch		Tamam
+Add arrow	Document		
+Version	BepdfApplication		Sürüm
+Zoom (%)	PrintSettingsWindow		Yakınlaştırma (%)
+Files that BePDF has opened have attributes with its own names (META:title, META:author, ...). Toji writes the same information with standard names (dc:title, dc:creator, ...) in any case. The legacy attributes are kept unless this is on: then they are removed.	AnnotationWindow		
+Custom zoom factor (%d%%)	PDFWindow		Özel yakınlaştırma çarpanı (%d%%)
+Arrow	Document		
+Abort	PrintingProgressWindow		İptal et
+Add drawing	Document		
+Go to end of document	PDFWindow		Belgenin sonuna git
+Beta	BepdfApplication		Beta
+Auto open	TraceWindow		Kendiliğinden aç
+Back	PDFWindow		Geri
+Pages	PrintSettingsWindow		Sayfalar
+Upgrade	PDFWindow		
+%1 (p%2)	PDFWindow	Name of a bookmark: the section (1) and the page (2)	
+Final	BepdfApplication		Final
+Show error messages	PDFWindow		Hata iletilerini göster
+Document	FileInfoWindow		Belge
+Width: 	PrintSettingsWindow		Genişlik:
+Author:	FileInfoWindow		Yazar:
+Orange	PDFView		
+Show sidebar	PDFWindow		
+Annotations	BepdfApplication		
+Security	FileInfoWindow		Güvenlik
+of %d	PDFWindow		/%d
+Keywords	BepdfApplication		
+Denied	FileInfoWindow		İzin verilmiyor
+Order	PrintSettingsWindow		Sıra
+Add strike out	Document		
+Highlight	Document		
+Show annotations	PDFWindow		
+Published	BepdfApplication		
+Resize annotation	Document		
+Stamp	Document		
+Page: %d	FindTextWindow		Sayfa: %d
+Add underline	Document		
+Page	PDFWindow		Sayfa
+Producer:	FileInfoWindow		Prodüktör:
+Page list	PDFWindow		
+Title	BepdfApplication		
+(read-only)	PDFView		
+Keywords:	FileInfoWindow		Anahtar sözcükler:
+Annotation	Document		
+Blue	PDFView		
+Forward in page history list	PDFWindow		Sayfa geçmişi listesinde ileri
+Page:	PrintingProgressWindow		Sayfa:
+Find next…	PDFWindow		Sonrakini bul…
+Ellipse	PDFView		
+Change color	Document		
+Change note	Document		
+Display	AnnotationWindow		Görüntüleme
+Line width	PDFView		
+Right to left	PDFWindow		
+Visit homepage…	PDFWindow		Ana sayfayı ziyaret et
+Even pages	PrintSettingsWindow		Çift numaralı sayfalar
+Stop	FindTextWindow		Dur
+Subjects:	FileInfoWindow		
+Marker: choose a color, then select the text	PDFWindow		
+Bookmarks	BepdfApplication		
+Print	PDFWindow		Yazdır
+Find previous…	PDFWindow		
+Line	PDFWindow		
+ in	PrintSettingsWindow		içinde
+Unknown	BepdfApplication		Bilinmeyen
+Show margin notes	PDFWindow		
+Bookmark	PDFWindow		Yer İmleri
+The file could not be saved.	AttachmentsView		
+Note	NoteWindow		
+Next	PDFWindow		Sonraki
+Drawing	PDFView		
+Reverse	PrintSettingsWindow		Tersi
+Close	BepdfApplication		Kapat
+Keep	PDFWindow		
+Page: %d	PrintingProgressWindow		Sayfa: %d
+Note	PDFWindow		
+Strike out	Document		
+Rotate counter-clockwise	PDFWindow		Saat yönünün tersine döndür
+Select none	PDFWindow		Hiçbirini seçme
+Format:	FileInfoWindow		
+Smaller text	PDFWindow		
+Alpha	BepdfApplication		Alfa
+<empty>	OutlinesWindow		<boş>
+1 annotation	AnnotationsView		
+Add squiggly line	Document		
+Language:	FileInfoWindow		
+Annotations	PDFWindow		
+Forward	PDFWindow		İleri
+Electronic publication (EPUB)	BepdfApplication		
+OK	AttachmentsView		
+Toji status	StatusWindow		Toji durumu
+Golden Master	BepdfApplication		Altın kopya
+Bookmarks	PDFWindow		
+Comic book (ZIP)	BepdfApplication		
+%d points	PDFView		
+Show or hide the sidebar	PDFWindow		
+Delete annotation	Document		
+Author	AnnotationWindow		Yazar
+Comic book (TAR)	BepdfApplication		
+Publisher:	FileInfoWindow		
+Green	PDFView		
+Zoom out	PDFWindow		Uzaklaştır
+Add margin note	PDFWindow		
+Continuous	PDFWindow		
+Comic book (7z)	BepdfApplication		
+Restore window position and size	AnnotationWindow		Pencere konumunu ve boyutunu hatırla
+Rectangle	PDFView		
+Line	Document		
+Identifier	BepdfApplication		
+Margin note	PDFView		
+Modified:	FileInfoWindow		Değiştirilme:
+Arrow	PDFView		
+Description:	FileInfoWindow		
+Add	PDFView		
+Save	PDFWindow		
+About Toji…	PDFWindow		Toji hakkında…
+Go to page %d	PDFView		%d. sayfaya git
+Ellipse	Document		
+OK	OutlinesWindow		Tamam
+Reading:	FileInfoWindow		
+Ellipse	PDFWindow		
+Annotations:	FileInfoWindow		Ek açıklamalar:
+Published:	FileInfoWindow		
+Select all	PDFWindow		Tümünü seç
+Fill	PDFView		
+OK	PDFWindow		Tamam
+Previous	PDFWindow		Önceki
+Search	PDFWindow		Arama
+File info	FileInfoWindow		Dosya bilgisi
+OK	PrintSettingsWindow		Tamam
+Series	BepdfApplication		
+They can only be kept in a copy of the file.	PDFWindow		
+annotations	AnnotationsView		
+Open file	PDFWindow		Dosya aç
+Preferences	AnnotationWindow		Tercihler
+Toji™, SEN™ and SEN Labs™ are names of SEN Labs e.U.	BepdfApplication		
+Print settings	PrintSettingsWindow		Yazdırma ayarları
+Excerpt	AnnotationsView		
+Back in page history list	PDFWindow		Sayfa geçmişi listesinde geri
+Creator	BepdfApplication		
+Copy	TraceWindow		
+The document has unsaved changes (annotations).	PDFWindow		
+Find	PDFWindow		Bul
+Double-sided	PDFWindow		
+Yes	FileInfoWindow		Evet
+[unknown link]	PDFView		[bilinmeyen bağlantı]
+Cancel	NoteWindow		
+Select all	PDFView		
+Floating	TraceWindow		Yüzen pencere
+Link to a place in a document (toji:)	BepdfApplication		
+Stop	PrintingProgressWindow		Durdur
+Show attachments	PDFWindow		Ekleri göster
+Show help…	PDFWindow		Yardımı göster…
+Edit	PDFWindow		Düzen
+Toji printing	PrintingProgressWindow		Toji yazdırıyor
+Search backwards	FindTextWindow		Geriye doğru ara
+Highlight selection	PDFWindow		
+EPUB version:	FileInfoWindow		
+Reload	PDFWindow		Yeniden yükle
+Add text	Document		
+Underline selection	PDFWindow		
+Toji renders with MuPDF %s, %s.	BepdfApplication	MuPDF version, copyright	
+Red	PDFView		
+Help	PDFWindow		Yardım
+Rotation	PDFWindow		Döndürme
+Show document view only	AnnotationWindow		Yalnızca belgeyi göster
+Encrypted:	FileInfoWindow		Şifrelenmiş:
+Web:	FileInfoWindow		
+Gray scale	PrintSettingsWindow		Gri tonlu
+Save…	AttachmentsView		
+Note on the page	PDFView		
+Type	AnnotationsView		
+Close	PDFWindow		Kapat
+Color	PDFView		
+No title	OutlinesWindow		Başlık yok
+Page	PrintSettingsWindow		Sayfa
+Discard	PDFWindow		
+Created:	FileInfoWindow		Oluşturulma:
+Open in new window	PDFView		Yeni pencerede aç
+Height: 	PrintSettingsWindow		Yükseklik:
+Text on the page	PDFView		
+File info…	PDFWindow		Dosya bilgisi …
+This file is read-only. You can add annotations, but to keep them you have to save a copy with “Save as…”.	PDFView		
+Allowed	FileInfoWindow		İzin veriliyor
+Comic book (RAR)	BepdfApplication		
+Development	BepdfApplication		Geliştirme
+Add note	Document		
+Attributes of BePDF	PDFWindow		
+No	FileInfoWindow		Hayır
+Pages:	FileInfoWindow		
+Edit note	Document		
+Reload file	PDFWindow		Dosyayı yeniden yükle
+Fit to page	PDFWindow		Sayfaya sığdır
+Document	AnnotationWindow		Belge
+Continue	PDFView		
+Settings…	PDFWindow		
+Print…	PDFWindow		Yazdır…
+Path:	FileInfoWindow		Yol:
+Page %d	PDFWindow		Sayfa %d
+Copy & paste:	FileInfoWindow		Kopyala ve yapıştır:
+Edit title for bookmark	OutlinesWindow		Yer imi başlığını düzenle
+Toji printing document: 	PrintingProgressWindow		Toji belgeyi yazdırıyor:
+Chapter	PDFWindow		
+Comic book (BBF)	BepdfApplication		
+EPUB e-book	BepdfApplication		
+Title:	FileInfoWindow		Başlık:
+Fullscreen	PDFWindow		Tam ekran
+Underline	Document		
+Add rectangle	Document		
+User defined	OutlinesWindow		Kullanıcı tanımlı
+No annotations	AnnotationsView		
+Line	PDFView		
+Change line	Document		
+Copy as Web Annotation	PDFView		
+Attachments	PDFWindow		
+right to left	FileInfoWindow		
+Editing:	FileInfoWindow		Düzenleniyor:
+Drawing	Document		
+Invalid file reference received!	BepdfApplication		
+Squiggly line	Document		
+Toji: Error opening file!	BepdfApplication		Toji: Dosya açılamadı!
+User password	PasswordWindow		Kullanıcı şifresi
+Identifier:	FileInfoWindow		
+Find	FindTextWindow		Bul
+Ignore case	FindTextWindow		BÜYÜK/küçük harf yoksay
+Creator:	FileInfoWindow		Oluşturan:
+Error	BepdfApplication		Hata
+When a PDF file is opened, its annotations are described in the attribute SEN:annotations, and those that have no name get an identifier, so that other programs can refer to them. The PDF file is not changed.	AnnotationWindow		
+Wrong parameter!	PrintSettingsWindow		Yanlış parametre!
+Rotate clockwise	PDFWindow		Saat yönünde döndür
+Drawing	PDFWindow		
+Rectangle	PDFWindow		
+Underline	PDFView		
+Artists:	FileInfoWindow		

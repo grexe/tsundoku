@@ -1,257 +1,361 @@
-1	Romanian	application/x-vnd.sen-labs.Tsundoku	2450431064
- in	PrintSettingsWindow		în
-All pages	PrintSettingsWindow		Toate paginile
-Color	PrintSettingsWindow		Culoare
-DPI	PrintSettingsWindow		DPI
-Even pages	PrintSettingsWindow		Pagini pare
-Gray scale	PrintSettingsWindow		Scală de gri
-Height: 	PrintSettingsWindow		Înălțime:
-Max. printer resolution	PrintSettingsWindow		Rezoluție imprimantă maximă
-Mode	PrintSettingsWindow		Mod
-Normal	PrintSettingsWindow		Normal
-Odd pages	PrintSettingsWindow		Pagini impare
-OK	PrintSettingsWindow		OK
-Order	PrintSettingsWindow		Ordine
-Page	PrintSettingsWindow		Pagină
-Pages	PrintSettingsWindow		Pagini
-Print	PrintSettingsWindow		Tipărire
-Print settings	PrintSettingsWindow		Configurări tipărire
-Reverse	PrintSettingsWindow		Verso
-Rotation	PrintSettingsWindow		Rotație
-Width: 	PrintSettingsWindow		Lățime:
-Wrong parameter!	PrintSettingsWindow		Parametru greșit!
-Zoom (%)	PrintSettingsWindow		Focalizare (%)
-Zoom must be between 25 and 400!	PrintSettingsWindow		Focalizarea trebuie să fie între 25 și 400!
-[internal link]	PDFView		[legătură internă]
-[link type 'movie' not supported]	PDFView		[legătura de tip 'movie' nu este suportată]
-[unknown link]	PDFView		[legătură necunoscută]
-Annotation	PDFView		Adnotare
-Tsundoku reading file: 	PDFView		Fișierul de citire Tsundoku:
-Tsundoku: Launch	PDFView		Tsundoku: Lansare
-Cancel	PDFView		Anulează
-Copy link	PDFView		Copiază legătura
-Delete	PDFView		Șterge
-Edit	PDFView		Editează
-Execute the command:	PDFView		Execută comanda:
-Go to page %d	PDFView		Mergi la pagina %d
-Leave annotation editing mode	PDFView		Părăsește modul de editare a adnotărilor
-OK	PDFView		OK
-Open in new window	PDFView		Deschide în fereastră nouă
-Properties	PDFView		Proprietăți
-Save file attachment as…	PDFView		Salvează atașamentul de fișier ca…
-Saving file attachment:	PDFView		Se salvează atașamentul de fișier:
-Unknown link action type: '%s'	PDFView		Tip de acțiune de legătură necunoscut: „%s”
-<empty>	OutlinesWindow		<liber>
-Document	OutlinesWindow		Document
-Edit title for bookmark	OutlinesWindow		Editează titlul pentru favorit
-No title	OutlinesWindow		Fără titlu
-OK	OutlinesWindow		OK
-User defined	OutlinesWindow		Definit de utilizator
-<empty>	AttachmentView		<liber>
-Description	AttachmentView		Descriere
-File name	AttachmentView		Nume fișier
-Save attachment(s) as	AttachmentView		Salvează atașamentul(ele) ca
-Save selected attachment to file	AttachmentView		Salvează atașamentul selectat la fișier
-Save selected attachments into directory	AttachmentView		Salvează atașamentele selectate în dosar
-Saving attachment(s):	AttachmentView		Se salvează atașamentul(ele):
-Abort	PrintingProgressWindow		Anulează
-Tsundoku printing	PrintingProgressWindow		Tipărire Tsundoku
-Tsundoku printing document: 	PrintingProgressWindow		Document Tsundoku de tipărit:
-Page:	PrintingProgressWindow		Pagină:
-Page: %d	PrintingProgressWindow		Pagină: %d
-Stop	PrintingProgressWindow		Oprește
-Abort	FileInfoWindow		Anulează
-Allowed	FileInfoWindow		Permis
-Annotations:	FileInfoWindow		Adnotări:
-Author:	FileInfoWindow		Autor:
-Copy & paste:	FileInfoWindow		Copiere & lipire:
-Created:	FileInfoWindow		Creat:
-Creator:	FileInfoWindow		Creator:
-Denied	FileInfoWindow		Respins
-Document	FileInfoWindow		Document
-Editing:	FileInfoWindow		Editare:
-Embedded name	FileInfoWindow		Nume încorporat
-Encrypted:	FileInfoWindow		Criptat
-File info	FileInfoWindow		Info fișier
-Filename:	FileInfoWindow		Nume fișier:
-Fonts of this page	FileInfoWindow		Fonturile acestei pagini
-Keywords:	FileInfoWindow		Cuvinte cheie:
-Linearized:	FileInfoWindow		Liniarizat:
-Modified:	FileInfoWindow		Modificat:
-Name	FileInfoWindow		Nume
-No	FileInfoWindow		Nu
-Path:	FileInfoWindow		Cale:
-Printing:	FileInfoWindow		Tipărire
-Producer:	FileInfoWindow		Producător:
-Security	FileInfoWindow		Securitate
-Show all fonts	FileInfoWindow		Afișează toate fonturile
-Subject:	FileInfoWindow		Subiect:
-Title:	FileInfoWindow		Titlu:
-Type	FileInfoWindow		Tip
-Version:	FileInfoWindow		Versiune:
-Yes	FileInfoWindow		Da
-About Tsundoku…	PDFWindow		Despre Tsundoku…
-Add	PDFWindow		Adaugă
-Add circle annotation	PDFWindow		Adaugă adnotare cerc
-Add comment text annotation	PDFWindow		Adaugă adnotare comentariu text
-Add file attachment annotation	PDFWindow		Adaugă adnotare fișier atașat
-Add free text annotation	PDFWindow		Adaugă adnotare text liber
-Add help text annotation	PDFWindow		Adaugă adnotare text de ajutor
-Add highlight annotation	PDFWindow		Adaugă adnotare evidențiere
-Add ink annotation	PDFWindow		Adaugă adnotare cerneală
-Add insert text annotation	PDFWindow		Adaugă adnotare inserare text
-Add key text annotation	PDFWindow		Adaugă adnotare text cheie
-Add line annotation	PDFWindow		Adaugă adnotare linie
-Add link annotation	PDFWindow		Adaugă adnotare legătură
-Add movie annotation	PDFWindow		Adaugă adnotare film
-Add new paragraph text annotation	PDFWindow		Adaugă adnotare paragraf nou
-Add note text annotation	PDFWindow		Adaugă adnotare notă text
-Add paragraph text annotation	PDFWindow		Adaugă adnotare paragraf text
-Add popup annotation	PDFWindow		Adaugă adnotare popup
-Add printer mark annotation	PDFWindow		Adaugă adnotare marcaj de imprimantă
-Add sound annotation	PDFWindow		Adaugă adnotare sunet
-Add square annotation	PDFWindow		Adaugă adnotare pătrat
-Add squiggly annotation	PDFWindow		Adaugă adnotare șerpuită
-Add stamp annotation	PDFWindow		Adaugă adnotare ștampilă
-Add strikeout annotation	PDFWindow		Adaugă adnotare tăiată
-Add trapnet annotation	PDFWindow		Adaugă adnotare plasă de capcană
-Add underline annotation	PDFWindow		Adaugă adnotare subliniată
-Add widget annotation	PDFWindow		Adaugă adnotare widget
-Back	PDFWindow		Înapoi
-Back in page history list	PDFWindow		Înapoi în lista de istoric a paginii
-Bookmark	PDFWindow		Favorit
-Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Nu se poate suprascrie un fișier PDF care este deschis în prezent în Tsundoku! Alegeți un alt nume de fișier.
-Close	PDFWindow		Închide
-Copy selection	PDFWindow		Copiază selecția
-Could not write PDF file!	PDFWindow		Nu s-a putut scrie fișierul PDF!
-Custom zoom factor (%d%%)	PDFWindow		Factor de focalizare personalizat (%d%%)
-Delete	PDFWindow		Șterge
-Edit	PDFWindow		Editează
-Editing of annotations in an encrypted PDF file isn't supported yet!	PDFWindow		Editarea de adnotări într-un fișier PDF criptat nu este suportată încă!
-English.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	Română.pdf
-File	PDFWindow		Fișier
-File info…	PDFWindow		Info fișier...
-Find	PDFWindow		Căutare
-Find next	PDFWindow		Caută înainte
-Find next…	PDFWindow		Caută înainte...
-Find…	PDFWindow		Căutare...
-First	PDFWindow		Primul
-Fit to page	PDFWindow		Potrivire la pagină
-Fit to page width	PDFWindow		Potrivire la lățimea paginii
-Forward	PDFWindow		Înainte
-Forward in page history list	PDFWindow		Înainte în lista de istoric a paginii
-Fullscreen	PDFWindow		Ecran complet
-Fullscreen mode	PDFWindow		Mod ecran complet
-Go back 10 pages	PDFWindow		Mergi înapoi 10 pagini
-Go forward 10 pages	PDFWindow		Mergi înainte 10 pagini
-Go to end of document	PDFWindow		Mergi la sfârșitul documentului
-Go to next page	PDFWindow		Mergi la pagina următoare
-Go to previous page	PDFWindow		Mergi la pagina anterioară
-Go to start of document	PDFWindow		Mergi la începutul documentului
-Help	PDFWindow		Ajutor
-Hide side bar	PDFWindow		Ascunde bara laterală
-Issue tracker…	PDFWindow		Monitor de probleme…
-Jump to page	PDFWindow		Sari la pagina
-Last	PDFWindow		Ultimul
-Leave annotation editing mode	PDFWindow		Părăsește modul de editare de anotare
-Next	PDFWindow		Următorul
-of %d	PDFWindow		din %d
-OK	PDFWindow		OK
-Online help…	PDFWindow		Ajutor online...
-Open file	PDFWindow		Deschide fișierul
-Open in new window…	PDFWindow		Deschide în fereastră nouă...
-Open…	PDFWindow		Deschide...
-Page	PDFWindow		Pagină
-Page %d	PDFWindow		Pagină %d
-Page setup…	PDFWindow		Configurare pagină...
-PDF file successfully written!	PDFWindow		Fișier PDF scris cu succes!
-Preferences…	PDFWindow		Preferințe...
-Previous	PDFWindow		Anteriorul
-Print	PDFWindow		Tipărire
-Print…	PDFWindow		Tipărire...
-Quit	PDFWindow		Ieșire
-Reload	PDFWindow		Reîncarcă
-Reload file	PDFWindow		Reîncarcă fișierul
-Rotate clockwise	PDFWindow		Rotește în sens orar
-Rotate counter-clockwise	PDFWindow		Rotește în sens anti-orar
-Rotation	PDFWindow		Rotație
-Save as…	PDFWindow		Salvează ca...
-Save file as	PDFWindow		Salvează fișierul ca
-Saving copy of PDF file:	PDFWindow		Se salvează copia fișierului PDF:
-Search	PDFWindow		Căutare
-Select all	PDFWindow		Selectează tot
-Select none	PDFWindow		Selectează nimic
-Show annotation tool bar	PDFWindow		Arată bara de unelte pentru adnotare
-Show annotation toolbar	PDFWindow		Arată bara de unelte pentru adnotare
-Show attachments	PDFWindow		Afișează atașamentele
-Show bookmarks	PDFWindow		Afișează favorite
-Show error messages	PDFWindow		Afișează mesajele de eroare
-Show help…	PDFWindow		Afișează ajutorul...
-Show page list	PDFWindow		Afișează lista de pagini
-View	PDFWindow		Vizualizare
-Visit homepage…	PDFWindow		Vizitează pagina principală...
-Warning	PDFWindow		Avertisment
-Zoom	PDFWindow		Focalizare
-Zoom in	PDFWindow		Mărire
-Zoom out	PDFWindow		Micșorare
-Align:	AnnotationWindow		Aliniere:
-Annotation	AnnotationWindow		Adnotare
-Asian fonts	AnnotationWindow		Fonturi asiatice
-Author	AnnotationWindow		Autor
-Automatic	AnnotationWindow		Automat
-current	AnnotationWindow		curent
-Date:	AnnotationWindow		Dată:
-Display	AnnotationWindow		Afișaj
-Document	AnnotationWindow		Document
-Filled rectangle	AnnotationWindow		Dreptunghi umplut
-Font:	AnnotationWindow		Font:
-Fullscreen mode	AnnotationWindow		Mod ecran complet
-Invert vertical mouse scrolling	AnnotationWindow		Inversează derularea verticală a mausului
-Open in workspace:	AnnotationWindow		Deschide în spațiul de lucru:
-Preferences	AnnotationWindow		Preferințe
-Restore page number	AnnotationWindow		Restaurează numărul de pagină
-Restore window position and size	AnnotationWindow		Restaurează poziția și dimensiunea ferestrei
+1	Romanian	application/x-vnd.sen-labs.Toji	453287713
 Selection rectangle	AnnotationWindow		Selecție dreptunghi
-Show document view only	AnnotationWindow		Arată doar vizualizarea document
-Show toolbar, statusbar and scrollbars, too	AnnotationWindow		Arată și bara de unelte, bara de stare și barele de derulare
-Size:	AnnotationWindow		Dimensiune:
-Stroked rectangle	AnnotationWindow		Dreptunghi tăiat
-System fonts	AnnotationWindow		Fonturi de utilizator
-Title:	AnnotationWindow		Titlu:
-User fonts	AnnotationWindow		Fonturi de utilizator
-Will take effect at next program launch.	AnnotationWindow		Va intra în vigoare la următoarea lansare a programului.
-Alpha	BepdfApplication		Alfa
-Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku este bazat pe XPDF %s, %s.
-Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Eroare la deschiderea fișierului!
-Beta	BepdfApplication		Beta
-Close	BepdfApplication		Închide
-Development	BepdfApplication		Dezvoltare
-Error	BepdfApplication		Eroare
-Final	BepdfApplication		Final
-Gamma	BepdfApplication		Gama
-Golden Master	BepdfApplication		Maestru de aur
-Unknown	BepdfApplication		Necunoscut
-Version	BepdfApplication		Versiune
-Auto open	TraceWindow		Deschide automat
-Clear	TraceWindow		Eliberare
-Error messages	TraceWindow		Mesaje de eroare
-Floating	TraceWindow		Plutitor
-Tsundoku status	StatusWindow		Stare Tsundoku
-Enter Password	PasswordWindow		Introduceți parola
-OK	PasswordWindow		OK
-Owner password	PasswordWindow		Parolă deținător
-User password	PasswordWindow		Parolă utilizator
-Find	FindTextWindow		Căutare
-Find text	FindTextWindow		Caută text
-Find: 	FindTextWindow		Caută:
-Ignore case	FindTextWindow		Ignoră majuscule
-Options	FindTextWindow		Opțiuni
-Page:	FindTextWindow		Pagină:
-Page: %d	FindTextWindow		Pagină: %d
-Search backwards	FindTextWindow		Caută invers
-Stop	FindTextWindow		Oprește
-OK	PDFSearch		OK
-Search string not found.	PDFSearch		Șirul căutat nu a fost găsit.
-Error getting page number!	BepdfApplication		
-Invalid file reference received!	BepdfApplication		
+Toji reading file: 	PDFView		Fișierul de citire Toji:
+Cancel	PDFView		Anulează
 a universal document reader based on BePDF, extended for SEN	BepdfApplication		
+Undo	PDFWindow		
+Go to previous page	PDFWindow		Mergi la pagina anterioară
+Language	BepdfApplication		
+Subject:	FileInfoWindow		Subiect:
+Filled rectangle	AnnotationWindow		Dreptunghi umplut
+Current	PDFView		
+Owner password	PasswordWindow		Parolă deținător
+ISBN	BepdfApplication		
+Strike out selection	PDFWindow		
+Pink	PDFView		
+Replace legacy attributes with standard ones	AnnotationWindow		
+OK	BepdfApplication		
+Text, shapes and drawing: choose one, then click or drag on the page	PDFWindow		
+Copy link to this place	PDFView		
+Add highlight	Document		
+Cancel	PDFWindow		
+Page	AnnotationsView		
+Delete	PDFWindow		Șterge
+Note	PDFView		
+Color	PrintSettingsWindow		Culoare
+View	PDFWindow		Vizualizare
+Search string not found.	PDFSearch		Șirul căutat nu a fost găsit.
+Normal	PrintSettingsWindow		Normal
+Copy	PDFWindow		
+No fill	PDFView		
+Redo	PDFWindow		
+File attachment	Document		
+Age rating:	FileInfoWindow		
+Zoom in	PDFWindow		Mărire
+Notes: a margin note for selected text, a note or a text on the page	PDFWindow		
+Page:	FindTextWindow		Pagină:
+Rotation	PrintSettingsWindow		Rotație
+Gamma	BepdfApplication		Gama
+Error messages	TraceWindow		Mesaje de eroare
+Jump to page	PDFWindow		Sari la pagina
+Move annotation	Document		
+DjVu document	BepdfApplication		
+Edit note…	PDFView		
+Fullscreen mode	AnnotationWindow		Mod ecran complet
+Author	BepdfApplication		
+Single page	PDFWindow		
+Mode	PrintSettingsWindow		Mod
+Publisher	BepdfApplication		
+Save as…	PDFWindow		Salvează ca...
+Issue tracker…	PDFWindow		Monitor de probleme…
+Printing:	FileInfoWindow		Tipărire
+Add ellipse	Document		
+The document could not be saved.	PDFWindow		
+Copy link to this place	PDFWindow		
+Top to bottom	PDFWindow		
+Zoom must be between 25 and 400!	PrintSettingsWindow		Focalizarea trebuie să fie între 25 și 400!
+Open…	PDFWindow		Deschide...
+ (annotated)	PDFWindow		
+Show toolbar, statusbar and scrollbars, too	AnnotationWindow		Arată și bara de unelte, bara de stare și barele de derulare
+Show page list	PDFWindow		Afișează lista de pagini
+current	AnnotationWindow		curent
+OK	PasswordWindow		OK
+Document	OutlinesWindow		Document
+Invert vertical mouse scrolling	AnnotationWindow		Inversează derularea verticală a mausului
+Page setup…	PDFWindow		Configurare pagină...
+Text	Document		
+Stroked rectangle	AnnotationWindow		Dreptunghi tăiat
+OK	NoteWindow		
+Find: 	FindTextWindow		Caută:
+Zoom	PDFWindow		Focalizare
+Larger text	PDFWindow		
+ISBN:	FileInfoWindow		
+Text	PDFView		
+Text	PDFWindow		
+Open in workspace:	AnnotationWindow		Deschide în spațiul de lucru:
+This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.	PDFWindow		
+Go to next page	PDFWindow		Mergi la pagina următoare
+Restore page number	AnnotationWindow		Restaurează numărul de pagină
+Last	PDFWindow		Ultimul
+Hide sidebar	PDFWindow		
+Add line	Document		
+Find next	PDFWindow		Caută înainte
+Arrow	PDFWindow		
+Series number	BepdfApplication		
+Note	Document		
+All pages	PrintSettingsWindow		Toate paginile
+Describe annotations of other programs in the file's attributes	AnnotationWindow		
+Go to start of document	PDFWindow		Mergi la începutul documentului
+Pages	BepdfApplication		
+Highlight	PDFView		
+Go forward 10 pages	PDFWindow		Mergi înainte 10 pagini
+Go back 10 pages	PDFWindow		Mergi înapoi 10 pagini
+Fit to page width	PDFWindow		Potrivire la lățimea paginii
+Toji link	BepdfApplication		
+DPI	PrintSettingsWindow		DPI
+Find…	PDFWindow		Căutare...
+Title page alone	PDFWindow		
+Odd pages	PrintSettingsWindow		Pagini impare
+Laying out the book…	PDFView		
+Show bookmarks	PDFWindow		Afișează favorite
+Description	BepdfApplication		
+Max. printer resolution	PrintSettingsWindow		Rezoluție imprimantă maximă
+Strike out	PDFView		
+Reading direction	BepdfApplication		
+Edit text…	PDFView		
+Delete annotation	PDFView		
+Quit	PDFWindow		Ieșire
+About Toji	BepdfApplication		
+The copy could not be saved.	PDFWindow		
+Fullscreen mode	PDFWindow		Mod ecran complet
+File	PDFWindow		Fișier
+Options	FindTextWindow		Opțiuni
+Find text	FindTextWindow		Caută text
+Clear	TraceWindow		Eliberare
+toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
+Print	PrintSettingsWindow		Tipărire
+Enter Password	PasswordWindow		Introduceți parola
+Online help…	PDFWindow		Ajutor online...
+Rectangle	Document		
+Copy	PDFView		
+Filename:	FileInfoWindow		Nume fișier:
+Series:	FileInfoWindow		
+First	PDFWindow		Primul
+Copy link	PDFView		Copiază legătura
+Add	PDFWindow		Adaugă
+Open in new window…	PDFWindow		Deschide în fereastră nouă...
+Yellow	PDFView		
+OK	PDFSearch		OK
+Add arrow	Document		
+Version	BepdfApplication		Versiune
+Zoom (%)	PrintSettingsWindow		Focalizare (%)
+Files that BePDF has opened have attributes with its own names (META:title, META:author, ...). Toji writes the same information with standard names (dc:title, dc:creator, ...) in any case. The legacy attributes are kept unless this is on: then they are removed.	AnnotationWindow		
+Custom zoom factor (%d%%)	PDFWindow		Factor de focalizare personalizat (%d%%)
+Arrow	Document		
+Abort	PrintingProgressWindow		Anulează
+Add drawing	Document		
+Go to end of document	PDFWindow		Mergi la sfârșitul documentului
+Beta	BepdfApplication		Beta
+Auto open	TraceWindow		Deschide automat
+Back	PDFWindow		Înapoi
+Pages	PrintSettingsWindow		Pagini
+Upgrade	PDFWindow		
+%1 (p%2)	PDFWindow	Name of a bookmark: the section (1) and the page (2)	
+Final	BepdfApplication		Final
+Show error messages	PDFWindow		Afișează mesajele de eroare
+Document	FileInfoWindow		Document
+Width: 	PrintSettingsWindow		Lățime:
+Author:	FileInfoWindow		Autor:
+Orange	PDFView		
+Show sidebar	PDFWindow		
+Annotations	BepdfApplication		
+Security	FileInfoWindow		Securitate
+of %d	PDFWindow		din %d
+Keywords	BepdfApplication		
+Denied	FileInfoWindow		Respins
+Order	PrintSettingsWindow		Ordine
+Add strike out	Document		
+Highlight	Document		
+Show annotations	PDFWindow		
+Published	BepdfApplication		
+Resize annotation	Document		
+Stamp	Document		
+Page: %d	FindTextWindow		Pagină: %d
+Add underline	Document		
+Page	PDFWindow		Pagină
+Producer:	FileInfoWindow		Producător:
+Page list	PDFWindow		
+Title	BepdfApplication		
+(read-only)	PDFView		
+Keywords:	FileInfoWindow		Cuvinte cheie:
+Annotation	Document		
+Blue	PDFView		
+Forward in page history list	PDFWindow		Înainte în lista de istoric a paginii
+Page:	PrintingProgressWindow		Pagină:
+Find next…	PDFWindow		Caută înainte...
+Ellipse	PDFView		
+Change color	Document		
+Change note	Document		
+Display	AnnotationWindow		Afișaj
+Line width	PDFView		
+Right to left	PDFWindow		
+Visit homepage…	PDFWindow		Vizitează pagina principală...
+Even pages	PrintSettingsWindow		Pagini pare
+Stop	FindTextWindow		Oprește
+Subjects:	FileInfoWindow		
+Marker: choose a color, then select the text	PDFWindow		
+Bookmarks	BepdfApplication		
+Print	PDFWindow		Tipărire
+Find previous…	PDFWindow		
+Line	PDFWindow		
+ in	PrintSettingsWindow		în
+Unknown	BepdfApplication		Necunoscut
+Show margin notes	PDFWindow		
+Bookmark	PDFWindow		Favorit
+The file could not be saved.	AttachmentsView		
+Note	NoteWindow		
+Next	PDFWindow		Următorul
+Drawing	PDFView		
+Reverse	PrintSettingsWindow		Verso
+Close	BepdfApplication		Închide
+Keep	PDFWindow		
+Page: %d	PrintingProgressWindow		Pagină: %d
+Note	PDFWindow		
+Strike out	Document		
+Rotate counter-clockwise	PDFWindow		Rotește în sens anti-orar
+Select none	PDFWindow		Selectează nimic
+Format:	FileInfoWindow		
+Smaller text	PDFWindow		
+Alpha	BepdfApplication		Alfa
+<empty>	OutlinesWindow		<liber>
+1 annotation	AnnotationsView		
+Add squiggly line	Document		
+Language:	FileInfoWindow		
+Annotations	PDFWindow		
+Forward	PDFWindow		Înainte
+Electronic publication (EPUB)	BepdfApplication		
+OK	AttachmentsView		
+Toji status	StatusWindow		Stare Toji
+Golden Master	BepdfApplication		Maestru de aur
+Bookmarks	PDFWindow		
+Comic book (ZIP)	BepdfApplication		
+%d points	PDFView		
+Show or hide the sidebar	PDFWindow		
+Delete annotation	Document		
+Author	AnnotationWindow		Autor
+Comic book (TAR)	BepdfApplication		
+Publisher:	FileInfoWindow		
+Green	PDFView		
+Zoom out	PDFWindow		Micșorare
+Add margin note	PDFWindow		
+Continuous	PDFWindow		
+Comic book (7z)	BepdfApplication		
+Restore window position and size	AnnotationWindow		Restaurează poziția și dimensiunea ferestrei
+Rectangle	PDFView		
+Line	Document		
+Identifier	BepdfApplication		
+Margin note	PDFView		
+Modified:	FileInfoWindow		Modificat:
+Arrow	PDFView		
+Description:	FileInfoWindow		
+Add	PDFView		
+Save	PDFWindow		
+About Toji…	PDFWindow		Despre Toji…
+Go to page %d	PDFView		Mergi la pagina %d
+Ellipse	Document		
+OK	OutlinesWindow		OK
+Reading:	FileInfoWindow		
+Ellipse	PDFWindow		
+Annotations:	FileInfoWindow		Adnotări:
+Published:	FileInfoWindow		
+Select all	PDFWindow		Selectează tot
+Fill	PDFView		
+OK	PDFWindow		OK
+Previous	PDFWindow		Anteriorul
+Search	PDFWindow		Căutare
+File info	FileInfoWindow		Info fișier
+OK	PrintSettingsWindow		OK
+Series	BepdfApplication		
+They can only be kept in a copy of the file.	PDFWindow		
+annotations	AnnotationsView		
+Open file	PDFWindow		Deschide fișierul
+Preferences	AnnotationWindow		Preferințe
+Toji™, SEN™ and SEN Labs™ are names of SEN Labs e.U.	BepdfApplication		
+Print settings	PrintSettingsWindow		Configurări tipărire
+Excerpt	AnnotationsView		
+Back in page history list	PDFWindow		Înapoi în lista de istoric a paginii
+Creator	BepdfApplication		
+Copy	TraceWindow		
+The document has unsaved changes (annotations).	PDFWindow		
+Find	PDFWindow		Căutare
+Double-sided	PDFWindow		
+Yes	FileInfoWindow		Da
+[unknown link]	PDFView		[legătură necunoscută]
+Cancel	NoteWindow		
+Select all	PDFView		
+Floating	TraceWindow		Plutitor
+Link to a place in a document (toji:)	BepdfApplication		
+Stop	PrintingProgressWindow		Oprește
+Show attachments	PDFWindow		Afișează atașamentele
+Show help…	PDFWindow		Afișează ajutorul...
+Edit	PDFWindow		Editează
+Toji printing	PrintingProgressWindow		Tipărire Toji
+Search backwards	FindTextWindow		Caută invers
+Highlight selection	PDFWindow		
+EPUB version:	FileInfoWindow		
+Reload	PDFWindow		Reîncarcă
+Add text	Document		
+Underline selection	PDFWindow		
+Toji renders with MuPDF %s, %s.	BepdfApplication	MuPDF version, copyright	
+Red	PDFView		
+Help	PDFWindow		Ajutor
+Rotation	PDFWindow		Rotație
+Show document view only	AnnotationWindow		Arată doar vizualizarea document
+Encrypted:	FileInfoWindow		Criptat
+Web:	FileInfoWindow		
+Gray scale	PrintSettingsWindow		Scală de gri
+Save…	AttachmentsView		
+Note on the page	PDFView		
+Type	AnnotationsView		
+Close	PDFWindow		Închide
+Color	PDFView		
+No title	OutlinesWindow		Fără titlu
+Page	PrintSettingsWindow		Pagină
+Discard	PDFWindow		
+Created:	FileInfoWindow		Creat:
+Open in new window	PDFView		Deschide în fereastră nouă
+Height: 	PrintSettingsWindow		Înălțime:
+Text on the page	PDFView		
+File info…	PDFWindow		Info fișier...
+This file is read-only. You can add annotations, but to keep them you have to save a copy with “Save as…”.	PDFView		
+Allowed	FileInfoWindow		Permis
+Comic book (RAR)	BepdfApplication		
+Development	BepdfApplication		Dezvoltare
+Add note	Document		
+Attributes of BePDF	PDFWindow		
+No	FileInfoWindow		Nu
+Pages:	FileInfoWindow		
+Edit note	Document		
+Reload file	PDFWindow		Reîncarcă fișierul
+Fit to page	PDFWindow		Potrivire la pagină
+Document	AnnotationWindow		Document
+Continue	PDFView		
+Settings…	PDFWindow		
+Print…	PDFWindow		Tipărire...
+Path:	FileInfoWindow		Cale:
+Page %d	PDFWindow		Pagină %d
+Copy & paste:	FileInfoWindow		Copiere & lipire:
+Edit title for bookmark	OutlinesWindow		Editează titlul pentru favorit
+Toji printing document: 	PrintingProgressWindow		Document Toji de tipărit:
+Chapter	PDFWindow		
+Comic book (BBF)	BepdfApplication		
+EPUB e-book	BepdfApplication		
+Title:	FileInfoWindow		Titlu:
+Fullscreen	PDFWindow		Ecran complet
+Underline	Document		
+Add rectangle	Document		
+User defined	OutlinesWindow		Definit de utilizator
+No annotations	AnnotationsView		
+Line	PDFView		
+Change line	Document		
+Copy as Web Annotation	PDFView		
+Attachments	PDFWindow		
+right to left	FileInfoWindow		
+Editing:	FileInfoWindow		Editare:
+Drawing	Document		
+Invalid file reference received!	BepdfApplication		
+Squiggly line	Document		
+Toji: Error opening file!	BepdfApplication		Toji: Eroare la deschiderea fișierului!
+User password	PasswordWindow		Parolă utilizator
+Identifier:	FileInfoWindow		
+Find	FindTextWindow		Căutare
+Ignore case	FindTextWindow		Ignoră majuscule
+Creator:	FileInfoWindow		Creator:
+Error	BepdfApplication		Eroare
+When a PDF file is opened, its annotations are described in the attribute SEN:annotations, and those that have no name get an identifier, so that other programs can refer to them. The PDF file is not changed.	AnnotationWindow		
+Wrong parameter!	PrintSettingsWindow		Parametru greșit!
+Rotate clockwise	PDFWindow		Rotește în sens orar
+Drawing	PDFWindow		
+Rectangle	PDFWindow		
+Underline	PDFView		
+Artists:	FileInfoWindow		

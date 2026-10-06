@@ -8,18 +8,7 @@
 #set text(font: "Libertinus Serif", size: 11pt, lang: "en")
 #set par(justify: false, leading: 0.7em)
 
-#align(center)[
-  #v(1.2cm)
-  #image("/images/toji-logo.png", height: 12cm)
-  #v(1.2cm)
-  #text(size: 12pt, tracking: 0.08em)[A DOCUMENT READER FOR HAIKU]
-  #v(1.6cm)
-  #text(size: 15pt, style: "italic")[
-    Tabs, feeds, papers, tides: \
-    curiosity surfaces where \
-    one thread ties two shores.
-  ]
-]
+#include "cover.typ"
 
 #pagebreak()
 

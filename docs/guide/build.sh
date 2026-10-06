@@ -25,7 +25,10 @@ if command -v typst >/dev/null; then
 	echo "Start page"
 	typst compile --root ../.. start.typ "$OUT/toji-start.pdf"
 	echo "PDF"
-	pandoc $CHAPTERS $COMMON --pdf-engine=typst -V papersize=a4 -V lang=en -o "$OUT/$NAME.pdf"
+	# the cover (logo, "User Guide", the haiku) is the first page, instead of the title block
+	{ echo '#page(numbering: none)['; sed 's/^#let subtitle = none/#let subtitle = [USER GUIDE]/' cover.typ; echo ']'; } > "$OUT/guide-cover.typ"
+	pandoc $CHAPTERS $COMMON --pdf-engine=typst -V papersize=a4 -V lang=en -M title= -M subtitle= -M author= \
+		-B "$OUT/guide-cover.typ" -o "$OUT/$NAME.pdf"
 	if command -v pdf2djvu >/dev/null; then
 		echo "DjVu"
 		pdf2djvu -o "$OUT/$NAME.djvu" "$OUT/$NAME.pdf"

@@ -1,257 +1,361 @@
-1	Spanish	application/x-vnd.sen-labs.Tsundoku	2450431064
- in	PrintSettingsWindow		 en
-All pages	PrintSettingsWindow		Todas las páginas
-Color	PrintSettingsWindow		Color
-DPI	PrintSettingsWindow		DPI
-Even pages	PrintSettingsWindow		Páginas pares
-Gray scale	PrintSettingsWindow		Escala de grises
-Height: 	PrintSettingsWindow		Altura: 
-Max. printer resolution	PrintSettingsWindow		Resolución de impresora max.
-Mode	PrintSettingsWindow		Modo
-Normal	PrintSettingsWindow		Normal
-Odd pages	PrintSettingsWindow		Páginas impares
-OK	PrintSettingsWindow		Aceptar
-Order	PrintSettingsWindow		Orden
-Page	PrintSettingsWindow		Página
-Pages	PrintSettingsWindow		Páginas
-Print	PrintSettingsWindow		Imprimir
-Print settings	PrintSettingsWindow		Configuración de impresión
-Reverse	PrintSettingsWindow		Invertir
-Rotation	PrintSettingsWindow		Rotación
-Width: 	PrintSettingsWindow		Anchura: 
-Wrong parameter!	PrintSettingsWindow		Parámetro incorrecto!
-Zoom (%)	PrintSettingsWindow		Aumento (%)
-Zoom must be between 25 and 400!	PrintSettingsWindow		El nivel de aumento debe estar entre 25 y 400.
-[internal link]	PDFView		[enlace interno]
-[link type 'movie' not supported]	PDFView		[enlace tipo 'animación' no soportado]
-[unknown link]	PDFView		[enlace desconocido]
-Annotation	PDFView		Anotación
-Tsundoku reading file: 	PDFView		Tsundoku leyendo archivo: 
-Tsundoku: Launch	PDFView		Tsundoku: Lanzar
-Cancel	PDFView		Cancelar
-Copy link	PDFView		Copiar enlace
-Delete	PDFView		Borrar
-Edit	PDFView		Editar
-Execute the command:	PDFView		Ejecutar el comando:
-Go to page %d	PDFView		Ir a página %d
-Leave annotation editing mode	PDFView		Abandonar modo de edición de anotaciones
-OK	PDFView		Aceptar
-Open in new window	PDFView		Abrir en nueva ventana
-Properties	PDFView		Propiedades
-Save file attachment as…	PDFView		Guardando adjunto como...
-Saving file attachment:	PDFView		Guardando adjunto:
-Unknown link action type: '%s'	PDFView		Enlace de acción desconocido tipo: '%s'
-<empty>	OutlinesWindow		<vacío>
-Document	OutlinesWindow		Documento
-Edit title for bookmark	OutlinesWindow		Editar título del marcador
-No title	OutlinesWindow		Sin título
-OK	OutlinesWindow		Aceptar
-User defined	OutlinesWindow		Definido por el usuario
-<empty>	AttachmentView		<vacío>
-Description	AttachmentView		Descripción
-File name	AttachmentView		Nombre de archivo
-Save attachment(s) as	AttachmentView		Guardar adjunto(s) como
-Save selected attachment to file	AttachmentView		Guardar adjunto seleccionado a archivo
-Save selected attachments into directory	AttachmentView		Guardar adjuntos seleccionados en el directorio
-Saving attachment(s):	AttachmentView		Guardando adjunto(s):
-Abort	PrintingProgressWindow		Cancelar
-Tsundoku printing	PrintingProgressWindow		Tsundoku imprimiendo
-Tsundoku printing document: 	PrintingProgressWindow		Tsundoku imprimiendo documento: 
-Page:	PrintingProgressWindow		Página:
-Page: %d	PrintingProgressWindow		Página: %d
-Stop	PrintingProgressWindow		Detener
-Abort	FileInfoWindow		Cancelar
-Allowed	FileInfoWindow		Permitido
-Annotations:	FileInfoWindow		Anotaciones:
-Author:	FileInfoWindow		Autor:
-Copy & paste:	FileInfoWindow		Copiar y pegar:
-Created:	FileInfoWindow		Creado:
-Creator:	FileInfoWindow		Creador:
-Denied	FileInfoWindow		Denegado
-Document	FileInfoWindow		Documento
-Editing:	FileInfoWindow		Editando:
-Embedded name	FileInfoWindow		Nombre embebido
-Encrypted:	FileInfoWindow		Cifrado:
-File info	FileInfoWindow		info de archivo
-Filename:	FileInfoWindow		Nombre de archivo:
-Fonts of this page	FileInfoWindow		Fuentes de esta página
-Keywords:	FileInfoWindow		Palabras clave:
-Linearized:	FileInfoWindow		Alineado:
-Modified:	FileInfoWindow		Modificado:
-Name	FileInfoWindow		Nombre
-No	FileInfoWindow		No
-Path:	FileInfoWindow		Ruta:
-Printing:	FileInfoWindow		Imprimiendo:
-Producer:	FileInfoWindow		Productor:
-Security	FileInfoWindow		Seguridad
-Show all fonts	FileInfoWindow		Mostrar todas las fuentes
-Subject:	FileInfoWindow		Tema:
-Title:	FileInfoWindow		Título:
-Type	FileInfoWindow		Tipo
-Version:	FileInfoWindow		Versión:
-Yes	FileInfoWindow		Sí
-About Tsundoku…	PDFWindow		Acerca de Tsundoku…
-Add	PDFWindow		Insertar
-Add circle annotation	PDFWindow		Añadir círculo de anotación
-Add comment text annotation	PDFWindow		Insertar anotación de comentario de texto
-Add file attachment annotation	PDFWindow		Insertar anotación de fichero adjunto
-Add free text annotation	PDFWindow		Insertar anotación de texto libre
-Add help text annotation	PDFWindow		Insertar anotación de texto de ayuda
-Add highlight annotation	PDFWindow		Insertar anotación de marcador de textos (fosforito)
-Add ink annotation	PDFWindow		Insertar anotación de tinta
-Add insert text annotation	PDFWindow		Insertar anotación de texto
-Add key text annotation	PDFWindow		Insertar anotación de llave de texto
-Add line annotation	PDFWindow		Insertar línea de anotación
-Add link annotation	PDFWindow		Insertar anotación de enlace
-Add movie annotation	PDFWindow		Insertar anotación de animación
-Add new paragraph text annotation	PDFWindow		Insertar nueva anotación de párrafo
-Add note text annotation	PDFWindow		Insertar anotación de nota de texto
-Add paragraph text annotation	PDFWindow		Insertar anotación de párrafo
-Add popup annotation	PDFWindow		Insertar anotación emergente
-Add printer mark annotation	PDFWindow		Insertar anotación marca de impresión
-Add sound annotation	PDFWindow		Insertar anotación de sonido
-Add square annotation	PDFWindow		Insertar rectángulo de anotación
-Add squiggly annotation	PDFWindow		Insertar anotación de subrayado ondulado
-Add stamp annotation	PDFWindow		Insertar anotación de sello
-Add strikeout annotation	PDFWindow		Insertar anotación de tachado
-Add trapnet annotation	PDFWindow		Insertar anotación de atajo
-Add underline annotation	PDFWindow		Insertar anotación de subrayado
-Add widget annotation	PDFWindow		Insertar artilugio de anotación
-Back	PDFWindow		Atrás
-Back in page history list	PDFWindow		Atrás en el historial de página
-Bookmark	PDFWindow		Marcador
-Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		No se puede sobre escribir un PDF que está actualmetne en uso. Por favor, elige otro nombre de archivo.
-Close	PDFWindow		Cerrar
-Copy selection	PDFWindow		Copiar selección
-Could not write PDF file!	PDFWindow		No se puede escribir el archivo PDF.
-Custom zoom factor (%d%%)	PDFWindow		Aumento personalizado (%d%%)
-Delete	PDFWindow		Borrar
-Edit	PDFWindow		Editar
-Editing of annotations in an encrypted PDF file isn't supported yet!	PDFWindow		Aún no hay soporte para la edición de anotaciones en PDF cifrados.
-English.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	Español.pdf
-File	PDFWindow		Archivo
-File info…	PDFWindow		Información de archivo…
-Find	PDFWindow		Buscar
-Find next	PDFWindow		Buscar siguiente
-Find next…	PDFWindow		Buscar siguiente…
-Find…	PDFWindow		Buscar…
-First	PDFWindow		Primero
-Fit to page	PDFWindow		Ajustar a página
-Fit to page width	PDFWindow		Ajustar a ancho de página
-Forward	PDFWindow		Adelante
-Forward in page history list	PDFWindow		Adelante en el historial de página
-Fullscreen	PDFWindow		Pantalla completa
-Fullscreen mode	PDFWindow		Modo pantalla completa
-Go back 10 pages	PDFWindow		Ir atrás 10 páginas
-Go forward 10 pages	PDFWindow		Ir adelante 10 páginas
-Go to end of document	PDFWindow		Ir al final del documento
-Go to next page	PDFWindow		Ir a página siguiente
-Go to previous page	PDFWindow		Ir a página anterior
-Go to start of document	PDFWindow		Ir al inicio del documento
-Help	PDFWindow		Ayuda
-Hide side bar	PDFWindow		Ocultar barra lateral
-Issue tracker…	PDFWindow		Rastreador de errores…
-Jump to page	PDFWindow		Saltar a página
-Last	PDFWindow		Último
-Leave annotation editing mode	PDFWindow		Abandonar modo edición de anotaciones
-Next	PDFWindow		Siguiente
-of %d	PDFWindow		de %d
-OK	PDFWindow		Aceptar
-Online help…	PDFWindow		Ayuda en línea…
-Open file	PDFWindow		Abrir archivo
-Open in new window…	PDFWindow		Abrir en nueva ventana…
-Open…	PDFWindow		Abrir…
-Page	PDFWindow		Página
-Page %d	PDFWindow		Página %d
-Page setup…	PDFWindow		Configuración de página…
-PDF file successfully written!	PDFWindow		Archivo PDF escrito correctamente.
-Preferences…	PDFWindow		Preferencias…
-Previous	PDFWindow		Anterior
-Print	PDFWindow		Imprimir
-Print…	PDFWindow		Imprimir…
-Quit	PDFWindow		Abandonar
-Reload	PDFWindow		Recargar
-Reload file	PDFWindow		Recargar archivo
-Rotate clockwise	PDFWindow		Rotar en sentido horario
-Rotate counter-clockwise	PDFWindow		Rotar en sentido antihorario
-Rotation	PDFWindow		Rotación
-Save as…	PDFWindow		Guardar como…
-Save file as	PDFWindow		Guardar archivo como
-Saving copy of PDF file:	PDFWindow		Guardando copia del archivo PDF:
-Search	PDFWindow		Buscar
-Select all	PDFWindow		Seleccionar todo
-Select none	PDFWindow		Deseleccionar todo
-Show annotation tool bar	PDFWindow		Mostrar barra de herramientas de anotaciones
-Show annotation toolbar	PDFWindow		Mostrar barra de herramientas de anotaciones
-Show attachments	PDFWindow		Mostrar adjuntos
-Show bookmarks	PDFWindow		Mostrar marcadores
-Show error messages	PDFWindow		Mostrar mensajes de error
-Show help…	PDFWindow		Mostrar ayuda…
-Show page list	PDFWindow		Mostrar lista de páginas
-View	PDFWindow		Vista
-Visit homepage…	PDFWindow		Visitar sitio web…
-Warning	PDFWindow		Aviso
-Zoom	PDFWindow		Aumento
-Zoom in	PDFWindow		Ampliar
-Zoom out	PDFWindow		Alejar
-Align:	AnnotationWindow		Alinear:
-Annotation	AnnotationWindow		Anotación
-Asian fonts	AnnotationWindow		Fuentes asiáticas
-Author	AnnotationWindow		Autor
-Automatic	AnnotationWindow		Automático
-current	AnnotationWindow		actual
-Date:	AnnotationWindow		Fecha:
-Display	AnnotationWindow		Visualizar
-Document	AnnotationWindow		Documento
-Filled rectangle	AnnotationWindow		Rectángulo relleno
-Font:	AnnotationWindow		Fuente:
-Fullscreen mode	AnnotationWindow		Modo pantalla completa
-Invert vertical mouse scrolling	AnnotationWindow		Invertir deslizamiento vertical del mouse
-Open in workspace:	AnnotationWindow		Abrir en espacio de trabajo:
-Preferences	AnnotationWindow		Preferencias
-Restore page number	AnnotationWindow		Restaurar número de página
-Restore window position and size	AnnotationWindow		Restaurar posición y tamaño de ventana
+1	Spanish	application/x-vnd.sen-labs.Toji	453287713
 Selection rectangle	AnnotationWindow		Rectángulo de selección
-Show document view only	AnnotationWindow		Mostrar documento en sólo lectura
-Show toolbar, statusbar and scrollbars, too	AnnotationWindow		Mostrar barra de herrmientas, de estado y de deslizamiento
-Size:	AnnotationWindow		Tamaño:
-Stroked rectangle	AnnotationWindow		Rectángulo hueco
-System fonts	AnnotationWindow		Fuentes de sistema
-Title:	AnnotationWindow		Título:
-User fonts	AnnotationWindow		Fuentes de usuario
-Will take effect at next program launch.	AnnotationWindow		Se aplicará en el próximo arranque del programa.
-Alpha	BepdfApplication		Alfa
-Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku está basado en XPDF %s, %s.
-Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Error al abrir archivo
-Beta	BepdfApplication		Beta
-Close	BepdfApplication		Cerrar
-Development	BepdfApplication		Desarrollo
-Error	BepdfApplication		Error
-Final	BepdfApplication		Final
-Gamma	BepdfApplication		Gama
-Golden Master	BepdfApplication		Versión final
-Unknown	BepdfApplication		Desconocido
-Version	BepdfApplication		Versión
-Auto open	TraceWindow		Auto apertura
-Clear	TraceWindow		Limpiar
-Error messages	TraceWindow		Mensajes de error
-Floating	TraceWindow		Flotante
-Tsundoku status	StatusWindow		Estado de Tsundoku
-Enter Password	PasswordWindow		Introducir contraseña
-OK	PasswordWindow		Aceptar
-Owner password	PasswordWindow		Contaseña del propietario
-User password	PasswordWindow		Contraseña del usuario
-Find	FindTextWindow		Buscar
-Find text	FindTextWindow		Buscar texto
-Find: 	FindTextWindow		Buscar: 
-Ignore case	FindTextWindow		Ignorar resultado
-Options	FindTextWindow		Opciones
-Page:	FindTextWindow		Página:
-Page: %d	FindTextWindow		Página: %d
-Search backwards	FindTextWindow		Buscar hacia atrás
-Stop	FindTextWindow		Detener
-OK	PDFSearch		Aceptar
-Search string not found.	PDFSearch		Términos de búsqueda no encontrados
-Error getting page number!	BepdfApplication		
-Invalid file reference received!	BepdfApplication		
+Toji reading file: 	PDFView		Toji leyendo archivo: 
+Cancel	PDFView		Cancelar
 a universal document reader based on BePDF, extended for SEN	BepdfApplication		
+Undo	PDFWindow		
+Go to previous page	PDFWindow		Ir a página anterior
+Language	BepdfApplication		
+Subject:	FileInfoWindow		Tema:
+Filled rectangle	AnnotationWindow		Rectángulo relleno
+Current	PDFView		
+Owner password	PasswordWindow		Contaseña del propietario
+ISBN	BepdfApplication		
+Strike out selection	PDFWindow		
+Pink	PDFView		
+Replace legacy attributes with standard ones	AnnotationWindow		
+OK	BepdfApplication		
+Text, shapes and drawing: choose one, then click or drag on the page	PDFWindow		
+Copy link to this place	PDFView		
+Add highlight	Document		
+Cancel	PDFWindow		
+Page	AnnotationsView		
+Delete	PDFWindow		Borrar
+Note	PDFView		
+Color	PrintSettingsWindow		Color
+View	PDFWindow		Vista
+Search string not found.	PDFSearch		Términos de búsqueda no encontrados
+Normal	PrintSettingsWindow		Normal
+Copy	PDFWindow		
+No fill	PDFView		
+Redo	PDFWindow		
+File attachment	Document		
+Age rating:	FileInfoWindow		
+Zoom in	PDFWindow		Ampliar
+Notes: a margin note for selected text, a note or a text on the page	PDFWindow		
+Page:	FindTextWindow		Página:
+Rotation	PrintSettingsWindow		Rotación
+Gamma	BepdfApplication		Gama
+Error messages	TraceWindow		Mensajes de error
+Jump to page	PDFWindow		Saltar a página
+Move annotation	Document		
+DjVu document	BepdfApplication		
+Edit note…	PDFView		
+Fullscreen mode	AnnotationWindow		Modo pantalla completa
+Author	BepdfApplication		
+Single page	PDFWindow		
+Mode	PrintSettingsWindow		Modo
+Publisher	BepdfApplication		
+Save as…	PDFWindow		Guardar como…
+Issue tracker…	PDFWindow		Rastreador de errores…
+Printing:	FileInfoWindow		Imprimiendo:
+Add ellipse	Document		
+The document could not be saved.	PDFWindow		
+Copy link to this place	PDFWindow		
+Top to bottom	PDFWindow		
+Zoom must be between 25 and 400!	PrintSettingsWindow		El nivel de aumento debe estar entre 25 y 400.
+Open…	PDFWindow		Abrir…
+ (annotated)	PDFWindow		
+Show toolbar, statusbar and scrollbars, too	AnnotationWindow		Mostrar barra de herrmientas, de estado y de deslizamiento
+Show page list	PDFWindow		Mostrar lista de páginas
+current	AnnotationWindow		actual
+OK	PasswordWindow		Aceptar
+Document	OutlinesWindow		Documento
+Invert vertical mouse scrolling	AnnotationWindow		Invertir deslizamiento vertical del mouse
+Page setup…	PDFWindow		Configuración de página…
+Text	Document		
+Stroked rectangle	AnnotationWindow		Rectángulo hueco
+OK	NoteWindow		
+Find: 	FindTextWindow		Buscar: 
+Zoom	PDFWindow		Aumento
+Larger text	PDFWindow		
+ISBN:	FileInfoWindow		
+Text	PDFView		
+Text	PDFWindow		
+Open in workspace:	AnnotationWindow		Abrir en espacio de trabajo:
+This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.	PDFWindow		
+Go to next page	PDFWindow		Ir a página siguiente
+Restore page number	AnnotationWindow		Restaurar número de página
+Last	PDFWindow		Último
+Hide sidebar	PDFWindow		
+Add line	Document		
+Find next	PDFWindow		Buscar siguiente
+Arrow	PDFWindow		
+Series number	BepdfApplication		
+Note	Document		
+All pages	PrintSettingsWindow		Todas las páginas
+Describe annotations of other programs in the file's attributes	AnnotationWindow		
+Go to start of document	PDFWindow		Ir al inicio del documento
+Pages	BepdfApplication		
+Highlight	PDFView		
+Go forward 10 pages	PDFWindow		Ir adelante 10 páginas
+Go back 10 pages	PDFWindow		Ir atrás 10 páginas
+Fit to page width	PDFWindow		Ajustar a ancho de página
+Toji link	BepdfApplication		
+DPI	PrintSettingsWindow		DPI
+Find…	PDFWindow		Buscar…
+Title page alone	PDFWindow		
+Odd pages	PrintSettingsWindow		Páginas impares
+Laying out the book…	PDFView		
+Show bookmarks	PDFWindow		Mostrar marcadores
+Description	BepdfApplication		
+Max. printer resolution	PrintSettingsWindow		Resolución de impresora max.
+Strike out	PDFView		
+Reading direction	BepdfApplication		
+Edit text…	PDFView		
+Delete annotation	PDFView		
+Quit	PDFWindow		Abandonar
+About Toji	BepdfApplication		
+The copy could not be saved.	PDFWindow		
+Fullscreen mode	PDFWindow		Modo pantalla completa
+File	PDFWindow		Archivo
+Options	FindTextWindow		Opciones
+Find text	FindTextWindow		Buscar texto
+Clear	TraceWindow		Limpiar
+toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
+Print	PrintSettingsWindow		Imprimir
+Enter Password	PasswordWindow		Introducir contraseña
+Online help…	PDFWindow		Ayuda en línea…
+Rectangle	Document		
+Copy	PDFView		
+Filename:	FileInfoWindow		Nombre de archivo:
+Series:	FileInfoWindow		
+First	PDFWindow		Primero
+Copy link	PDFView		Copiar enlace
+Add	PDFWindow		Insertar
+Open in new window…	PDFWindow		Abrir en nueva ventana…
+Yellow	PDFView		
+OK	PDFSearch		Aceptar
+Add arrow	Document		
+Version	BepdfApplication		Versión
+Zoom (%)	PrintSettingsWindow		Aumento (%)
+Files that BePDF has opened have attributes with its own names (META:title, META:author, ...). Toji writes the same information with standard names (dc:title, dc:creator, ...) in any case. The legacy attributes are kept unless this is on: then they are removed.	AnnotationWindow		
+Custom zoom factor (%d%%)	PDFWindow		Aumento personalizado (%d%%)
+Arrow	Document		
+Abort	PrintingProgressWindow		Cancelar
+Add drawing	Document		
+Go to end of document	PDFWindow		Ir al final del documento
+Beta	BepdfApplication		Beta
+Auto open	TraceWindow		Auto apertura
+Back	PDFWindow		Atrás
+Pages	PrintSettingsWindow		Páginas
+Upgrade	PDFWindow		
+%1 (p%2)	PDFWindow	Name of a bookmark: the section (1) and the page (2)	
+Final	BepdfApplication		Final
+Show error messages	PDFWindow		Mostrar mensajes de error
+Document	FileInfoWindow		Documento
+Width: 	PrintSettingsWindow		Anchura: 
+Author:	FileInfoWindow		Autor:
+Orange	PDFView		
+Show sidebar	PDFWindow		
+Annotations	BepdfApplication		
+Security	FileInfoWindow		Seguridad
+of %d	PDFWindow		de %d
+Keywords	BepdfApplication		
+Denied	FileInfoWindow		Denegado
+Order	PrintSettingsWindow		Orden
+Add strike out	Document		
+Highlight	Document		
+Show annotations	PDFWindow		
+Published	BepdfApplication		
+Resize annotation	Document		
+Stamp	Document		
+Page: %d	FindTextWindow		Página: %d
+Add underline	Document		
+Page	PDFWindow		Página
+Producer:	FileInfoWindow		Productor:
+Page list	PDFWindow		
+Title	BepdfApplication		
+(read-only)	PDFView		
+Keywords:	FileInfoWindow		Palabras clave:
+Annotation	Document		
+Blue	PDFView		
+Forward in page history list	PDFWindow		Adelante en el historial de página
+Page:	PrintingProgressWindow		Página:
+Find next…	PDFWindow		Buscar siguiente…
+Ellipse	PDFView		
+Change color	Document		
+Change note	Document		
+Display	AnnotationWindow		Visualizar
+Line width	PDFView		
+Right to left	PDFWindow		
+Visit homepage…	PDFWindow		Visitar sitio web…
+Even pages	PrintSettingsWindow		Páginas pares
+Stop	FindTextWindow		Detener
+Subjects:	FileInfoWindow		
+Marker: choose a color, then select the text	PDFWindow		
+Bookmarks	BepdfApplication		
+Print	PDFWindow		Imprimir
+Find previous…	PDFWindow		
+Line	PDFWindow		
+ in	PrintSettingsWindow		 en
+Unknown	BepdfApplication		Desconocido
+Show margin notes	PDFWindow		
+Bookmark	PDFWindow		Marcador
+The file could not be saved.	AttachmentsView		
+Note	NoteWindow		
+Next	PDFWindow		Siguiente
+Drawing	PDFView		
+Reverse	PrintSettingsWindow		Invertir
+Close	BepdfApplication		Cerrar
+Keep	PDFWindow		
+Page: %d	PrintingProgressWindow		Página: %d
+Note	PDFWindow		
+Strike out	Document		
+Rotate counter-clockwise	PDFWindow		Rotar en sentido antihorario
+Select none	PDFWindow		Deseleccionar todo
+Format:	FileInfoWindow		
+Smaller text	PDFWindow		
+Alpha	BepdfApplication		Alfa
+<empty>	OutlinesWindow		<vacío>
+1 annotation	AnnotationsView		
+Add squiggly line	Document		
+Language:	FileInfoWindow		
+Annotations	PDFWindow		
+Forward	PDFWindow		Adelante
+Electronic publication (EPUB)	BepdfApplication		
+OK	AttachmentsView		
+Toji status	StatusWindow		Estado de Toji
+Golden Master	BepdfApplication		Versión final
+Bookmarks	PDFWindow		
+Comic book (ZIP)	BepdfApplication		
+%d points	PDFView		
+Show or hide the sidebar	PDFWindow		
+Delete annotation	Document		
+Author	AnnotationWindow		Autor
+Comic book (TAR)	BepdfApplication		
+Publisher:	FileInfoWindow		
+Green	PDFView		
+Zoom out	PDFWindow		Alejar
+Add margin note	PDFWindow		
+Continuous	PDFWindow		
+Comic book (7z)	BepdfApplication		
+Restore window position and size	AnnotationWindow		Restaurar posición y tamaño de ventana
+Rectangle	PDFView		
+Line	Document		
+Identifier	BepdfApplication		
+Margin note	PDFView		
+Modified:	FileInfoWindow		Modificado:
+Arrow	PDFView		
+Description:	FileInfoWindow		
+Add	PDFView		
+Save	PDFWindow		
+About Toji…	PDFWindow		Acerca de Toji…
+Go to page %d	PDFView		Ir a página %d
+Ellipse	Document		
+OK	OutlinesWindow		Aceptar
+Reading:	FileInfoWindow		
+Ellipse	PDFWindow		
+Annotations:	FileInfoWindow		Anotaciones:
+Published:	FileInfoWindow		
+Select all	PDFWindow		Seleccionar todo
+Fill	PDFView		
+OK	PDFWindow		Aceptar
+Previous	PDFWindow		Anterior
+Search	PDFWindow		Buscar
+File info	FileInfoWindow		info de archivo
+OK	PrintSettingsWindow		Aceptar
+Series	BepdfApplication		
+They can only be kept in a copy of the file.	PDFWindow		
+annotations	AnnotationsView		
+Open file	PDFWindow		Abrir archivo
+Preferences	AnnotationWindow		Preferencias
+Toji™, SEN™ and SEN Labs™ are names of SEN Labs e.U.	BepdfApplication		
+Print settings	PrintSettingsWindow		Configuración de impresión
+Excerpt	AnnotationsView		
+Back in page history list	PDFWindow		Atrás en el historial de página
+Creator	BepdfApplication		
+Copy	TraceWindow		
+The document has unsaved changes (annotations).	PDFWindow		
+Find	PDFWindow		Buscar
+Double-sided	PDFWindow		
+Yes	FileInfoWindow		Sí
+[unknown link]	PDFView		[enlace desconocido]
+Cancel	NoteWindow		
+Select all	PDFView		
+Floating	TraceWindow		Flotante
+Link to a place in a document (toji:)	BepdfApplication		
+Stop	PrintingProgressWindow		Detener
+Show attachments	PDFWindow		Mostrar adjuntos
+Show help…	PDFWindow		Mostrar ayuda…
+Edit	PDFWindow		Editar
+Toji printing	PrintingProgressWindow		Toji imprimiendo
+Search backwards	FindTextWindow		Buscar hacia atrás
+Highlight selection	PDFWindow		
+EPUB version:	FileInfoWindow		
+Reload	PDFWindow		Recargar
+Add text	Document		
+Underline selection	PDFWindow		
+Toji renders with MuPDF %s, %s.	BepdfApplication	MuPDF version, copyright	
+Red	PDFView		
+Help	PDFWindow		Ayuda
+Rotation	PDFWindow		Rotación
+Show document view only	AnnotationWindow		Mostrar documento en sólo lectura
+Encrypted:	FileInfoWindow		Cifrado:
+Web:	FileInfoWindow		
+Gray scale	PrintSettingsWindow		Escala de grises
+Save…	AttachmentsView		
+Note on the page	PDFView		
+Type	AnnotationsView		
+Close	PDFWindow		Cerrar
+Color	PDFView		
+No title	OutlinesWindow		Sin título
+Page	PrintSettingsWindow		Página
+Discard	PDFWindow		
+Created:	FileInfoWindow		Creado:
+Open in new window	PDFView		Abrir en nueva ventana
+Height: 	PrintSettingsWindow		Altura: 
+Text on the page	PDFView		
+File info…	PDFWindow		Información de archivo…
+This file is read-only. You can add annotations, but to keep them you have to save a copy with “Save as…”.	PDFView		
+Allowed	FileInfoWindow		Permitido
+Comic book (RAR)	BepdfApplication		
+Development	BepdfApplication		Desarrollo
+Add note	Document		
+Attributes of BePDF	PDFWindow		
+No	FileInfoWindow		No
+Pages:	FileInfoWindow		
+Edit note	Document		
+Reload file	PDFWindow		Recargar archivo
+Fit to page	PDFWindow		Ajustar a página
+Document	AnnotationWindow		Documento
+Continue	PDFView		
+Settings…	PDFWindow		
+Print…	PDFWindow		Imprimir…
+Path:	FileInfoWindow		Ruta:
+Page %d	PDFWindow		Página %d
+Copy & paste:	FileInfoWindow		Copiar y pegar:
+Edit title for bookmark	OutlinesWindow		Editar título del marcador
+Toji printing document: 	PrintingProgressWindow		Toji imprimiendo documento: 
+Chapter	PDFWindow		
+Comic book (BBF)	BepdfApplication		
+EPUB e-book	BepdfApplication		
+Title:	FileInfoWindow		Título:
+Fullscreen	PDFWindow		Pantalla completa
+Underline	Document		
+Add rectangle	Document		
+User defined	OutlinesWindow		Definido por el usuario
+No annotations	AnnotationsView		
+Line	PDFView		
+Change line	Document		
+Copy as Web Annotation	PDFView		
+Attachments	PDFWindow		
+right to left	FileInfoWindow		
+Editing:	FileInfoWindow		Editando:
+Drawing	Document		
+Invalid file reference received!	BepdfApplication		
+Squiggly line	Document		
+Toji: Error opening file!	BepdfApplication		Toji: Error al abrir archivo
+User password	PasswordWindow		Contraseña del usuario
+Identifier:	FileInfoWindow		
+Find	FindTextWindow		Buscar
+Ignore case	FindTextWindow		Ignorar resultado
+Creator:	FileInfoWindow		Creador:
+Error	BepdfApplication		Error
+When a PDF file is opened, its annotations are described in the attribute SEN:annotations, and those that have no name get an identifier, so that other programs can refer to them. The PDF file is not changed.	AnnotationWindow		
+Wrong parameter!	PrintSettingsWindow		Parámetro incorrecto!
+Rotate clockwise	PDFWindow		Rotar en sentido horario
+Drawing	PDFWindow		
+Rectangle	PDFWindow		
+Underline	PDFView		
+Artists:	FileInfoWindow		

@@ -1,257 +1,361 @@
-1	Thai	application/x-vnd.sen-labs.Tsundoku	2450431064
- in	PrintSettingsWindow		ใน
-All pages	PrintSettingsWindow		ทุกหน้า
-Color	PrintSettingsWindow		สี
-DPI	PrintSettingsWindow		DPI
-Even pages	PrintSettingsWindow		แม้แต่หน้า
-Gray scale	PrintSettingsWindow		ระดับสีเทา
-Height: 	PrintSettingsWindow		ความสูง: 
-Max. printer resolution	PrintSettingsWindow		ความละเอียดของเครื่องพิมพ์สูงสุด
-Mode	PrintSettingsWindow		โหมด
-Normal	PrintSettingsWindow		ปกติ
-Odd pages	PrintSettingsWindow		หน้าคี่
-OK	PrintSettingsWindow		ตกลง
-Order	PrintSettingsWindow		สั่ง
-Page	PrintSettingsWindow		หน้า
-Pages	PrintSettingsWindow		หน้า
-Print	PrintSettingsWindow		พิมพ์
-Print settings	PrintSettingsWindow		การตั้งค่าการพิมพ์
-Reverse	PrintSettingsWindow		ย้อนกลับ
-Rotation	PrintSettingsWindow		หมุน
-Width: 	PrintSettingsWindow		ความกว้าง: 
-Wrong parameter!	PrintSettingsWindow		พารามิเตอร์ผิด!
-Zoom (%)	PrintSettingsWindow		ขยาย (%)
-Zoom must be between 25 and 400!	PrintSettingsWindow		การขยายจะต้องอยู่ระหว่าง 25 ถึง 400!
-[internal link]	PDFView		[ลิงค์ภายใน]
-[link type 'movie' not supported]	PDFView		ไม่รองรับประเภทลิงก์ 'ภาพยนตร์']
-[unknown link]	PDFView		[ลิงค์ที่ไม่รู้จัก]
-Annotation	PDFView		คำอธิบายประกอบ
-Tsundoku reading file: 	PDFView		อ่านไฟล์ Tsundoku:
-Tsundoku: Launch	PDFView		Tsundoku: เปิด
-Cancel	PDFView		ยกเลิก
-Copy link	PDFView		คัดลอกลิงค์
-Delete	PDFView		ลบ
-Edit	PDFView		แก้ไข
-Execute the command:	PDFView		ดำเนินการคำสั่ง:
-Go to page %d	PDFView		ไปที่หน้า %d
-Leave annotation editing mode	PDFView		ออกจากโหมดแก้ไขคำอธิบายประกอบ
-OK	PDFView		ตกลง
-Open in new window	PDFView		เปิดในหน้าต่างใหม่
-Properties	PDFView		คุณสมบัติ
-Save file attachment as…	PDFView		บันทึกไฟล์แนบเป็น ...
-Saving file attachment:	PDFView		กำลังบันทึกไฟล์แนบ:
-Unknown link action type: '%s'	PDFView		ลิงค์ประเภทการกระทำที่ไม่รู้จัก:'%s'
-<empty>	OutlinesWindow		<ว่าง>
-Document	OutlinesWindow		เอกสาร
-Edit title for bookmark	OutlinesWindow		แก้ไขชื่อสำหรับบุ๊คมาร์ค
-No title	OutlinesWindow		ไม่มีชื่อ
-OK	OutlinesWindow		ตกลง
-User defined	OutlinesWindow		ผู้ใช้กำหนด
-<empty>	AttachmentView		<ว่างเปล่า>
-Description	AttachmentView		รายละเอียด
-File name	AttachmentView		ชื่อไฟล์
-Save attachment(s) as	AttachmentView		บันทึกเอกสารแนบเป็น
-Save selected attachment to file	AttachmentView		บันทึกไฟล์แนบที่เลือกไปยังไฟล์
-Save selected attachments into directory	AttachmentView		บันทึกไฟล์แนบที่เลือกไว้ในไดเรกทอรี
-Saving attachment(s):	AttachmentView		กำลังบันทึกไฟล์แนบ:
-Abort	PrintingProgressWindow		ยกเลิก
-Tsundoku printing	PrintingProgressWindow		การพิมพ์ Tsundoku
-Tsundoku printing document: 	PrintingProgressWindow		เอกสารการพิมพ์ Tsundoku:
-Page:	PrintingProgressWindow		หน้า:
-Page: %d	PrintingProgressWindow		หน้า: %d
-Stop	PrintingProgressWindow		หยุด
-Abort	FileInfoWindow		ยกเลิก
-Allowed	FileInfoWindow		อนุญาต
-Annotations:	FileInfoWindow		คำอธิบายประกอบ:
-Author:	FileInfoWindow		ผู้เขียน:
-Copy & paste:	FileInfoWindow		คัดลอก & วาง:
-Created:	FileInfoWindow		สร้าง:
-Creator:	FileInfoWindow		ผู้สร้าง:
-Denied	FileInfoWindow		ปฎิเสธ
-Document	FileInfoWindow		เอกสาร
-Editing:	FileInfoWindow		กำลังแก้ไข:
-Embedded name	FileInfoWindow		ชื่อที่แนบมา
-Encrypted:	FileInfoWindow		เข้ารหัส:
-File info	FileInfoWindow		ข้อมูลไฟล์
-Filename:	FileInfoWindow		ชื่อไฟล์:
-Fonts of this page	FileInfoWindow		แบบอักษรของหน้านี้
-Keywords:	FileInfoWindow		คำสำคัญ:
-Linearized:	FileInfoWindow		Linearized:
-Modified:	FileInfoWindow		แก้ไข:
-Name	FileInfoWindow		ชื่อ
-No	FileInfoWindow		ไม่
-Path:	FileInfoWindow		พาธ:
-Printing:	FileInfoWindow		กำลังพิมพ์:
-Producer:	FileInfoWindow		ผู้จัดทำ:
-Security	FileInfoWindow		ความปลอดภัย
-Show all fonts	FileInfoWindow		แสดงแบบอักษรทั้งหมด
-Subject:	FileInfoWindow		เรื่อง:
-Title:	FileInfoWindow		ชื่อ:
-Type	FileInfoWindow		ชนิด
-Version:	FileInfoWindow		เวอร์ชั่น:
-Yes	FileInfoWindow		ใช่
-About Tsundoku…	PDFWindow		เกี่ยวกับ Tsundoku…
-Add	PDFWindow		เพิ่ม
-Add circle annotation	PDFWindow		เพิ่มคำอธิบายประกอบวงกลม
-Add comment text annotation	PDFWindow		เพิ่มคำอธิบายประกอบข้อความความคิดเห็น
-Add file attachment annotation	PDFWindow		เพิ่มคำอธิบายประกอบไฟล์
-Add free text annotation	PDFWindow		เพิ่มคำอธิบายประกอบข้อความแบบอิสระ
-Add help text annotation	PDFWindow		เพิ่มคำอธิบายประกอบข้อความช่วยเหลือ
-Add highlight annotation	PDFWindow		เพิ่มคำอธิบายประกอบไฮไลต์
-Add ink annotation	PDFWindow		เพิ่มคำอธิบายประกอบแบบหมึก
-Add insert text annotation	PDFWindow		เพิ่มคำอธิบายประกอบแทรกข้อความ
-Add key text annotation	PDFWindow		เพิ่มคำอธิบายประกอบข้อความสำคัญ
-Add line annotation	PDFWindow		เพิ่มคำอธิบายประกอบบรรทัด
-Add link annotation	PDFWindow		เพิ่มคำอธิบายประกอบลิงค์
-Add movie annotation	PDFWindow		เพิ่มคำอธิบายประกอบภาพยนตร์
-Add new paragraph text annotation	PDFWindow		เพิ่มคำอธิบายประกอบข้อความย่อหน้าใหม่
-Add note text annotation	PDFWindow		เพิ่มหมายเหตุประกอบข้อความโน้ต
-Add paragraph text annotation	PDFWindow		เพิ่มคำอธิบายประกอบข้อความในย่อหน้า
-Add popup annotation	PDFWindow		เพิ่มคำอธิบายประกอบป๊อปอัพ
-Add printer mark annotation	PDFWindow		เพิ่มคำอธิบายประกอบเครื่องหมายเครื่องพิมพ์
-Add sound annotation	PDFWindow		เพิ่มคำอธิบายประกอบเสียง
-Add square annotation	PDFWindow		เพิ่มคำอธิบายประกอบสี่เหลี่ยม
-Add squiggly annotation	PDFWindow		เพิ่มคำอธิบายประกอบเส้นหยัก
-Add stamp annotation	PDFWindow		เพิ่มคำอธิบายประกอบแสตมป์
-Add strikeout annotation	PDFWindow		เพิ่มหมายเหตุประกอบการขีดฆ่า
-Add trapnet annotation	PDFWindow		เพิ่มคำอธิบายประกอบTrapnet
-Add underline annotation	PDFWindow		เพิ่มหมายเหตุประกอบแบบขีดเส้นใต้
-Add widget annotation	PDFWindow		เพิ่มคำอธิบายประกอบวิดเจ็ต
-Back	PDFWindow		ย้อนกลับ
-Back in page history list	PDFWindow		ย้อนกลับไปในรายการประวัติหน้า
-Bookmark	PDFWindow		คั่นหน้า
-Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		ไม่สามารถเขียนทับไฟล์ PDF ที่เปิดอยู่ใน Tsundoku ได้ในขณะนี้! กรุณาเลือกชื่อไฟล์อื่น
-Close	PDFWindow		ปิด
-Copy selection	PDFWindow		คัดลอกส่วนที่เลือก
-Could not write PDF file!	PDFWindow		ไม่สามารถเขียนไฟล์ PDF ได้!
-Custom zoom factor (%d%%)	PDFWindow		ปัจจัยการซูมที่กำหนดเอง (%d%%)
-Delete	PDFWindow		ลบ
-Edit	PDFWindow		แก้ไข
-Editing of annotations in an encrypted PDF file isn't supported yet!	PDFWindow		การแก้ไขคำอธิบายประกอบในไฟล์ PDF ที่เข้ารหัสยังไม่ได้รับการสนับสนุน!
-English.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	Thai.pdf
-File	PDFWindow		ไฟล์
-File info…	PDFWindow		ข้อมูลไฟล์
-Find	PDFWindow		ค้นหา
-Find next	PDFWindow		ค้นหาถัดไป
-Find next…	PDFWindow		ค้นหาถัดไป
-Find…	PDFWindow		ค้นหา
-First	PDFWindow		ลำดับแรก
-Fit to page	PDFWindow		พอดีกับหน้า
-Fit to page width	PDFWindow		พอดีกับความกว้างของหน้า
-Forward	PDFWindow		ส่งต่อ
-Forward in page history list	PDFWindow		ส่งต่อในรายการประวัติหน้า
-Fullscreen	PDFWindow		เต็มจอ
-Fullscreen mode	PDFWindow		โหมดเต็มจอ
-Go back 10 pages	PDFWindow		ย้อนไป 10 หน้า
-Go forward 10 pages	PDFWindow		ไปข้างหน้า 10 หน้า
-Go to end of document	PDFWindow		ไปหน้าสุดท้ายของเอกสาร
-Go to next page	PDFWindow		ไปหน้าถัดไป
-Go to previous page	PDFWindow		ไปหน้าก่อนหน้า
-Go to start of document	PDFWindow		ไปหน้าเริ่มต้น
-Help	PDFWindow		ช่วยเหลือ
-Hide side bar	PDFWindow		ซ่อนแถบด้านข้าง
-Issue tracker…	PDFWindow		ติดตามปัญหา ...
-Jump to page	PDFWindow		ข้ามไปที่หน้า
-Last	PDFWindow		สุดท้าย
-Leave annotation editing mode	PDFWindow		ออกจากโหมดแก้ไขคำอธิบายประกอบ
-Next	PDFWindow		ถัดไป
-of %d	PDFWindow		ของ %d
-OK	PDFWindow		ตกลง
-Online help…	PDFWindow		ความช่วยเหลือออนไลน์ ...
-Open file	PDFWindow		เปิดไฟล์
-Open in new window…	PDFWindow		เปิดหน้าต่างใหม่…
-Open…	PDFWindow		เปิด…
-Page	PDFWindow		หน้า
-Page %d	PDFWindow		หน้า %d
-Page setup…	PDFWindow		ตั้งค่าหน้า…
-PDF file successfully written!	PDFWindow		เขียนไฟล์ PDF สำเร็จ!
-Preferences…	PDFWindow		การตั้งค่า ...
-Previous	PDFWindow		ก่อนหน้า
-Print	PDFWindow		พิมพ์
-Print…	PDFWindow		พิมพ์…
-Quit	PDFWindow		ออก
-Reload	PDFWindow		รีโหลด
-Reload file	PDFWindow		รีโหลดไฟล์
-Rotate clockwise	PDFWindow		หมุนตามเข็มนาฬิกา
-Rotate counter-clockwise	PDFWindow		หมุนทวนเข็มนาฬิกา
-Rotation	PDFWindow		หมุน
-Save as…	PDFWindow		บันทึกเป็น
-Save file as	PDFWindow		บันทึกไฟล์เป็น
-Saving copy of PDF file:	PDFWindow		กำลังบันทึกสำเนาของไฟล์ PDF:
-Search	PDFWindow		ค้นหา
-Select all	PDFWindow		เลือกทั้งหมด
-Select none	PDFWindow		ไม่เลือก
-Show annotation tool bar	PDFWindow		แสดงแถบเครื่องมือคำอธิบายประกอบ
-Show annotation toolbar	PDFWindow		แสดงแถบเครื่องมือคำอธิบายประกอบ
-Show attachments	PDFWindow		แสดงไฟล์แนบ
-Show bookmarks	PDFWindow		แสดงบุ๊กมาร์ก
-Show error messages	PDFWindow		แสดงข้อความผิดพลาด
-Show help…	PDFWindow		แสดงความช่วยเหลือ ...
-Show page list	PDFWindow		แสดงรายการหน้า
-View	PDFWindow		ดู
-Visit homepage…	PDFWindow		ไปที่หน้าแรก ...
-Warning	PDFWindow		เตือน
-Zoom	PDFWindow		ขยาย
-Zoom in	PDFWindow		ขยายเข้า
-Zoom out	PDFWindow		ขยายออก
-Align:	AnnotationWindow		แนวตรง:
-Annotation	AnnotationWindow		คำอธิบายประกอบ
-Asian fonts	AnnotationWindow		ตัวอักษรเอเชีย
-Author	AnnotationWindow		ผู้เขียน
-Automatic	AnnotationWindow		อัตโนมัติ
-current	AnnotationWindow		ปัจจุบัน
-Date:	AnnotationWindow		วันที่:
-Display	AnnotationWindow		แสดง
-Document	AnnotationWindow		เอกสาร
-Filled rectangle	AnnotationWindow		สี่เหลี่ยมผืนผ้าที่เต็ม
-Font:	AnnotationWindow		ตัวอักษร
-Fullscreen mode	AnnotationWindow		โหมดเต็มหน้าจอ
-Invert vertical mouse scrolling	AnnotationWindow		สลับการเลื่อนเมาส์แนวตั้ง
-Open in workspace:	AnnotationWindow		เปิดในพื้นที่ทำงาน:
-Preferences	AnnotationWindow		การตั้งค่า
-Restore page number	AnnotationWindow		คืนค่าหมายเลขหน้า
-Restore window position and size	AnnotationWindow		กู้คืนตำแหน่งและขนาดของหน้าต่าง
+1	Thai	application/x-vnd.sen-labs.Toji	453287713
 Selection rectangle	AnnotationWindow		สี่เหลี่ยมผืนผ้าที่เลือก
-Show document view only	AnnotationWindow		แสดงมุมมองเอกสารเท่านั้น
-Show toolbar, statusbar and scrollbars, too	AnnotationWindow		แสดงแถบเครื่องมือ แถบสถานะและแถบเลื่อนด้วย
-Size:	AnnotationWindow		ขนาด:
-Stroked rectangle	AnnotationWindow		กรอบสี่เหลี่ยมผืนผ้า
-System fonts	AnnotationWindow		แบบอักษรของระบบ
-Title:	AnnotationWindow		ชื่อ:
-User fonts	AnnotationWindow		แบบอักษรของผู้ใช้
-Will take effect at next program launch.	AnnotationWindow		จะมีผลเมื่อเปิดตัวโปรแกรมครั้งต่อไป
-Alpha	BepdfApplication		อัลฟา
-Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku ขึ้นอยู่กับ XPDF %s, %s.
-Tsundoku: Error opening file!	BepdfApplication		Tsundoku: เกิดข้อผิดพลาดในการเปิดไฟล์!
-Beta	BepdfApplication		เบต้า
-Close	BepdfApplication		ปิด
-Development	BepdfApplication		พัฒนา
-Error	BepdfApplication		ผิดพลาด
-Final	BepdfApplication		สุดท้าย
-Gamma	BepdfApplication		แกมม่า
-Golden Master	BepdfApplication		Golden Master
-Unknown	BepdfApplication		ไม่ทราบ
-Version	BepdfApplication		เวอร์ชั่น
-Auto open	TraceWindow		เปิดอัตโนมัติ
-Clear	TraceWindow		ลบ
-Error messages	TraceWindow		ข้อความผิดพลาด
-Floating	TraceWindow		ลอยตัว
-Tsundoku status	StatusWindow		สถานะ Tsundoku
-Enter Password	PasswordWindow		ใส่รหัสผ่าน
-OK	PasswordWindow		ตกลง
-Owner password	PasswordWindow		รหัสผ่านของเจ้าของ
-User password	PasswordWindow		รหัสผ่านผู้ใช้
-Find	FindTextWindow		ค้นหา
-Find text	FindTextWindow		ค้นหาข้อความ
-Find: 	FindTextWindow		ค้นหา: 
-Ignore case	FindTextWindow		เพิกเฉย
-Options	FindTextWindow		ทางเลือก
-Page:	FindTextWindow		หน้า:
-Page: %d	FindTextWindow		หน้า: %d
-Search backwards	FindTextWindow		ค้นหาย้อนหลัง
-Stop	FindTextWindow		หยุด
-OK	PDFSearch		ตกลง
-Search string not found.	PDFSearch		ไม่พบสตริงการค้นหา
-Error getting page number!	BepdfApplication		
-Invalid file reference received!	BepdfApplication		
+Toji reading file: 	PDFView		อ่านไฟล์ Toji:
+Cancel	PDFView		ยกเลิก
 a universal document reader based on BePDF, extended for SEN	BepdfApplication		
+Undo	PDFWindow		
+Go to previous page	PDFWindow		ไปหน้าก่อนหน้า
+Language	BepdfApplication		
+Subject:	FileInfoWindow		เรื่อง:
+Filled rectangle	AnnotationWindow		สี่เหลี่ยมผืนผ้าที่เต็ม
+Current	PDFView		
+Owner password	PasswordWindow		รหัสผ่านของเจ้าของ
+ISBN	BepdfApplication		
+Strike out selection	PDFWindow		
+Pink	PDFView		
+Replace legacy attributes with standard ones	AnnotationWindow		
+OK	BepdfApplication		
+Text, shapes and drawing: choose one, then click or drag on the page	PDFWindow		
+Copy link to this place	PDFView		
+Add highlight	Document		
+Cancel	PDFWindow		
+Page	AnnotationsView		
+Delete	PDFWindow		ลบ
+Note	PDFView		
+Color	PrintSettingsWindow		สี
+View	PDFWindow		ดู
+Search string not found.	PDFSearch		ไม่พบสตริงการค้นหา
+Normal	PrintSettingsWindow		ปกติ
+Copy	PDFWindow		
+No fill	PDFView		
+Redo	PDFWindow		
+File attachment	Document		
+Age rating:	FileInfoWindow		
+Zoom in	PDFWindow		ขยายเข้า
+Notes: a margin note for selected text, a note or a text on the page	PDFWindow		
+Page:	FindTextWindow		หน้า:
+Rotation	PrintSettingsWindow		หมุน
+Gamma	BepdfApplication		แกมม่า
+Error messages	TraceWindow		ข้อความผิดพลาด
+Jump to page	PDFWindow		ข้ามไปที่หน้า
+Move annotation	Document		
+DjVu document	BepdfApplication		
+Edit note…	PDFView		
+Fullscreen mode	AnnotationWindow		โหมดเต็มหน้าจอ
+Author	BepdfApplication		
+Single page	PDFWindow		
+Mode	PrintSettingsWindow		โหมด
+Publisher	BepdfApplication		
+Save as…	PDFWindow		บันทึกเป็น
+Issue tracker…	PDFWindow		ติดตามปัญหา ...
+Printing:	FileInfoWindow		กำลังพิมพ์:
+Add ellipse	Document		
+The document could not be saved.	PDFWindow		
+Copy link to this place	PDFWindow		
+Top to bottom	PDFWindow		
+Zoom must be between 25 and 400!	PrintSettingsWindow		การขยายจะต้องอยู่ระหว่าง 25 ถึง 400!
+Open…	PDFWindow		เปิด…
+ (annotated)	PDFWindow		
+Show toolbar, statusbar and scrollbars, too	AnnotationWindow		แสดงแถบเครื่องมือ แถบสถานะและแถบเลื่อนด้วย
+Show page list	PDFWindow		แสดงรายการหน้า
+current	AnnotationWindow		ปัจจุบัน
+OK	PasswordWindow		ตกลง
+Document	OutlinesWindow		เอกสาร
+Invert vertical mouse scrolling	AnnotationWindow		สลับการเลื่อนเมาส์แนวตั้ง
+Page setup…	PDFWindow		ตั้งค่าหน้า…
+Text	Document		
+Stroked rectangle	AnnotationWindow		กรอบสี่เหลี่ยมผืนผ้า
+OK	NoteWindow		
+Find: 	FindTextWindow		ค้นหา: 
+Zoom	PDFWindow		ขยาย
+Larger text	PDFWindow		
+ISBN:	FileInfoWindow		
+Text	PDFView		
+Text	PDFWindow		
+Open in workspace:	AnnotationWindow		เปิดในพื้นที่ทำงาน:
+This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.	PDFWindow		
+Go to next page	PDFWindow		ไปหน้าถัดไป
+Restore page number	AnnotationWindow		คืนค่าหมายเลขหน้า
+Last	PDFWindow		สุดท้าย
+Hide sidebar	PDFWindow		
+Add line	Document		
+Find next	PDFWindow		ค้นหาถัดไป
+Arrow	PDFWindow		
+Series number	BepdfApplication		
+Note	Document		
+All pages	PrintSettingsWindow		ทุกหน้า
+Describe annotations of other programs in the file's attributes	AnnotationWindow		
+Go to start of document	PDFWindow		ไปหน้าเริ่มต้น
+Pages	BepdfApplication		
+Highlight	PDFView		
+Go forward 10 pages	PDFWindow		ไปข้างหน้า 10 หน้า
+Go back 10 pages	PDFWindow		ย้อนไป 10 หน้า
+Fit to page width	PDFWindow		พอดีกับความกว้างของหน้า
+Toji link	BepdfApplication		
+DPI	PrintSettingsWindow		DPI
+Find…	PDFWindow		ค้นหา
+Title page alone	PDFWindow		
+Odd pages	PrintSettingsWindow		หน้าคี่
+Laying out the book…	PDFView		
+Show bookmarks	PDFWindow		แสดงบุ๊กมาร์ก
+Description	BepdfApplication		
+Max. printer resolution	PrintSettingsWindow		ความละเอียดของเครื่องพิมพ์สูงสุด
+Strike out	PDFView		
+Reading direction	BepdfApplication		
+Edit text…	PDFView		
+Delete annotation	PDFView		
+Quit	PDFWindow		ออก
+About Toji	BepdfApplication		
+The copy could not be saved.	PDFWindow		
+Fullscreen mode	PDFWindow		โหมดเต็มจอ
+File	PDFWindow		ไฟล์
+Options	FindTextWindow		ทางเลือก
+Find text	FindTextWindow		ค้นหาข้อความ
+Clear	TraceWindow		ลบ
+toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
+Print	PrintSettingsWindow		พิมพ์
+Enter Password	PasswordWindow		ใส่รหัสผ่าน
+Online help…	PDFWindow		ความช่วยเหลือออนไลน์ ...
+Rectangle	Document		
+Copy	PDFView		
+Filename:	FileInfoWindow		ชื่อไฟล์:
+Series:	FileInfoWindow		
+First	PDFWindow		ลำดับแรก
+Copy link	PDFView		คัดลอกลิงค์
+Add	PDFWindow		เพิ่ม
+Open in new window…	PDFWindow		เปิดหน้าต่างใหม่…
+Yellow	PDFView		
+OK	PDFSearch		ตกลง
+Add arrow	Document		
+Version	BepdfApplication		เวอร์ชั่น
+Zoom (%)	PrintSettingsWindow		ขยาย (%)
+Files that BePDF has opened have attributes with its own names (META:title, META:author, ...). Toji writes the same information with standard names (dc:title, dc:creator, ...) in any case. The legacy attributes are kept unless this is on: then they are removed.	AnnotationWindow		
+Custom zoom factor (%d%%)	PDFWindow		ปัจจัยการซูมที่กำหนดเอง (%d%%)
+Arrow	Document		
+Abort	PrintingProgressWindow		ยกเลิก
+Add drawing	Document		
+Go to end of document	PDFWindow		ไปหน้าสุดท้ายของเอกสาร
+Beta	BepdfApplication		เบต้า
+Auto open	TraceWindow		เปิดอัตโนมัติ
+Back	PDFWindow		ย้อนกลับ
+Pages	PrintSettingsWindow		หน้า
+Upgrade	PDFWindow		
+%1 (p%2)	PDFWindow	Name of a bookmark: the section (1) and the page (2)	
+Final	BepdfApplication		สุดท้าย
+Show error messages	PDFWindow		แสดงข้อความผิดพลาด
+Document	FileInfoWindow		เอกสาร
+Width: 	PrintSettingsWindow		ความกว้าง: 
+Author:	FileInfoWindow		ผู้เขียน:
+Orange	PDFView		
+Show sidebar	PDFWindow		
+Annotations	BepdfApplication		
+Security	FileInfoWindow		ความปลอดภัย
+of %d	PDFWindow		ของ %d
+Keywords	BepdfApplication		
+Denied	FileInfoWindow		ปฎิเสธ
+Order	PrintSettingsWindow		สั่ง
+Add strike out	Document		
+Highlight	Document		
+Show annotations	PDFWindow		
+Published	BepdfApplication		
+Resize annotation	Document		
+Stamp	Document		
+Page: %d	FindTextWindow		หน้า: %d
+Add underline	Document		
+Page	PDFWindow		หน้า
+Producer:	FileInfoWindow		ผู้จัดทำ:
+Page list	PDFWindow		
+Title	BepdfApplication		
+(read-only)	PDFView		
+Keywords:	FileInfoWindow		คำสำคัญ:
+Annotation	Document		
+Blue	PDFView		
+Forward in page history list	PDFWindow		ส่งต่อในรายการประวัติหน้า
+Page:	PrintingProgressWindow		หน้า:
+Find next…	PDFWindow		ค้นหาถัดไป
+Ellipse	PDFView		
+Change color	Document		
+Change note	Document		
+Display	AnnotationWindow		แสดง
+Line width	PDFView		
+Right to left	PDFWindow		
+Visit homepage…	PDFWindow		ไปที่หน้าแรก ...
+Even pages	PrintSettingsWindow		แม้แต่หน้า
+Stop	FindTextWindow		หยุด
+Subjects:	FileInfoWindow		
+Marker: choose a color, then select the text	PDFWindow		
+Bookmarks	BepdfApplication		
+Print	PDFWindow		พิมพ์
+Find previous…	PDFWindow		
+Line	PDFWindow		
+ in	PrintSettingsWindow		ใน
+Unknown	BepdfApplication		ไม่ทราบ
+Show margin notes	PDFWindow		
+Bookmark	PDFWindow		คั่นหน้า
+The file could not be saved.	AttachmentsView		
+Note	NoteWindow		
+Next	PDFWindow		ถัดไป
+Drawing	PDFView		
+Reverse	PrintSettingsWindow		ย้อนกลับ
+Close	BepdfApplication		ปิด
+Keep	PDFWindow		
+Page: %d	PrintingProgressWindow		หน้า: %d
+Note	PDFWindow		
+Strike out	Document		
+Rotate counter-clockwise	PDFWindow		หมุนทวนเข็มนาฬิกา
+Select none	PDFWindow		ไม่เลือก
+Format:	FileInfoWindow		
+Smaller text	PDFWindow		
+Alpha	BepdfApplication		อัลฟา
+<empty>	OutlinesWindow		<ว่าง>
+1 annotation	AnnotationsView		
+Add squiggly line	Document		
+Language:	FileInfoWindow		
+Annotations	PDFWindow		
+Forward	PDFWindow		ส่งต่อ
+Electronic publication (EPUB)	BepdfApplication		
+OK	AttachmentsView		
+Toji status	StatusWindow		สถานะ Toji
+Golden Master	BepdfApplication		Golden Master
+Bookmarks	PDFWindow		
+Comic book (ZIP)	BepdfApplication		
+%d points	PDFView		
+Show or hide the sidebar	PDFWindow		
+Delete annotation	Document		
+Author	AnnotationWindow		ผู้เขียน
+Comic book (TAR)	BepdfApplication		
+Publisher:	FileInfoWindow		
+Green	PDFView		
+Zoom out	PDFWindow		ขยายออก
+Add margin note	PDFWindow		
+Continuous	PDFWindow		
+Comic book (7z)	BepdfApplication		
+Restore window position and size	AnnotationWindow		กู้คืนตำแหน่งและขนาดของหน้าต่าง
+Rectangle	PDFView		
+Line	Document		
+Identifier	BepdfApplication		
+Margin note	PDFView		
+Modified:	FileInfoWindow		แก้ไข:
+Arrow	PDFView		
+Description:	FileInfoWindow		
+Add	PDFView		
+Save	PDFWindow		
+About Toji…	PDFWindow		เกี่ยวกับ Toji…
+Go to page %d	PDFView		ไปที่หน้า %d
+Ellipse	Document		
+OK	OutlinesWindow		ตกลง
+Reading:	FileInfoWindow		
+Ellipse	PDFWindow		
+Annotations:	FileInfoWindow		คำอธิบายประกอบ:
+Published:	FileInfoWindow		
+Select all	PDFWindow		เลือกทั้งหมด
+Fill	PDFView		
+OK	PDFWindow		ตกลง
+Previous	PDFWindow		ก่อนหน้า
+Search	PDFWindow		ค้นหา
+File info	FileInfoWindow		ข้อมูลไฟล์
+OK	PrintSettingsWindow		ตกลง
+Series	BepdfApplication		
+They can only be kept in a copy of the file.	PDFWindow		
+annotations	AnnotationsView		
+Open file	PDFWindow		เปิดไฟล์
+Preferences	AnnotationWindow		การตั้งค่า
+Toji™, SEN™ and SEN Labs™ are names of SEN Labs e.U.	BepdfApplication		
+Print settings	PrintSettingsWindow		การตั้งค่าการพิมพ์
+Excerpt	AnnotationsView		
+Back in page history list	PDFWindow		ย้อนกลับไปในรายการประวัติหน้า
+Creator	BepdfApplication		
+Copy	TraceWindow		
+The document has unsaved changes (annotations).	PDFWindow		
+Find	PDFWindow		ค้นหา
+Double-sided	PDFWindow		
+Yes	FileInfoWindow		ใช่
+[unknown link]	PDFView		[ลิงค์ที่ไม่รู้จัก]
+Cancel	NoteWindow		
+Select all	PDFView		
+Floating	TraceWindow		ลอยตัว
+Link to a place in a document (toji:)	BepdfApplication		
+Stop	PrintingProgressWindow		หยุด
+Show attachments	PDFWindow		แสดงไฟล์แนบ
+Show help…	PDFWindow		แสดงความช่วยเหลือ ...
+Edit	PDFWindow		แก้ไข
+Toji printing	PrintingProgressWindow		การพิมพ์ Toji
+Search backwards	FindTextWindow		ค้นหาย้อนหลัง
+Highlight selection	PDFWindow		
+EPUB version:	FileInfoWindow		
+Reload	PDFWindow		รีโหลด
+Add text	Document		
+Underline selection	PDFWindow		
+Toji renders with MuPDF %s, %s.	BepdfApplication	MuPDF version, copyright	
+Red	PDFView		
+Help	PDFWindow		ช่วยเหลือ
+Rotation	PDFWindow		หมุน
+Show document view only	AnnotationWindow		แสดงมุมมองเอกสารเท่านั้น
+Encrypted:	FileInfoWindow		เข้ารหัส:
+Web:	FileInfoWindow		
+Gray scale	PrintSettingsWindow		ระดับสีเทา
+Save…	AttachmentsView		
+Note on the page	PDFView		
+Type	AnnotationsView		
+Close	PDFWindow		ปิด
+Color	PDFView		
+No title	OutlinesWindow		ไม่มีชื่อ
+Page	PrintSettingsWindow		หน้า
+Discard	PDFWindow		
+Created:	FileInfoWindow		สร้าง:
+Open in new window	PDFView		เปิดในหน้าต่างใหม่
+Height: 	PrintSettingsWindow		ความสูง: 
+Text on the page	PDFView		
+File info…	PDFWindow		ข้อมูลไฟล์
+This file is read-only. You can add annotations, but to keep them you have to save a copy with “Save as…”.	PDFView		
+Allowed	FileInfoWindow		อนุญาต
+Comic book (RAR)	BepdfApplication		
+Development	BepdfApplication		พัฒนา
+Add note	Document		
+Attributes of BePDF	PDFWindow		
+No	FileInfoWindow		ไม่
+Pages:	FileInfoWindow		
+Edit note	Document		
+Reload file	PDFWindow		รีโหลดไฟล์
+Fit to page	PDFWindow		พอดีกับหน้า
+Document	AnnotationWindow		เอกสาร
+Continue	PDFView		
+Settings…	PDFWindow		
+Print…	PDFWindow		พิมพ์…
+Path:	FileInfoWindow		พาธ:
+Page %d	PDFWindow		หน้า %d
+Copy & paste:	FileInfoWindow		คัดลอก & วาง:
+Edit title for bookmark	OutlinesWindow		แก้ไขชื่อสำหรับบุ๊คมาร์ค
+Toji printing document: 	PrintingProgressWindow		เอกสารการพิมพ์ Toji:
+Chapter	PDFWindow		
+Comic book (BBF)	BepdfApplication		
+EPUB e-book	BepdfApplication		
+Title:	FileInfoWindow		ชื่อ:
+Fullscreen	PDFWindow		เต็มจอ
+Underline	Document		
+Add rectangle	Document		
+User defined	OutlinesWindow		ผู้ใช้กำหนด
+No annotations	AnnotationsView		
+Line	PDFView		
+Change line	Document		
+Copy as Web Annotation	PDFView		
+Attachments	PDFWindow		
+right to left	FileInfoWindow		
+Editing:	FileInfoWindow		กำลังแก้ไข:
+Drawing	Document		
+Invalid file reference received!	BepdfApplication		
+Squiggly line	Document		
+Toji: Error opening file!	BepdfApplication		Toji: เกิดข้อผิดพลาดในการเปิดไฟล์!
+User password	PasswordWindow		รหัสผ่านผู้ใช้
+Identifier:	FileInfoWindow		
+Find	FindTextWindow		ค้นหา
+Ignore case	FindTextWindow		เพิกเฉย
+Creator:	FileInfoWindow		ผู้สร้าง:
+Error	BepdfApplication		ผิดพลาด
+When a PDF file is opened, its annotations are described in the attribute SEN:annotations, and those that have no name get an identifier, so that other programs can refer to them. The PDF file is not changed.	AnnotationWindow		
+Wrong parameter!	PrintSettingsWindow		พารามิเตอร์ผิด!
+Rotate clockwise	PDFWindow		หมุนตามเข็มนาฬิกา
+Drawing	PDFWindow		
+Rectangle	PDFWindow		
+Underline	PDFView		
+Artists:	FileInfoWindow		

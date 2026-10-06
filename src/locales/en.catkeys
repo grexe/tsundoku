@@ -1,257 +1,361 @@
-1	English	application/x-vnd.sen-labs.Tsundoku	2450431064
-Editing of annotations in an encrypted PDF file isn't supported yet!	PDFWindow		Editing of annotations in an encrypted PDF file isn't supported yet!
+1	English	application/x-vnd.sen-labs.Toji	453287713
 Selection rectangle	AnnotationWindow		Selection rectangle
+Toji reading file: 	PDFView		Toji reading file: 
 Cancel	PDFView		Cancel
-Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Error opening file!
 a universal document reader based on BePDF, extended for SEN	BepdfApplication		a universal document reader based on BePDF, extended for SEN
+Undo	PDFWindow		Undo
 Go to previous page	PDFWindow		Go to previous page
+Language	BepdfApplication		Language
 Subject:	FileInfoWindow		Subject:
 Filled rectangle	AnnotationWindow		Filled rectangle
-Add strikeout annotation	PDFWindow		Add strikeout annotation
+Current	PDFView		Current
 Owner password	PasswordWindow		Owner password
-Add insert text annotation	PDFWindow		Add insert text annotation
+ISBN	BepdfApplication		ISBN
+Strike out selection	PDFWindow		Strike out selection
+Pink	PDFView		Pink
+Replace legacy attributes with standard ones	AnnotationWindow		Replace legacy attributes with standard ones
+OK	BepdfApplication		OK
+Text, shapes and drawing: choose one, then click or drag on the page	PDFWindow		Text, shapes and drawing: choose one, then click or drag on the page
+Copy link to this place	PDFView		Copy link to this place
+Add highlight	Document		Add highlight
+Cancel	PDFWindow		Cancel
+Page	AnnotationsView		Page
 Delete	PDFWindow		Delete
+Note	PDFView		Note
 Color	PrintSettingsWindow		Color
 View	PDFWindow		View
 Search string not found.	PDFSearch		Search string not found.
 Normal	PrintSettingsWindow		Normal
-System fonts	AnnotationWindow		System fonts
-Add widget annotation	PDFWindow		Add widget annotation
-Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.
+Copy	PDFWindow		Copy
+No fill	PDFView		No fill
+Redo	PDFWindow		Redo
+File attachment	Document		File attachment
+Age rating:	FileInfoWindow		Age rating:
 Zoom in	PDFWindow		Zoom in
-Unknown link action type: '%s'	PDFView		Unknown link action type: '%s'
+Notes: a margin note for selected text, a note or a text on the page	PDFWindow		Notes: a margin note for selected text, a note or a text on the page
 Page:	FindTextWindow		Page:
 Rotation	PrintSettingsWindow		Rotation
 Gamma	BepdfApplication		Gamma
 Error messages	TraceWindow		Error messages
 Jump to page	PDFWindow		Jump to page
+Move annotation	Document		Move annotation
+DjVu document	BepdfApplication		DjVu document
+Edit note…	PDFView		Edit note…
 Fullscreen mode	AnnotationWindow		Fullscreen mode
+Author	BepdfApplication		Author
+Single page	PDFWindow		Single page
 Mode	PrintSettingsWindow		Mode
+Publisher	BepdfApplication		Publisher
 Save as…	PDFWindow		Save as…
-Execute the command:	PDFView		Execute the command:
 Issue tracker…	PDFWindow		Issue tracker…
 Printing:	FileInfoWindow		Printing:
-Font:	AnnotationWindow		Font:
+Add ellipse	Document		Add ellipse
+The document could not be saved.	PDFWindow		The document could not be saved.
+Copy link to this place	PDFWindow		Copy link to this place
+Top to bottom	PDFWindow		Top to bottom
 Zoom must be between 25 and 400!	PrintSettingsWindow		Zoom must be between 25 and 400!
 Open…	PDFWindow		Open…
-Save attachment(s) as	AttachmentView		Save attachment(s) as
-OK	PDFView		OK
-Date:	AnnotationWindow		Date:
+ (annotated)	PDFWindow		 (annotated)
 Show toolbar, statusbar and scrollbars, too	AnnotationWindow		Show toolbar, statusbar and scrollbars, too
 Show page list	PDFWindow		Show page list
 current	AnnotationWindow		current
 OK	PasswordWindow		OK
-Name	FileInfoWindow		Name
 Document	OutlinesWindow		Document
-Hide side bar	PDFWindow		Hide side bar
 Invert vertical mouse scrolling	AnnotationWindow		Invert vertical mouse scrolling
-Tsundoku: Launch	PDFView		Tsundoku: Launch
 Page setup…	PDFWindow		Page setup…
-Add ink annotation	PDFWindow		Add ink annotation
+Text	Document		Text
 Stroked rectangle	AnnotationWindow		Stroked rectangle
+OK	NoteWindow		OK
 Find: 	FindTextWindow		Find: 
 Zoom	PDFWindow		Zoom
+Larger text	PDFWindow		Larger text
+ISBN:	FileInfoWindow		ISBN:
+Text	PDFView		Text
+Text	PDFWindow		Text
 Open in workspace:	AnnotationWindow		Open in workspace:
-About Tsundoku…	PDFWindow		About Tsundoku…
+This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.	PDFWindow		This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.
 Go to next page	PDFWindow		Go to next page
-Add square annotation	PDFWindow		Add square annotation
-[internal link]	PDFView		[internal link]
 Restore page number	AnnotationWindow		Restore page number
-Fonts of this page	FileInfoWindow		Fonts of this page
 Last	PDFWindow		Last
-Abort	FileInfoWindow		Abort
+Hide sidebar	PDFWindow		Hide sidebar
+Add line	Document		Add line
 Find next	PDFWindow		Find next
+Arrow	PDFWindow		Arrow
+Series number	BepdfApplication		Series number
+Note	Document		Note
 All pages	PrintSettingsWindow		All pages
-Tsundoku printing document: 	PrintingProgressWindow		Tsundoku printing document: 
-Show annotation toolbar	PDFWindow		Show annotation toolbar
-File name	AttachmentView		File name
+Describe annotations of other programs in the file's attributes	AnnotationWindow		Describe annotations of other programs in the file's attributes
 Go to start of document	PDFWindow		Go to start of document
-Go back 10 pages	PDFWindow		Go back 10 pages
+Pages	BepdfApplication		Pages
+Highlight	PDFView		Highlight
 Go forward 10 pages	PDFWindow		Go forward 10 pages
-Add file attachment annotation	PDFWindow		Add file attachment annotation
-Show annotation tool bar	PDFWindow		Show annotation tool bar
+Go back 10 pages	PDFWindow		Go back 10 pages
 Fit to page width	PDFWindow		Fit to page width
+Toji link	BepdfApplication		Toji link
 DPI	PrintSettingsWindow		DPI
 Find…	PDFWindow		Find…
+Title page alone	PDFWindow		Title page alone
 Odd pages	PrintSettingsWindow		Odd pages
-Add sound annotation	PDFWindow		Add sound annotation
+Laying out the book…	PDFView		Laying out the book…
 Show bookmarks	PDFWindow		Show bookmarks
+Description	BepdfApplication		Description
 Max. printer resolution	PrintSettingsWindow		Max. printer resolution
+Strike out	PDFView		Strike out
+Reading direction	BepdfApplication		Reading direction
+Edit text…	PDFView		Edit text…
+Delete annotation	PDFView		Delete annotation
 Quit	PDFWindow		Quit
+About Toji	BepdfApplication		About Toji
+The copy could not be saved.	PDFWindow		The copy could not be saved.
+Fullscreen mode	PDFWindow		Fullscreen mode
 File	PDFWindow		File
 Options	FindTextWindow		Options
-Fullscreen mode	PDFWindow		Fullscreen mode
 Find text	FindTextWindow		Find text
 Clear	TraceWindow		Clear
+toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	toji-guide.pdf
 Print	PrintSettingsWindow		Print
-Online help…	PDFWindow		Online help…
 Enter Password	PasswordWindow		Enter Password
-Tsundoku status	StatusWindow		Tsundoku status
+Online help…	PDFWindow		Online help…
+Rectangle	Document		Rectangle
+Copy	PDFView		Copy
 Filename:	FileInfoWindow		Filename:
-Embedded name	FileInfoWindow		Embedded name
-Copy link	PDFView		Copy link
+Series:	FileInfoWindow		Series:
 First	PDFWindow		First
+Copy link	PDFView		Copy link
 Add	PDFWindow		Add
 Open in new window…	PDFWindow		Open in new window…
-<empty>	AttachmentView		<empty>
-Preferences…	PDFWindow		Preferences…
+Yellow	PDFView		Yellow
 OK	PDFSearch		OK
+Add arrow	Document		Add arrow
 Version	BepdfApplication		Version
-Delete	PDFView		Delete
 Zoom (%)	PrintSettingsWindow		Zoom (%)
-Type	FileInfoWindow		Type
+Files that BePDF has opened have attributes with its own names (META:title, META:author, ...). Toji writes the same information with standard names (dc:title, dc:creator, ...) in any case. The legacy attributes are kept unless this is on: then they are removed.	AnnotationWindow		Files that BePDF has opened have attributes with its own names (META:title, META:author, ...). Toji writes the same information with standard names (dc:title, dc:creator, ...) in any case. The legacy attributes are kept unless this is on: then they are removed.
 Custom zoom factor (%d%%)	PDFWindow		Custom zoom factor (%d%%)
-Add stamp annotation	PDFWindow		Add stamp annotation
+Arrow	Document		Arrow
 Abort	PrintingProgressWindow		Abort
-Align:	AnnotationWindow		Align:
+Add drawing	Document		Add drawing
 Go to end of document	PDFWindow		Go to end of document
 Beta	BepdfApplication		Beta
 Auto open	TraceWindow		Auto open
 Back	PDFWindow		Back
 Pages	PrintSettingsWindow		Pages
-Add movie annotation	PDFWindow		Add movie annotation
+Upgrade	PDFWindow		Upgrade
+%1 (p%2)	PDFWindow	Name of a bookmark: the section (1) and the page (2)	%1 (p%2)
 Final	BepdfApplication		Final
-Add circle annotation	PDFWindow		Add circle annotation
 Show error messages	PDFWindow		Show error messages
 Document	FileInfoWindow		Document
 Width: 	PrintSettingsWindow		Width: 
 Author:	FileInfoWindow		Author:
-Add highlight annotation	PDFWindow		Add highlight annotation
-Add new paragraph text annotation	PDFWindow		Add new paragraph text annotation
-of %d	PDFWindow		of %d
+Orange	PDFView		Orange
+Show sidebar	PDFWindow		Show sidebar
+Annotations	BepdfApplication		Annotations
 Security	FileInfoWindow		Security
+of %d	PDFWindow		of %d
+Keywords	BepdfApplication		Keywords
 Denied	FileInfoWindow		Denied
-Save file as	PDFWindow		Save file as
 Order	PrintSettingsWindow		Order
-Properties	PDFView		Properties
-Add comment text annotation	PDFWindow		Add comment text annotation
-Description	AttachmentView		Description
-Add underline annotation	PDFWindow		Add underline annotation
-Saving copy of PDF file:	PDFWindow		Saving copy of PDF file:
+Add strike out	Document		Add strike out
+Highlight	Document		Highlight
+Show annotations	PDFWindow		Show annotations
+Published	BepdfApplication		Published
+Resize annotation	Document		Resize annotation
+Stamp	Document		Stamp
 Page: %d	FindTextWindow		Page: %d
+Add underline	Document		Add underline
 Page	PDFWindow		Page
-Add squiggly annotation	PDFWindow		Add squiggly annotation
-Annotation	PDFView		Annotation
-Add trapnet annotation	PDFWindow		Add trapnet annotation
 Producer:	FileInfoWindow		Producer:
+Page list	PDFWindow		Page list
+Title	BepdfApplication		Title
+(read-only)	PDFView		(read-only)
 Keywords:	FileInfoWindow		Keywords:
+Annotation	Document		Annotation
+Blue	PDFView		Blue
 Forward in page history list	PDFWindow		Forward in page history list
 Page:	PrintingProgressWindow		Page:
 Find next…	PDFWindow		Find next…
+Ellipse	PDFView		Ellipse
+Change color	Document		Change color
+Change note	Document		Change note
 Display	AnnotationWindow		Display
-Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku is based on XPDF %s, %s.
+Line width	PDFView		Line width
+Right to left	PDFWindow		Right to left
 Visit homepage…	PDFWindow		Visit homepage…
 Even pages	PrintSettingsWindow		Even pages
 Stop	FindTextWindow		Stop
+Subjects:	FileInfoWindow		Subjects:
+Marker: choose a color, then select the text	PDFWindow		Marker: choose a color, then select the text
+Bookmarks	BepdfApplication		Bookmarks
 Print	PDFWindow		Print
-Add link annotation	PDFWindow		Add link annotation
+Find previous…	PDFWindow		Find previous…
+Line	PDFWindow		Line
  in	PrintSettingsWindow		 in
 Unknown	BepdfApplication		Unknown
-[link type 'movie' not supported]	PDFView		[link type 'movie' not supported]
-Annotation	AnnotationWindow		Annotation
+Show margin notes	PDFWindow		Show margin notes
 Bookmark	PDFWindow		Bookmark
+The file could not be saved.	AttachmentsView		The file could not be saved.
+Note	NoteWindow		Note
 Next	PDFWindow		Next
+Drawing	PDFView		Drawing
 Reverse	PrintSettingsWindow		Reverse
-Tsundoku reading file: 	PDFView		Tsundoku reading file: 
 Close	BepdfApplication		Close
+Keep	PDFWindow		Keep
 Page: %d	PrintingProgressWindow		Page: %d
-Select none	PDFWindow		Select none
+Note	PDFWindow		Note
+Strike out	Document		Strike out
 Rotate counter-clockwise	PDFWindow		Rotate counter-clockwise
+Select none	PDFWindow		Select none
+Format:	FileInfoWindow		Format:
+Smaller text	PDFWindow		Smaller text
 Alpha	BepdfApplication		Alpha
 <empty>	OutlinesWindow		<empty>
-Add key text annotation	PDFWindow		Add key text annotation
+1 annotation	AnnotationsView		1 annotation
+Add squiggly line	Document		Add squiggly line
+Language:	FileInfoWindow		Language:
+Annotations	PDFWindow		Annotations
 Forward	PDFWindow		Forward
-Size:	AnnotationWindow		Size:
-Asian fonts	AnnotationWindow		Asian fonts
+Electronic publication (EPUB)	BepdfApplication		Electronic publication (EPUB)
+OK	AttachmentsView		OK
+Toji status	StatusWindow		Toji status
 Golden Master	BepdfApplication		Golden Master
+Bookmarks	PDFWindow		Bookmarks
+Comic book (ZIP)	BepdfApplication		Comic book (ZIP)
+%d points	PDFView		%d points
+Show or hide the sidebar	PDFWindow		Show or hide the sidebar
+Delete annotation	Document		Delete annotation
 Author	AnnotationWindow		Author
-User fonts	AnnotationWindow		User fonts
+Comic book (TAR)	BepdfApplication		Comic book (TAR)
+Publisher:	FileInfoWindow		Publisher:
+Green	PDFView		Green
 Zoom out	PDFWindow		Zoom out
-Error getting page number!	BepdfApplication		Error getting page number!
+Add margin note	PDFWindow		Add margin note
+Continuous	PDFWindow		Continuous
+Comic book (7z)	BepdfApplication		Comic book (7z)
 Restore window position and size	AnnotationWindow		Restore window position and size
+Rectangle	PDFView		Rectangle
+Line	Document		Line
+Identifier	BepdfApplication		Identifier
+Margin note	PDFView		Margin note
 Modified:	FileInfoWindow		Modified:
+Arrow	PDFView		Arrow
+Description:	FileInfoWindow		Description:
+Add	PDFView		Add
+Save	PDFWindow		Save
+About Toji…	PDFWindow		About Toji…
 Go to page %d	PDFView		Go to page %d
+Ellipse	Document		Ellipse
 OK	OutlinesWindow		OK
-Copy selection	PDFWindow		Copy selection
+Reading:	FileInfoWindow		Reading:
+Ellipse	PDFWindow		Ellipse
 Annotations:	FileInfoWindow		Annotations:
+Published:	FileInfoWindow		Published:
 Select all	PDFWindow		Select all
-PDF file successfully written!	PDFWindow		PDF file successfully written!
+Fill	PDFView		Fill
 OK	PDFWindow		OK
 Previous	PDFWindow		Previous
-File info	FileInfoWindow		File info
 Search	PDFWindow		Search
-Leave annotation editing mode	PDFView		Leave annotation editing mode
-Edit	PDFView		Edit
-Saving attachment(s):	AttachmentView		Saving attachment(s):
-Leave annotation editing mode	PDFWindow		Leave annotation editing mode
+File info	FileInfoWindow		File info
 OK	PrintSettingsWindow		OK
-Add free text annotation	PDFWindow		Add free text annotation
+Series	BepdfApplication		Series
+They can only be kept in a copy of the file.	PDFWindow		They can only be kept in a copy of the file.
+annotations	AnnotationsView		annotations
 Open file	PDFWindow		Open file
 Preferences	AnnotationWindow		Preferences
+Toji™, SEN™ and SEN Labs™ are names of SEN Labs e.U.	BepdfApplication		Toji™, SEN™ and SEN Labs™ are names of SEN Labs e.U.
 Print settings	PrintSettingsWindow		Print settings
+Excerpt	AnnotationsView		Excerpt
 Back in page history list	PDFWindow		Back in page history list
+Creator	BepdfApplication		Creator
+Copy	TraceWindow		Copy
+The document has unsaved changes (annotations).	PDFWindow		The document has unsaved changes (annotations).
 Find	PDFWindow		Find
+Double-sided	PDFWindow		Double-sided
 Yes	FileInfoWindow		Yes
 [unknown link]	PDFView		[unknown link]
-Will take effect at next program launch.	AnnotationWindow		Will take effect at next program launch.
+Cancel	NoteWindow		Cancel
+Select all	PDFView		Select all
 Floating	TraceWindow		Floating
-Add help text annotation	PDFWindow		Add help text annotation
+Link to a place in a document (toji:)	BepdfApplication		Link to a place in a document (toji:)
 Stop	PrintingProgressWindow		Stop
-Add popup annotation	PDFWindow		Add popup annotation
 Show attachments	PDFWindow		Show attachments
-Edit	PDFWindow		Edit
 Show help…	PDFWindow		Show help…
-Add printer mark annotation	PDFWindow		Add printer mark annotation
+Edit	PDFWindow		Edit
+Toji printing	PrintingProgressWindow		Toji printing
 Search backwards	FindTextWindow		Search backwards
+Highlight selection	PDFWindow		Highlight selection
+EPUB version:	FileInfoWindow		EPUB version:
 Reload	PDFWindow		Reload
-Add line annotation	PDFWindow		Add line annotation
+Add text	Document		Add text
+Underline selection	PDFWindow		Underline selection
+Toji renders with MuPDF %s, %s.	BepdfApplication	MuPDF version, copyright	Toji renders with MuPDF %s, %s.
+Red	PDFView		Red
 Help	PDFWindow		Help
 Rotation	PDFWindow		Rotation
 Show document view only	AnnotationWindow		Show document view only
 Encrypted:	FileInfoWindow		Encrypted:
+Web:	FileInfoWindow		Web:
 Gray scale	PrintSettingsWindow		Gray scale
-Save file attachment as…	PDFView		Save file attachment as…
+Save…	AttachmentsView		Save…
+Note on the page	PDFView		Note on the page
+Type	AnnotationsView		Type
 Close	PDFWindow		Close
+Color	PDFView		Color
 No title	OutlinesWindow		No title
 Page	PrintSettingsWindow		Page
+Discard	PDFWindow		Discard
 Created:	FileInfoWindow		Created:
-Title:	AnnotationWindow		Title:
-Tsundoku printing	PrintingProgressWindow		Tsundoku printing
-Saving file attachment:	PDFView		Saving file attachment:
 Open in new window	PDFView		Open in new window
 Height: 	PrintSettingsWindow		Height: 
+Text on the page	PDFView		Text on the page
 File info…	PDFWindow		File info…
+This file is read-only. You can add annotations, but to keep them you have to save a copy with “Save as…”.	PDFView		This file is read-only. You can add annotations, but to keep them you have to save a copy with “Save as…”.
 Allowed	FileInfoWindow		Allowed
-Add paragraph text annotation	PDFWindow		Add paragraph text annotation
+Comic book (RAR)	BepdfApplication		Comic book (RAR)
 Development	BepdfApplication		Development
-Linearized:	FileInfoWindow		Linearized:
+Add note	Document		Add note
+Attributes of BePDF	PDFWindow		Attributes of BePDF
 No	FileInfoWindow		No
-Fit to page	PDFWindow		Fit to page
+Pages:	FileInfoWindow		Pages:
+Edit note	Document		Edit note
 Reload file	PDFWindow		Reload file
+Fit to page	PDFWindow		Fit to page
 Document	AnnotationWindow		Document
-Path:	FileInfoWindow		Path:
+Continue	PDFView		Continue
+Settings…	PDFWindow		Settings…
 Print…	PDFWindow		Print…
-Copy & paste:	FileInfoWindow		Copy & paste:
+Path:	FileInfoWindow		Path:
 Page %d	PDFWindow		Page %d
+Copy & paste:	FileInfoWindow		Copy & paste:
 Edit title for bookmark	OutlinesWindow		Edit title for bookmark
-Version:	FileInfoWindow		Version:
-English.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	English.pdf
-Automatic	AnnotationWindow		Automatic
+Toji printing document: 	PrintingProgressWindow		Toji printing document: 
+Chapter	PDFWindow		Chapter
+Comic book (BBF)	BepdfApplication		Comic book (BBF)
+EPUB e-book	BepdfApplication		EPUB e-book
 Title:	FileInfoWindow		Title:
-Warning	PDFWindow		Warning
-User defined	OutlinesWindow		User defined
 Fullscreen	PDFWindow		Fullscreen
-Save selected attachment to file	AttachmentView		Save selected attachment to file
-Add note text annotation	PDFWindow		Add note text annotation
+Underline	Document		Underline
+Add rectangle	Document		Add rectangle
+User defined	OutlinesWindow		User defined
+No annotations	AnnotationsView		No annotations
+Line	PDFView		Line
+Change line	Document		Change line
+Copy as Web Annotation	PDFView		Copy as Web Annotation
+Attachments	PDFWindow		Attachments
+right to left	FileInfoWindow		right to left
 Editing:	FileInfoWindow		Editing:
+Drawing	Document		Drawing
 Invalid file reference received!	BepdfApplication		Invalid file reference received!
+Squiggly line	Document		Squiggly line
+Toji: Error opening file!	BepdfApplication		Toji: Error opening file!
 User password	PasswordWindow		User password
+Identifier:	FileInfoWindow		Identifier:
 Find	FindTextWindow		Find
-Could not write PDF file!	PDFWindow		Could not write PDF file!
 Ignore case	FindTextWindow		Ignore case
 Creator:	FileInfoWindow		Creator:
 Error	BepdfApplication		Error
-Save selected attachments into directory	AttachmentView		Save selected attachments into directory
+When a PDF file is opened, its annotations are described in the attribute SEN:annotations, and those that have no name get an identifier, so that other programs can refer to them. The PDF file is not changed.	AnnotationWindow		When a PDF file is opened, its annotations are described in the attribute SEN:annotations, and those that have no name get an identifier, so that other programs can refer to them. The PDF file is not changed.
 Wrong parameter!	PrintSettingsWindow		Wrong parameter!
 Rotate clockwise	PDFWindow		Rotate clockwise
-Show all fonts	FileInfoWindow		Show all fonts
+Drawing	PDFWindow		Drawing
+Rectangle	PDFWindow		Rectangle
+Underline	PDFView		Underline
+Artists:	FileInfoWindow		Artists:

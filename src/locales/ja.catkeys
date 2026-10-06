@@ -1,257 +1,361 @@
-1	Japanese	application/x-vnd.sen-labs.Tsundoku	2450431064
- in	PrintSettingsWindow		 インチ
-All pages	PrintSettingsWindow		すべてのページ
-Color	PrintSettingsWindow		カラー
-DPI	PrintSettingsWindow		DPI
-Even pages	PrintSettingsWindow		偶数ページ
-Gray scale	PrintSettingsWindow		グレースケール(白黒)
-Height: 	PrintSettingsWindow		高さ: 
-Max. printer resolution	PrintSettingsWindow		印刷解像度: 最大
-Mode	PrintSettingsWindow		モード
-Normal	PrintSettingsWindow		標準
-Odd pages	PrintSettingsWindow		奇数ページ
-OK	PrintSettingsWindow		OK
-Order	PrintSettingsWindow		順序
-Page	PrintSettingsWindow		ページ
-Pages	PrintSettingsWindow		ページ
-Print	PrintSettingsWindow		印刷
-Print settings	PrintSettingsWindow		印刷設定
-Reverse	PrintSettingsWindow		反転
-Rotation	PrintSettingsWindow		回転
-Width: 	PrintSettingsWindow		幅: 
-Wrong parameter!	PrintSettingsWindow		不正なパラメータです!
-Zoom (%)	PrintSettingsWindow		倍率 (%)
-Zoom must be between 25 and 400!	PrintSettingsWindow		倍率は 25 ～ 400の間で設定する必要があります!!
-[internal link]	PDFView		[インターナルリンク]
-[link type 'movie' not supported]	PDFView		['movie'リンクタイプはサポートされていません]
-[unknown link]	PDFView		[不明なリンク]
-Annotation	PDFView		注釈
-Tsundoku reading file: 	PDFView		Tsundoku ファイルを読み込んでいます: 
-Tsundoku: Launch	PDFView		Tsundoku: 開始
-Cancel	PDFView		中止
-Copy link	PDFView		リンク先のロケーションをコピー
-Delete	PDFView		削除
-Edit	PDFView		編集
-Execute the command:	PDFView		コマンドの実行:
-Go to page %d	PDFView		%d ページに移動
-Leave annotation editing mode	PDFView		注釈編集モードからぬける
-OK	PDFView		OK
-Open in new window	PDFView		新しいウィンドウで開く
-Properties	PDFView		プロパティ
-Save file attachment as…	PDFView		名前を付けて添付ファイルを保存…
-Saving file attachment:	PDFView		ファイルに添付ファイルの保存中:
-Unknown link action type: '%s'	PDFView		不明なリンク形式です: '%s'
-<empty>	OutlinesWindow		<なし>
-Document	OutlinesWindow		文書
-Edit title for bookmark	OutlinesWindow		しおりの編集
-No title	OutlinesWindow		タイトル無し
-OK	OutlinesWindow		OK
-User defined	OutlinesWindow		ユーザ定義
-<empty>	AttachmentView		<なし>
-Description	AttachmentView		説明
-File name	AttachmentView		ファイル名
-Save attachment(s) as	AttachmentView		添付ファイルの保存
-Save selected attachment to file	AttachmentView		ファイルに選択した添付ファイルを保存
-Save selected attachments into directory	AttachmentView		ディレクトリに選択した添付ファイルを保存
-Saving attachment(s):	AttachmentView		添付ファイルの保存中:
-Abort	PrintingProgressWindow		中止
-Tsundoku printing	PrintingProgressWindow		Tsundoku 印刷
-Tsundoku printing document: 	PrintingProgressWindow		Tsundoku 印刷文書: 
-Page:	PrintingProgressWindow		ページ:
-Page: %d	PrintingProgressWindow		ページ: %d
-Stop	PrintingProgressWindow		停止
-Abort	FileInfoWindow		中止
-Allowed	FileInfoWindow		許可
-Annotations:	FileInfoWindow		注釈:
-Author:	FileInfoWindow		作成者:
-Copy & paste:	FileInfoWindow		コピー & ペースト:
-Created:	FileInfoWindow		作成日:
-Creator:	FileInfoWindow		作成:
-Denied	FileInfoWindow		許可しない
-Document	FileInfoWindow		文書
-Editing:	FileInfoWindow		編集:
-Embedded name	FileInfoWindow		埋め込みフォント
-Encrypted:	FileInfoWindow		暗号化:
-File info	FileInfoWindow		文書のプロパティ
-Filename:	FileInfoWindow		ファイル:
-Fonts of this page	FileInfoWindow		このページのフォント
-Keywords:	FileInfoWindow		キーワード:
-Linearized:	FileInfoWindow		Web 表示用に最適化:
-Modified:	FileInfoWindow		更新日:
-Name	FileInfoWindow		オリジナルフォント
-No	FileInfoWindow		いいえ
-Path:	FileInfoWindow		場所:
-Printing:	FileInfoWindow		印刷:
-Producer:	FileInfoWindow		PDF 変換:
-Security	FileInfoWindow		セキュリティ
-Show all fonts	FileInfoWindow		フォント一覧
-Subject:	FileInfoWindow		サブタイトル:
-Title:	FileInfoWindow		タイトル:
-Type	FileInfoWindow		種類
-Version:	FileInfoWindow		PDF のバージョン:
-Yes	FileInfoWindow		はい
-About Tsundoku…	PDFWindow		Tsundoku について…
-Add	PDFWindow		追加
-Add circle annotation	PDFWindow		円の追加
-Add comment text annotation	PDFWindow		コメントの追加
-Add file attachment annotation	PDFWindow		添付ファイルの追加
-Add free text annotation	PDFWindow		フリーテキストの追加
-Add help text annotation	PDFWindow		ヘルプテキストの追加
-Add highlight annotation	PDFWindow		ハイライトの追加
-Add ink annotation	PDFWindow		インクコメントの追加
-Add insert text annotation	PDFWindow		挿入テキストの追加
-Add key text annotation	PDFWindow		鍵テキストの追加
-Add line annotation	PDFWindow		線注釈の追加
-Add link annotation	PDFWindow		リンクの追加
-Add movie annotation	PDFWindow		動画注釈の追加
-Add new paragraph text annotation	PDFWindow		新規段落テキストの追加
-Add note text annotation	PDFWindow		メモテキストの追加
-Add paragraph text annotation	PDFWindow		段落テキストの追加
-Add popup annotation	PDFWindow		ポップアップの追加
-Add printer mark annotation	PDFWindow		プリンターズマークの追加
-Add sound annotation	PDFWindow		サウンドの追加
-Add square annotation	PDFWindow		四角の追加
-Add squiggly annotation	PDFWindow		ねじれ線の追加
-Add stamp annotation	PDFWindow		スタンプの追加
-Add strikeout annotation	PDFWindow		消去線の追加
-Add trapnet annotation	PDFWindow		トラップネットワークの追加
-Add underline annotation	PDFWindow		下線の追加
-Add widget annotation	PDFWindow		ウィジェットの追加
-Back	PDFWindow		前の表示に移動
-Back in page history list	PDFWindow		前の画面
-Bookmark	PDFWindow		しおり
-Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Tsundoku で開いた PDF ファイルが上書きできません! 別のファイル名を選んでください。
-Close	PDFWindow		閉じる
-Copy selection	PDFWindow		選択部分をコピー
-Could not write PDF file!	PDFWindow		PDF ファイルを書き込めません!
-Custom zoom factor (%d%%)	PDFWindow		倍率指定 (%d%%)
-Delete	PDFWindow		削除
-Edit	PDFWindow		編集
-Editing of annotations in an encrypted PDF file isn't supported yet!	PDFWindow		暗号化された PDF ファイル中の注釈の編集はまだサポートされていません!
-English.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	English.pdf
-File	PDFWindow		ファイル
-File info…	PDFWindow		文書のプロパティ…
-Find	PDFWindow		検索
-Find next	PDFWindow		次を検索
-Find next…	PDFWindow		次を検索…
-Find…	PDFWindow		検索…
-First	PDFWindow		開始ページ
-Fit to page	PDFWindow		全体表示
-Fit to page width	PDFWindow		幅に合わせる
-Forward	PDFWindow		次の表示に移動
-Forward in page history list	PDFWindow		次の画面
-Fullscreen	PDFWindow		全画面表示
-Fullscreen mode	PDFWindow		全画面モード
-Go back 10 pages	PDFWindow		10 ページ分戻る
-Go forward 10 pages	PDFWindow		10 ページ分進む
-Go to end of document	PDFWindow		最後のページヘ移動
-Go to next page	PDFWindow		次ページに移動
-Go to previous page	PDFWindow		前ページに移動
-Go to start of document	PDFWindow		最初のページヘ移動
-Help	PDFWindow		ヘルプ
-Hide side bar	PDFWindow		サイドバーを非表示
-Issue tracker…	PDFWindow		バグトラッカー…
-Jump to page	PDFWindow		ページ指定
-Last	PDFWindow		最終ページ
-Leave annotation editing mode	PDFWindow		注釈編集モードからぬける
-Next	PDFWindow		次ページ
-of %d	PDFWindow		/ %d
-OK	PDFWindow		OK
-Online help…	PDFWindow		オンラインヘルプ…
-Open file	PDFWindow		ファイルを開く
-Open in new window…	PDFWindow		新しいウィンドウで開く…
-Open…	PDFWindow		開く…
-Page	PDFWindow		ページ
-Page %d	PDFWindow		%d ページ
-Page setup…	PDFWindow		ページ設定…
-PDF file successfully written!	PDFWindow		PDF ファイルの書き込みに成功しました!
-Preferences…	PDFWindow		環境設定…
-Previous	PDFWindow		前ページ
-Print	PDFWindow		印刷
-Print…	PDFWindow		印刷…
-Quit	PDFWindow		終了
-Reload	PDFWindow		再読み込み
-Reload file	PDFWindow		ファイルの再読み込み
-Rotate clockwise	PDFWindow		表示を右 90°回転
-Rotate counter-clockwise	PDFWindow		表示を左 90°回転
-Rotation	PDFWindow		回転
-Save as…	PDFWindow		複製を保存…
-Save file as	PDFWindow		ファイルに保存
-Saving copy of PDF file:	PDFWindow		PDF ファイルのコピーを保存中:
-Search	PDFWindow		検索
-Select all	PDFWindow		すべてを選択
-Select none	PDFWindow		選択を解除
-Show annotation tool bar	PDFWindow		注釈ツールバーを表示
-Show annotation toolbar	PDFWindow		注釈ツールバーの表示
-Show attachments	PDFWindow		添付ファイルを表示
-Show bookmarks	PDFWindow		しおりを表示
-Show error messages	PDFWindow		エラーメッセージを表示
-Show help…	PDFWindow		Tsundoku のヘルプ…
-Show page list	PDFWindow		ページリストを表示
-View	PDFWindow		表示
-Visit homepage…	PDFWindow		Tsundoku ホームページへアクセス…
-Warning	PDFWindow		警告
-Zoom	PDFWindow		ズーム
-Zoom in	PDFWindow		ズームイン
-Zoom out	PDFWindow		ズームアウト
-Align:	AnnotationWindow		行揃え:
-Annotation	AnnotationWindow		注釈
-Asian fonts	AnnotationWindow		アジアフォント設定
-Author	AnnotationWindow		作成者
-Automatic	AnnotationWindow		自動
-current	AnnotationWindow		現在のワークスペース
-Date:	AnnotationWindow		日付:
-Display	AnnotationWindow		表示設定
-Document	AnnotationWindow		文書
-Filled rectangle	AnnotationWindow		色を変更して指定範囲を表示
-Font:	AnnotationWindow		フォント:
-Fullscreen mode	AnnotationWindow		全画面モード
-Invert vertical mouse scrolling	AnnotationWindow		逆回転垂直マウススクロール
-Open in workspace:	AnnotationWindow		ワークスペースを指定して開く:
-Preferences	AnnotationWindow		設定
-Restore page number	AnnotationWindow		次回起動時に前回終了したページへ移動する
-Restore window position and size	AnnotationWindow		ウィンドウの位置とサイズを記憶する
+1	Japanese	application/x-vnd.sen-labs.Toji	453287713
 Selection rectangle	AnnotationWindow		範囲指定設定
-Show document view only	AnnotationWindow		ドキュメントビューのみを表示
-Show toolbar, statusbar and scrollbars, too	AnnotationWindow		ツールバー、ステータスバー、スクロールバーを表示
-Size:	AnnotationWindow		サイズ:
-Stroked rectangle	AnnotationWindow		枠のみで指定範囲を表示
-System fonts	AnnotationWindow		システムフォント
-Title:	AnnotationWindow		タイトル:
-User fonts	AnnotationWindow		ユーザフォント
-Will take effect at next program launch.	AnnotationWindow		次回起動時に有効になります。
-Alpha	BepdfApplication		α
-Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku は XPDF %s, %s を基にしています。
-Tsundoku: Error opening file!	BepdfApplication		Tsundoku: エラー! ファイルを開けません
-Beta	BepdfApplication		β
-Close	BepdfApplication		閉じる
-Development	BepdfApplication		開発版
-Error	BepdfApplication		エラー
-Final	BepdfApplication		ファイナル
-Gamma	BepdfApplication		γ
-Golden Master	BepdfApplication		ゴールデンマスター
-Unknown	BepdfApplication		不明
-Version	BepdfApplication		バージョン
-Auto open	TraceWindow		自動表示
-Clear	TraceWindow		消去
-Error messages	TraceWindow		エラーメッセージ
-Floating	TraceWindow		手前に表示
-Tsundoku status	StatusWindow		Tsundoku ステータス
-Enter Password	PasswordWindow		パスワードの入力
-OK	PasswordWindow		OK
-Owner password	PasswordWindow		マスタパスワード
-User password	PasswordWindow		ユーザパスワード
-Find	FindTextWindow		検索
-Find text	FindTextWindow		テキストの検索
-Find: 	FindTextWindow		検索: 
-Ignore case	FindTextWindow		大小文字を区別しない
-Options	FindTextWindow		オプション
-Page:	FindTextWindow		ページ:
-Page: %d	FindTextWindow		ページ: %d
-Search backwards	FindTextWindow		後方へ検索
-Stop	FindTextWindow		停止
-OK	PDFSearch		OK
-Search string not found.	PDFSearch		検索文字列が見つかりません。
-Error getting page number!	BepdfApplication		
-Invalid file reference received!	BepdfApplication		
+Toji reading file: 	PDFView		Toji ファイルを読み込んでいます: 
+Cancel	PDFView		中止
 a universal document reader based on BePDF, extended for SEN	BepdfApplication		
+Undo	PDFWindow		
+Go to previous page	PDFWindow		前ページに移動
+Language	BepdfApplication		
+Subject:	FileInfoWindow		サブタイトル:
+Filled rectangle	AnnotationWindow		色を変更して指定範囲を表示
+Current	PDFView		
+Owner password	PasswordWindow		マスタパスワード
+ISBN	BepdfApplication		
+Strike out selection	PDFWindow		
+Pink	PDFView		
+Replace legacy attributes with standard ones	AnnotationWindow		
+OK	BepdfApplication		
+Text, shapes and drawing: choose one, then click or drag on the page	PDFWindow		
+Copy link to this place	PDFView		
+Add highlight	Document		
+Cancel	PDFWindow		
+Page	AnnotationsView		
+Delete	PDFWindow		削除
+Note	PDFView		
+Color	PrintSettingsWindow		カラー
+View	PDFWindow		表示
+Search string not found.	PDFSearch		検索文字列が見つかりません。
+Normal	PrintSettingsWindow		標準
+Copy	PDFWindow		
+No fill	PDFView		
+Redo	PDFWindow		
+File attachment	Document		
+Age rating:	FileInfoWindow		
+Zoom in	PDFWindow		ズームイン
+Notes: a margin note for selected text, a note or a text on the page	PDFWindow		
+Page:	FindTextWindow		ページ:
+Rotation	PrintSettingsWindow		回転
+Gamma	BepdfApplication		γ
+Error messages	TraceWindow		エラーメッセージ
+Jump to page	PDFWindow		ページ指定
+Move annotation	Document		
+DjVu document	BepdfApplication		
+Edit note…	PDFView		
+Fullscreen mode	AnnotationWindow		全画面モード
+Author	BepdfApplication		
+Single page	PDFWindow		
+Mode	PrintSettingsWindow		モード
+Publisher	BepdfApplication		
+Save as…	PDFWindow		複製を保存…
+Issue tracker…	PDFWindow		バグトラッカー…
+Printing:	FileInfoWindow		印刷:
+Add ellipse	Document		
+The document could not be saved.	PDFWindow		
+Copy link to this place	PDFWindow		
+Top to bottom	PDFWindow		
+Zoom must be between 25 and 400!	PrintSettingsWindow		倍率は 25 ～ 400の間で設定する必要があります!!
+Open…	PDFWindow		開く…
+ (annotated)	PDFWindow		
+Show toolbar, statusbar and scrollbars, too	AnnotationWindow		ツールバー、ステータスバー、スクロールバーを表示
+Show page list	PDFWindow		ページリストを表示
+current	AnnotationWindow		現在のワークスペース
+OK	PasswordWindow		OK
+Document	OutlinesWindow		文書
+Invert vertical mouse scrolling	AnnotationWindow		逆回転垂直マウススクロール
+Page setup…	PDFWindow		ページ設定…
+Text	Document		
+Stroked rectangle	AnnotationWindow		枠のみで指定範囲を表示
+OK	NoteWindow		
+Find: 	FindTextWindow		検索: 
+Zoom	PDFWindow		ズーム
+Larger text	PDFWindow		
+ISBN:	FileInfoWindow		
+Text	PDFView		
+Text	PDFWindow		
+Open in workspace:	AnnotationWindow		ワークスペースを指定して開く:
+This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.	PDFWindow		
+Go to next page	PDFWindow		次ページに移動
+Restore page number	AnnotationWindow		次回起動時に前回終了したページへ移動する
+Last	PDFWindow		最終ページ
+Hide sidebar	PDFWindow		
+Add line	Document		
+Find next	PDFWindow		次を検索
+Arrow	PDFWindow		
+Series number	BepdfApplication		
+Note	Document		
+All pages	PrintSettingsWindow		すべてのページ
+Describe annotations of other programs in the file's attributes	AnnotationWindow		
+Go to start of document	PDFWindow		最初のページヘ移動
+Pages	BepdfApplication		
+Highlight	PDFView		
+Go forward 10 pages	PDFWindow		10 ページ分進む
+Go back 10 pages	PDFWindow		10 ページ分戻る
+Fit to page width	PDFWindow		幅に合わせる
+Toji link	BepdfApplication		
+DPI	PrintSettingsWindow		DPI
+Find…	PDFWindow		検索…
+Title page alone	PDFWindow		
+Odd pages	PrintSettingsWindow		奇数ページ
+Laying out the book…	PDFView		
+Show bookmarks	PDFWindow		しおりを表示
+Description	BepdfApplication		
+Max. printer resolution	PrintSettingsWindow		印刷解像度: 最大
+Strike out	PDFView		
+Reading direction	BepdfApplication		
+Edit text…	PDFView		
+Delete annotation	PDFView		
+Quit	PDFWindow		終了
+About Toji	BepdfApplication		
+The copy could not be saved.	PDFWindow		
+Fullscreen mode	PDFWindow		全画面モード
+File	PDFWindow		ファイル
+Options	FindTextWindow		オプション
+Find text	FindTextWindow		テキストの検索
+Clear	TraceWindow		消去
+toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
+Print	PrintSettingsWindow		印刷
+Enter Password	PasswordWindow		パスワードの入力
+Online help…	PDFWindow		オンラインヘルプ…
+Rectangle	Document		
+Copy	PDFView		
+Filename:	FileInfoWindow		ファイル:
+Series:	FileInfoWindow		
+First	PDFWindow		開始ページ
+Copy link	PDFView		リンク先のロケーションをコピー
+Add	PDFWindow		追加
+Open in new window…	PDFWindow		新しいウィンドウで開く…
+Yellow	PDFView		
+OK	PDFSearch		OK
+Add arrow	Document		
+Version	BepdfApplication		バージョン
+Zoom (%)	PrintSettingsWindow		倍率 (%)
+Files that BePDF has opened have attributes with its own names (META:title, META:author, ...). Toji writes the same information with standard names (dc:title, dc:creator, ...) in any case. The legacy attributes are kept unless this is on: then they are removed.	AnnotationWindow		
+Custom zoom factor (%d%%)	PDFWindow		倍率指定 (%d%%)
+Arrow	Document		
+Abort	PrintingProgressWindow		中止
+Add drawing	Document		
+Go to end of document	PDFWindow		最後のページヘ移動
+Beta	BepdfApplication		β
+Auto open	TraceWindow		自動表示
+Back	PDFWindow		前の表示に移動
+Pages	PrintSettingsWindow		ページ
+Upgrade	PDFWindow		
+%1 (p%2)	PDFWindow	Name of a bookmark: the section (1) and the page (2)	
+Final	BepdfApplication		ファイナル
+Show error messages	PDFWindow		エラーメッセージを表示
+Document	FileInfoWindow		文書
+Width: 	PrintSettingsWindow		幅: 
+Author:	FileInfoWindow		作成者:
+Orange	PDFView		
+Show sidebar	PDFWindow		
+Annotations	BepdfApplication		
+Security	FileInfoWindow		セキュリティ
+of %d	PDFWindow		/ %d
+Keywords	BepdfApplication		
+Denied	FileInfoWindow		許可しない
+Order	PrintSettingsWindow		順序
+Add strike out	Document		
+Highlight	Document		
+Show annotations	PDFWindow		
+Published	BepdfApplication		
+Resize annotation	Document		
+Stamp	Document		
+Page: %d	FindTextWindow		ページ: %d
+Add underline	Document		
+Page	PDFWindow		ページ
+Producer:	FileInfoWindow		PDF 変換:
+Page list	PDFWindow		
+Title	BepdfApplication		
+(read-only)	PDFView		
+Keywords:	FileInfoWindow		キーワード:
+Annotation	Document		
+Blue	PDFView		
+Forward in page history list	PDFWindow		次の画面
+Page:	PrintingProgressWindow		ページ:
+Find next…	PDFWindow		次を検索…
+Ellipse	PDFView		
+Change color	Document		
+Change note	Document		
+Display	AnnotationWindow		表示設定
+Line width	PDFView		
+Right to left	PDFWindow		
+Visit homepage…	PDFWindow		Toji ホームページへアクセス…
+Even pages	PrintSettingsWindow		偶数ページ
+Stop	FindTextWindow		停止
+Subjects:	FileInfoWindow		
+Marker: choose a color, then select the text	PDFWindow		
+Bookmarks	BepdfApplication		
+Print	PDFWindow		印刷
+Find previous…	PDFWindow		
+Line	PDFWindow		
+ in	PrintSettingsWindow		 インチ
+Unknown	BepdfApplication		不明
+Show margin notes	PDFWindow		
+Bookmark	PDFWindow		しおり
+The file could not be saved.	AttachmentsView		
+Note	NoteWindow		
+Next	PDFWindow		次ページ
+Drawing	PDFView		
+Reverse	PrintSettingsWindow		反転
+Close	BepdfApplication		閉じる
+Keep	PDFWindow		
+Page: %d	PrintingProgressWindow		ページ: %d
+Note	PDFWindow		
+Strike out	Document		
+Rotate counter-clockwise	PDFWindow		表示を左 90°回転
+Select none	PDFWindow		選択を解除
+Format:	FileInfoWindow		
+Smaller text	PDFWindow		
+Alpha	BepdfApplication		α
+<empty>	OutlinesWindow		<なし>
+1 annotation	AnnotationsView		
+Add squiggly line	Document		
+Language:	FileInfoWindow		
+Annotations	PDFWindow		
+Forward	PDFWindow		次の表示に移動
+Electronic publication (EPUB)	BepdfApplication		
+OK	AttachmentsView		
+Toji status	StatusWindow		Toji ステータス
+Golden Master	BepdfApplication		ゴールデンマスター
+Bookmarks	PDFWindow		
+Comic book (ZIP)	BepdfApplication		
+%d points	PDFView		
+Show or hide the sidebar	PDFWindow		
+Delete annotation	Document		
+Author	AnnotationWindow		作成者
+Comic book (TAR)	BepdfApplication		
+Publisher:	FileInfoWindow		
+Green	PDFView		
+Zoom out	PDFWindow		ズームアウト
+Add margin note	PDFWindow		
+Continuous	PDFWindow		
+Comic book (7z)	BepdfApplication		
+Restore window position and size	AnnotationWindow		ウィンドウの位置とサイズを記憶する
+Rectangle	PDFView		
+Line	Document		
+Identifier	BepdfApplication		
+Margin note	PDFView		
+Modified:	FileInfoWindow		更新日:
+Arrow	PDFView		
+Description:	FileInfoWindow		
+Add	PDFView		
+Save	PDFWindow		
+About Toji…	PDFWindow		Toji について…
+Go to page %d	PDFView		%d ページに移動
+Ellipse	Document		
+OK	OutlinesWindow		OK
+Reading:	FileInfoWindow		
+Ellipse	PDFWindow		
+Annotations:	FileInfoWindow		注釈:
+Published:	FileInfoWindow		
+Select all	PDFWindow		すべてを選択
+Fill	PDFView		
+OK	PDFWindow		OK
+Previous	PDFWindow		前ページ
+Search	PDFWindow		検索
+File info	FileInfoWindow		文書のプロパティ
+OK	PrintSettingsWindow		OK
+Series	BepdfApplication		
+They can only be kept in a copy of the file.	PDFWindow		
+annotations	AnnotationsView		
+Open file	PDFWindow		ファイルを開く
+Preferences	AnnotationWindow		設定
+Toji™, SEN™ and SEN Labs™ are names of SEN Labs e.U.	BepdfApplication		
+Print settings	PrintSettingsWindow		印刷設定
+Excerpt	AnnotationsView		
+Back in page history list	PDFWindow		前の画面
+Creator	BepdfApplication		
+Copy	TraceWindow		
+The document has unsaved changes (annotations).	PDFWindow		
+Find	PDFWindow		検索
+Double-sided	PDFWindow		
+Yes	FileInfoWindow		はい
+[unknown link]	PDFView		[不明なリンク]
+Cancel	NoteWindow		
+Select all	PDFView		
+Floating	TraceWindow		手前に表示
+Link to a place in a document (toji:)	BepdfApplication		
+Stop	PrintingProgressWindow		停止
+Show attachments	PDFWindow		添付ファイルを表示
+Show help…	PDFWindow		Toji のヘルプ…
+Edit	PDFWindow		編集
+Toji printing	PrintingProgressWindow		Toji 印刷
+Search backwards	FindTextWindow		後方へ検索
+Highlight selection	PDFWindow		
+EPUB version:	FileInfoWindow		
+Reload	PDFWindow		再読み込み
+Add text	Document		
+Underline selection	PDFWindow		
+Toji renders with MuPDF %s, %s.	BepdfApplication	MuPDF version, copyright	
+Red	PDFView		
+Help	PDFWindow		ヘルプ
+Rotation	PDFWindow		回転
+Show document view only	AnnotationWindow		ドキュメントビューのみを表示
+Encrypted:	FileInfoWindow		暗号化:
+Web:	FileInfoWindow		
+Gray scale	PrintSettingsWindow		グレースケール(白黒)
+Save…	AttachmentsView		
+Note on the page	PDFView		
+Type	AnnotationsView		
+Close	PDFWindow		閉じる
+Color	PDFView		
+No title	OutlinesWindow		タイトル無し
+Page	PrintSettingsWindow		ページ
+Discard	PDFWindow		
+Created:	FileInfoWindow		作成日:
+Open in new window	PDFView		新しいウィンドウで開く
+Height: 	PrintSettingsWindow		高さ: 
+Text on the page	PDFView		
+File info…	PDFWindow		文書のプロパティ…
+This file is read-only. You can add annotations, but to keep them you have to save a copy with “Save as…”.	PDFView		
+Allowed	FileInfoWindow		許可
+Comic book (RAR)	BepdfApplication		
+Development	BepdfApplication		開発版
+Add note	Document		
+Attributes of BePDF	PDFWindow		
+No	FileInfoWindow		いいえ
+Pages:	FileInfoWindow		
+Edit note	Document		
+Reload file	PDFWindow		ファイルの再読み込み
+Fit to page	PDFWindow		全体表示
+Document	AnnotationWindow		文書
+Continue	PDFView		
+Settings…	PDFWindow		
+Print…	PDFWindow		印刷…
+Path:	FileInfoWindow		場所:
+Page %d	PDFWindow		%d ページ
+Copy & paste:	FileInfoWindow		コピー & ペースト:
+Edit title for bookmark	OutlinesWindow		しおりの編集
+Toji printing document: 	PrintingProgressWindow		Toji 印刷文書: 
+Chapter	PDFWindow		
+Comic book (BBF)	BepdfApplication		
+EPUB e-book	BepdfApplication		
+Title:	FileInfoWindow		タイトル:
+Fullscreen	PDFWindow		全画面表示
+Underline	Document		
+Add rectangle	Document		
+User defined	OutlinesWindow		ユーザ定義
+No annotations	AnnotationsView		
+Line	PDFView		
+Change line	Document		
+Copy as Web Annotation	PDFView		
+Attachments	PDFWindow		
+right to left	FileInfoWindow		
+Editing:	FileInfoWindow		編集:
+Drawing	Document		
+Invalid file reference received!	BepdfApplication		
+Squiggly line	Document		
+Toji: Error opening file!	BepdfApplication		Toji: エラー! ファイルを開けません
+User password	PasswordWindow		ユーザパスワード
+Identifier:	FileInfoWindow		
+Find	FindTextWindow		検索
+Ignore case	FindTextWindow		大小文字を区別しない
+Creator:	FileInfoWindow		作成:
+Error	BepdfApplication		エラー
+When a PDF file is opened, its annotations are described in the attribute SEN:annotations, and those that have no name get an identifier, so that other programs can refer to them. The PDF file is not changed.	AnnotationWindow		
+Wrong parameter!	PrintSettingsWindow		不正なパラメータです!
+Rotate clockwise	PDFWindow		表示を右 90°回転
+Drawing	PDFWindow		
+Rectangle	PDFWindow		
+Underline	PDFView		
+Artists:	FileInfoWindow		

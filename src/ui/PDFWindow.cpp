@@ -453,8 +453,12 @@ void PDFWindow::SelectInPageList(int page) {
 	int32 index = mPagesView->IndexOf(item);
 	if (index < 0)
 		return;
+	// showing the page that is read is not a choice of the user: no message that goes to that page (it arrives late while the
+	// view moves on, and takes it back to a page that it has left: flicker, and a link that jumps back)
+	mPagesView->SetSelectionMessage(NULL);
 	mPagesView->Select(index);
 	mPagesView->ScrollToSelection();
+	mPagesView->SetSelectionMessage(new BMessage(PAGE_SELECTED_CMD));
 }
 
 
@@ -1964,11 +1968,12 @@ PDFWindow::MessageReceived(BMessage* message)
 		break;
 	case LEGACY_ATTRIBUTES_CMD: {
 		BAlert* alert = new BAlert(B_TRANSLATE("Attributes of BePDF"),
-			B_TRANSLATE("This file has attributes that BePDF wrote (META:title, bepdf:bookmarks, ...). Toji "
-				"writes the same information with standard names (dc:title, dc:creator, ...) and as annotations, "
-				"and does so in any case.\n\nWhat should happen to the legacy attributes? You can change this "
-				"later in the preferences."),
-			B_TRANSLATE("Keep them"), B_TRANSLATE("Replace them (recommended)"), NULL, B_WIDTH_AS_USUAL,
+			B_TRANSLATE("This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal "
+				"standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. "
+				"The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in "
+				"BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with "
+				"this file. You can change this later in the settings."),
+			B_TRANSLATE("Keep"), B_TRANSLATE("Upgrade"), NULL, B_WIDTH_AS_USUAL,
 			B_IDEA_ALERT);
 		alert->SetShortcut(0, B_ESCAPE);
 		alert->ButtonAt(0)->MakeDefault(true);

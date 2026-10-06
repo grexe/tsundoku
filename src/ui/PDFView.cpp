@@ -1019,6 +1019,11 @@ PDFView::ScrollTo (BPoint point) {
 	// and brings the pages, until then the pages and the current page are left alone, which would make them flicker)
 	BMessage* now = Window() != NULL ? Window()->CurrentMessage() : NULL;
 	bool resizing = now != NULL && now->what == B_VIEW_RESIZED;
+	// the view stops at the limits of the document (a request beyond them, from the wheel or a fast drag, would be clamped by the
+	// scroll bars and asked for again: a flicker)
+	BRect view(Bounds());
+	point.x = max_c(0.0f, min_c(point.x, mCanvasWidth - view.Width()));
+	point.y = max_c(0.0f, min_c(point.y, mCanvasHeight - view.Height()));
 	if (!resizing) {
 		mKeptLeft = point.x;
 		mKeptTop = point.y;

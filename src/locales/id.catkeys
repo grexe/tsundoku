@@ -1,257 +1,361 @@
-1	Indonesian	application/x-vnd.sen-labs.Tsundoku	2450431064
- in	PrintSettingsWindow		dalam
-All pages	PrintSettingsWindow		Semua halaman
-Color	PrintSettingsWindow		Warna
-DPI	PrintSettingsWindow		DPI
-Even pages	PrintSettingsWindow		Halaman genap
-Gray scale	PrintSettingsWindow		Skala abu-abu
-Height: 	PrintSettingsWindow		Tinggi:
-Max. printer resolution	PrintSettingsWindow		Maks. resolusi printer
-Mode	PrintSettingsWindow		Moda
-Normal	PrintSettingsWindow		Normal
-Odd pages	PrintSettingsWindow		Halaman ganjil
-OK	PrintSettingsWindow		OKE
-Order	PrintSettingsWindow		Order
-Page	PrintSettingsWindow		Halaman
-Pages	PrintSettingsWindow		Halaman
-Print	PrintSettingsWindow		Mencetak
-Print settings	PrintSettingsWindow		Pengaturan cetak
-Reverse	PrintSettingsWindow		Membalikkan
-Rotation	PrintSettingsWindow		Rotasi
-Width: 	PrintSettingsWindow		Width:
-Wrong parameter!	PrintSettingsWindow		Parameter salah!
-Zoom (%)	PrintSettingsWindow		Perbesaran (%)
-Zoom must be between 25 and 400!	PrintSettingsWindow		Perbesaran harus diantara 25 dan 400!
-[internal link]	PDFView		[tautan internal]
-[link type 'movie' not supported]	PDFView		[tipe tautan 'film' tidak didukung]
-[unknown link]	PDFView		[tautan tak-diketahui]
-Annotation	PDFView		Anotasi
-Tsundoku reading file: 	PDFView		Tsundoku membaca file:
-Tsundoku: Launch	PDFView		Tsundoku: Luncurkan
-Cancel	PDFView		Batal
-Copy link	PDFView		Salin Tautan
-Delete	PDFView		Hapus
-Edit	PDFView		Sunting
-Execute the command:	PDFView		Menjalankan perintah:
-Go to page %d	PDFView		Menuju ke halaman %d
-Leave annotation editing mode	PDFView		Tinggalkan mode pengeditan anotasi
-OK	PDFView		OKE
-Open in new window	PDFView		Buka di jendela baru
-Properties	PDFView		Properti
-Save file attachment as…	PDFView		Simpan lampiran file sebagai…
-Saving file attachment:	PDFView		Menyimpan lampiran file:
-Unknown link action type: '%s'	PDFView		Jenis tindakan tautan tidak dikenal: '%s'
-<empty>	OutlinesWindow		<kosong>
-Document	OutlinesWindow		Dokumen
-Edit title for bookmark	OutlinesWindow		Sunting judul bookmark
-No title	OutlinesWindow		Tiada judul
-OK	OutlinesWindow		OKE
-User defined	OutlinesWindow		Ditetapkan pengguna
-<empty>	AttachmentView		<kosong>
-Description	AttachmentView		Deskripsi
-File name	AttachmentView		Nama berkas
-Save attachment(s) as	AttachmentView		Simpan sisipan sebagai
-Save selected attachment to file	AttachmentView		Simpan lampiran yang dipilih ke file
-Save selected attachments into directory	AttachmentView		Simpan lampiran yang dipilih ke dalam direktori
-Saving attachment(s):	AttachmentView		Simpan lampiran:
-Abort	PrintingProgressWindow		Batal
-Tsundoku printing	PrintingProgressWindow		Pencetakan Tsundoku
-Tsundoku printing document: 	PrintingProgressWindow		Pencetakan dokumen Tsundoku:
-Page:	PrintingProgressWindow		Halaman:
-Page: %d	PrintingProgressWindow		Halaman: %d
-Stop	PrintingProgressWindow		Berhenti
-Abort	FileInfoWindow		Batal
-Allowed	FileInfoWindow		Diijinkan
-Annotations:	FileInfoWindow		Catatan:
-Author:	FileInfoWindow		Penulis:
-Copy & paste:	FileInfoWindow		Salin & tempel:
-Created:	FileInfoWindow		Dibuat:
-Creator:	FileInfoWindow		Pencipta:
-Denied	FileInfoWindow		Ditolak
-Document	FileInfoWindow		Dokumen
-Editing:	FileInfoWindow		suntingan:
-Embedded name	FileInfoWindow		Nama tertanam
-Encrypted:	FileInfoWindow		Terenkripsi:
-File info	FileInfoWindow		Info berkas
-Filename:	FileInfoWindow		Namaberkas:
-Fonts of this page	FileInfoWindow		Font halaman ini
-Keywords:	FileInfoWindow		Katakunci:
-Linearized:	FileInfoWindow		Linier:
-Modified:	FileInfoWindow		Diubah:
-Name	FileInfoWindow		Nama
-No	FileInfoWindow		Tidak
-Path:	FileInfoWindow		Jalur:
-Printing:	FileInfoWindow		Pencetekan:
-Producer:	FileInfoWindow		Produsen:
-Security	FileInfoWindow		Keamanan
-Show all fonts	FileInfoWindow		Tunjukkan semua font
-Subject:	FileInfoWindow		Subyek:
-Title:	FileInfoWindow		Judul:
-Type	FileInfoWindow		Tipe
-Version:	FileInfoWindow		Versi:
-Yes	FileInfoWindow		Ya
-About Tsundoku…	PDFWindow		Tentang Tsundoku…
-Add	PDFWindow		Tambah
-Add circle annotation	PDFWindow		Tambahkan anotasi lingkaran
-Add comment text annotation	PDFWindow		Tambahkan anotasi teks komentar
-Add file attachment annotation	PDFWindow		Tambahkan anotasi lampiran file
-Add free text annotation	PDFWindow		Tambahkan anotasi teks bebas
-Add help text annotation	PDFWindow		Tambahkan anotasi teks bantuan
-Add highlight annotation	PDFWindow		Tambahkan anotasi sorot
-Add ink annotation	PDFWindow		Tambahkan anotasi tinta
-Add insert text annotation	PDFWindow		Tambahkan sisipan anotasi teks
-Add key text annotation	PDFWindow		Tambahkan anotasi teks kunci
-Add line annotation	PDFWindow		Tambahkan anotasi garis
-Add link annotation	PDFWindow		Tambahkan anotasi tautan
-Add movie annotation	PDFWindow		Tambahkan anotasi film
-Add new paragraph text annotation	PDFWindow		Tambahkan anotasi teks paragraf baru
-Add note text annotation	PDFWindow		Tambahkan catatan teks catatan
-Add paragraph text annotation	PDFWindow		Tambahkan anotasi teks paragraf
-Add popup annotation	PDFWindow		Tambahkan anotasi munculan
-Add printer mark annotation	PDFWindow		Tambahkan anotasi tanda pencetak
-Add sound annotation	PDFWindow		Tambahkan anotasi suara
-Add square annotation	PDFWindow		Tambahkan anotasi persegi
-Add squiggly annotation	PDFWindow		Tambahkan anotasi bentuk-lekukan
-Add stamp annotation	PDFWindow		Tambahkan anotasi stempel
-Add strikeout annotation	PDFWindow		Tambahkan anotasi coretan
-Add trapnet annotation	PDFWindow		Tambahkan anotasi trapnet
-Add underline annotation	PDFWindow		Tambahkan anotasi garis bawah
-Add widget annotation	PDFWindow		Tambahkan anotasi widget
-Back	PDFWindow		Kembali
-Back in page history list	PDFWindow		Kembali ke daftar riwayat halaman
-Bookmark	PDFWindow		Penunjuk halaman buku
-Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Tidak dapat menimpa file PDF yang saat ini dibuka di Tsundoku! Silakan pilih nama file lain.
-Close	PDFWindow		Tutup
-Copy selection	PDFWindow		Salin pilihan
-Could not write PDF file!	PDFWindow		Tidak dapat menulis file PDF!
-Custom zoom factor (%d%%)	PDFWindow		Faktor pembesaran kastem(%d%%)
-Delete	PDFWindow		Hapus
-Edit	PDFWindow		Sunting
-Editing of annotations in an encrypted PDF file isn't supported yet!	PDFWindow		Mengedit anotasi dalam file PDF terenkripsi belum didukung!
-English.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	English.pdf
-File	PDFWindow		Berkas
-File info…	PDFWindow		Info file…
-Find	PDFWindow		Menemukan
-Find next	PDFWindow		Temukan selanjutnya
-Find next…	PDFWindow		Temukan selanjutnya
-Find…	PDFWindow		Temukan…
-First	PDFWindow		Pertama
-Fit to page	PDFWindow		Sesuaikan dengan halaman
-Fit to page width	PDFWindow		Sesuaikan dengan lebar halaman
-Forward	PDFWindow		Selanjutnya
-Forward in page history list	PDFWindow		Selanjutnya dalam daftar riwayat halaman
-Fullscreen	PDFWindow		LayarPenuh
-Fullscreen mode	PDFWindow		Mode LayarPenuh
-Go back 10 pages	PDFWindow		Mundur 10 halaman
-Go forward 10 pages	PDFWindow		Maju 10 halaman
-Go to end of document	PDFWindow		Menuju ke akhir dokumen
-Go to next page	PDFWindow		Ke halaman berikutnya
-Go to previous page	PDFWindow		ke halaman sebelumnya
-Go to start of document	PDFWindow		Pergi ke awal dari dokumen
-Help	PDFWindow		Tolong
-Hide side bar	PDFWindow		Sembunyikan bilah samping
-Issue tracker…	PDFWindow		Pelacak masalah…
-Jump to page	PDFWindow		Lompat ke halaman
-Last	PDFWindow		Terakhir
-Leave annotation editing mode	PDFWindow		Tinggalkan mode pengeditan anotasi
-Next	PDFWindow		Selanjutnya
-of %d	PDFWindow		dari %d
-OK	PDFWindow		OKE
-Online help…	PDFWindow		Bantuan online…
-Open file	PDFWindow		Membuka berkas
-Open in new window…	PDFWindow		Buka di jendela baru…
-Open…	PDFWindow		Buka…
-Page	PDFWindow		Halaman
-Page %d	PDFWindow		Halaman %d
-Page setup…	PDFWindow		Pengaturan halaman…
-PDF file successfully written!	PDFWindow		File PDF berhasil ditulis!
-Preferences…	PDFWindow		Preferensi…
-Previous	PDFWindow		Sebelumya
-Print	PDFWindow		Cetak
-Print…	PDFWindow		Cetak…
-Quit	PDFWindow		Keluar
-Reload	PDFWindow		Muat-ulang
-Reload file	PDFWindow		Muat ulang file
-Rotate clockwise	PDFWindow		Putar searah jarum jam
-Rotate counter-clockwise	PDFWindow		Putar berlawanan arah jarum jam
-Rotation	PDFWindow		Rotasi
-Save as…	PDFWindow		Simpan sebagai…
-Save file as	PDFWindow		Simpan file sebagai
-Saving copy of PDF file:	PDFWindow		Menyimpan salinan file PDF:
-Search	PDFWindow		Pencarian
-Select all	PDFWindow		Pilih Semua
-Select none	PDFWindow		Takada yang dipilih
-Show annotation tool bar	PDFWindow		Tampilkan bilah alat anotasi
-Show annotation toolbar	PDFWindow		Tampilkan bilah alat anotasi
-Show attachments	PDFWindow		Tampilkan lampiran
-Show bookmarks	PDFWindow		Tampilkan bookmark
-Show error messages	PDFWindow		Tampilkan pesan kesalahan
-Show help…	PDFWindow		Menunjukkan bantuan…
-Show page list	PDFWindow		Tampilkan daftar halaman
-View	PDFWindow		Tinjau
-Visit homepage…	PDFWindow		Kunjungi laman…
-Warning	PDFWindow		Peringatan
-Zoom	PDFWindow		Perbesaran
-Zoom in	PDFWindow		Perbesar
-Zoom out	PDFWindow		Perkecil
-Align:	AnnotationWindow		Rata:
-Annotation	AnnotationWindow		Anotasi
-Asian fonts	AnnotationWindow		Font asia
-Author	AnnotationWindow		Penulis
-Automatic	AnnotationWindow		Otomatis
-current	AnnotationWindow		sekarang
-Date:	AnnotationWindow		Tanggal:
-Display	AnnotationWindow		Tampilan
-Document	AnnotationWindow		Dokumen
-Filled rectangle	AnnotationWindow		Persegi terisi
-Font:	AnnotationWindow		Fonta:
-Fullscreen mode	AnnotationWindow		Moda layar penuh
-Invert vertical mouse scrolling	AnnotationWindow		Balikkan gulir mouse vertikal
-Open in workspace:	AnnotationWindow		buka di workspace:
-Preferences	AnnotationWindow		Preferensi
-Restore page number	AnnotationWindow		Kembalikan nomor halaman
-Restore window position and size	AnnotationWindow		Kembalikan posisi dan ukuran jendela
+1	Indonesian	application/x-vnd.sen-labs.Toji	453287713
 Selection rectangle	AnnotationWindow		Seleksi persegi
-Show document view only	AnnotationWindow		Tampilkan hanya tampilan dokumen
-Show toolbar, statusbar and scrollbars, too	AnnotationWindow		Tampilkan juga bilah alat, bilah status, dan bilah gulir
-Size:	AnnotationWindow		Ukuran:
-Stroked rectangle	AnnotationWindow		Persegi tercoret
-System fonts	AnnotationWindow		Huruf system
-Title:	AnnotationWindow		Judul:
-User fonts	AnnotationWindow		Huruf user
-Will take effect at next program launch.	AnnotationWindow		Akan berlaku pada peluncuran program berikutnya.
-Alpha	BepdfApplication		Alfa
-Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku didasarkan pada XPDF %s, %s.
-Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Ada kesalahan saat buka berkas!
-Beta	BepdfApplication		Beta
-Close	BepdfApplication		Tutup
-Development	BepdfApplication		Pengembangan
-Error	BepdfApplication		Kesalahan
-Final	BepdfApplication		Final
-Gamma	BepdfApplication		Gama
-Golden Master	BepdfApplication		Master emas
-Unknown	BepdfApplication		Tak-diketahui
-Version	BepdfApplication		Versi
-Auto open	TraceWindow		buka Auto
-Clear	TraceWindow		Bersih
-Error messages	TraceWindow		Pesan kesalahan
-Floating	TraceWindow		Mengambang
-Tsundoku status	StatusWindow		status Tsundoku
-Enter Password	PasswordWindow		Masukkan sandi
-OK	PasswordWindow		OKE
-Owner password	PasswordWindow		Sandi pemilik
-User password	PasswordWindow		Sandi pengguna
-Find	FindTextWindow		Temukan
-Find text	FindTextWindow		Temukan teks
-Find: 	FindTextWindow		Temukan:
-Ignore case	FindTextWindow		Abaikan besar-kecil huruf
-Options	FindTextWindow		Pilihan
-Page:	FindTextWindow		Halaman:
-Page: %d	FindTextWindow		Halaman: %d
-Search backwards	FindTextWindow		Search backwards
-Stop	FindTextWindow		Berhenti
-OK	PDFSearch		OKE
-Search string not found.	PDFSearch		Pencarian kata tidak ditemukan.
-Error getting page number!	BepdfApplication		
-Invalid file reference received!	BepdfApplication		
+Toji reading file: 	PDFView		Toji membaca file:
+Cancel	PDFView		Batal
 a universal document reader based on BePDF, extended for SEN	BepdfApplication		
+Undo	PDFWindow		
+Go to previous page	PDFWindow		ke halaman sebelumnya
+Language	BepdfApplication		
+Subject:	FileInfoWindow		Subyek:
+Filled rectangle	AnnotationWindow		Persegi terisi
+Current	PDFView		
+Owner password	PasswordWindow		Sandi pemilik
+ISBN	BepdfApplication		
+Strike out selection	PDFWindow		
+Pink	PDFView		
+Replace legacy attributes with standard ones	AnnotationWindow		
+OK	BepdfApplication		
+Text, shapes and drawing: choose one, then click or drag on the page	PDFWindow		
+Copy link to this place	PDFView		
+Add highlight	Document		
+Cancel	PDFWindow		
+Page	AnnotationsView		
+Delete	PDFWindow		Hapus
+Note	PDFView		
+Color	PrintSettingsWindow		Warna
+View	PDFWindow		Tinjau
+Search string not found.	PDFSearch		Pencarian kata tidak ditemukan.
+Normal	PrintSettingsWindow		Normal
+Copy	PDFWindow		
+No fill	PDFView		
+Redo	PDFWindow		
+File attachment	Document		
+Age rating:	FileInfoWindow		
+Zoom in	PDFWindow		Perbesar
+Notes: a margin note for selected text, a note or a text on the page	PDFWindow		
+Page:	FindTextWindow		Halaman:
+Rotation	PrintSettingsWindow		Rotasi
+Gamma	BepdfApplication		Gama
+Error messages	TraceWindow		Pesan kesalahan
+Jump to page	PDFWindow		Lompat ke halaman
+Move annotation	Document		
+DjVu document	BepdfApplication		
+Edit note…	PDFView		
+Fullscreen mode	AnnotationWindow		Moda layar penuh
+Author	BepdfApplication		
+Single page	PDFWindow		
+Mode	PrintSettingsWindow		Moda
+Publisher	BepdfApplication		
+Save as…	PDFWindow		Simpan sebagai…
+Issue tracker…	PDFWindow		Pelacak masalah…
+Printing:	FileInfoWindow		Pencetekan:
+Add ellipse	Document		
+The document could not be saved.	PDFWindow		
+Copy link to this place	PDFWindow		
+Top to bottom	PDFWindow		
+Zoom must be between 25 and 400!	PrintSettingsWindow		Perbesaran harus diantara 25 dan 400!
+Open…	PDFWindow		Buka…
+ (annotated)	PDFWindow		
+Show toolbar, statusbar and scrollbars, too	AnnotationWindow		Tampilkan juga bilah alat, bilah status, dan bilah gulir
+Show page list	PDFWindow		Tampilkan daftar halaman
+current	AnnotationWindow		sekarang
+OK	PasswordWindow		OKE
+Document	OutlinesWindow		Dokumen
+Invert vertical mouse scrolling	AnnotationWindow		Balikkan gulir mouse vertikal
+Page setup…	PDFWindow		Pengaturan halaman…
+Text	Document		
+Stroked rectangle	AnnotationWindow		Persegi tercoret
+OK	NoteWindow		
+Find: 	FindTextWindow		Temukan:
+Zoom	PDFWindow		Perbesaran
+Larger text	PDFWindow		
+ISBN:	FileInfoWindow		
+Text	PDFView		
+Text	PDFWindow		
+Open in workspace:	AnnotationWindow		buka di workspace:
+This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.	PDFWindow		
+Go to next page	PDFWindow		Ke halaman berikutnya
+Restore page number	AnnotationWindow		Kembalikan nomor halaman
+Last	PDFWindow		Terakhir
+Hide sidebar	PDFWindow		
+Add line	Document		
+Find next	PDFWindow		Temukan selanjutnya
+Arrow	PDFWindow		
+Series number	BepdfApplication		
+Note	Document		
+All pages	PrintSettingsWindow		Semua halaman
+Describe annotations of other programs in the file's attributes	AnnotationWindow		
+Go to start of document	PDFWindow		Pergi ke awal dari dokumen
+Pages	BepdfApplication		
+Highlight	PDFView		
+Go forward 10 pages	PDFWindow		Maju 10 halaman
+Go back 10 pages	PDFWindow		Mundur 10 halaman
+Fit to page width	PDFWindow		Sesuaikan dengan lebar halaman
+Toji link	BepdfApplication		
+DPI	PrintSettingsWindow		DPI
+Find…	PDFWindow		Temukan…
+Title page alone	PDFWindow		
+Odd pages	PrintSettingsWindow		Halaman ganjil
+Laying out the book…	PDFView		
+Show bookmarks	PDFWindow		Tampilkan bookmark
+Description	BepdfApplication		
+Max. printer resolution	PrintSettingsWindow		Maks. resolusi printer
+Strike out	PDFView		
+Reading direction	BepdfApplication		
+Edit text…	PDFView		
+Delete annotation	PDFView		
+Quit	PDFWindow		Keluar
+About Toji	BepdfApplication		
+The copy could not be saved.	PDFWindow		
+Fullscreen mode	PDFWindow		Mode LayarPenuh
+File	PDFWindow		Berkas
+Options	FindTextWindow		Pilihan
+Find text	FindTextWindow		Temukan teks
+Clear	TraceWindow		Bersih
+toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
+Print	PrintSettingsWindow		Mencetak
+Enter Password	PasswordWindow		Masukkan sandi
+Online help…	PDFWindow		Bantuan online…
+Rectangle	Document		
+Copy	PDFView		
+Filename:	FileInfoWindow		Namaberkas:
+Series:	FileInfoWindow		
+First	PDFWindow		Pertama
+Copy link	PDFView		Salin Tautan
+Add	PDFWindow		Tambah
+Open in new window…	PDFWindow		Buka di jendela baru…
+Yellow	PDFView		
+OK	PDFSearch		OKE
+Add arrow	Document		
+Version	BepdfApplication		Versi
+Zoom (%)	PrintSettingsWindow		Perbesaran (%)
+Files that BePDF has opened have attributes with its own names (META:title, META:author, ...). Toji writes the same information with standard names (dc:title, dc:creator, ...) in any case. The legacy attributes are kept unless this is on: then they are removed.	AnnotationWindow		
+Custom zoom factor (%d%%)	PDFWindow		Faktor pembesaran kastem(%d%%)
+Arrow	Document		
+Abort	PrintingProgressWindow		Batal
+Add drawing	Document		
+Go to end of document	PDFWindow		Menuju ke akhir dokumen
+Beta	BepdfApplication		Beta
+Auto open	TraceWindow		buka Auto
+Back	PDFWindow		Kembali
+Pages	PrintSettingsWindow		Halaman
+Upgrade	PDFWindow		
+%1 (p%2)	PDFWindow	Name of a bookmark: the section (1) and the page (2)	
+Final	BepdfApplication		Final
+Show error messages	PDFWindow		Tampilkan pesan kesalahan
+Document	FileInfoWindow		Dokumen
+Width: 	PrintSettingsWindow		Width:
+Author:	FileInfoWindow		Penulis:
+Orange	PDFView		
+Show sidebar	PDFWindow		
+Annotations	BepdfApplication		
+Security	FileInfoWindow		Keamanan
+of %d	PDFWindow		dari %d
+Keywords	BepdfApplication		
+Denied	FileInfoWindow		Ditolak
+Order	PrintSettingsWindow		Order
+Add strike out	Document		
+Highlight	Document		
+Show annotations	PDFWindow		
+Published	BepdfApplication		
+Resize annotation	Document		
+Stamp	Document		
+Page: %d	FindTextWindow		Halaman: %d
+Add underline	Document		
+Page	PDFWindow		Halaman
+Producer:	FileInfoWindow		Produsen:
+Page list	PDFWindow		
+Title	BepdfApplication		
+(read-only)	PDFView		
+Keywords:	FileInfoWindow		Katakunci:
+Annotation	Document		
+Blue	PDFView		
+Forward in page history list	PDFWindow		Selanjutnya dalam daftar riwayat halaman
+Page:	PrintingProgressWindow		Halaman:
+Find next…	PDFWindow		Temukan selanjutnya
+Ellipse	PDFView		
+Change color	Document		
+Change note	Document		
+Display	AnnotationWindow		Tampilan
+Line width	PDFView		
+Right to left	PDFWindow		
+Visit homepage…	PDFWindow		Kunjungi laman…
+Even pages	PrintSettingsWindow		Halaman genap
+Stop	FindTextWindow		Berhenti
+Subjects:	FileInfoWindow		
+Marker: choose a color, then select the text	PDFWindow		
+Bookmarks	BepdfApplication		
+Print	PDFWindow		Cetak
+Find previous…	PDFWindow		
+Line	PDFWindow		
+ in	PrintSettingsWindow		dalam
+Unknown	BepdfApplication		Tak-diketahui
+Show margin notes	PDFWindow		
+Bookmark	PDFWindow		Penunjuk halaman buku
+The file could not be saved.	AttachmentsView		
+Note	NoteWindow		
+Next	PDFWindow		Selanjutnya
+Drawing	PDFView		
+Reverse	PrintSettingsWindow		Membalikkan
+Close	BepdfApplication		Tutup
+Keep	PDFWindow		
+Page: %d	PrintingProgressWindow		Halaman: %d
+Note	PDFWindow		
+Strike out	Document		
+Rotate counter-clockwise	PDFWindow		Putar berlawanan arah jarum jam
+Select none	PDFWindow		Takada yang dipilih
+Format:	FileInfoWindow		
+Smaller text	PDFWindow		
+Alpha	BepdfApplication		Alfa
+<empty>	OutlinesWindow		<kosong>
+1 annotation	AnnotationsView		
+Add squiggly line	Document		
+Language:	FileInfoWindow		
+Annotations	PDFWindow		
+Forward	PDFWindow		Selanjutnya
+Electronic publication (EPUB)	BepdfApplication		
+OK	AttachmentsView		
+Toji status	StatusWindow		status Toji
+Golden Master	BepdfApplication		Master emas
+Bookmarks	PDFWindow		
+Comic book (ZIP)	BepdfApplication		
+%d points	PDFView		
+Show or hide the sidebar	PDFWindow		
+Delete annotation	Document		
+Author	AnnotationWindow		Penulis
+Comic book (TAR)	BepdfApplication		
+Publisher:	FileInfoWindow		
+Green	PDFView		
+Zoom out	PDFWindow		Perkecil
+Add margin note	PDFWindow		
+Continuous	PDFWindow		
+Comic book (7z)	BepdfApplication		
+Restore window position and size	AnnotationWindow		Kembalikan posisi dan ukuran jendela
+Rectangle	PDFView		
+Line	Document		
+Identifier	BepdfApplication		
+Margin note	PDFView		
+Modified:	FileInfoWindow		Diubah:
+Arrow	PDFView		
+Description:	FileInfoWindow		
+Add	PDFView		
+Save	PDFWindow		
+About Toji…	PDFWindow		Tentang Toji…
+Go to page %d	PDFView		Menuju ke halaman %d
+Ellipse	Document		
+OK	OutlinesWindow		OKE
+Reading:	FileInfoWindow		
+Ellipse	PDFWindow		
+Annotations:	FileInfoWindow		Catatan:
+Published:	FileInfoWindow		
+Select all	PDFWindow		Pilih Semua
+Fill	PDFView		
+OK	PDFWindow		OKE
+Previous	PDFWindow		Sebelumya
+Search	PDFWindow		Pencarian
+File info	FileInfoWindow		Info berkas
+OK	PrintSettingsWindow		OKE
+Series	BepdfApplication		
+They can only be kept in a copy of the file.	PDFWindow		
+annotations	AnnotationsView		
+Open file	PDFWindow		Membuka berkas
+Preferences	AnnotationWindow		Preferensi
+Toji™, SEN™ and SEN Labs™ are names of SEN Labs e.U.	BepdfApplication		
+Print settings	PrintSettingsWindow		Pengaturan cetak
+Excerpt	AnnotationsView		
+Back in page history list	PDFWindow		Kembali ke daftar riwayat halaman
+Creator	BepdfApplication		
+Copy	TraceWindow		
+The document has unsaved changes (annotations).	PDFWindow		
+Find	PDFWindow		Menemukan
+Double-sided	PDFWindow		
+Yes	FileInfoWindow		Ya
+[unknown link]	PDFView		[tautan tak-diketahui]
+Cancel	NoteWindow		
+Select all	PDFView		
+Floating	TraceWindow		Mengambang
+Link to a place in a document (toji:)	BepdfApplication		
+Stop	PrintingProgressWindow		Berhenti
+Show attachments	PDFWindow		Tampilkan lampiran
+Show help…	PDFWindow		Menunjukkan bantuan…
+Edit	PDFWindow		Sunting
+Toji printing	PrintingProgressWindow		Pencetakan Toji
+Search backwards	FindTextWindow		Search backwards
+Highlight selection	PDFWindow		
+EPUB version:	FileInfoWindow		
+Reload	PDFWindow		Muat-ulang
+Add text	Document		
+Underline selection	PDFWindow		
+Toji renders with MuPDF %s, %s.	BepdfApplication	MuPDF version, copyright	
+Red	PDFView		
+Help	PDFWindow		Tolong
+Rotation	PDFWindow		Rotasi
+Show document view only	AnnotationWindow		Tampilkan hanya tampilan dokumen
+Encrypted:	FileInfoWindow		Terenkripsi:
+Web:	FileInfoWindow		
+Gray scale	PrintSettingsWindow		Skala abu-abu
+Save…	AttachmentsView		
+Note on the page	PDFView		
+Type	AnnotationsView		
+Close	PDFWindow		Tutup
+Color	PDFView		
+No title	OutlinesWindow		Tiada judul
+Page	PrintSettingsWindow		Halaman
+Discard	PDFWindow		
+Created:	FileInfoWindow		Dibuat:
+Open in new window	PDFView		Buka di jendela baru
+Height: 	PrintSettingsWindow		Tinggi:
+Text on the page	PDFView		
+File info…	PDFWindow		Info file…
+This file is read-only. You can add annotations, but to keep them you have to save a copy with “Save as…”.	PDFView		
+Allowed	FileInfoWindow		Diijinkan
+Comic book (RAR)	BepdfApplication		
+Development	BepdfApplication		Pengembangan
+Add note	Document		
+Attributes of BePDF	PDFWindow		
+No	FileInfoWindow		Tidak
+Pages:	FileInfoWindow		
+Edit note	Document		
+Reload file	PDFWindow		Muat ulang file
+Fit to page	PDFWindow		Sesuaikan dengan halaman
+Document	AnnotationWindow		Dokumen
+Continue	PDFView		
+Settings…	PDFWindow		
+Print…	PDFWindow		Cetak…
+Path:	FileInfoWindow		Jalur:
+Page %d	PDFWindow		Halaman %d
+Copy & paste:	FileInfoWindow		Salin & tempel:
+Edit title for bookmark	OutlinesWindow		Sunting judul bookmark
+Toji printing document: 	PrintingProgressWindow		Pencetakan dokumen Toji:
+Chapter	PDFWindow		
+Comic book (BBF)	BepdfApplication		
+EPUB e-book	BepdfApplication		
+Title:	FileInfoWindow		Judul:
+Fullscreen	PDFWindow		LayarPenuh
+Underline	Document		
+Add rectangle	Document		
+User defined	OutlinesWindow		Ditetapkan pengguna
+No annotations	AnnotationsView		
+Line	PDFView		
+Change line	Document		
+Copy as Web Annotation	PDFView		
+Attachments	PDFWindow		
+right to left	FileInfoWindow		
+Editing:	FileInfoWindow		suntingan:
+Drawing	Document		
+Invalid file reference received!	BepdfApplication		
+Squiggly line	Document		
+Toji: Error opening file!	BepdfApplication		Toji: Ada kesalahan saat buka berkas!
+User password	PasswordWindow		Sandi pengguna
+Identifier:	FileInfoWindow		
+Find	FindTextWindow		Temukan
+Ignore case	FindTextWindow		Abaikan besar-kecil huruf
+Creator:	FileInfoWindow		Pencipta:
+Error	BepdfApplication		Kesalahan
+When a PDF file is opened, its annotations are described in the attribute SEN:annotations, and those that have no name get an identifier, so that other programs can refer to them. The PDF file is not changed.	AnnotationWindow		
+Wrong parameter!	PrintSettingsWindow		Parameter salah!
+Rotate clockwise	PDFWindow		Putar searah jarum jam
+Drawing	PDFWindow		
+Rectangle	PDFWindow		
+Underline	PDFView		
+Artists:	FileInfoWindow		

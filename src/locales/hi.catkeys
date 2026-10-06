@@ -1,257 +1,361 @@
-1	Hindi	application/x-vnd.sen-labs.Tsundoku	2450431064
- in	PrintSettingsWindow		mein
-All pages	PrintSettingsWindow		Sabhee prshthon
-Color	PrintSettingsWindow		Rang
-DPI	PrintSettingsWindow		DPI
-Even pages	PrintSettingsWindow		Sam prsthon
-Gray scale	PrintSettingsWindow		Gray scale
-Height: 	PrintSettingsWindow		Oonchaee:
-Max. printer resolution	PrintSettingsWindow		Max. printer resolution
-Mode	PrintSettingsWindow		Mode
-Normal	PrintSettingsWindow		Saadhaaran
-Odd pages	PrintSettingsWindow		Visham prshth
-OK	PrintSettingsWindow		Theek
-Order	PrintSettingsWindow		Kram
-Page	PrintSettingsWindow		Prshth
-Pages	PrintSettingsWindow		Prshthon
-Print	PrintSettingsWindow		Chhaap
-Print settings	PrintSettingsWindow		Chaapne ki settings
-Reverse	PrintSettingsWindow		Oolta
-Rotation	PrintSettingsWindow		Chakkar
-Width: 	PrintSettingsWindow		chaudaee:
-Wrong parameter!	PrintSettingsWindow		Galat parameter!
-Zoom (%)	PrintSettingsWindow		Zoom (%)
-Zoom must be between 25 and 400!	PrintSettingsWindow		Zoom 25 aur 400 ke beech hona chaahie!
-[internal link]	PDFView		[aantarik link]
-[link type 'movie' not supported]	PDFView		[link prakaar philm samarthit nahin]
-[unknown link]	PDFView		[agyaat link]
-Annotation	PDFView		Tipanee
-Tsundoku reading file: 	PDFView		Tsundoku pathan file:
-Tsundoku: Launch	PDFView		Tsundoku: prakshepan
-Cancel	PDFView		Radh karana
-Copy link	PDFView		pratiroop jodana
-Delete	PDFView		Hataana
-Edit	PDFView		sampaadit karen
-Execute the command:	PDFView		aadesh nishpaadit karen:
-Go to page %d	PDFView		prshth% d par jaen
-Leave annotation editing mode	PDFView		Tipaanee sampadaan mode chodein
-OK	PDFView		Theek
-Open in new window	PDFView		Naya window mai khole
-Properties	PDFView		Gun
-Save file attachment as…	PDFView		file anulagnak ko is roop mein sahejen ...
-Saving file attachment:	PDFView		file anulagnak ko is roop mein sahejen ...
-Unknown link action type: '%s'	PDFView		agyaat link kaarravaee prakaar: % s
-<empty>	OutlinesWindow		<khalee>
-Document	OutlinesWindow		Dastaavez
-Edit title for bookmark	OutlinesWindow		Bookmark ke lie sheershak sampaadit karen
-No title	OutlinesWindow		koee sheershak nahin
-OK	OutlinesWindow		Theek
-User defined	OutlinesWindow		upayogakarta paribhaashit
-<empty>	AttachmentView		<khaalee>
-Description	AttachmentView		vivaran
-File name	AttachmentView		File ka naam
-Save attachment(s) as	AttachmentView		anulagnak sahejen
-Save selected attachment to file	AttachmentView		file ke lie chayanit anulagnak sahejen
-Save selected attachments into directory	AttachmentView		nirdeshika mein chayanit anulagnakon ko sahejen
-Saving attachment(s):	AttachmentView		anulagnak sahejana:
-Abort	PrintingProgressWindow		nirast karen
-Tsundoku printing	PrintingProgressWindow		Tsundoku ki chapae
-Tsundoku printing document: 	PrintingProgressWindow		Tsundoku chapne ki dastaveez:
-Page:	PrintingProgressWindow		Prsth:
-Page: %d	PrintingProgressWindow		Prsth: %d
-Stop	PrintingProgressWindow		Ruken
-Abort	FileInfoWindow		Nirast
-Allowed	FileInfoWindow		Anumati
-Annotations:	FileInfoWindow		Tipanee:
-Author:	FileInfoWindow		Lekhak:
-Copy & paste:	FileInfoWindow		Nakal karo aur chipkao
-Created:	FileInfoWindow		banaaya tha:
-Creator:	FileInfoWindow		banaane vaala:
-Denied	FileInfoWindow		inkaar kiya
-Document	FileInfoWindow		dastaavez
-Editing:	FileInfoWindow		Sampaadan:
-Embedded name	FileInfoWindow		Embedded naam
-Encrypted:	FileInfoWindow		Ko gopit:
-File info	FileInfoWindow		File jankaaree
-Filename:	FileInfoWindow		File ka  naam:
-Fonts of this page	FileInfoWindow		is prsth ke lipi
-Keywords:	FileInfoWindow		Keywords:
-Linearized:	FileInfoWindow		Raikhik:
-Modified:	FileInfoWindow		Sanshodhit:
-Name	FileInfoWindow		Naam
-No	FileInfoWindow		nahin
-Path:	FileInfoWindow		Path:
-Printing:	FileInfoWindow		Mudran:
-Producer:	FileInfoWindow		utpaadak:
-Security	FileInfoWindow		Suraksha
-Show all fonts	FileInfoWindow		Sabhee font dikhae
-Subject:	FileInfoWindow		Vishay:
-Title:	FileInfoWindow		sheershak:
-Type	FileInfoWindow		Prakaar
-Version:	FileInfoWindow		sanskaran:
-Yes	FileInfoWindow		Haan
-About Tsundoku…	PDFWindow		Tsundoku ke barein mein...
-Add	PDFWindow		jodana
-Add circle annotation	PDFWindow		vrtt tipanee  jodein
-Add comment text annotation	PDFWindow		paath tipanee jodein
-Add file attachment annotation	PDFWindow		file attachment tipaanee jodein
-Add free text annotation	PDFWindow		mupht paath  tipanee jodein
-Add help text annotation	PDFWindow		madad paath tipanee jodein
-Add highlight annotation	PDFWindow		mukhy aakarshan tipanee jodein
-Add ink annotation	PDFWindow		syahee tipanee jodein
-Add insert text annotation	PDFWindow		text tipanee jodein
-Add key text annotation	PDFWindow		mukhy paath tipanee jodein
-Add line annotation	PDFWindow		line tipaanee jodein
-Add link annotation	PDFWindow		sampark tipaanee jodein
-Add movie annotation	PDFWindow		chalachitr tipaanee jodein
-Add new paragraph text annotation	PDFWindow		naya anuchchhed paath tipanee jodein
-Add note text annotation	PDFWindow		tipanee paath tipanee jodein
-Add paragraph text annotation	PDFWindow		Anuchhed paath tipanee jodein
-Add popup annotation	PDFWindow		Popup tipanee  jodein
-Add printer mark annotation	PDFWindow		Printer chihn tipanee  jodein
-Add sound annotation	PDFWindow		dhvani tipanee  jodein
-Add square annotation	PDFWindow		Varg tipanee jodein
-Add squiggly annotation	PDFWindow		Squiggly tipanee jodein
-Add stamp annotation	PDFWindow		stamp tipanee jodein
-Add strikeout annotation	PDFWindow		Strikeout tipanee jodein
-Add trapnet annotation	PDFWindow		trapnet tipanee jodein
-Add underline annotation	PDFWindow		Underline tipanee jodein
-Add widget annotation	PDFWindow		widget tipanee jodein
-Back	PDFWindow		Vaapas
-Back in page history list	PDFWindow		prshth itihaas soochee mein vaapas
-Bookmark	PDFWindow		Bookmark
-Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		vartamaan mein Tsundoku mein kholee gaee pdf fail ko adhilekhit nahin kiya ja sakata hai! krpaya koee aur file naam chunen.
-Close	PDFWindow		Band kare
-Copy selection	PDFWindow		Chayan ka pratilipi kare
-Could not write PDF file!	PDFWindow		PDF file nahin likh sakte
-Custom zoom factor (%d%%)	PDFWindow		Custom zoom factor (%d%%)
-Delete	PDFWindow		Hataana
-Edit	PDFWindow		sampaadit karen
-Editing of annotations in an encrypted PDF file isn't supported yet!	PDFWindow		encrypted file mein tipaanee ka sampaadan abhee tak samarthit nahin hai!
-English.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	Hindi.pdf
-File	PDFWindow		File
-File info…	PDFWindow		File ke baare mein…
-Find	PDFWindow		Khoj
-Find next	PDFWindow		agala dhoondho
-Find next…	PDFWindow		agala dhoondho...
-Find…	PDFWindow		Khoj...
-First	PDFWindow		Pratham
-Fit to page	PDFWindow		prsth ke liye fit
-Fit to page width	PDFWindow		prsth ke chaudaee ke liye fit
-Forward	PDFWindow		aage
-Forward in page history list	PDFWindow		prshth itihaas soochee mein aage
-Fullscreen	PDFWindow		Poorn-screen
-Fullscreen mode	PDFWindow		Poorn-screen mode
-Go back 10 pages	PDFWindow		10 pej peechhe jaen
-Go forward 10 pages	PDFWindow		10 pej aage badhen
-Go to end of document	PDFWindow		dastaavez ke ant mein jaen
-Go to next page	PDFWindow		agale pej par jaen
-Go to previous page	PDFWindow		pichhale prshth par jaen
-Go to start of document	PDFWindow		dastaavez kee shuruaat karane ke lie jao
-Help	PDFWindow		Madad
-Hide side bar	PDFWindow		kinaare kee baadha ko hataen
-Issue tracker…	PDFWindow		mudda par nazar rakhane vaala…
-Jump to page	PDFWindow		prsth par jaen
-Last	PDFWindow		Antim
-Leave annotation editing mode	PDFWindow		annotation sampaadan mode chhod dein
-Next	PDFWindow		aagaamee
-of %d	PDFWindow		% d ka
-OK	PDFWindow		Theek
-Online help…	PDFWindow		Online sahaayata…
-Open file	PDFWindow		khulee file
-Open in new window…	PDFWindow		Nayee window mein kholee...
-Open…	PDFWindow		Kholee...
-Page	PDFWindow		Prshth
-Page %d	PDFWindow		Prshth %d
-Page setup…	PDFWindow		Prshth byabastha…
-PDF file successfully written!	PDFWindow		PDF file saphalataapoorvak likhee gaee hai!!
-Preferences…	PDFWindow		Pasand…
-Previous	PDFWindow		pichhala
-Print	PDFWindow		Chhaap
-Print…	PDFWindow		Chhaap…
-Quit	PDFWindow		chhodana
-Reload	PDFWindow		Punah laadna
-Reload file	PDFWindow		Punah file laadna
-Rotate clockwise	PDFWindow		ghadee kee suee kee disha mein ghumao
-Rotate counter-clockwise	PDFWindow		ghadee kee sooee ke viparit disha mein ghumaayen
-Rotation	PDFWindow		Chakkar
-Save as…	PDFWindow		ke roop rakshit karen…
-Save file as	PDFWindow		file ko is roop mein sahejen
-Saving copy of PDF file:	PDFWindow		PDF file ki pratilipi bachat karna:
-Search	PDFWindow		Dhoondhna
-Select all	PDFWindow		sabhee ka chayan kare
-Select none	PDFWindow		kisee ka chayan na karen
-Show annotation tool bar	PDFWindow		Annotation tool bar dikhaen
-Show annotation toolbar	PDFWindow		Annotation toolbar dikhaen
-Show attachments	PDFWindow		Sanlagnak dikhaen
-Show bookmarks	PDFWindow		Bookmark dikhaen
-Show error messages	PDFWindow		Truti sandesh dikhaen
-Show help…	PDFWindow		Madad dikhaen...
-Show page list	PDFWindow		Prshth soochee dikhaen
-View	PDFWindow		Dekhna
-Visit homepage…	PDFWindow		Homepage par jaen...
-Warning	PDFWindow		Chetaavanee
-Zoom	PDFWindow		Zoom
-Zoom in	PDFWindow		Zoom in
-Zoom out	PDFWindow		Zoom out
-Align:	AnnotationWindow		Sanrekhit:
-Annotation	AnnotationWindow		Tippanee
-Asian fonts	AnnotationWindow		Asia Lipi
-Author	AnnotationWindow		Lekhak
-Automatic	AnnotationWindow		Svachaalit
-current	AnnotationWindow		Vartaman
-Date:	AnnotationWindow		Dinaank:
-Display	AnnotationWindow		Pradarshan
-Document	AnnotationWindow		Dastaavez
-Filled rectangle	AnnotationWindow		Poorn  Aayat
-Font:	AnnotationWindow		Lipi:
-Fullscreen mode	AnnotationWindow		Poorn Patalik sadhan
-Invert vertical mouse scrolling	AnnotationWindow		Audha khada  mouse scrolling
-Open in workspace:	AnnotationWindow		Karyakhetra mein khole:
-Preferences	AnnotationWindow		Pasand:
-Restore page number	AnnotationWindow		prshth sankhya punarsthaapit karen
-Restore window position and size	AnnotationWindow		window kee sthiti aur aakaar ko punarsthaapit karen
+1	Hindi	application/x-vnd.sen-labs.Toji	453287713
 Selection rectangle	AnnotationWindow		Chayaan Aayat
-Show document view only	AnnotationWindow		keval dastaavez drshy dikhaen
-Show toolbar, statusbar and scrollbars, too	AnnotationWindow		toolbar, sthiti pattee aur scrollbars bhee dikhae
-Size:	AnnotationWindow		aakaar:
-Stroked rectangle	AnnotationWindow		pathareelee aayat
-System fonts	AnnotationWindow		machine lipi
-Title:	AnnotationWindow		Sheershak:
-User fonts	AnnotationWindow		Upayogakarta lipi
-Will take effect at next program launch.	AnnotationWindow		agale kaaryakram ke shubhaarambh par prabhaavee hoga.
-Alpha	BepdfApplication		Alpha
-Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku XPDF %s, %s. par aadhaarit hai
-Tsundoku: Error opening file!	BepdfApplication		Tsundoku: file kholane mein truti!
-Beta	BepdfApplication		Beta
-Close	BepdfApplication		band kare
-Development	BepdfApplication		vikaas
-Error	BepdfApplication		Truti
-Final	BepdfApplication		Antim
-Gamma	BepdfApplication		Gamma
-Golden Master	BepdfApplication		Golden Master
-Unknown	BepdfApplication		Anajaan
-Version	BepdfApplication		Sanskaran
-Auto open	TraceWindow		svachaalit kholein
-Clear	TraceWindow		saanf
-Error messages	TraceWindow		truti sandesh
-Floating	TraceWindow		chal
-Tsundoku status	StatusWindow		Tsundoku stithi
-Enter Password	PasswordWindow		Passowrd darj karen
-OK	PasswordWindow		Theek
-Owner password	PasswordWindow		Maalik ka password
-User password	PasswordWindow		Upayogakarta ka password
-Find	FindTextWindow		Khoj
-Find text	FindTextWindow		Paath Dhoondhna
-Find: 	FindTextWindow		Khoj:
-Ignore case	FindTextWindow		maamale ke antar ko anadekha karen
-Options	FindTextWindow		vikalp
-Page:	FindTextWindow		Prshth:
-Page: %d	FindTextWindow		Prshth: %d
-Search backwards	FindTextWindow		peechhe kee aur khojen
-Stop	FindTextWindow		Ruko
-OK	PDFSearch		Theek
-Search string not found.	PDFSearch		khoj string nahin milee.
-Error getting page number!	BepdfApplication		
-Invalid file reference received!	BepdfApplication		
+Toji reading file: 	PDFView		Toji pathan file:
+Cancel	PDFView		Radh karana
 a universal document reader based on BePDF, extended for SEN	BepdfApplication		
+Undo	PDFWindow		
+Go to previous page	PDFWindow		pichhale prshth par jaen
+Language	BepdfApplication		
+Subject:	FileInfoWindow		Vishay:
+Filled rectangle	AnnotationWindow		Poorn  Aayat
+Current	PDFView		
+Owner password	PasswordWindow		Maalik ka password
+ISBN	BepdfApplication		
+Strike out selection	PDFWindow		
+Pink	PDFView		
+Replace legacy attributes with standard ones	AnnotationWindow		
+OK	BepdfApplication		
+Text, shapes and drawing: choose one, then click or drag on the page	PDFWindow		
+Copy link to this place	PDFView		
+Add highlight	Document		
+Cancel	PDFWindow		
+Page	AnnotationsView		
+Delete	PDFWindow		Hataana
+Note	PDFView		
+Color	PrintSettingsWindow		Rang
+View	PDFWindow		Dekhna
+Search string not found.	PDFSearch		khoj string nahin milee.
+Normal	PrintSettingsWindow		Saadhaaran
+Copy	PDFWindow		
+No fill	PDFView		
+Redo	PDFWindow		
+File attachment	Document		
+Age rating:	FileInfoWindow		
+Zoom in	PDFWindow		Zoom in
+Notes: a margin note for selected text, a note or a text on the page	PDFWindow		
+Page:	FindTextWindow		Prshth:
+Rotation	PrintSettingsWindow		Chakkar
+Gamma	BepdfApplication		Gamma
+Error messages	TraceWindow		truti sandesh
+Jump to page	PDFWindow		prsth par jaen
+Move annotation	Document		
+DjVu document	BepdfApplication		
+Edit note…	PDFView		
+Fullscreen mode	AnnotationWindow		Poorn Patalik sadhan
+Author	BepdfApplication		
+Single page	PDFWindow		
+Mode	PrintSettingsWindow		Mode
+Publisher	BepdfApplication		
+Save as…	PDFWindow		ke roop rakshit karen…
+Issue tracker…	PDFWindow		mudda par nazar rakhane vaala…
+Printing:	FileInfoWindow		Mudran:
+Add ellipse	Document		
+The document could not be saved.	PDFWindow		
+Copy link to this place	PDFWindow		
+Top to bottom	PDFWindow		
+Zoom must be between 25 and 400!	PrintSettingsWindow		Zoom 25 aur 400 ke beech hona chaahie!
+Open…	PDFWindow		Kholee...
+ (annotated)	PDFWindow		
+Show toolbar, statusbar and scrollbars, too	AnnotationWindow		toolbar, sthiti pattee aur scrollbars bhee dikhae
+Show page list	PDFWindow		Prshth soochee dikhaen
+current	AnnotationWindow		Vartaman
+OK	PasswordWindow		Theek
+Document	OutlinesWindow		Dastaavez
+Invert vertical mouse scrolling	AnnotationWindow		Audha khada  mouse scrolling
+Page setup…	PDFWindow		Prshth byabastha…
+Text	Document		
+Stroked rectangle	AnnotationWindow		pathareelee aayat
+OK	NoteWindow		
+Find: 	FindTextWindow		Khoj:
+Zoom	PDFWindow		Zoom
+Larger text	PDFWindow		
+ISBN:	FileInfoWindow		
+Text	PDFView		
+Text	PDFWindow		
+Open in workspace:	AnnotationWindow		Karyakhetra mein khole:
+This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.	PDFWindow		
+Go to next page	PDFWindow		agale pej par jaen
+Restore page number	AnnotationWindow		prshth sankhya punarsthaapit karen
+Last	PDFWindow		Antim
+Hide sidebar	PDFWindow		
+Add line	Document		
+Find next	PDFWindow		agala dhoondho
+Arrow	PDFWindow		
+Series number	BepdfApplication		
+Note	Document		
+All pages	PrintSettingsWindow		Sabhee prshthon
+Describe annotations of other programs in the file's attributes	AnnotationWindow		
+Go to start of document	PDFWindow		dastaavez kee shuruaat karane ke lie jao
+Pages	BepdfApplication		
+Highlight	PDFView		
+Go forward 10 pages	PDFWindow		10 pej aage badhen
+Go back 10 pages	PDFWindow		10 pej peechhe jaen
+Fit to page width	PDFWindow		prsth ke chaudaee ke liye fit
+Toji link	BepdfApplication		
+DPI	PrintSettingsWindow		DPI
+Find…	PDFWindow		Khoj...
+Title page alone	PDFWindow		
+Odd pages	PrintSettingsWindow		Visham prshth
+Laying out the book…	PDFView		
+Show bookmarks	PDFWindow		Bookmark dikhaen
+Description	BepdfApplication		
+Max. printer resolution	PrintSettingsWindow		Max. printer resolution
+Strike out	PDFView		
+Reading direction	BepdfApplication		
+Edit text…	PDFView		
+Delete annotation	PDFView		
+Quit	PDFWindow		chhodana
+About Toji	BepdfApplication		
+The copy could not be saved.	PDFWindow		
+Fullscreen mode	PDFWindow		Poorn-screen mode
+File	PDFWindow		File
+Options	FindTextWindow		vikalp
+Find text	FindTextWindow		Paath Dhoondhna
+Clear	TraceWindow		saanf
+toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
+Print	PrintSettingsWindow		Chhaap
+Enter Password	PasswordWindow		Passowrd darj karen
+Online help…	PDFWindow		Online sahaayata…
+Rectangle	Document		
+Copy	PDFView		
+Filename:	FileInfoWindow		File ka  naam:
+Series:	FileInfoWindow		
+First	PDFWindow		Pratham
+Copy link	PDFView		pratiroop jodana
+Add	PDFWindow		jodana
+Open in new window…	PDFWindow		Nayee window mein kholee...
+Yellow	PDFView		
+OK	PDFSearch		Theek
+Add arrow	Document		
+Version	BepdfApplication		Sanskaran
+Zoom (%)	PrintSettingsWindow		Zoom (%)
+Files that BePDF has opened have attributes with its own names (META:title, META:author, ...). Toji writes the same information with standard names (dc:title, dc:creator, ...) in any case. The legacy attributes are kept unless this is on: then they are removed.	AnnotationWindow		
+Custom zoom factor (%d%%)	PDFWindow		Custom zoom factor (%d%%)
+Arrow	Document		
+Abort	PrintingProgressWindow		nirast karen
+Add drawing	Document		
+Go to end of document	PDFWindow		dastaavez ke ant mein jaen
+Beta	BepdfApplication		Beta
+Auto open	TraceWindow		svachaalit kholein
+Back	PDFWindow		Vaapas
+Pages	PrintSettingsWindow		Prshthon
+Upgrade	PDFWindow		
+%1 (p%2)	PDFWindow	Name of a bookmark: the section (1) and the page (2)	
+Final	BepdfApplication		Antim
+Show error messages	PDFWindow		Truti sandesh dikhaen
+Document	FileInfoWindow		dastaavez
+Width: 	PrintSettingsWindow		chaudaee:
+Author:	FileInfoWindow		Lekhak:
+Orange	PDFView		
+Show sidebar	PDFWindow		
+Annotations	BepdfApplication		
+Security	FileInfoWindow		Suraksha
+of %d	PDFWindow		% d ka
+Keywords	BepdfApplication		
+Denied	FileInfoWindow		inkaar kiya
+Order	PrintSettingsWindow		Kram
+Add strike out	Document		
+Highlight	Document		
+Show annotations	PDFWindow		
+Published	BepdfApplication		
+Resize annotation	Document		
+Stamp	Document		
+Page: %d	FindTextWindow		Prshth: %d
+Add underline	Document		
+Page	PDFWindow		Prshth
+Producer:	FileInfoWindow		utpaadak:
+Page list	PDFWindow		
+Title	BepdfApplication		
+(read-only)	PDFView		
+Keywords:	FileInfoWindow		Keywords:
+Annotation	Document		
+Blue	PDFView		
+Forward in page history list	PDFWindow		prshth itihaas soochee mein aage
+Page:	PrintingProgressWindow		Prsth:
+Find next…	PDFWindow		agala dhoondho...
+Ellipse	PDFView		
+Change color	Document		
+Change note	Document		
+Display	AnnotationWindow		Pradarshan
+Line width	PDFView		
+Right to left	PDFWindow		
+Visit homepage…	PDFWindow		Homepage par jaen...
+Even pages	PrintSettingsWindow		Sam prsthon
+Stop	FindTextWindow		Ruko
+Subjects:	FileInfoWindow		
+Marker: choose a color, then select the text	PDFWindow		
+Bookmarks	BepdfApplication		
+Print	PDFWindow		Chhaap
+Find previous…	PDFWindow		
+Line	PDFWindow		
+ in	PrintSettingsWindow		mein
+Unknown	BepdfApplication		Anajaan
+Show margin notes	PDFWindow		
+Bookmark	PDFWindow		Bookmark
+The file could not be saved.	AttachmentsView		
+Note	NoteWindow		
+Next	PDFWindow		aagaamee
+Drawing	PDFView		
+Reverse	PrintSettingsWindow		Oolta
+Close	BepdfApplication		band kare
+Keep	PDFWindow		
+Page: %d	PrintingProgressWindow		Prsth: %d
+Note	PDFWindow		
+Strike out	Document		
+Rotate counter-clockwise	PDFWindow		ghadee kee sooee ke viparit disha mein ghumaayen
+Select none	PDFWindow		kisee ka chayan na karen
+Format:	FileInfoWindow		
+Smaller text	PDFWindow		
+Alpha	BepdfApplication		Alpha
+<empty>	OutlinesWindow		<khalee>
+1 annotation	AnnotationsView		
+Add squiggly line	Document		
+Language:	FileInfoWindow		
+Annotations	PDFWindow		
+Forward	PDFWindow		aage
+Electronic publication (EPUB)	BepdfApplication		
+OK	AttachmentsView		
+Toji status	StatusWindow		Toji stithi
+Golden Master	BepdfApplication		Golden Master
+Bookmarks	PDFWindow		
+Comic book (ZIP)	BepdfApplication		
+%d points	PDFView		
+Show or hide the sidebar	PDFWindow		
+Delete annotation	Document		
+Author	AnnotationWindow		Lekhak
+Comic book (TAR)	BepdfApplication		
+Publisher:	FileInfoWindow		
+Green	PDFView		
+Zoom out	PDFWindow		Zoom out
+Add margin note	PDFWindow		
+Continuous	PDFWindow		
+Comic book (7z)	BepdfApplication		
+Restore window position and size	AnnotationWindow		window kee sthiti aur aakaar ko punarsthaapit karen
+Rectangle	PDFView		
+Line	Document		
+Identifier	BepdfApplication		
+Margin note	PDFView		
+Modified:	FileInfoWindow		Sanshodhit:
+Arrow	PDFView		
+Description:	FileInfoWindow		
+Add	PDFView		
+Save	PDFWindow		
+About Toji…	PDFWindow		Toji ke barein mein...
+Go to page %d	PDFView		prshth% d par jaen
+Ellipse	Document		
+OK	OutlinesWindow		Theek
+Reading:	FileInfoWindow		
+Ellipse	PDFWindow		
+Annotations:	FileInfoWindow		Tipanee:
+Published:	FileInfoWindow		
+Select all	PDFWindow		sabhee ka chayan kare
+Fill	PDFView		
+OK	PDFWindow		Theek
+Previous	PDFWindow		pichhala
+Search	PDFWindow		Dhoondhna
+File info	FileInfoWindow		File jankaaree
+OK	PrintSettingsWindow		Theek
+Series	BepdfApplication		
+They can only be kept in a copy of the file.	PDFWindow		
+annotations	AnnotationsView		
+Open file	PDFWindow		khulee file
+Preferences	AnnotationWindow		Pasand:
+Toji™, SEN™ and SEN Labs™ are names of SEN Labs e.U.	BepdfApplication		
+Print settings	PrintSettingsWindow		Chaapne ki settings
+Excerpt	AnnotationsView		
+Back in page history list	PDFWindow		prshth itihaas soochee mein vaapas
+Creator	BepdfApplication		
+Copy	TraceWindow		
+The document has unsaved changes (annotations).	PDFWindow		
+Find	PDFWindow		Khoj
+Double-sided	PDFWindow		
+Yes	FileInfoWindow		Haan
+[unknown link]	PDFView		[agyaat link]
+Cancel	NoteWindow		
+Select all	PDFView		
+Floating	TraceWindow		chal
+Link to a place in a document (toji:)	BepdfApplication		
+Stop	PrintingProgressWindow		Ruken
+Show attachments	PDFWindow		Sanlagnak dikhaen
+Show help…	PDFWindow		Madad dikhaen...
+Edit	PDFWindow		sampaadit karen
+Toji printing	PrintingProgressWindow		Toji ki chapae
+Search backwards	FindTextWindow		peechhe kee aur khojen
+Highlight selection	PDFWindow		
+EPUB version:	FileInfoWindow		
+Reload	PDFWindow		Punah laadna
+Add text	Document		
+Underline selection	PDFWindow		
+Toji renders with MuPDF %s, %s.	BepdfApplication	MuPDF version, copyright	
+Red	PDFView		
+Help	PDFWindow		Madad
+Rotation	PDFWindow		Chakkar
+Show document view only	AnnotationWindow		keval dastaavez drshy dikhaen
+Encrypted:	FileInfoWindow		Ko gopit:
+Web:	FileInfoWindow		
+Gray scale	PrintSettingsWindow		Gray scale
+Save…	AttachmentsView		
+Note on the page	PDFView		
+Type	AnnotationsView		
+Close	PDFWindow		Band kare
+Color	PDFView		
+No title	OutlinesWindow		koee sheershak nahin
+Page	PrintSettingsWindow		Prshth
+Discard	PDFWindow		
+Created:	FileInfoWindow		banaaya tha:
+Open in new window	PDFView		Naya window mai khole
+Height: 	PrintSettingsWindow		Oonchaee:
+Text on the page	PDFView		
+File info…	PDFWindow		File ke baare mein…
+This file is read-only. You can add annotations, but to keep them you have to save a copy with “Save as…”.	PDFView		
+Allowed	FileInfoWindow		Anumati
+Comic book (RAR)	BepdfApplication		
+Development	BepdfApplication		vikaas
+Add note	Document		
+Attributes of BePDF	PDFWindow		
+No	FileInfoWindow		nahin
+Pages:	FileInfoWindow		
+Edit note	Document		
+Reload file	PDFWindow		Punah file laadna
+Fit to page	PDFWindow		prsth ke liye fit
+Document	AnnotationWindow		Dastaavez
+Continue	PDFView		
+Settings…	PDFWindow		
+Print…	PDFWindow		Chhaap…
+Path:	FileInfoWindow		Path:
+Page %d	PDFWindow		Prshth %d
+Copy & paste:	FileInfoWindow		Nakal karo aur chipkao
+Edit title for bookmark	OutlinesWindow		Bookmark ke lie sheershak sampaadit karen
+Toji printing document: 	PrintingProgressWindow		Toji chapne ki dastaveez:
+Chapter	PDFWindow		
+Comic book (BBF)	BepdfApplication		
+EPUB e-book	BepdfApplication		
+Title:	FileInfoWindow		sheershak:
+Fullscreen	PDFWindow		Poorn-screen
+Underline	Document		
+Add rectangle	Document		
+User defined	OutlinesWindow		upayogakarta paribhaashit
+No annotations	AnnotationsView		
+Line	PDFView		
+Change line	Document		
+Copy as Web Annotation	PDFView		
+Attachments	PDFWindow		
+right to left	FileInfoWindow		
+Editing:	FileInfoWindow		Sampaadan:
+Drawing	Document		
+Invalid file reference received!	BepdfApplication		
+Squiggly line	Document		
+Toji: Error opening file!	BepdfApplication		Toji: file kholane mein truti!
+User password	PasswordWindow		Upayogakarta ka password
+Identifier:	FileInfoWindow		
+Find	FindTextWindow		Khoj
+Ignore case	FindTextWindow		maamale ke antar ko anadekha karen
+Creator:	FileInfoWindow		banaane vaala:
+Error	BepdfApplication		Truti
+When a PDF file is opened, its annotations are described in the attribute SEN:annotations, and those that have no name get an identifier, so that other programs can refer to them. The PDF file is not changed.	AnnotationWindow		
+Wrong parameter!	PrintSettingsWindow		Galat parameter!
+Rotate clockwise	PDFWindow		ghadee kee suee kee disha mein ghumao
+Drawing	PDFWindow		
+Rectangle	PDFWindow		
+Underline	PDFView		
+Artists:	FileInfoWindow		

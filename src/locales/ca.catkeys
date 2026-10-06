@@ -1,257 +1,361 @@
-1	Catalan	application/x-vnd.sen-labs.Tsundoku	2450431064
- in	PrintSettingsWindow		 a
-All pages	PrintSettingsWindow		Totes les pàgines
-Color	PrintSettingsWindow		Color
-DPI	PrintSettingsWindow		DPI
-Even pages	PrintSettingsWindow		Pàgines parells
-Gray scale	PrintSettingsWindow		Escala de grisos
-Height: 	PrintSettingsWindow		Alçada: 
-Max. printer resolution	PrintSettingsWindow		Resolució màx. de la impressora
-Mode	PrintSettingsWindow		Mode
-Normal	PrintSettingsWindow		Normal
-Odd pages	PrintSettingsWindow		Pàgines senars
-OK	PrintSettingsWindow		D'acord
-Order	PrintSettingsWindow		Ordre
-Page	PrintSettingsWindow		Pàgina
-Pages	PrintSettingsWindow		Pàgines
-Print	PrintSettingsWindow		Imprimeix
-Print settings	PrintSettingsWindow		Configuració de la impressió
-Reverse	PrintSettingsWindow		Inversa
-Rotation	PrintSettingsWindow		Rotació
-Width: 	PrintSettingsWindow		Amplada: 
-Wrong parameter!	PrintSettingsWindow		Paràmetre incorrecte!
-Zoom (%)	PrintSettingsWindow		Ampliació (%)
-Zoom must be between 25 and 400!	PrintSettingsWindow		L'ampliació ha de ser d'entre 25 i 400!
-[internal link]	PDFView		[enllaç intern]
-[link type 'movie' not supported]	PDFView		[no s'admet el tipus d'enllaç "movie"]
-[unknown link]	PDFView		[enllaç desconegut]
-Annotation	PDFView		Anotació
-Tsundoku reading file: 	PDFView		Fitxer de lectura de Tsundoku:
-Tsundoku: Launch	PDFView		Tsundoku: inicia
-Cancel	PDFView		Cancel·la
-Copy link	PDFView		Copia l'enllaç
-Delete	PDFView		Suprimeix
-Edit	PDFView		Edita
-Execute the command:	PDFView		Executa l'ordre:
-Go to page %d	PDFView		Ves a la pàgina %d
-Leave annotation editing mode	PDFView		Abandona el mode d’edició d’anotacions
-OK	PDFView		D'acord
-Open in new window	PDFView		Obre en una finestra nova
-Properties	PDFView		Propietats
-Save file attachment as…	PDFView		Desa el fitxer adjunt com a...
-Saving file attachment:	PDFView		Es desa el fitxer adjunt:
-Unknown link action type: '%s'	PDFView		Tipus d'acció d'enllaç desconegut: %s
-<empty>	OutlinesWindow		<buit>
-Document	OutlinesWindow		Document
-Edit title for bookmark	OutlinesWindow		Edita el títol per al marcador
-No title	OutlinesWindow		Sense títol
-OK	OutlinesWindow		D'acord
-User defined	OutlinesWindow		Definit per l'usuari
-<empty>	AttachmentView		<buit>
-Description	AttachmentView		Descripció
-File name	AttachmentView		Nom del fitxer
-Save attachment(s) as	AttachmentView		Desa els adjunts com a
-Save selected attachment to file	AttachmentView		Desa l'adjunt seleccionat en un fitxer
-Save selected attachments into directory	AttachmentView		Desa els adjunts seleccionats en un directori
-Saving attachment(s):	AttachmentView		Es desen els adjunts:
-Abort	PrintingProgressWindow		Avorta
-Tsundoku printing	PrintingProgressWindow		El Tsundoku imprimeix
-Tsundoku printing document: 	PrintingProgressWindow		Document que el Tsundoku imprimeix:
-Page:	PrintingProgressWindow		Pàgina:
-Page: %d	PrintingProgressWindow		Pàgina: %d
-Stop	PrintingProgressWindow		Atura
-Abort	FileInfoWindow		Avorta
-Allowed	FileInfoWindow		Permès
-Annotations:	FileInfoWindow		Anotacions:
-Author:	FileInfoWindow		Autor:
-Copy & paste:	FileInfoWindow		Copia i enganxa:
-Created:	FileInfoWindow		Creat:
-Creator:	FileInfoWindow		Creador:
-Denied	FileInfoWindow		Denegat
-Document	FileInfoWindow		Document
-Editing:	FileInfoWindow		Edició:
-Embedded name	FileInfoWindow		Nom encastat
-Encrypted:	FileInfoWindow		Encriptat:
-File info	FileInfoWindow		Informació del fitxer
-Filename:	FileInfoWindow		Nom del fitxer:
-Fonts of this page	FileInfoWindow		Codi d'aquesta pàgina
-Keywords:	FileInfoWindow		Paraules clau:
-Linearized:	FileInfoWindow		Linealitzat:
-Modified:	FileInfoWindow		Modificat:
-Name	FileInfoWindow		Nom
-No	FileInfoWindow		No
-Path:	FileInfoWindow		Camí:
-Printing:	FileInfoWindow		Impressió:
-Producer:	FileInfoWindow		Productor:
-Security	FileInfoWindow		Seguretat
-Show all fonts	FileInfoWindow		Mostra totes les lletres
-Subject:	FileInfoWindow		Assumpte:
-Title:	FileInfoWindow		Títol:
-Type	FileInfoWindow		Tipus
-Version:	FileInfoWindow		Versió:
-Yes	FileInfoWindow		Sí
-About Tsundoku…	PDFWindow		Quant a Tsundoku…
-Add	PDFWindow		Afegeix
-Add circle annotation	PDFWindow		Afegeix una anotació de cercle
-Add comment text annotation	PDFWindow		Afegeix una anotació de text de comentari
-Add file attachment annotation	PDFWindow		Afegeix una anotació de fitxer adjunt
-Add free text annotation	PDFWindow		Afegeix una anotació de text lliure
-Add help text annotation	PDFWindow		Afegeix una anotació de text d’ajuda
-Add highlight annotation	PDFWindow		Afegeix una anotació destacada
-Add ink annotation	PDFWindow		Afegeix una anotació de tinta
-Add insert text annotation	PDFWindow		Afegeix una anotació d'inserció de text
-Add key text annotation	PDFWindow		Afegeix una anotació de text clau
-Add line annotation	PDFWindow		Afegeix una anotació de línia
-Add link annotation	PDFWindow		Afegeix una anotació d'enllaç
-Add movie annotation	PDFWindow		Afegeix una anotació de pel·lícula
-Add new paragraph text annotation	PDFWindow		Afegeix una anotació de text de paràgraf nou
-Add note text annotation	PDFWindow		Afegeix una anotació de text de nota
-Add paragraph text annotation	PDFWindow		Afegeix una anotació de text de paràgraf
-Add popup annotation	PDFWindow		Afegeix una anotació emergent
-Add printer mark annotation	PDFWindow		Afegeix una anotació de marca d'impressora
-Add sound annotation	PDFWindow		Afegeix una anotació de so
-Add square annotation	PDFWindow		Afegeix una anotació quadrada
-Add squiggly annotation	PDFWindow		Afegeix una anotació de línia serpentejant
-Add stamp annotation	PDFWindow		Afegeix una anotació de segell
-Add strikeout annotation	PDFWindow		Afegeix una anotació de ratllada
-Add trapnet annotation	PDFWindow		Afegiu una anotació de tampa de xarxa
-Add underline annotation	PDFWindow		Afegeix una anotació de subratllat
-Add widget annotation	PDFWindow		Afegeix una anotació de giny
-Back	PDFWindow		Enrere
-Back in page history list	PDFWindow		Enrere en la llista de l'historial de pàgines
-Bookmark	PDFWindow		Marcador
-Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		No es pot sobreescriure un fitxer PDF obert actualment al Tsundoku! Si us plau, trieu un altre nom de fitxer.
-Close	PDFWindow		Tanca
-Copy selection	PDFWindow		Copia la selecció
-Could not write PDF file!	PDFWindow		No s'ha pogut escriure el fitxer PDF!
-Custom zoom factor (%d%%)	PDFWindow		Zoom personalitzat (%d%%)
-Delete	PDFWindow		Suprimeix
-Edit	PDFWindow		Edita
-Editing of annotations in an encrypted PDF file isn't supported yet!	PDFWindow		L'edició de les anotacions en un fitxer PDF encriptat encara no s'admet.
-English.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	English.pdf
-File	PDFWindow		Fitxer
-File info…	PDFWindow		Informació del fitxer...
-Find	PDFWindow		Troba
-Find next	PDFWindow		Troba'n el següent
-Find next…	PDFWindow		Troba'n el següent...
-Find…	PDFWindow		Troba...
-First	PDFWindow		Primera
-Fit to page	PDFWindow		Ajusta a la pàgina
-Fit to page width	PDFWindow		Ajusta a l'amplada de la pàgina
-Forward	PDFWindow		Endavant
-Forward in page history list	PDFWindow		Endavant en la llista de pàgines de l'historial
-Fullscreen	PDFWindow		Pantalla completa
-Fullscreen mode	PDFWindow		Mode de pantalla completa
-Go back 10 pages	PDFWindow		Ves enrere 10 pàgines
-Go forward 10 pages	PDFWindow		Ves endavant 10 pàgines
-Go to end of document	PDFWindow		Ves al final del document
-Go to next page	PDFWindow		Ves a la pàgina següent
-Go to previous page	PDFWindow		Ves a la pàgina anterior
-Go to start of document	PDFWindow		Ves a l'inici del document
-Help	PDFWindow		Ajuda
-Hide side bar	PDFWindow		Amaga la barra lateral
-Issue tracker…	PDFWindow		Seguiment de problemes...
-Jump to page	PDFWindow		Salta a la pàgina
-Last	PDFWindow		Darrera
-Leave annotation editing mode	PDFWindow		Abandona el mode d’edició d’anotacions
-Next	PDFWindow		Següent
-of %d	PDFWindow		de %d
-OK	PDFWindow		D'acord
-Online help…	PDFWindow		Ajuda en línia...
-Open file	PDFWindow		Obre un fitxer
-Open in new window…	PDFWindow		Obre en una finestra nova...
-Open…	PDFWindow		Obre...
-Page	PDFWindow		Pàgina
-Page %d	PDFWindow		Pàgina %d
-Page setup…	PDFWindow		Configuració de la pàgina...
-PDF file successfully written!	PDFWindow		Fitxer PDF escrit correctament!
-Preferences…	PDFWindow		Preferències…
-Previous	PDFWindow		Anterior
-Print	PDFWindow		Imprimeix
-Print…	PDFWindow		Imprimeix...
-Quit	PDFWindow		Surt
-Reload	PDFWindow		Torna a carregar
-Reload file	PDFWindow		Torna a carregar el fitxer
-Rotate clockwise	PDFWindow		Gira en el sentit del rellotge
-Rotate counter-clockwise	PDFWindow		Gira en sentit antihorari
-Rotation	PDFWindow		Rotació
-Save as…	PDFWindow		Desa com a...
-Save file as	PDFWindow		Desa el fitxer com a
-Saving copy of PDF file:	PDFWindow		Es desa la còpia del fitxer PDF:
-Search	PDFWindow		Cerca
-Select all	PDFWindow		Selecciona-ho tot
-Select none	PDFWindow		Desmarca-ho tot
-Show annotation tool bar	PDFWindow		Mostra la barra d’eines d’anotació
-Show annotation toolbar	PDFWindow		Mostra la barra d’eines d’anotació
-Show attachments	PDFWindow		Mostra els adjunts
-Show bookmarks	PDFWindow		Mostra els marcadors
-Show error messages	PDFWindow		Mostra els missatges d'error
-Show help…	PDFWindow		Mostra l'ajuda...
-Show page list	PDFWindow		Mostra la llista de pàgines
-View	PDFWindow		Visualització
-Visit homepage…	PDFWindow		Visita la pàgina d'inici
-Warning	PDFWindow		Avís
-Zoom	PDFWindow		Zoom
-Zoom in	PDFWindow		Amplia
-Zoom out	PDFWindow		Redueix
-Align:	AnnotationWindow		Alineació:
-Annotation	AnnotationWindow		Anotació
-Asian fonts	AnnotationWindow		Lletres asiàtiques
-Author	AnnotationWindow		Autor
-Automatic	AnnotationWindow		Automàtic
-current	AnnotationWindow		actual
-Date:	AnnotationWindow		Data:
-Display	AnnotationWindow		Pantalla
-Document	AnnotationWindow		Document
-Filled rectangle	AnnotationWindow		Rectangle ple
-Font:	AnnotationWindow		Lletra:
-Fullscreen mode	AnnotationWindow		Mode de pantalla completa
-Invert vertical mouse scrolling	AnnotationWindow		Inverteix el desplaçament del ratolí vertical
-Open in workspace:	AnnotationWindow		Obre a l'espai de treball:
-Preferences	AnnotationWindow		Preferències
-Restore page number	AnnotationWindow		Restaura el número de pàgina
-Restore window position and size	AnnotationWindow		Restaura la posició i la mida de la finestra
+1	Catalan	application/x-vnd.sen-labs.Toji	453287713
 Selection rectangle	AnnotationWindow		Rectangle de selecció
-Show document view only	AnnotationWindow		Mostra només la visualització de documents
-Show toolbar, statusbar and scrollbars, too	AnnotationWindow		Mostra la barra d’eines, la barra d’estat i les barres de desplaçament, també
-Size:	AnnotationWindow		Mida:
-Stroked rectangle	AnnotationWindow		Rectangle traçat
-System fonts	AnnotationWindow		Lletres del sistema
-Title:	AnnotationWindow		Títol:
-User fonts	AnnotationWindow		Lletres de l'usuari
-Will take effect at next program launch.	AnnotationWindow		Tindrà efecte al proper inici del programa.
-Alpha	BepdfApplication		Alfa
-Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku està basat en XPDF %s, %s.
-Tsundoku: Error opening file!	BepdfApplication		Tsundoku: error en obrir el fitxer!
-Beta	BepdfApplication		Beta
-Close	BepdfApplication		Tanca
-Development	BepdfApplication		Desenvolupament
-Error	BepdfApplication		Error
-Final	BepdfApplication		Final
-Gamma	BepdfApplication		Gamma
-Golden Master	BepdfApplication		Mestre d’Or
-Unknown	BepdfApplication		Desconegut
-Version	BepdfApplication		Versió
-Auto open	TraceWindow		Obre automàticament
-Clear	TraceWindow		Neteja
-Error messages	TraceWindow		Missatges d'error
-Floating	TraceWindow		Flotant
-Tsundoku status	StatusWindow		Estat del Tsundoku
-Enter Password	PasswordWindow		Escriviu la contrasenya
-OK	PasswordWindow		D'acord
-Owner password	PasswordWindow		Contrasenya del propietari
-User password	PasswordWindow		Contrasenya de l’usuari
-Find	FindTextWindow		Troba
-Find text	FindTextWindow		Troba el text:
-Find: 	FindTextWindow		Troba:
-Ignore case	FindTextWindow		Ignora'n la caixa
-Options	FindTextWindow		Opcions
-Page:	FindTextWindow		Pàgina:
-Page: %d	FindTextWindow		Pàgina: %d
-Search backwards	FindTextWindow		Cerca enrere
-Stop	FindTextWindow		Interromp
-OK	PDFSearch		D'acord
-Search string not found.	PDFSearch		No s'ha trobat la cadena de cerca.
-Error getting page number!	BepdfApplication		
-Invalid file reference received!	BepdfApplication		
+Toji reading file: 	PDFView		Fitxer de lectura de Toji:
+Cancel	PDFView		Cancel·la
 a universal document reader based on BePDF, extended for SEN	BepdfApplication		
+Undo	PDFWindow		
+Go to previous page	PDFWindow		Ves a la pàgina anterior
+Language	BepdfApplication		
+Subject:	FileInfoWindow		Assumpte:
+Filled rectangle	AnnotationWindow		Rectangle ple
+Current	PDFView		
+Owner password	PasswordWindow		Contrasenya del propietari
+ISBN	BepdfApplication		
+Strike out selection	PDFWindow		
+Pink	PDFView		
+Replace legacy attributes with standard ones	AnnotationWindow		
+OK	BepdfApplication		
+Text, shapes and drawing: choose one, then click or drag on the page	PDFWindow		
+Copy link to this place	PDFView		
+Add highlight	Document		
+Cancel	PDFWindow		
+Page	AnnotationsView		
+Delete	PDFWindow		Suprimeix
+Note	PDFView		
+Color	PrintSettingsWindow		Color
+View	PDFWindow		Visualització
+Search string not found.	PDFSearch		No s'ha trobat la cadena de cerca.
+Normal	PrintSettingsWindow		Normal
+Copy	PDFWindow		
+No fill	PDFView		
+Redo	PDFWindow		
+File attachment	Document		
+Age rating:	FileInfoWindow		
+Zoom in	PDFWindow		Amplia
+Notes: a margin note for selected text, a note or a text on the page	PDFWindow		
+Page:	FindTextWindow		Pàgina:
+Rotation	PrintSettingsWindow		Rotació
+Gamma	BepdfApplication		Gamma
+Error messages	TraceWindow		Missatges d'error
+Jump to page	PDFWindow		Salta a la pàgina
+Move annotation	Document		
+DjVu document	BepdfApplication		
+Edit note…	PDFView		
+Fullscreen mode	AnnotationWindow		Mode de pantalla completa
+Author	BepdfApplication		
+Single page	PDFWindow		
+Mode	PrintSettingsWindow		Mode
+Publisher	BepdfApplication		
+Save as…	PDFWindow		Desa com a...
+Issue tracker…	PDFWindow		Seguiment de problemes...
+Printing:	FileInfoWindow		Impressió:
+Add ellipse	Document		
+The document could not be saved.	PDFWindow		
+Copy link to this place	PDFWindow		
+Top to bottom	PDFWindow		
+Zoom must be between 25 and 400!	PrintSettingsWindow		L'ampliació ha de ser d'entre 25 i 400!
+Open…	PDFWindow		Obre...
+ (annotated)	PDFWindow		
+Show toolbar, statusbar and scrollbars, too	AnnotationWindow		Mostra la barra d’eines, la barra d’estat i les barres de desplaçament, també
+Show page list	PDFWindow		Mostra la llista de pàgines
+current	AnnotationWindow		actual
+OK	PasswordWindow		D'acord
+Document	OutlinesWindow		Document
+Invert vertical mouse scrolling	AnnotationWindow		Inverteix el desplaçament del ratolí vertical
+Page setup…	PDFWindow		Configuració de la pàgina...
+Text	Document		
+Stroked rectangle	AnnotationWindow		Rectangle traçat
+OK	NoteWindow		
+Find: 	FindTextWindow		Troba:
+Zoom	PDFWindow		Zoom
+Larger text	PDFWindow		
+ISBN:	FileInfoWindow		
+Text	PDFView		
+Text	PDFWindow		
+Open in workspace:	AnnotationWindow		Obre a l'espai de treball:
+This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.	PDFWindow		
+Go to next page	PDFWindow		Ves a la pàgina següent
+Restore page number	AnnotationWindow		Restaura el número de pàgina
+Last	PDFWindow		Darrera
+Hide sidebar	PDFWindow		
+Add line	Document		
+Find next	PDFWindow		Troba'n el següent
+Arrow	PDFWindow		
+Series number	BepdfApplication		
+Note	Document		
+All pages	PrintSettingsWindow		Totes les pàgines
+Describe annotations of other programs in the file's attributes	AnnotationWindow		
+Go to start of document	PDFWindow		Ves a l'inici del document
+Pages	BepdfApplication		
+Highlight	PDFView		
+Go forward 10 pages	PDFWindow		Ves endavant 10 pàgines
+Go back 10 pages	PDFWindow		Ves enrere 10 pàgines
+Fit to page width	PDFWindow		Ajusta a l'amplada de la pàgina
+Toji link	BepdfApplication		
+DPI	PrintSettingsWindow		DPI
+Find…	PDFWindow		Troba...
+Title page alone	PDFWindow		
+Odd pages	PrintSettingsWindow		Pàgines senars
+Laying out the book…	PDFView		
+Show bookmarks	PDFWindow		Mostra els marcadors
+Description	BepdfApplication		
+Max. printer resolution	PrintSettingsWindow		Resolució màx. de la impressora
+Strike out	PDFView		
+Reading direction	BepdfApplication		
+Edit text…	PDFView		
+Delete annotation	PDFView		
+Quit	PDFWindow		Surt
+About Toji	BepdfApplication		
+The copy could not be saved.	PDFWindow		
+Fullscreen mode	PDFWindow		Mode de pantalla completa
+File	PDFWindow		Fitxer
+Options	FindTextWindow		Opcions
+Find text	FindTextWindow		Troba el text:
+Clear	TraceWindow		Neteja
+toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
+Print	PrintSettingsWindow		Imprimeix
+Enter Password	PasswordWindow		Escriviu la contrasenya
+Online help…	PDFWindow		Ajuda en línia...
+Rectangle	Document		
+Copy	PDFView		
+Filename:	FileInfoWindow		Nom del fitxer:
+Series:	FileInfoWindow		
+First	PDFWindow		Primera
+Copy link	PDFView		Copia l'enllaç
+Add	PDFWindow		Afegeix
+Open in new window…	PDFWindow		Obre en una finestra nova...
+Yellow	PDFView		
+OK	PDFSearch		D'acord
+Add arrow	Document		
+Version	BepdfApplication		Versió
+Zoom (%)	PrintSettingsWindow		Ampliació (%)
+Files that BePDF has opened have attributes with its own names (META:title, META:author, ...). Toji writes the same information with standard names (dc:title, dc:creator, ...) in any case. The legacy attributes are kept unless this is on: then they are removed.	AnnotationWindow		
+Custom zoom factor (%d%%)	PDFWindow		Zoom personalitzat (%d%%)
+Arrow	Document		
+Abort	PrintingProgressWindow		Avorta
+Add drawing	Document		
+Go to end of document	PDFWindow		Ves al final del document
+Beta	BepdfApplication		Beta
+Auto open	TraceWindow		Obre automàticament
+Back	PDFWindow		Enrere
+Pages	PrintSettingsWindow		Pàgines
+Upgrade	PDFWindow		
+%1 (p%2)	PDFWindow	Name of a bookmark: the section (1) and the page (2)	
+Final	BepdfApplication		Final
+Show error messages	PDFWindow		Mostra els missatges d'error
+Document	FileInfoWindow		Document
+Width: 	PrintSettingsWindow		Amplada: 
+Author:	FileInfoWindow		Autor:
+Orange	PDFView		
+Show sidebar	PDFWindow		
+Annotations	BepdfApplication		
+Security	FileInfoWindow		Seguretat
+of %d	PDFWindow		de %d
+Keywords	BepdfApplication		
+Denied	FileInfoWindow		Denegat
+Order	PrintSettingsWindow		Ordre
+Add strike out	Document		
+Highlight	Document		
+Show annotations	PDFWindow		
+Published	BepdfApplication		
+Resize annotation	Document		
+Stamp	Document		
+Page: %d	FindTextWindow		Pàgina: %d
+Add underline	Document		
+Page	PDFWindow		Pàgina
+Producer:	FileInfoWindow		Productor:
+Page list	PDFWindow		
+Title	BepdfApplication		
+(read-only)	PDFView		
+Keywords:	FileInfoWindow		Paraules clau:
+Annotation	Document		
+Blue	PDFView		
+Forward in page history list	PDFWindow		Endavant en la llista de pàgines de l'historial
+Page:	PrintingProgressWindow		Pàgina:
+Find next…	PDFWindow		Troba'n el següent...
+Ellipse	PDFView		
+Change color	Document		
+Change note	Document		
+Display	AnnotationWindow		Pantalla
+Line width	PDFView		
+Right to left	PDFWindow		
+Visit homepage…	PDFWindow		Visita la pàgina d'inici
+Even pages	PrintSettingsWindow		Pàgines parells
+Stop	FindTextWindow		Interromp
+Subjects:	FileInfoWindow		
+Marker: choose a color, then select the text	PDFWindow		
+Bookmarks	BepdfApplication		
+Print	PDFWindow		Imprimeix
+Find previous…	PDFWindow		
+Line	PDFWindow		
+ in	PrintSettingsWindow		 a
+Unknown	BepdfApplication		Desconegut
+Show margin notes	PDFWindow		
+Bookmark	PDFWindow		Marcador
+The file could not be saved.	AttachmentsView		
+Note	NoteWindow		
+Next	PDFWindow		Següent
+Drawing	PDFView		
+Reverse	PrintSettingsWindow		Inversa
+Close	BepdfApplication		Tanca
+Keep	PDFWindow		
+Page: %d	PrintingProgressWindow		Pàgina: %d
+Note	PDFWindow		
+Strike out	Document		
+Rotate counter-clockwise	PDFWindow		Gira en sentit antihorari
+Select none	PDFWindow		Desmarca-ho tot
+Format:	FileInfoWindow		
+Smaller text	PDFWindow		
+Alpha	BepdfApplication		Alfa
+<empty>	OutlinesWindow		<buit>
+1 annotation	AnnotationsView		
+Add squiggly line	Document		
+Language:	FileInfoWindow		
+Annotations	PDFWindow		
+Forward	PDFWindow		Endavant
+Electronic publication (EPUB)	BepdfApplication		
+OK	AttachmentsView		
+Toji status	StatusWindow		Estat del Toji
+Golden Master	BepdfApplication		Mestre d’Or
+Bookmarks	PDFWindow		
+Comic book (ZIP)	BepdfApplication		
+%d points	PDFView		
+Show or hide the sidebar	PDFWindow		
+Delete annotation	Document		
+Author	AnnotationWindow		Autor
+Comic book (TAR)	BepdfApplication		
+Publisher:	FileInfoWindow		
+Green	PDFView		
+Zoom out	PDFWindow		Redueix
+Add margin note	PDFWindow		
+Continuous	PDFWindow		
+Comic book (7z)	BepdfApplication		
+Restore window position and size	AnnotationWindow		Restaura la posició i la mida de la finestra
+Rectangle	PDFView		
+Line	Document		
+Identifier	BepdfApplication		
+Margin note	PDFView		
+Modified:	FileInfoWindow		Modificat:
+Arrow	PDFView		
+Description:	FileInfoWindow		
+Add	PDFView		
+Save	PDFWindow		
+About Toji…	PDFWindow		Quant a Toji…
+Go to page %d	PDFView		Ves a la pàgina %d
+Ellipse	Document		
+OK	OutlinesWindow		D'acord
+Reading:	FileInfoWindow		
+Ellipse	PDFWindow		
+Annotations:	FileInfoWindow		Anotacions:
+Published:	FileInfoWindow		
+Select all	PDFWindow		Selecciona-ho tot
+Fill	PDFView		
+OK	PDFWindow		D'acord
+Previous	PDFWindow		Anterior
+Search	PDFWindow		Cerca
+File info	FileInfoWindow		Informació del fitxer
+OK	PrintSettingsWindow		D'acord
+Series	BepdfApplication		
+They can only be kept in a copy of the file.	PDFWindow		
+annotations	AnnotationsView		
+Open file	PDFWindow		Obre un fitxer
+Preferences	AnnotationWindow		Preferències
+Toji™, SEN™ and SEN Labs™ are names of SEN Labs e.U.	BepdfApplication		
+Print settings	PrintSettingsWindow		Configuració de la impressió
+Excerpt	AnnotationsView		
+Back in page history list	PDFWindow		Enrere en la llista de l'historial de pàgines
+Creator	BepdfApplication		
+Copy	TraceWindow		
+The document has unsaved changes (annotations).	PDFWindow		
+Find	PDFWindow		Troba
+Double-sided	PDFWindow		
+Yes	FileInfoWindow		Sí
+[unknown link]	PDFView		[enllaç desconegut]
+Cancel	NoteWindow		
+Select all	PDFView		
+Floating	TraceWindow		Flotant
+Link to a place in a document (toji:)	BepdfApplication		
+Stop	PrintingProgressWindow		Atura
+Show attachments	PDFWindow		Mostra els adjunts
+Show help…	PDFWindow		Mostra l'ajuda...
+Edit	PDFWindow		Edita
+Toji printing	PrintingProgressWindow		El Toji imprimeix
+Search backwards	FindTextWindow		Cerca enrere
+Highlight selection	PDFWindow		
+EPUB version:	FileInfoWindow		
+Reload	PDFWindow		Torna a carregar
+Add text	Document		
+Underline selection	PDFWindow		
+Toji renders with MuPDF %s, %s.	BepdfApplication	MuPDF version, copyright	
+Red	PDFView		
+Help	PDFWindow		Ajuda
+Rotation	PDFWindow		Rotació
+Show document view only	AnnotationWindow		Mostra només la visualització de documents
+Encrypted:	FileInfoWindow		Encriptat:
+Web:	FileInfoWindow		
+Gray scale	PrintSettingsWindow		Escala de grisos
+Save…	AttachmentsView		
+Note on the page	PDFView		
+Type	AnnotationsView		
+Close	PDFWindow		Tanca
+Color	PDFView		
+No title	OutlinesWindow		Sense títol
+Page	PrintSettingsWindow		Pàgina
+Discard	PDFWindow		
+Created:	FileInfoWindow		Creat:
+Open in new window	PDFView		Obre en una finestra nova
+Height: 	PrintSettingsWindow		Alçada: 
+Text on the page	PDFView		
+File info…	PDFWindow		Informació del fitxer...
+This file is read-only. You can add annotations, but to keep them you have to save a copy with “Save as…”.	PDFView		
+Allowed	FileInfoWindow		Permès
+Comic book (RAR)	BepdfApplication		
+Development	BepdfApplication		Desenvolupament
+Add note	Document		
+Attributes of BePDF	PDFWindow		
+No	FileInfoWindow		No
+Pages:	FileInfoWindow		
+Edit note	Document		
+Reload file	PDFWindow		Torna a carregar el fitxer
+Fit to page	PDFWindow		Ajusta a la pàgina
+Document	AnnotationWindow		Document
+Continue	PDFView		
+Settings…	PDFWindow		
+Print…	PDFWindow		Imprimeix...
+Path:	FileInfoWindow		Camí:
+Page %d	PDFWindow		Pàgina %d
+Copy & paste:	FileInfoWindow		Copia i enganxa:
+Edit title for bookmark	OutlinesWindow		Edita el títol per al marcador
+Toji printing document: 	PrintingProgressWindow		Document que el Toji imprimeix:
+Chapter	PDFWindow		
+Comic book (BBF)	BepdfApplication		
+EPUB e-book	BepdfApplication		
+Title:	FileInfoWindow		Títol:
+Fullscreen	PDFWindow		Pantalla completa
+Underline	Document		
+Add rectangle	Document		
+User defined	OutlinesWindow		Definit per l'usuari
+No annotations	AnnotationsView		
+Line	PDFView		
+Change line	Document		
+Copy as Web Annotation	PDFView		
+Attachments	PDFWindow		
+right to left	FileInfoWindow		
+Editing:	FileInfoWindow		Edició:
+Drawing	Document		
+Invalid file reference received!	BepdfApplication		
+Squiggly line	Document		
+Toji: Error opening file!	BepdfApplication		Toji: error en obrir el fitxer!
+User password	PasswordWindow		Contrasenya de l’usuari
+Identifier:	FileInfoWindow		
+Find	FindTextWindow		Troba
+Ignore case	FindTextWindow		Ignora'n la caixa
+Creator:	FileInfoWindow		Creador:
+Error	BepdfApplication		Error
+When a PDF file is opened, its annotations are described in the attribute SEN:annotations, and those that have no name get an identifier, so that other programs can refer to them. The PDF file is not changed.	AnnotationWindow		
+Wrong parameter!	PrintSettingsWindow		Paràmetre incorrecte!
+Rotate clockwise	PDFWindow		Gira en el sentit del rellotge
+Drawing	PDFWindow		
+Rectangle	PDFWindow		
+Underline	PDFView		
+Artists:	FileInfoWindow		

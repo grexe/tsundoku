@@ -1,257 +1,361 @@
-1	Finnish	application/x-vnd.sen-labs.Tsundoku	2450431064
- in	PrintSettingsWindow		:ssa
-All pages	PrintSettingsWindow		Kaikki sivut
-Color	PrintSettingsWindow		Väri
-DPI	PrintSettingsWindow		DPI
-Even pages	PrintSettingsWindow		Parilliset sivut
-Gray scale	PrintSettingsWindow		Harmaaskaala
-Height: 	PrintSettingsWindow		Korkeus:
-Max. printer resolution	PrintSettingsWindow		Tulostimen enimmäisresoluutio
-Mode	PrintSettingsWindow		Tila
-Normal	PrintSettingsWindow		Normaali
-Odd pages	PrintSettingsWindow		Parittomat sivut
-OK	PrintSettingsWindow		Valmis
-Order	PrintSettingsWindow		Järjestys
-Page	PrintSettingsWindow		Sivu
-Pages	PrintSettingsWindow		Sivut
-Print	PrintSettingsWindow		Tulosta
-Print settings	PrintSettingsWindow		Tulostusasetukset
-Reverse	PrintSettingsWindow		Käänteinen
-Rotation	PrintSettingsWindow		Kierto
-Width: 	PrintSettingsWindow		Leveys:
-Wrong parameter!	PrintSettingsWindow		Väärä parametri!
-Zoom (%)	PrintSettingsWindow		Lähennä/Loitonna (%)
-Zoom must be between 25 and 400!	PrintSettingsWindow		Lähennyksen/Loitonnuksen on oltava välillä 25 ... 400!
-[internal link]	PDFView		[sisäinen linkki]
-[link type 'movie' not supported]	PDFView		[linkkityyppiä 'movie' ei tueta]
-[unknown link]	PDFView		[tuntematon linkki]
-Annotation	PDFView		Kommentti
-Tsundoku reading file: 	PDFView		Tsundoku lukee tiedostoa:
-Tsundoku: Launch	PDFView		Tsundoku: Käynnistä
-Cancel	PDFView		Peru
-Copy link	PDFView		Kopioi linkki
-Delete	PDFView		Poista
-Edit	PDFView		Muokkaa
-Execute the command:	PDFView		Suorita komento:
-Go to page %d	PDFView		Siirry sivulle %d
-Leave annotation editing mode	PDFView		Jätä kommentin muokkaustila
-OK	PDFView		Valmis
-Open in new window	PDFView		Avaa uudessa ikkunassa
-Properties	PDFView		Ominaisuudet
-Save file attachment as…	PDFView		Tallenna tiedostoliite nimellä…
-Saving file attachment:	PDFView		Tallennetaan tiedostoliite:
-Unknown link action type: '%s'	PDFView		Tuntematon linkkitoimintatyyppi: '%s'
-<empty>	OutlinesWindow		<tyhjä>
-Document	OutlinesWindow		Asiakirja
-Edit title for bookmark	OutlinesWindow		Muokkaa kirjanmerkin otsikkoa
-No title	OutlinesWindow		Ei otsikkoa
-OK	OutlinesWindow		Valmis
-User defined	OutlinesWindow		Käyttäjän määritelemä
-<empty>	AttachmentView		<tyhjä>
-Description	AttachmentView		Kuvaus
-File name	AttachmentView		Tiedostonimi
-Save attachment(s) as	AttachmentView		Tallenna liitteet nimellä
-Save selected attachment to file	AttachmentView		Tallenna valitut liitteet tiedostoon
-Save selected attachments into directory	AttachmentView		Tallenna valitut liitteet kansioon
-Saving attachment(s):	AttachmentView		Tallenna liitteet:
-Abort	PrintingProgressWindow		Keskeytä
-Tsundoku printing	PrintingProgressWindow		Tsundoku tulostaa
-Tsundoku printing document: 	PrintingProgressWindow		Tsundoku tulostaa asiakirjan:
-Page:	PrintingProgressWindow		Sivu:
-Page: %d	PrintingProgressWindow		Sivu: %d
-Stop	PrintingProgressWindow		Pysäytä
-Abort	FileInfoWindow		Peru
-Allowed	FileInfoWindow		Sallittu
-Annotations:	FileInfoWindow		Kommentit:
-Author:	FileInfoWindow		Tekijä:
-Copy & paste:	FileInfoWindow		Kopio & liitä:
-Created:	FileInfoWindow		Luotu:
-Creator:	FileInfoWindow		Tekijä:
-Denied	FileInfoWindow		Kielletty
-Document	FileInfoWindow		Asiakirja
-Editing:	FileInfoWindow		Muokataan:
-Embedded name	FileInfoWindow		Upotettu nimi
-Encrypted:	FileInfoWindow		Salattu:
-File info	FileInfoWindow		Tiedostotiedot
-Filename:	FileInfoWindow		Tiedostonimi:
-Fonts of this page	FileInfoWindow		Tämän sivun kirjasimet
-Keywords:	FileInfoWindow		Avainsanat:
-Linearized:	FileInfoWindow		Linearisoitu:
-Modified:	FileInfoWindow		Muokattu:
-Name	FileInfoWindow		Nimi
-No	FileInfoWindow		Ei
-Path:	FileInfoWindow		Polku:
-Printing:	FileInfoWindow		Tulostetaan:
-Producer:	FileInfoWindow		Tuottaja:
-Security	FileInfoWindow		Turvallisuus
-Show all fonts	FileInfoWindow		Näytä kaikki kirjasimet
-Subject:	FileInfoWindow		Aihe:
-Title:	FileInfoWindow		Otsikko:
-Type	FileInfoWindow		Tyyppi
-Version:	FileInfoWindow		Versio:
-Yes	FileInfoWindow		Kyllä
-About Tsundoku…	PDFWindow		Ohjelmasta Tsundoku…
-Add	PDFWindow		Lisää
-Add circle annotation	PDFWindow		Lisää ympyräkommentti
-Add comment text annotation	PDFWindow		Lisää kommenttitekstikommentti
-Add file attachment annotation	PDFWindow		Lisää tiedostoliitekommentti
-Add free text annotation	PDFWindow		Lisää vapaa tekstikommentti
-Add help text annotation	PDFWindow		Lisää opastetekstikommentti
-Add highlight annotation	PDFWindow		Lisää korostuskommentti
-Add ink annotation	PDFWindow		Lisää mustekommentti
-Add insert text annotation	PDFWindow		Lisää lisää teksti-kommentti
-Add key text annotation	PDFWindow		Lisää avaintekstikommentti
-Add line annotation	PDFWindow		Lisää rivikommentti
-Add link annotation	PDFWindow		Lisää linkkikommentti
-Add movie annotation	PDFWindow		Lisää elokuvakommentti
-Add new paragraph text annotation	PDFWindow		Lisää uusi kappale tekstikommenttiin
-Add note text annotation	PDFWindow		Lisää muistiinpanotekstikommentti
-Add paragraph text annotation	PDFWindow		Lisää kappale tekstikommenttiin
-Add popup annotation	PDFWindow		Lisää ponnahdusikkunakommentti
-Add printer mark annotation	PDFWindow		Lisää tulostinmerkintäkommentti
-Add sound annotation	PDFWindow		Lisää äänikommentti
-Add square annotation	PDFWindow		Lisää nelikulmiokommentti
-Add squiggly annotation	PDFWindow		Lisää koukeroinen kommentti
-Add stamp annotation	PDFWindow		Lisää leimakommentti
-Add strikeout annotation	PDFWindow		Lisää yliviivattu kommentti
-Add trapnet annotation	PDFWindow		Lisää ansaverkkokommentti
-Add underline annotation	PDFWindow		Lisää alleviivattu kommentti
-Add widget annotation	PDFWindow		Lisää näyttöliittymäkomponenttikommentti
-Back	PDFWindow		Takaisin
-Back in page history list	PDFWindow		Takaisin sivuhistorialuetteloon
-Bookmark	PDFWindow		Kirjanmerkki
-Can not overwrite a PDF file that's currently opened in Tsundoku! Please choose another file name.	PDFWindow		Parhaillaan Tsundoku:ssä avoinna olean PDF-tiedoston korvaaminen epäonnistui! Valitse toinen tiedostonimi.
-Close	PDFWindow		Sulje
-Copy selection	PDFWindow		Kopioi valinta
-Could not write PDF file!	PDFWindow		PDF-tiedoston kirjoittaminen epäonnistui!
-Custom zoom factor (%d%%)	PDFWindow		Oma lähennä-/loitonna-tekijä (%d%%)
-Delete	PDFWindow		Poista
-Edit	PDFWindow		Muokkaa
-Editing of annotations in an encrypted PDF file isn't supported yet!	PDFWindow		Salatun PDF-tiedoston kommenttien muokkausta ei tueta vielä!
-English.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	English.pdf
-File	PDFWindow		Tiedosto
-File info…	PDFWindow		Tiedostotiedot…
-Find	PDFWindow		Etsi
-Find next	PDFWindow		Etsi seuraava
-Find next…	PDFWindow		Etsi seuraava…
-Find…	PDFWindow		Etsi…
-First	PDFWindow		Ensimmäinen
-Fit to page	PDFWindow		Sovita sivuun
-Fit to page width	PDFWindow		Sovita sivuleveyteen
-Forward	PDFWindow		Eteenpäin
-Forward in page history list	PDFWindow		Eteenpäin sivuhistorialuettelossa
-Fullscreen	PDFWindow		Kokonäyttö
-Fullscreen mode	PDFWindow		Kokonäyttötila
-Go back 10 pages	PDFWindow		Siirry 10 sivua taaksepäin
-Go forward 10 pages	PDFWindow		Siirry 10 sivua eteenpäin
-Go to end of document	PDFWindow		Siirry asiakirjan loppuun
-Go to next page	PDFWindow		Siirry seuraavalle sivulle
-Go to previous page	PDFWindow		Siirry edelliselle sivulle
-Go to start of document	PDFWindow		Siirry asiakirjan alkuun
-Help	PDFWindow		Opaste
-Hide side bar	PDFWindow		Piilota sivupalkki
-Issue tracker…	PDFWindow		Tapahtumajäljittäjä…
-Jump to page	PDFWindow		Siirry sivulle
-Last	PDFWindow		Viimeinen
-Leave annotation editing mode	PDFWindow		Jätä kommenttien muokkaustila
-Next	PDFWindow		Seuraava
-of %d	PDFWindow		/ %d
-OK	PDFWindow		Valmis
-Online help…	PDFWindow		Verkko-opaste…
-Open file	PDFWindow		Avaa tiedosto
-Open in new window…	PDFWindow		Avaa uudessa ikkunassa…
-Open…	PDFWindow		Avaa…
-Page	PDFWindow		Sivu
-Page %d	PDFWindow		Sivu %d
-Page setup…	PDFWindow		Sivuasetukset…
-PDF file successfully written!	PDFWindow		PDF-tiedoston kirjoittaminen onnistui!
-Preferences…	PDFWindow		Asetukset…
-Previous	PDFWindow		Edellinen
-Print	PDFWindow		Tulosta
-Print…	PDFWindow		Tulosta…
-Quit	PDFWindow		Poistu
-Reload	PDFWindow		Lataa uudelleen
-Reload file	PDFWindow		Lataa tiedosto uudelleen
-Rotate clockwise	PDFWindow		Kierrä myötäpäivään
-Rotate counter-clockwise	PDFWindow		Kierrä vastapäivään
-Rotation	PDFWindow		Kierto
-Save as…	PDFWindow		Tallenna nimellä…
-Save file as	PDFWindow		Tallenna tiedosto nimellä
-Saving copy of PDF file:	PDFWindow		Tallennetaan PDF-tiedoston kopio:
-Search	PDFWindow		Etsi
-Select all	PDFWindow		Valitse kaikki
-Select none	PDFWindow		Älä valitse mitään
-Show annotation tool bar	PDFWindow		Näytä kommenttityökalupalkki
-Show annotation toolbar	PDFWindow		Näytä kommenttityökalupalkki
-Show attachments	PDFWindow		Näytä liitteet
-Show bookmarks	PDFWindow		Näytä kirjanmerkit
-Show error messages	PDFWindow		Näytä virheilmoitukset
-Show help…	PDFWindow		Näytä opaste…
-Show page list	PDFWindow		Näytä sivuluettelo
-View	PDFWindow		Näkymä
-Visit homepage…	PDFWindow		Vieraile kotisivulla…
-Warning	PDFWindow		Varoitus
-Zoom	PDFWindow		Lähennä/Loitonna
-Zoom in	PDFWindow		Lähennä
-Zoom out	PDFWindow		Loitonna
-Align:	AnnotationWindow		Tasaa:
-Annotation	AnnotationWindow		Kommentti
-Asian fonts	AnnotationWindow		Aasialaiset kirjasimet
-Author	AnnotationWindow		Tekijä
-Automatic	AnnotationWindow		Automaattinen
-current	AnnotationWindow		nykyinen
-Date:	AnnotationWindow		Päivämäärä:
-Display	AnnotationWindow		Näyttö
-Document	AnnotationWindow		Asiakirja
-Filled rectangle	AnnotationWindow		Täytetty nelikulmio
-Font:	AnnotationWindow		Kirjasin:
-Fullscreen mode	AnnotationWindow		Kokonäyttötila
-Invert vertical mouse scrolling	AnnotationWindow		Käännä pystysuora hiirivieritys
-Open in workspace:	AnnotationWindow		Avaa työtilassa:
-Preferences	AnnotationWindow		Asetukset
-Restore page number	AnnotationWindow		Palauta sivunumerointi
-Restore window position and size	AnnotationWindow		Palauta ikkunan sijainti ja koko
+1	Finnish	application/x-vnd.sen-labs.Toji	453287713
 Selection rectangle	AnnotationWindow		Valintanelikulmio
-Show document view only	AnnotationWindow		Näytä vain nykyinen asiakirja
-Show toolbar, statusbar and scrollbars, too	AnnotationWindow		Näytä myös työkalupalkki, tilapalkki ja työkalupalkit
-Size:	AnnotationWindow		Koko:
-Stroked rectangle	AnnotationWindow		Vinoviivoitettu nelikulmio
-System fonts	AnnotationWindow		Järjestelmäkirjasimet
-Title:	AnnotationWindow		Otsikko:
-User fonts	AnnotationWindow		Käyttäjäkirjasimet
-Will take effect at next program launch.	AnnotationWindow		Tulee voimaan ohjelma seuraavan käynnistyksen jälkeen.
-Alpha	BepdfApplication		Alfa
-Tsundoku is based on XPDF %s, %s.	BepdfApplication	XPDF version, copyright	Tsundoku perustuu XPDF-versioon %s, %s.
-Tsundoku: Error opening file!	BepdfApplication		Tsundoku: Virhe tiedoston avaamisessa!
-Beta	BepdfApplication		Beeta
-Close	BepdfApplication		Sulje
-Development	BepdfApplication		Kehitys
-Error	BepdfApplication		Virhe
-Final	BepdfApplication		Lopullinen
-Gamma	BepdfApplication		Gamma
-Golden Master	BepdfApplication		Golden Master
-Unknown	BepdfApplication		Tuntematon
-Version	BepdfApplication		Versio
-Auto open	TraceWindow		Avaa automaattisesti
-Clear	TraceWindow		Tyhjennä
-Error messages	TraceWindow		Virheilmoitukset
-Floating	TraceWindow		Kelluva
-Tsundoku status	StatusWindow		Tsundoku-tila
-Enter Password	PasswordWindow		Kirjoita salasana
-OK	PasswordWindow		Valmis
-Owner password	PasswordWindow		Omistajan salasana
-User password	PasswordWindow		Käyttäjän salasana
-Find	FindTextWindow		Etsi
-Find text	FindTextWindow		Etsi teksti
-Find: 	FindTextWindow		Etsi:
-Ignore case	FindTextWindow		Ohita kirjainkoko
-Options	FindTextWindow		Valitsimet
-Page:	FindTextWindow		Sivu:
-Page: %d	FindTextWindow		Sivu: %d
-Search backwards	FindTextWindow		Etsi taaksepäin
-Stop	FindTextWindow		Pysäytä
-OK	PDFSearch		Valmis
-Search string not found.	PDFSearch		Hakumerkkijonoa ei löytynyt.
-Error getting page number!	BepdfApplication		
-Invalid file reference received!	BepdfApplication		
+Toji reading file: 	PDFView		Toji lukee tiedostoa:
+Cancel	PDFView		Peru
 a universal document reader based on BePDF, extended for SEN	BepdfApplication		
+Undo	PDFWindow		
+Go to previous page	PDFWindow		Siirry edelliselle sivulle
+Language	BepdfApplication		
+Subject:	FileInfoWindow		Aihe:
+Filled rectangle	AnnotationWindow		Täytetty nelikulmio
+Current	PDFView		
+Owner password	PasswordWindow		Omistajan salasana
+ISBN	BepdfApplication		
+Strike out selection	PDFWindow		
+Pink	PDFView		
+Replace legacy attributes with standard ones	AnnotationWindow		
+OK	BepdfApplication		
+Text, shapes and drawing: choose one, then click or drag on the page	PDFWindow		
+Copy link to this place	PDFView		
+Add highlight	Document		
+Cancel	PDFWindow		
+Page	AnnotationsView		
+Delete	PDFWindow		Poista
+Note	PDFView		
+Color	PrintSettingsWindow		Väri
+View	PDFWindow		Näkymä
+Search string not found.	PDFSearch		Hakumerkkijonoa ei löytynyt.
+Normal	PrintSettingsWindow		Normaali
+Copy	PDFWindow		
+No fill	PDFView		
+Redo	PDFWindow		
+File attachment	Document		
+Age rating:	FileInfoWindow		
+Zoom in	PDFWindow		Lähennä
+Notes: a margin note for selected text, a note or a text on the page	PDFWindow		
+Page:	FindTextWindow		Sivu:
+Rotation	PrintSettingsWindow		Kierto
+Gamma	BepdfApplication		Gamma
+Error messages	TraceWindow		Virheilmoitukset
+Jump to page	PDFWindow		Siirry sivulle
+Move annotation	Document		
+DjVu document	BepdfApplication		
+Edit note…	PDFView		
+Fullscreen mode	AnnotationWindow		Kokonäyttötila
+Author	BepdfApplication		
+Single page	PDFWindow		
+Mode	PrintSettingsWindow		Tila
+Publisher	BepdfApplication		
+Save as…	PDFWindow		Tallenna nimellä…
+Issue tracker…	PDFWindow		Tapahtumajäljittäjä…
+Printing:	FileInfoWindow		Tulostetaan:
+Add ellipse	Document		
+The document could not be saved.	PDFWindow		
+Copy link to this place	PDFWindow		
+Top to bottom	PDFWindow		
+Zoom must be between 25 and 400!	PrintSettingsWindow		Lähennyksen/Loitonnuksen on oltava välillä 25 ... 400!
+Open…	PDFWindow		Avaa…
+ (annotated)	PDFWindow		
+Show toolbar, statusbar and scrollbars, too	AnnotationWindow		Näytä myös työkalupalkki, tilapalkki ja työkalupalkit
+Show page list	PDFWindow		Näytä sivuluettelo
+current	AnnotationWindow		nykyinen
+OK	PasswordWindow		Valmis
+Document	OutlinesWindow		Asiakirja
+Invert vertical mouse scrolling	AnnotationWindow		Käännä pystysuora hiirivieritys
+Page setup…	PDFWindow		Sivuasetukset…
+Text	Document		
+Stroked rectangle	AnnotationWindow		Vinoviivoitettu nelikulmio
+OK	NoteWindow		
+Find: 	FindTextWindow		Etsi:
+Zoom	PDFWindow		Lähennä/Loitonna
+Larger text	PDFWindow		
+ISBN:	FileInfoWindow		
+Text	PDFView		
+Text	PDFWindow		
+Open in workspace:	AnnotationWindow		Avaa työtilassa:
+This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.	PDFWindow		
+Go to next page	PDFWindow		Siirry seuraavalle sivulle
+Restore page number	AnnotationWindow		Palauta sivunumerointi
+Last	PDFWindow		Viimeinen
+Hide sidebar	PDFWindow		
+Add line	Document		
+Find next	PDFWindow		Etsi seuraava
+Arrow	PDFWindow		
+Series number	BepdfApplication		
+Note	Document		
+All pages	PrintSettingsWindow		Kaikki sivut
+Describe annotations of other programs in the file's attributes	AnnotationWindow		
+Go to start of document	PDFWindow		Siirry asiakirjan alkuun
+Pages	BepdfApplication		
+Highlight	PDFView		
+Go forward 10 pages	PDFWindow		Siirry 10 sivua eteenpäin
+Go back 10 pages	PDFWindow		Siirry 10 sivua taaksepäin
+Fit to page width	PDFWindow		Sovita sivuleveyteen
+Toji link	BepdfApplication		
+DPI	PrintSettingsWindow		DPI
+Find…	PDFWindow		Etsi…
+Title page alone	PDFWindow		
+Odd pages	PrintSettingsWindow		Parittomat sivut
+Laying out the book…	PDFView		
+Show bookmarks	PDFWindow		Näytä kirjanmerkit
+Description	BepdfApplication		
+Max. printer resolution	PrintSettingsWindow		Tulostimen enimmäisresoluutio
+Strike out	PDFView		
+Reading direction	BepdfApplication		
+Edit text…	PDFView		
+Delete annotation	PDFView		
+Quit	PDFWindow		Poistu
+About Toji	BepdfApplication		
+The copy could not be saved.	PDFWindow		
+Fullscreen mode	PDFWindow		Kokonäyttötila
+File	PDFWindow		Tiedosto
+Options	FindTextWindow		Valitsimet
+Find text	FindTextWindow		Etsi teksti
+Clear	TraceWindow		Tyhjennä
+toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
+Print	PrintSettingsWindow		Tulosta
+Enter Password	PasswordWindow		Kirjoita salasana
+Online help…	PDFWindow		Verkko-opaste…
+Rectangle	Document		
+Copy	PDFView		
+Filename:	FileInfoWindow		Tiedostonimi:
+Series:	FileInfoWindow		
+First	PDFWindow		Ensimmäinen
+Copy link	PDFView		Kopioi linkki
+Add	PDFWindow		Lisää
+Open in new window…	PDFWindow		Avaa uudessa ikkunassa…
+Yellow	PDFView		
+OK	PDFSearch		Valmis
+Add arrow	Document		
+Version	BepdfApplication		Versio
+Zoom (%)	PrintSettingsWindow		Lähennä/Loitonna (%)
+Files that BePDF has opened have attributes with its own names (META:title, META:author, ...). Toji writes the same information with standard names (dc:title, dc:creator, ...) in any case. The legacy attributes are kept unless this is on: then they are removed.	AnnotationWindow		
+Custom zoom factor (%d%%)	PDFWindow		Oma lähennä-/loitonna-tekijä (%d%%)
+Arrow	Document		
+Abort	PrintingProgressWindow		Keskeytä
+Add drawing	Document		
+Go to end of document	PDFWindow		Siirry asiakirjan loppuun
+Beta	BepdfApplication		Beeta
+Auto open	TraceWindow		Avaa automaattisesti
+Back	PDFWindow		Takaisin
+Pages	PrintSettingsWindow		Sivut
+Upgrade	PDFWindow		
+%1 (p%2)	PDFWindow	Name of a bookmark: the section (1) and the page (2)	
+Final	BepdfApplication		Lopullinen
+Show error messages	PDFWindow		Näytä virheilmoitukset
+Document	FileInfoWindow		Asiakirja
+Width: 	PrintSettingsWindow		Leveys:
+Author:	FileInfoWindow		Tekijä:
+Orange	PDFView		
+Show sidebar	PDFWindow		
+Annotations	BepdfApplication		
+Security	FileInfoWindow		Turvallisuus
+of %d	PDFWindow		/ %d
+Keywords	BepdfApplication		
+Denied	FileInfoWindow		Kielletty
+Order	PrintSettingsWindow		Järjestys
+Add strike out	Document		
+Highlight	Document		
+Show annotations	PDFWindow		
+Published	BepdfApplication		
+Resize annotation	Document		
+Stamp	Document		
+Page: %d	FindTextWindow		Sivu: %d
+Add underline	Document		
+Page	PDFWindow		Sivu
+Producer:	FileInfoWindow		Tuottaja:
+Page list	PDFWindow		
+Title	BepdfApplication		
+(read-only)	PDFView		
+Keywords:	FileInfoWindow		Avainsanat:
+Annotation	Document		
+Blue	PDFView		
+Forward in page history list	PDFWindow		Eteenpäin sivuhistorialuettelossa
+Page:	PrintingProgressWindow		Sivu:
+Find next…	PDFWindow		Etsi seuraava…
+Ellipse	PDFView		
+Change color	Document		
+Change note	Document		
+Display	AnnotationWindow		Näyttö
+Line width	PDFView		
+Right to left	PDFWindow		
+Visit homepage…	PDFWindow		Vieraile kotisivulla…
+Even pages	PrintSettingsWindow		Parilliset sivut
+Stop	FindTextWindow		Pysäytä
+Subjects:	FileInfoWindow		
+Marker: choose a color, then select the text	PDFWindow		
+Bookmarks	BepdfApplication		
+Print	PDFWindow		Tulosta
+Find previous…	PDFWindow		
+Line	PDFWindow		
+ in	PrintSettingsWindow		:ssa
+Unknown	BepdfApplication		Tuntematon
+Show margin notes	PDFWindow		
+Bookmark	PDFWindow		Kirjanmerkki
+The file could not be saved.	AttachmentsView		
+Note	NoteWindow		
+Next	PDFWindow		Seuraava
+Drawing	PDFView		
+Reverse	PrintSettingsWindow		Käänteinen
+Close	BepdfApplication		Sulje
+Keep	PDFWindow		
+Page: %d	PrintingProgressWindow		Sivu: %d
+Note	PDFWindow		
+Strike out	Document		
+Rotate counter-clockwise	PDFWindow		Kierrä vastapäivään
+Select none	PDFWindow		Älä valitse mitään
+Format:	FileInfoWindow		
+Smaller text	PDFWindow		
+Alpha	BepdfApplication		Alfa
+<empty>	OutlinesWindow		<tyhjä>
+1 annotation	AnnotationsView		
+Add squiggly line	Document		
+Language:	FileInfoWindow		
+Annotations	PDFWindow		
+Forward	PDFWindow		Eteenpäin
+Electronic publication (EPUB)	BepdfApplication		
+OK	AttachmentsView		
+Toji status	StatusWindow		Toji-tila
+Golden Master	BepdfApplication		Golden Master
+Bookmarks	PDFWindow		
+Comic book (ZIP)	BepdfApplication		
+%d points	PDFView		
+Show or hide the sidebar	PDFWindow		
+Delete annotation	Document		
+Author	AnnotationWindow		Tekijä
+Comic book (TAR)	BepdfApplication		
+Publisher:	FileInfoWindow		
+Green	PDFView		
+Zoom out	PDFWindow		Loitonna
+Add margin note	PDFWindow		
+Continuous	PDFWindow		
+Comic book (7z)	BepdfApplication		
+Restore window position and size	AnnotationWindow		Palauta ikkunan sijainti ja koko
+Rectangle	PDFView		
+Line	Document		
+Identifier	BepdfApplication		
+Margin note	PDFView		
+Modified:	FileInfoWindow		Muokattu:
+Arrow	PDFView		
+Description:	FileInfoWindow		
+Add	PDFView		
+Save	PDFWindow		
+About Toji…	PDFWindow		Ohjelmasta Toji…
+Go to page %d	PDFView		Siirry sivulle %d
+Ellipse	Document		
+OK	OutlinesWindow		Valmis
+Reading:	FileInfoWindow		
+Ellipse	PDFWindow		
+Annotations:	FileInfoWindow		Kommentit:
+Published:	FileInfoWindow		
+Select all	PDFWindow		Valitse kaikki
+Fill	PDFView		
+OK	PDFWindow		Valmis
+Previous	PDFWindow		Edellinen
+Search	PDFWindow		Etsi
+File info	FileInfoWindow		Tiedostotiedot
+OK	PrintSettingsWindow		Valmis
+Series	BepdfApplication		
+They can only be kept in a copy of the file.	PDFWindow		
+annotations	AnnotationsView		
+Open file	PDFWindow		Avaa tiedosto
+Preferences	AnnotationWindow		Asetukset
+Toji™, SEN™ and SEN Labs™ are names of SEN Labs e.U.	BepdfApplication		
+Print settings	PrintSettingsWindow		Tulostusasetukset
+Excerpt	AnnotationsView		
+Back in page history list	PDFWindow		Takaisin sivuhistorialuetteloon
+Creator	BepdfApplication		
+Copy	TraceWindow		
+The document has unsaved changes (annotations).	PDFWindow		
+Find	PDFWindow		Etsi
+Double-sided	PDFWindow		
+Yes	FileInfoWindow		Kyllä
+[unknown link]	PDFView		[tuntematon linkki]
+Cancel	NoteWindow		
+Select all	PDFView		
+Floating	TraceWindow		Kelluva
+Link to a place in a document (toji:)	BepdfApplication		
+Stop	PrintingProgressWindow		Pysäytä
+Show attachments	PDFWindow		Näytä liitteet
+Show help…	PDFWindow		Näytä opaste…
+Edit	PDFWindow		Muokkaa
+Toji printing	PrintingProgressWindow		Toji tulostaa
+Search backwards	FindTextWindow		Etsi taaksepäin
+Highlight selection	PDFWindow		
+EPUB version:	FileInfoWindow		
+Reload	PDFWindow		Lataa uudelleen
+Add text	Document		
+Underline selection	PDFWindow		
+Toji renders with MuPDF %s, %s.	BepdfApplication	MuPDF version, copyright	
+Red	PDFView		
+Help	PDFWindow		Opaste
+Rotation	PDFWindow		Kierto
+Show document view only	AnnotationWindow		Näytä vain nykyinen asiakirja
+Encrypted:	FileInfoWindow		Salattu:
+Web:	FileInfoWindow		
+Gray scale	PrintSettingsWindow		Harmaaskaala
+Save…	AttachmentsView		
+Note on the page	PDFView		
+Type	AnnotationsView		
+Close	PDFWindow		Sulje
+Color	PDFView		
+No title	OutlinesWindow		Ei otsikkoa
+Page	PrintSettingsWindow		Sivu
+Discard	PDFWindow		
+Created:	FileInfoWindow		Luotu:
+Open in new window	PDFView		Avaa uudessa ikkunassa
+Height: 	PrintSettingsWindow		Korkeus:
+Text on the page	PDFView		
+File info…	PDFWindow		Tiedostotiedot…
+This file is read-only. You can add annotations, but to keep them you have to save a copy with “Save as…”.	PDFView		
+Allowed	FileInfoWindow		Sallittu
+Comic book (RAR)	BepdfApplication		
+Development	BepdfApplication		Kehitys
+Add note	Document		
+Attributes of BePDF	PDFWindow		
+No	FileInfoWindow		Ei
+Pages:	FileInfoWindow		
+Edit note	Document		
+Reload file	PDFWindow		Lataa tiedosto uudelleen
+Fit to page	PDFWindow		Sovita sivuun
+Document	AnnotationWindow		Asiakirja
+Continue	PDFView		
+Settings…	PDFWindow		
+Print…	PDFWindow		Tulosta…
+Path:	FileInfoWindow		Polku:
+Page %d	PDFWindow		Sivu %d
+Copy & paste:	FileInfoWindow		Kopio & liitä:
+Edit title for bookmark	OutlinesWindow		Muokkaa kirjanmerkin otsikkoa
+Toji printing document: 	PrintingProgressWindow		Toji tulostaa asiakirjan:
+Chapter	PDFWindow		
+Comic book (BBF)	BepdfApplication		
+EPUB e-book	BepdfApplication		
+Title:	FileInfoWindow		Otsikko:
+Fullscreen	PDFWindow		Kokonäyttö
+Underline	Document		
+Add rectangle	Document		
+User defined	OutlinesWindow		Käyttäjän määritelemä
+No annotations	AnnotationsView		
+Line	PDFView		
+Change line	Document		
+Copy as Web Annotation	PDFView		
+Attachments	PDFWindow		
+right to left	FileInfoWindow		
+Editing:	FileInfoWindow		Muokataan:
+Drawing	Document		
+Invalid file reference received!	BepdfApplication		
+Squiggly line	Document		
+Toji: Error opening file!	BepdfApplication		Toji: Virhe tiedoston avaamisessa!
+User password	PasswordWindow		Käyttäjän salasana
+Identifier:	FileInfoWindow		
+Find	FindTextWindow		Etsi
+Ignore case	FindTextWindow		Ohita kirjainkoko
+Creator:	FileInfoWindow		Tekijä:
+Error	BepdfApplication		Virhe
+When a PDF file is opened, its annotations are described in the attribute SEN:annotations, and those that have no name get an identifier, so that other programs can refer to them. The PDF file is not changed.	AnnotationWindow		
+Wrong parameter!	PrintSettingsWindow		Väärä parametri!
+Rotate clockwise	PDFWindow		Kierrä myötäpäivään
+Drawing	PDFWindow		
+Rectangle	PDFWindow		
+Underline	PDFView		
+Artists:	FileInfoWindow		
