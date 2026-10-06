@@ -389,20 +389,6 @@ EllipsePath(fz_context* context, fz_path* path, const fz_rect& r)
 }
 
 
-// The width of a text in a font of the size.
-static float
-TextWidth(fz_context* context, fz_font* font, const char* text, size_t length, float size)
-{
-	float width = 0;
-	const char* end = text + length;
-	while (text < end) {
-		int rune;
-		text += fz_chartorune(&rune, text);
-		width += fz_advance_glyph(context, font, fz_encode_character(context, font, rune), 0) * size;
-	}
-	return width;
-}
-
 
 // Writes the text in the box, broken into lines at the spaces.
 static void

@@ -632,7 +632,7 @@ ArchiveMark(const Mark& mark, BMessage* annotation)
 			css = "stroke: ";
 			css << hex << ";";
 			if (mark.width > 0) {
-				char width[24];
+				char width[48];
 				snprintf(width, sizeof(width), " stroke-width: %g;", mark.width);
 				css << width;
 			}

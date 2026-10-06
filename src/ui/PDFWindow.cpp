@@ -282,7 +282,6 @@ void PDFWindow::AnnotationsChanged(int page) {
 }
 
 void PDFWindow::TextSizeChanged() {
-	Document* doc = mMainView->GetDocument();
 	TimingMark("text size: window updates");
 	SetTotalPageNumber(mMainView->GetNumPages());
 	FillPageList();
@@ -306,7 +305,7 @@ void PDFWindow::SetTotalPageNumber(int pages) {
 	char *label = new char[len];
 	snprintf (label, len, fmt, pages);
 	mTotalPageNumberItem->SetText(label);
-	delete label;
+	delete[] label;
 }
 
 void PDFWindow::InitAfterOpen() {

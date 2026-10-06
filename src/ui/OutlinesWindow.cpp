@@ -390,12 +390,12 @@ void OutlinesView::InitUserBookmarks(bool initOnly) {
 				if (page > 0)
 					pageNum = page;
 			}
-	    	mBookmark.Set(pageNum, true);
-		    if (!initOnly) {
-		    	OutlineListItem *item = new OutlineListItem(label.String(), 1, true, GetDefaultStyle());
-		    	item->SetPageNum(pageNum);
-		    	if (anchored)
-		    		item->SetAnchor(&anchorMessage);
+			mBookmark.Set(pageNum, true);
+			if (!initOnly) {
+				OutlineListItem *item = new OutlineListItem(label.String(), 1, true, GetDefaultStyle());
+				item->SetPageNum(pageNum);
+				if (anchored)
+					item->SetAnchor(&anchorMessage);
 				mList->AddItem(item);
 			}
 			i ++;

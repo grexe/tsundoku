@@ -178,8 +178,9 @@ void FindTextWindow::MessageReceived(BMessage *msg) {
 
 void FindTextWindow::SetPage(int32 page) {
 	const char* fmt = B_TRANSLATE("Page: %d");
-	char* buffer = new char[strlen(fmt)+30];
-	sprintf(buffer, fmt, page);
+	size_t length = strlen(fmt) + 30;
+	char* buffer = new char[length];
+	snprintf(buffer, length, fmt, (int)page);
 	mPage->SetText(buffer);
-	delete buffer;
+	delete[] buffer;
 }

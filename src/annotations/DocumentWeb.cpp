@@ -165,7 +165,7 @@ BuildPdfAnnotation(Document* document, int pageNo, fz_page* page, fz_stext_page*
 {
 			css << "stroke: " << RgbText(a.color) << ";";
 			if (a.width > 0) {
-				char width[24];
+				char width[48];
 				snprintf(width, sizeof(width), " stroke-width: %g;", a.width);
 				css << width;
 			}
