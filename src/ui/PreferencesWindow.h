@@ -34,6 +34,7 @@
 
 class BView;
 class BMenuField;
+class BCheckBox;
 class BOutlineListView;
 class BRadioGroup;
 class BListView;
@@ -94,6 +95,7 @@ private:
 	BCardLayout      *mLayers;
 	GlobalSettings   *mSettings;
 	BMenuField       *mOpenInWorkspace;
+	BCheckBox        *mFancySound;
 
 	void SetupView();
 	void ClearView();

@@ -266,6 +266,7 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 	mTurnStart = 0;
 	mTurnRunner = NULL;
 	mTurnSound = NULL;
+	mTurnSoundMissing = false;
 	mNoteTip = 0;
 	mNoteHoverSince = 0;
 	mNoteReady = false;
@@ -3417,6 +3418,8 @@ PDFView::SetFancyMode(bool fancy)
 	gApp->GetSettings()->SetFancyMode(fancy);
 	if (!fancy)
 		CancelTurn();
+	else
+		PrepareTurnSound();
 }
 
 
@@ -3490,6 +3493,7 @@ void
 PDFView::BeginTurn(int page)
 {
 	CancelTurn();
+	PrepareTurnSound();
 	BRect fromArea;
 	int fromPages = 0;
 	mTurnFrom = Snapshot(&fromArea, &fromPages);
@@ -3525,11 +3529,12 @@ PDFView::TurnReady()
 	mTurnFrameView = new BView(mTurnFrame->Bounds(), "turn", B_FOLLOW_NONE, B_WILL_DRAW);
 	mTurnFrame->AddChild(mTurnFrameView);
 	mTurnState = kTurnRunning;
-	mTurnStart = system_time();
+	if (mTurnFreeze < 0)
+		PlayTurnSound();
+	mTurnStart = system_time();	// (after the sound has been started)
 	if (mTurnFreeze < 0) {
 		BMessage tick(PAGE_TURN_TICK_MSG);
 		mTurnRunner = new BMessageRunner(BMessenger(this), &tick, 16000);
-		PlayTurnSound();
 	}
 	TurnTick();
 }
@@ -3546,6 +3551,9 @@ PDFView::TurnTick()
 		return;
 	}
 	float progress = PageTurn::Ease(time);
+#ifdef TOJI_TESTING
+	bigtime_t began = system_time();
+#endif
 	mTurnFrame->Lock();
 	if (mTurnForward)
 		PageTurn::Draw(mTurnFrameView, mTurnFrom, mTurnTo, mTurnGeometry, progress);
@@ -3554,6 +3562,9 @@ PDFView::TurnTick()
 	mTurnFrameView->Sync();
 	mTurnFrame->Unlock();
 	Invalidate();
+#ifdef TOJI_TESTING
+	if (FILE* log = fopen("/tmp/ts_test.out", "a")) { fprintf(log, "turn frame t=%.2f took %d ms\n", time, (int)((system_time() - began) / 1000)); fclose(log); }
+#endif
 }
 
 
@@ -3593,25 +3604,34 @@ PDFView::CancelTurn()
 }
 
 
-// the sound of a page, from the sounds next to the program
+// the sound of a page, from the sounds next to the program; it is loaded before it is needed (that takes a while)
+void
+PDFView::PrepareTurnSound()
+{
+	if (mTurnSound != NULL || mTurnSoundMissing || !gApp->GetSettings()->GetFancySound())
+		return;
+	BPath path(*gApp->GetAppPath());
+	path.Append("sounds/pageturn.wav");
+	mTurnSound = new BSimpleGameSound(path.Path());
+#ifdef TOJI_TESTING
+	if (FILE* log = fopen("/tmp/ts_test.out", "a")) { fprintf(log, "turn sound %s: %s\n", path.Path(), strerror(mTurnSound->InitCheck())); fclose(log); }
+#endif
+	if (mTurnSound->InitCheck() != B_OK) {
+		delete mTurnSound;
+		mTurnSound = NULL;
+		mTurnSoundMissing = true;
+	}
+}
+
+
 void
 PDFView::PlayTurnSound()
 {
 	if (!gApp->GetSettings()->GetFancySound())
 		return;
-	if (mTurnSound == NULL) {
-		BPath path(*gApp->GetAppPath());
-		path.Append("sounds/pageturn.wav");
-		mTurnSound = new BSimpleGameSound(path.Path());
-#ifdef TOJI_TESTING
-		if (FILE* log = fopen("/tmp/ts_test.out", "a")) { fprintf(log, "turn sound %s: %s\n", path.Path(), strerror(mTurnSound->InitCheck())); fclose(log); }
-#endif
-		if (mTurnSound->InitCheck() != B_OK) {
-			delete mTurnSound;
-			mTurnSound = NULL;
-			return;
-		}
-	}
+	PrepareTurnSound();
+	if (mTurnSound == NULL)
+		return;
 	mTurnSound->StopPlaying();
 	mTurnSound->StartPlaying();
 }

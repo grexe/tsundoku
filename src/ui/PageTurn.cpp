@@ -104,8 +104,20 @@ Draw(BView* view, const BBitmap* before, const BBitmap* after, const Geometry& g
 	}
 
 	const float height = g.area.Height() + 1;
-	for (float c = 0; c < w; c += kStep) {
-		float c1 = fminf(c + kStep, w);
+	const float top = g.area.top, bottom = g.area.bottom;
+	const float rollEnd = fminf(f + kPi * r, w);	// where the roll ends, in the distance from the spine
+
+	// the part that is not turned yet: one piece (it is not squeezed)
+	if (f > 0) {
+		float edge = spine + s * fminf(f, w);
+		BRect part(fminf(spine, edge), top, fmaxf(spine, edge) - 1, bottom);
+		if (part.Width() >= 1)
+			view->DrawBitmap(before, part, part);
+	}
+
+	// the roll: strips, squeezed and shaded
+	for (float c = fmaxf(f, 0); c < rollEnd; c += kStep) {
+		float c1 = fminf(c + kStep, rollEnd);
 		float d0, a0, d1, a1;
 		Place(c, f, r, &d0, &a0);
 		Place(c1, f, r, &d1, &a1);
@@ -116,18 +128,17 @@ Draw(BView* view, const BBitmap* before, const BBitmap* after, const Geometry& g
 		float angle = (a0 + a1) / 2;
 		// the roll lifts the paper a little: the strips shrink a bit above and below
 		float lift = height * 0.03f * (1 - cosf(angle)) / 2;
-		BRect dest(destLeft, g.area.top + lift, destRight - 0.01f, g.area.bottom - lift);
-		bool back = angle >= kPi / 2;
+		BRect dest(destLeft, top + lift, destRight - 0.01f, bottom - lift);
 
-		if (!back) {
+		if (angle < kPi / 2) {
 			float sx0 = spine + s * c, sx1 = spine + s * c1;
-			BRect source(floorf(fminf(sx0, sx1)), g.area.top, ceilf(fmaxf(sx0, sx1)) - 1, g.area.bottom);
+			BRect source(floorf(fminf(sx0, sx1)), top, ceilf(fmaxf(sx0, sx1)) - 1, bottom);
 			view->DrawBitmap(before, source, dest, B_FILTER_BITMAP_BILINEAR);
 			Shade(view, dest, 0, 0, 0, 105 * sinf(angle));
 		} else if (g.spread) {
 			// the back of the leaf is the page that comes, from the other side of the spine
 			float sx0 = spine - s * c, sx1 = spine - s * c1;
-			BRect source(floorf(fminf(sx0, sx1)), g.area.top, ceilf(fmaxf(sx0, sx1)) - 1, g.area.bottom);
+			BRect source(floorf(fminf(sx0, sx1)), top, ceilf(fmaxf(sx0, sx1)) - 1, bottom);
 			view->DrawBitmap(after, source, dest, B_FILTER_BITMAP_BILINEAR);
 			Shade(view, dest, 255, 255, 255, 95);
 			Shade(view, dest, 0, 0, 0, 105 * sinf(angle));
@@ -135,6 +146,24 @@ Draw(BView* view, const BBitmap* before, const BBitmap* after, const Geometry& g
 			view->SetHighColor(kPaper);
 			view->FillRect(dest);
 			Shade(view, dest, 0, 0, 0, 120 * sinf(angle));
+		}
+	}
+
+	// the back, flat again beyond the roll: one piece
+	if (rollEnd < w) {
+		float lift = height * 0.03f;
+		float dLeft = spine + s * (2 * f + kPi * r - w), dRight = spine + s * f;
+		BRect dest(fminf(dLeft, dRight), top + lift, fmaxf(dLeft, dRight) - 1, bottom - lift);
+		if (dest.Width() >= 1) {
+			if (g.spread) {
+				float sLeft = spine - s * w, sRight = spine - s * rollEnd;
+				BRect source(fminf(sLeft, sRight), top, fmaxf(sLeft, sRight) - 1, bottom);
+				view->DrawBitmap(after, source, dest);
+				Shade(view, dest, 255, 255, 255, 95);
+			} else {
+				view->SetHighColor(kPaper);
+				view->FillRect(dest);
+			}
 		}
 	}
 

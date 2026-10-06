@@ -145,6 +145,8 @@ private:
 	BBitmap* Snapshot(BRect* area, int* pages);
 	void DrawTurn();
 	void PlayTurnSound();
+	void PrepareTurnSound();
+	bool mTurnSoundMissing;
 
 	// The place that a deep link leads to is marked for a moment (the region of the target, in page space).
 	bool            mFitWidthPending;   // the pages are to be as wide as the window when it is known

@@ -191,6 +191,8 @@ void PreferencesWindow::SetupView() {
 	BCheckBox *fancySound = new BCheckBox("fancySound", B_TRANSLATE("With the sound of a page"),
 		new BMessage(FANCY_SOUND_CHANGED));
 	fancySound->SetValue(settings->GetFancySound());
+	fancySound->SetEnabled(settings->GetFancyMode());
+	mFancySound = fancySound;
 
 	BLayoutBuilder::Group<>(this, B_HORIZONTAL)
 		.SetInsets(B_USE_WINDOW_INSETS)
@@ -202,7 +204,10 @@ void PreferencesWindow::SetupView() {
 				.Add(selection)
 				.Add(scrolling)
 				.Add(fancy)
-				.Add(fancySound)
+				.AddGroup(B_HORIZONTAL, 0)
+					.AddStrut(be_plain_font->Size() * 2)
+					.Add(fancySound)
+				.End()
 				.AddGlue()
 			.End()
 			.GetLayout(&mLayers)
@@ -309,6 +314,7 @@ void PreferencesWindow::MessageReceived(BMessage *msg) {
 		break;
 	case FANCY_MODE_CHANGED:
 		mSettings->SetFancyMode(IsOn(msg));
+		mFancySound->SetEnabled(IsOn(msg));
 		break;
 	case FANCY_SOUND_CHANGED:
 		mSettings->SetFancySound(IsOn(msg));
