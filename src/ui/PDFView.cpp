@@ -4970,6 +4970,10 @@ PDFView::TestCommand(BMessage* message)
 		mMarginHover = n >= 0 && n < (int32)boxes.size() ? boxes[n].annotation : NULL;
 		Invalidate();
 		TestLog("hovermargin: %d boxes", (int)boxes.size());
+	} else if (cmd == "scrollto") {
+		// the view to (x1, y1) of the canvas
+		ScrollTo(x1, y1);
+		TestLog("scrollto: top now %.0f", Bounds().top);
 	} else if (cmd == "gotopos") {
 		// as a link to a place on a page: gotopos with page, x and y of the page
 		GotoPosition((int)TestNumber(message, "page"), TestNumber(message, "x"), TestNumber(message, "y"));

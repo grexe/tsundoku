@@ -26,7 +26,7 @@ if command -v typst >/dev/null; then
 	typst compile --root ../.. start.typ "$OUT/toji-start.pdf"
 	echo "PDF"
 	# the cover (logo, "User Guide", the haiku) is the first page, instead of the title block
-	{ echo '#page(numbering: none)['; sed 's/^#let subtitle = none/#let subtitle = [USER GUIDE]/' cover.typ; echo ']'; } > "$OUT/guide-cover.typ"
+	{ echo '#set document(title: "Toji User Guide", author: "SEN Labs e.U.")'; echo '#page(numbering: none)['; sed 's/^#let subtitle = none/#let subtitle = [USER GUIDE]/' cover.typ; echo ']'; } > "$OUT/guide-cover.typ"
 	pandoc $CHAPTERS $COMMON --pdf-engine=typst -V papersize=a4 -V lang=en -M title= -M subtitle= -M author= \
 		-B "$OUT/guide-cover.typ" -o "$OUT/$NAME.pdf"
 	if command -v pdf2djvu >/dev/null; then

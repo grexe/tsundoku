@@ -24,6 +24,8 @@ A small arrow at the corner of the icon says that a button opens a menu (all thr
 
 ![The marker menu: choose a color, then select the text.](images/marker-menu.png)
 
+![The Note menu: a margin note, a note on the page or a text on the page.](images/note-menu.png)
+
 ## Marking text
 
 Select the text, then choose **Edit > Highlight selection** (Cmd+Shift+H), **Underline selection** (Cmd+Shift+U) or **Strike out

@@ -11,12 +11,16 @@ collect and mean to read. It is a fork of [BePDF](https://github.com/HaikuArchiv
 [MuPDF](https://mupdf.com) instead of XPDF: faster, with better quality, and with support for many more formats than
 PDF: EPUB books, comics (CBZ, CBR, CB7, CBT, BBF), DjVu, XPS and images.
 
+<p align="center">
+  <img src="images/toji-screenshot.png" alt="Toji reading its own user guide: marks, margin notes and the toolbar" width="880">
+</p>
+
 ## Screenshots
 
 | | |
 |---|---|
-| ![PDF with marks and margin notes](docs/guide/images/main-window.png) | ![An EPUB with a mark and a margin note](docs/guide/images/epub.png) |
-| ![A comic in two pages (Bobby Make-Believe, 1915, public domain)](docs/guide/images/comic-spread.png) | ![The marker menu](docs/guide/images/marker-menu.png) |
+| ![An EPUB with a mark and a margin note](docs/guide/images/epub.png) | ![A DjVu document with marks](docs/guide/images/djvu.png) |
+| ![A comic in two pages (Bobby Make-Believe, 1915, public domain)](docs/guide/images/comic-spread.png) | ![The Note menu](docs/guide/images/note-menu.png) |
 
 ## Formats
 
