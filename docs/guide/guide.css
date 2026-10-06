@@ -3,7 +3,7 @@ h1, h2, h3 { line-height: 1.25; }
 h1 { border-bottom: 1px solid #ccc; padding-bottom: .2em; margin-top: 2em; }
 code, pre { font-family: monospace; background: #f4f4f4; }
 pre { padding: .6em .8em; overflow-x: auto; }
-table { border-collapse: collapse; margin: 1em 0; }
+table { border-collapse: collapse; margin: 1em 0; width: 100%; }
 th, td { border: 1px solid #ccc; padding: .3em .6em; text-align: left; vertical-align: top; }
 th { background: #eee; }
 a { color: #1a5fb4; }

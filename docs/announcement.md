@@ -7,7 +7,7 @@ I'd like to introduce a project I have been working on for Haiku: **Toji** (ç¶´ã
 Figuiere, Benoit Triquet, waddlesplash and everyone who contributed over the years. Toji has grown into a modern, standards-based
 reader that uses what Haiku is good at: attributes, queries and messages. It is now in **beta**, and I'd be glad for testers.
 
-![Toji with a PDF: outline, marks and margin notes](guide/images/main-window.png)
+![Toji reading its own user guide: outline, marks and margin notes](https://raw.githubusercontent.com/sen-laboratories/toji/main/images/toji-screenshot.png)
 
 ## Formats
 
@@ -54,8 +54,10 @@ pkgman add-repo https://kiri.sen-labs.org/x86_64
 pkgman install toji
 ```
 
-The libraries it needs (MuPDF, libarchive, libzip, libxml2, DjVuLibre) come with the package. A **user guide** (PDF, EPUB, DjVu,
-HTML) is built from Markdown and installed with it; **Help** opens it.
+The libraries it needs (MuPDF from the same repository, and libarchive, libzip, libxml2, DjVuLibre and FreeType from the Haiku
+repositories) are installed with it, and it replaces Tsundoku if you have that. A **user guide** (PDF, EPUB, DjVu, HTML) is built
+from Markdown and comes with it; **Help** opens it. The package is also attached to the
+[release](https://github.com/sen-laboratories/toji/releases/tag/v1.0.0-beta1).
 
 ## Licenses
 
