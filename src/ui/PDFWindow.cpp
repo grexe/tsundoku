@@ -721,6 +721,7 @@ bool PDFWindow::CancelCommand(BMessage* msg) {
 			case ADD_MARGIN_NOTE_CMD:
 			case COPY_PLACE_LINK_CMD:
 			case SHOW_MARGIN_NOTES_CMD:
+			case FANCY_MODE_CMD:
 			case NOTE_BUTTON_CMD:
 			case SHAPES_MENU_CMD:
 			case PRINT_SETTINGS_CMD:
@@ -898,6 +899,7 @@ void PDFWindow::UpdateInputEnabler()
 		fMenuBar->FindItem(ANNOTATE_STRIKEOUT_CMD)->SetEnabled(canMark);
 		fMenuBar->FindItem(ADD_MARGIN_NOTE_CMD)->SetEnabled(canMark);
 		fMenuBar->FindItem(SHOW_MARGIN_NOTES_CMD)->SetMarked(mMainView->MarginNotesShown());
+		fMenuBar->FindItem(FANCY_MODE_CMD)->SetMarked(mMainView->FancyMode());
 		fMenuBar->FindItem(SAVE_FILE_CMD)->SetEnabled(doc->HasUnsavedChanges());
 
 		// "Undo Add highlight": what would be undone is named
@@ -1188,6 +1190,7 @@ BMenuBar* PDFWindow::BuildMenu()
 			.AddItem(B_TRANSLATE("Right to left"), RIGHT_TO_LEFT_CMD)
 			.AddItem(B_TRANSLATE("Top to bottom"), TOP_TO_BOTTOM_CMD)
 			.AddItem(B_TRANSLATE("Show margin notes"), SHOW_MARGIN_NOTES_CMD)
+			.AddItem(B_TRANSLATE("Fancy page turns"), FANCY_MODE_CMD)
 			.AddSeparator()
 			.AddItem(B_TRANSLATE("Zoom in"), (ZOOM_IN_CMD), '+')
 			.AddItem(B_TRANSLATE("Zoom out"), (ZOOM_OUT_CMD), '-')
@@ -1677,6 +1680,9 @@ PDFWindow::MessageReceived(BMessage* message)
 		break;
 	case SHOW_MARGIN_NOTES_CMD:
 		mMainView->SetMarginNotesShown(!mMainView->MarginNotesShown());
+		break;
+	case FANCY_MODE_CMD:
+		mMainView->SetFancyMode(!mMainView->FancyMode());
 		break;
 	case ADD_ANNOTATION_CMD: {
 		int32 tool = PDFView::kToolNone;

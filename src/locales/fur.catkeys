@@ -1,4 +1,4 @@
-1	Friulian	application/x-vnd.sen-labs.Toji	93407289
+1	Friulian	application/x-vnd.sen-labs.Toji	1126492490
 Selection rectangle	AnnotationWindow		Retangul di selezion
 Toji reading file: 	PDFView		Toji leture file:
 Cancel	PDFView		Anule
@@ -74,6 +74,7 @@ Text	PDFView
 Text	PDFWindow		
 Open in workspace:	AnnotationWindow		Vierç tal spazi di lavôr:
 Go to next page	PDFWindow		Va ae prossime pagjine
+A page that turns like in a book when you go to the next or the previous page (not in the continuous flow).	AnnotationWindow		
 Restore page number	AnnotationWindow		Ripristine numar di pagjine
 Last	PDFWindow		Ultin
 Hide sidebar	PDFWindow		
@@ -106,6 +107,7 @@ Delete annotation	PDFView
 Quit	PDFWindow		Jes
 About Toji	BepdfApplication		
 The copy could not be saved.	PDFWindow		
+Fancy page turns	PDFWindow		
 Fullscreen mode	PDFWindow		Modalitât plen visôr
 File	PDFWindow		File
 Options	FindTextWindow		Opzions
@@ -122,6 +124,7 @@ Series:	FileInfoWindow
 First	PDFWindow		Prin
 Copy link	PDFView		Copie colegament
 Add	PDFWindow		Zonte
+With the sound of a page	AnnotationWindow		
 Open in new window…	PDFWindow		Vierç intun gnûf barcon…
 Yellow	PDFView		
 OK	PDFSearch		Va ben
@@ -168,6 +171,7 @@ Title	BepdfApplication
 (read-only)	PDFView		
 Keywords:	FileInfoWindow		Peraulis clâf:
 Annotation	Document		
+Fancy mode: pages turn	AnnotationWindow		
 Blue	PDFView		
 Forward in page history list	PDFWindow		Indenant te liste de cronologjie des pagjinis
 Page:	PrintingProgressWindow		Pagjine:

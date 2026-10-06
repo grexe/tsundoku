@@ -1,4 +1,4 @@
-1	Turkish	application/x-vnd.sen-labs.Toji	93407289
+1	Turkish	application/x-vnd.sen-labs.Toji	1126492490
 Selection rectangle	AnnotationWindow		Seçim dörtgeni
 Toji reading file: 	PDFView		Toji dosyayı okuyor:
 Cancel	PDFView		İptal
@@ -74,6 +74,7 @@ Text	PDFView
 Text	PDFWindow		
 Open in workspace:	AnnotationWindow		Şu çalışma alanında aç:
 Go to next page	PDFWindow		Sonraki sayfaya git
+A page that turns like in a book when you go to the next or the previous page (not in the continuous flow).	AnnotationWindow		
 Restore page number	AnnotationWindow		Sayfa numarasını hatırla
 Last	PDFWindow		Son
 Hide sidebar	PDFWindow		
@@ -106,6 +107,7 @@ Delete annotation	PDFView
 Quit	PDFWindow		Çık
 About Toji	BepdfApplication		
 The copy could not be saved.	PDFWindow		
+Fancy page turns	PDFWindow		
 Fullscreen mode	PDFWindow		Tam ekran kipi
 File	PDFWindow		Dosya
 Options	FindTextWindow		Seçenekler
@@ -122,6 +124,7 @@ Series:	FileInfoWindow
 First	PDFWindow		İlk
 Copy link	PDFView		Bağlantıyı kopyala
 Add	PDFWindow		Ekle
+With the sound of a page	AnnotationWindow		
 Open in new window…	PDFWindow		Yeni pencerede aç…
 Yellow	PDFView		
 OK	PDFSearch		Tamam
@@ -168,6 +171,7 @@ Title	BepdfApplication
 (read-only)	PDFView		
 Keywords:	FileInfoWindow		Anahtar sözcükler:
 Annotation	Document		
+Fancy mode: pages turn	AnnotationWindow		
 Blue	PDFView		
 Forward in page history list	PDFWindow		Sayfa geçmişi listesinde ileri
 Page:	PrintingProgressWindow		Sayfa:

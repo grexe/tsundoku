@@ -42,6 +42,8 @@ How each format is read, and the file types: [docs/reference/formats.md](docs/re
   the other and scrolled through ("Continuous"). The buttons next to the fit buttons and the View menu switch between them.
 - Zooming (in and out, or a rectangle chosen with the mouse), fit to page or width, rotating the page.
 - Navigation with the keyboard, the toolbar, dragging, the mouse wheel and links (also those that lead to another page).
+- A **fancy mode** that turns the page like in a book, with the sound of a page (View > Fancy page turns), a nod to the page-turning
+  demo of the BeOS book.
 - Window mode or fullscreen. Files can be dropped on the window.
 - The position and settings per file are kept in BFS attributes and used when the file is opened again.
 - Several documents at once: a document is shared by the view and the threads that work on it, so another file can be opened
@@ -221,6 +223,7 @@ which is under the GNU AGPL version 3.
 - © 1997 Benoit Triquet
 - The comics in the screenshots: *Bobby Make-Believe* (Chicago Sunday Tribune, 1915, public domain) and *Black Jack ni Yoroshiku*
   ((C) Shuho Sato / Manga on Web, free for secondary use with this credit)
+- The sound of the page turn: "Papier blättern" by [Lokicutter](https://freesound.org/s/596553/) (CC0)
 - The icon of the shapes button is from [ArtPaint](https://github.com/HaikuArchives/ArtPaint) (MIT)
 - and the contributors to [BePDF](https://github.com/HaikuArchives/BePDF), among them Humdinger (the toolbar icons), Augustin Cavalier,
   Markus Himmel and the translators

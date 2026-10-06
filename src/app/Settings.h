@@ -91,6 +91,8 @@
   do(int8,    Int8,   LegacyAttributes,       legacyAttributes,                                  0) \
   do(bool,    Bool,   UpgradeAnnotationIds,   upgradeAnnotationIds,                           true) \
   do(bool,    Bool,   ShowMarginNotes,        showMarginNotes,                                true) \
+  do(bool,    Bool,   FancyMode,              fancyMode,                                     false) \
+  do(bool,    Bool,   FancySound,             fancySound,                                     true) \
   do(bool,    Bool,   ShowLeftPanel,          showLeftPanel,                                  true) \
   do(bool,    Bool,   QuasiFullscreenMode,    quasiFullscreenMode,                            true) \
   do(bool,    Bool,   FilledSelection,        filledSelection,                                true) \

@@ -45,6 +45,8 @@ for guide in docs/guide/build/toji-start.pdf docs/guide/build/toji-guide.pdf doc
 	[ -f "$guide" ] && cp -a "$guide" $STAGE/apps/Toji/docs/
 done
 cp -a images/toji-logo.png $STAGE/apps/Toji/docs/
+mkdir $STAGE/apps/Toji/sounds
+cp -a sounds/pageturn.wav $STAGE/apps/Toji/sounds/
 ln -s ../../../../apps/Toji/Toji $STAGE/data/deskbar/menu/Applications/Toji
 sed -e "s|@VERSION@|$VERSION|g" -e "s|@ARCH@|$ARCH|g" package/PackageInfo.in > $STAGE/.PackageInfo
 

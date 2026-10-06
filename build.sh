@@ -48,6 +48,8 @@ make -C src -j"$(nproc)" "$@"
 # The start page and the user guide are found in docs/ next to the program (CI builds them, see docs/guide/build.sh)
 mkdir -p dist/docs
 cp -f images/toji-logo.png dist/docs/
+mkdir -p dist/sounds
+cp -f sounds/pageturn.wav dist/sounds/
 for pdf in toji-start.pdf toji-guide.pdf; do
 	[ -f docs/guide/build/$pdf ] && cp -f docs/guide/build/$pdf dist/docs/
 done

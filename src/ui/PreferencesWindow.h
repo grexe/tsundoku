@@ -86,6 +86,8 @@ private:
 		WORKSPACE_CHANGED             = 'WSch',
 		AUTHOR_CHANGED                = 'Atch',
 		INVERT_VERTICAL_SCROLLING_CHANGED = 'IvSl',
+		FANCY_MODE_CHANGED            = 'FnMd',
+		FANCY_SOUND_CHANGED           = 'FnSd',
 	};
 	BLooper          *mLooper;
 	BOutlineListView *mPreferences;

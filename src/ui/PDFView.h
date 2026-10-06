@@ -39,6 +39,7 @@
 #include "FindTextWindow.h"
 #include "PageLayout.h"
 #include "PageRenderer.h"
+#include "PageTurn.h"
 #include "Settings.h"
 
 class PDFWindow;
@@ -119,6 +120,31 @@ private:
 	bool mSelectKeyDown;       // the key for selecting was down when the cursor was set last
 	bool mReadOnlyWarned;      // the user knows that changes cannot be saved to the file itself
 	BMessageRunner* mModifierRunner;  // watches the keys for the cursor
+
+	// the fancy mode: a page that turns (see PageTurn.h). The state: none; waiting until the page that comes is drawn; running.
+	enum { kTurnNone, kTurnWaiting, kTurnRunning };
+	int  mTurnState;
+	bool mTurnBegin;				// the change of the page that starts a turn is going on (it must not cancel it)
+	bool mTurnForward;
+	bool mTurnForced;				// from the tests: a turn although the mode is off, and at a progress that stays
+	float mTurnFreeze;				// the progress that stays (< 0: none)
+	BBitmap* mTurnFrom;				// what the view showed before, and what it shows after
+	BBitmap* mTurnTo;
+	BBitmap* mTurnFrame;			// the picture that is drawn: the view of the bitmap draws into it
+	BView* mTurnFrameView;
+	PageTurn::Geometry mTurnGeometry;
+	bigtime_t mTurnStart;
+	BMessageRunner* mTurnRunner;
+	class BSimpleGameSound* mTurnSound;
+	bool TurnWanted(int page);
+	void BeginTurn(int page);
+	void TurnReady();				// the page that comes has been drawn: the turn runs
+	void TurnTick();
+	void CancelTurn();
+	bool SlotsReady() const;
+	BBitmap* Snapshot(BRect* area, int* pages);
+	void DrawTurn();
+	void PlayTurnSound();
 
 	// The place that a deep link leads to is marked for a moment (the region of the target, in page space).
 	bool            mFitWidthPending;   // the pages are to be as wide as the window when it is known
@@ -405,6 +431,9 @@ public:
 	// a step to the next or the previous page (a spread in the double flow)
 	void NextPage();
 	void PreviousPage();
+	// the fancy mode, a page that turns
+	bool FancyMode() const;
+	void SetFancyMode(bool fancy);
 
 	// history
 	void BeginHistoryNavigation();

@@ -69,6 +69,9 @@
 #include "FileInfoWindow.h"
 #include "FindTextWindow.h"
 #include "NoteWindow.h"
+#include <MessageRunner.h>
+#include <Path.h>
+#include <SimpleGameSound.h>
 #include "PageRenderer.h"
 #include "PDFWindow.h"
 #include "BusyWindow.h"
@@ -113,6 +116,8 @@ static const int kZoomDPI[MAX_ZOOM - MIN_ZOOM + 1] = {
 #define SHOW_BUSY_MSG                  'busy'
 #define TARGET_DONE_MSG                'tgtD'
 #define LAYOUT_DONE_MSG                'lyDn'
+#define PAGE_TURN_TICK_MSG             'pgTk'
+#define PAGE_TURN_TIMEOUT_MSG          'pgTO'
 
 static bool SelectModifierDown();
 
@@ -253,6 +258,14 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 	mLeft = mTop = 0;
 	mWidth = 100; mHeight = 100;
 	mLink = NULL;
+	mTurnState = kTurnNone;
+	mTurnBegin = mTurnForward = mTurnForced = false;
+	mTurnFreeze = -1;
+	mTurnFrom = mTurnTo = mTurnFrame = NULL;
+	mTurnFrameView = NULL;
+	mTurnStart = 0;
+	mTurnRunner = NULL;
+	mTurnSound = NULL;
 	mNoteTip = 0;
 	mNoteHoverSince = 0;
 	mNoteReady = false;
@@ -533,6 +546,8 @@ PDFView::LoadFile(entry_ref *ref, FileAttributes *fileAttributes, const char *ow
 ///////////////////////////////////////////////////////////////////////////
 PDFView::~PDFView()
 {
+	CancelTurn();
+	delete mTurnSound;
 	delete mPendingEdit;
 	WaitForLayout();
 	StopBusy();
@@ -596,6 +611,14 @@ void PDFView::MessageReceived(BMessage *msg) {
 	case LAYOUT_DONE_MSG:
 		if (mLayingOut)
 			FinishTextSize();
+		break;
+	case PAGE_TURN_TICK_MSG:
+		TurnTick();
+		break;
+	case PAGE_TURN_TIMEOUT_MSG:
+		// the page that comes was not drawn in time: no turn
+		if (mTurnState == kTurnWaiting)
+			CancelTurn();
 		break;
 	case MODIFIERS_POLL_MSG: {
 		// a note that the pointer has rested on for the time of the tooltip can be edited by a click
@@ -987,6 +1010,8 @@ PDFView::Draw(BRect updateRect)
 	if (mLoading) {
 		SetLowColor(DesktopColor());
 		FillRect(updateRect, B_SOLID_LOW);
+	} else if (mTurnState != kTurnNone && mTurnFrom != NULL) {
+		DrawTurn();
 	} else {
 		DrawBackground(updateRect);
 		BRect rect(Bounds());
@@ -1066,6 +1091,7 @@ PDFView::ScrollTo(float x, float y) {
 void
 PDFView::FrameResized (float width, float height)
 {
+	CancelTurn();
 	Resize();
 }
 
@@ -1135,6 +1161,10 @@ PDFView::KeyDown (const char * bytes, int32 numBytes)
 {
 	if (mLayingOut)
 		return;
+	if (mTurnState != kTurnNone && *bytes == B_ESCAPE) {
+		CancelTurn();
+		return;
+	}
 	switch (*bytes) {
 	case B_ESCAPE:
 		if (mMarkupArmed)
@@ -1288,6 +1318,7 @@ PDFView::EditNoteAt(BPoint point, bool marks, bool whenReleased)
 void
 PDFView::MouseDown (BPoint point) {
 	BPoint screen;
+	CancelTurn();
 
 	// (the document is being laid out, nothing can be done with it)
 	if (mLayingOut)
@@ -2506,6 +2537,8 @@ PDFView::SyncSlots()
 void
 PDFView::Redraw(bool keepRendered)
 {
+	if (!mTurnBegin)
+		CancelTurn();
 
 	PDFWindow* parentWin = GetPDFWindow();
 
@@ -2658,6 +2691,8 @@ PDFView::PostRedraw(thread_id id, BBitmap *bitmap) {
 			slot->origin.y + slot->page->GetHeight()));
 		break;
 	}
+	if (mTurnState == kTurnWaiting && SlotsReady())
+		TurnReady();
 
 	BPoint mouse; uint32 buttons;
 	GetMouse(&mouse, &buttons);
@@ -2774,6 +2809,8 @@ PDFView::SetPage (int page)
 {
 	if (mDoc == NULL)
 		return;
+	if (!mTurnBegin)
+		CancelTurn();
 
 	mSelected = NOT_SELECTED;
 
@@ -2816,9 +2853,23 @@ PDFView::MoveToPage(int page, bool top) {
 		return;
 	}
 
+	// the fancy mode: the pages of what is shown now are kept for the turn
+	bool turn = TurnWanted(page);
+	if (turn) {
+		mTurnBegin = true;
+		BeginTurn(page);
+	} else
+		CancelTurn();
+
 	BRect bounds(Bounds());
 	ScrollTo(bounds.left, top ? 0 : mCanvasHeight);
 	SetPage(page);
+
+	if (turn) {
+		mTurnBegin = false;
+		if (mTurnState == kTurnWaiting && SlotsReady())
+			TurnReady();
+	}
 }
 
 //////////////////////////////////////////////////////////////////
@@ -3348,6 +3399,221 @@ PDFView::SetMarginNotesShown(bool shown)
 {
 	gApp->GetSettings()->SetShowMarginNotes(shown);
 	Invalidate();
+}
+
+
+// ---- the fancy mode: a page that turns
+
+bool
+PDFView::FancyMode() const
+{
+	return gApp->GetSettings()->GetFancyMode();
+}
+
+
+void
+PDFView::SetFancyMode(bool fancy)
+{
+	gApp->GetSettings()->SetFancyMode(fancy);
+	if (!fancy)
+		CancelTurn();
+}
+
+
+// A step of one page or spread in a flow of pages (not in the continuous flow, where the view scrolls, and not for a webtoon, nor
+// for a jump of many pages) turns the page, if the mode is on.
+bool
+PDFView::TurnWanted(int page)
+{
+	if (!(FancyMode() || mTurnForced) || mDoc == NULL || Window() == NULL || mLayingOut || mLayout.IsContinuous()
+		|| mLayout.TopToBottom() || mSlots.empty())
+		return false;
+	int target = mLayout.NormalizePage(page);
+	if (target == mCurrentPage)
+		return false;
+	return target == mLayout.NextSpreadPage(mCurrentPage) || target == mLayout.PreviousSpreadPage(mCurrentPage);
+}
+
+
+// What the view shows: the pages as they are drawn, around the color of the desktop, in a bitmap of the size of the view.
+BBitmap*
+PDFView::Snapshot(BRect* area, int* pages)
+{
+	BRect bounds(Bounds());
+	BBitmap* bitmap = new BBitmap(BRect(0, 0, bounds.Width(), bounds.Height()), B_RGB32, true);
+	BView* view = new BView(bitmap->Bounds(), "snapshot", B_FOLLOW_NONE, B_WILL_DRAW);
+	bitmap->AddChild(view);
+	bitmap->Lock();
+	view->SetHighColor(DesktopColor());
+	view->FillRect(view->Bounds());
+	*pages = 0;
+	*area = BRect();
+	for (size_t i = 0; i < mSlots.size(); i++) {
+		const PageSlot* slot = mSlots[i];
+		BBitmap* page = slot->page->GetBitmap();
+		if (page == NULL)
+			continue;
+		BPoint at = slot->origin - bounds.LeftTop();
+		view->DrawBitmap(page, BRect(0, 0, slot->page->GetWidth() - 1, slot->page->GetHeight() - 1),
+			BRect(at.x, at.y, at.x + slot->page->GetWidth() - 1, at.y + slot->page->GetHeight() - 1));
+		view->SetHighColor(ui_color(B_SHADOW_COLOR));
+		view->StrokeRect(BRect(at.x - 1, at.y - 1, at.x + slot->page->GetWidth(), at.y + slot->page->GetHeight()));
+		BRect rect(at.x, at.y, at.x + slot->page->GetWidth() - 1, at.y + slot->page->GetHeight() - 1);
+		*area = area->IsValid() ? (*area | rect) : rect;
+		(*pages)++;
+	}
+	view->Sync();
+	bitmap->Unlock();
+	bitmap->RemoveChild(view);
+	delete view;
+	if (area->IsValid())
+		*area = *area & bitmap->Bounds();
+	return bitmap;
+}
+
+
+bool
+PDFView::SlotsReady() const
+{
+	if (mSlots.empty())
+		return false;
+	for (size_t i = 0; i < mSlots.size(); i++) {
+		if (mSlots[i]->rendering || mSlots[i]->page->GetBitmap() == NULL)
+			return false;
+	}
+	return true;
+}
+
+
+// The page is going to change: what is shown now is kept, and the turn starts when the page that comes has been drawn.
+void
+PDFView::BeginTurn(int page)
+{
+	CancelTurn();
+	BRect fromArea;
+	int fromPages = 0;
+	mTurnFrom = Snapshot(&fromArea, &fromPages);
+	mTurnForward = mLayout.NormalizePage(page) == mLayout.NextSpreadPage(mCurrentPage);
+	mTurnGeometry.area = fromArea;
+	mTurnGeometry.spread = fromPages > 1;
+	mTurnGeometry.rightToLeft = mLayout.RightToLeft();
+	mTurnState = kTurnWaiting;
+	BMessage timeout(PAGE_TURN_TIMEOUT_MSG);
+	mTurnRunner = new BMessageRunner(BMessenger(this), &timeout, 600000, 1);
+}
+
+
+// The page that comes is there: the turn goes from what was shown to what is shown, or backwards when the page goes back (a step
+// back is the step forward the other way round).
+void
+PDFView::TurnReady()
+{
+	delete mTurnRunner;
+	mTurnRunner = NULL;
+	BRect toArea;
+	int toPages = 0;
+	mTurnTo = Snapshot(&toArea, &toPages);
+	if (!toArea.IsValid() || !mTurnGeometry.area.IsValid()) {
+		CancelTurn();
+		return;
+	}
+	if (toPages > 1)
+		mTurnGeometry.spread = true;
+	mTurnGeometry.area = mTurnGeometry.area | toArea;
+	BRect bounds(Bounds());
+	mTurnFrame = new BBitmap(BRect(0, 0, bounds.Width(), bounds.Height()), B_RGB32, true);
+	mTurnFrameView = new BView(mTurnFrame->Bounds(), "turn", B_FOLLOW_NONE, B_WILL_DRAW);
+	mTurnFrame->AddChild(mTurnFrameView);
+	mTurnState = kTurnRunning;
+	mTurnStart = system_time();
+	if (mTurnFreeze < 0) {
+		BMessage tick(PAGE_TURN_TICK_MSG);
+		mTurnRunner = new BMessageRunner(BMessenger(this), &tick, 16000);
+		PlayTurnSound();
+	}
+	TurnTick();
+}
+
+
+void
+PDFView::TurnTick()
+{
+	if (mTurnState != kTurnRunning || mTurnFrom == NULL || mTurnTo == NULL)
+		return;
+	float time = mTurnFreeze >= 0 ? mTurnFreeze : (float)(system_time() - mTurnStart) / (float)PageTurn::kDuration;
+	if (time >= 1) {
+		CancelTurn();	// done
+		return;
+	}
+	float progress = PageTurn::Ease(time);
+	mTurnFrame->Lock();
+	if (mTurnForward)
+		PageTurn::Draw(mTurnFrameView, mTurnFrom, mTurnTo, mTurnGeometry, progress);
+	else
+		PageTurn::Draw(mTurnFrameView, mTurnTo, mTurnFrom, mTurnGeometry, 1 - progress);
+	mTurnFrameView->Sync();
+	mTurnFrame->Unlock();
+	Invalidate();
+}
+
+
+void
+PDFView::DrawTurn()
+{
+	BPoint at = Bounds().LeftTop();
+	SetDrawingMode(B_OP_COPY);
+	if (mTurnState == kTurnRunning && mTurnFrame != NULL)
+		DrawBitmap(mTurnFrame, at);
+	else if (mTurnFrom != NULL)
+		DrawBitmap(mTurnFrom, at);
+}
+
+
+// The turn is over, or is given up: the view shows the page as it is.
+void
+PDFView::CancelTurn()
+{
+	if (mTurnState == kTurnNone && mTurnFrom == NULL)
+		return;
+	delete mTurnRunner;
+	mTurnRunner = NULL;
+	mTurnState = kTurnNone;
+	if (mTurnFrame != NULL && mTurnFrameView != NULL)
+		mTurnFrame->RemoveChild(mTurnFrameView);
+	delete mTurnFrameView;
+	mTurnFrameView = NULL;
+	delete mTurnFrame;
+	mTurnFrame = NULL;
+	delete mTurnFrom;
+	mTurnFrom = NULL;
+	delete mTurnTo;
+	mTurnTo = NULL;
+	if (Window() != NULL)
+		Invalidate();
+}
+
+
+// the sound of a page, from the sounds next to the program
+void
+PDFView::PlayTurnSound()
+{
+	if (!gApp->GetSettings()->GetFancySound())
+		return;
+	if (mTurnSound == NULL) {
+		BPath path(*gApp->GetAppPath());
+		path.Append("sounds/pageturn.wav");
+		mTurnSound = new BSimpleGameSound(path.Path());
+#ifdef TOJI_TESTING
+		if (FILE* log = fopen("/tmp/ts_test.out", "a")) { fprintf(log, "turn sound %s: %s\n", path.Path(), strerror(mTurnSound->InitCheck())); fclose(log); }
+#endif
+		if (mTurnSound->InitCheck() != B_OK) {
+			delete mTurnSound;
+			mTurnSound = NULL;
+			return;
+		}
+	}
+	mTurnSound->StopPlaying();
+	mTurnSound->StartPlaying();
 }
 
 
@@ -4970,6 +5236,19 @@ PDFView::TestCommand(BMessage* message)
 		mMarginHover = n >= 0 && n < (int32)boxes.size() ? boxes[n].annotation : NULL;
 		Invalidate();
 		TestLog("hovermargin: %d boxes", (int)boxes.size());
+	} else if (cmd == "turn") {
+		// a turn to the next page that stays at a progress (t=0..1); "turnend" lets go
+		mTurnForced = true;
+		mTurnFreeze = TestNumber(message, "t");
+		if (message->HasString("back"))
+			PreviousPage();
+		else
+			NextPage();
+		TestLog("turn: state %d, page %d", mTurnState, mCurrentPage);
+	} else if (cmd == "turnend") {
+		mTurnFreeze = -1;
+		mTurnForced = false;
+		CancelTurn();
 	} else if (cmd == "scrollto") {
 		// the view to (x1, y1) of the canvas
 		ScrollTo(x1, y1);

@@ -63,6 +63,7 @@ SRCS = annotations/AnnotationsView.cpp \
 	layout/PageLayout.cpp \
 	scripting/Scripting.cpp \
 	ui/PDFPrint.cpp \
+	ui/PageTurn.cpp \
 	ui/PDFSearch.cpp \
 	ui/PDFView.cpp \
 	ui/PDFWindow.cpp \
@@ -104,7 +105,7 @@ RSRCS =
 #	- 	if your library does not follow the standard library naming scheme,
 #		you need to specify the path to the library and it's name.
 #		(e.g. for mylib.a, specify "mylib.a" or "path/mylib.a")
-LIBS = shared be textencoding columnlistview tracker translation localestub xml2 zip archive djvulibre $(STDCPPLIBS)
+LIBS = shared be game textencoding columnlistview tracker translation localestub xml2 zip archive djvulibre $(STDCPPLIBS)
 ifdef MUPDF_DIR
 LIBS += $(MUPDF_DIR)/build/release/libmupdf.a $(MUPDF_DIR)/build/release/libmupdf-third.a \
 	freetype harfbuzz openjp2 jbig2dec brotlidec brotlienc brotlicommon jpeg z

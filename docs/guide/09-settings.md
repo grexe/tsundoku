@@ -21,6 +21,7 @@
 
 - **Fullscreen mode:** show only the document, or the toolbar, status bar and scroll bars too.
 - **Selection:** whether a rectangular selection is filled or only outlined.
+- **Fancy mode:** a page that turns when you go to the next or the previous page, and whether it makes the sound of a page.
 - **Invert vertical scrolling** and other details of the display.
 
 ## Printing

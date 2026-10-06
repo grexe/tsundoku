@@ -59,3 +59,10 @@ path = ["docs/guide/images/comic-spread.png"]
 precedence = "override"
 SPDX-FileCopyrightText = ["2026 Gregor B. Rosenauer & Claude", "Chicago Sunday Tribune, 1915 (the comic shown, public domain)"]
 SPDX-License-Identifier = "CC-BY-4.0"
+
+# The page turning sound (shortened and converted by us): Creative Commons 0.
+[[annotations]]
+path = ["sounds/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "Lokicutter (https://freesound.org/s/596553/)"
+SPDX-License-Identifier = "CC0-1.0"

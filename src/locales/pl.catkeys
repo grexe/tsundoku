@@ -1,4 +1,4 @@
-1	Polish	application/x-vnd.sen-labs.Toji	93407289
+1	Polish	application/x-vnd.sen-labs.Toji	1126492490
 Selection rectangle	AnnotationWindow		Prostokąt zaznaczenia
 Toji reading file: 	PDFView		Toji odczytuje plik:
 Cancel	PDFView		Anuluj
@@ -74,6 +74,7 @@ Text	PDFView
 Text	PDFWindow		
 Open in workspace:	AnnotationWindow		Otwórz na przestrzeni roboczej:
 Go to next page	PDFWindow		Do następnej strony
+A page that turns like in a book when you go to the next or the previous page (not in the continuous flow).	AnnotationWindow		
 Restore page number	AnnotationWindow		Wróć do ostatnio oglądanej strony
 Last	PDFWindow		Ostatnia
 Hide sidebar	PDFWindow		
@@ -106,6 +107,7 @@ Delete annotation	PDFView
 Quit	PDFWindow		Zakończ
 About Toji	BepdfApplication		
 The copy could not be saved.	PDFWindow		
+Fancy page turns	PDFWindow		
 Fullscreen mode	PDFWindow		Tryb pełnoekranowy
 File	PDFWindow		Plik
 Options	FindTextWindow		Opcje
@@ -122,6 +124,7 @@ Series:	FileInfoWindow
 First	PDFWindow		Pierwsza
 Copy link	PDFView		Kopiuj odnośnik
 Add	PDFWindow		Dodaj
+With the sound of a page	AnnotationWindow		
 Open in new window…	PDFWindow		Otwórz w nowym oknie…
 Yellow	PDFView		
 OK	PDFSearch		OK
@@ -168,6 +171,7 @@ Title	BepdfApplication
 (read-only)	PDFView		
 Keywords:	FileInfoWindow		Słowa kluczowe
 Annotation	Document		
+Fancy mode: pages turn	AnnotationWindow		
 Blue	PDFView		
 Forward in page history list	PDFWindow		Następna strona w historii
 Page:	PrintingProgressWindow		Strona:

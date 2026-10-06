@@ -183,6 +183,15 @@ void PreferencesWindow::SetupView() {
 		new BMessage(INVERT_VERTICAL_SCROLLING_CHANGED));
 	scrolling->SetValue(settings->GetInvertVerticalScrolling());
 
+	BCheckBox *fancy = new BCheckBox("fancy", B_TRANSLATE("Fancy mode: pages turn"),
+		new BMessage(FANCY_MODE_CHANGED));
+	fancy->SetValue(settings->GetFancyMode());
+	fancy->SetToolTip(B_TRANSLATE("A page that turns like in a book when you go to the next or the previous page "
+		"(not in the continuous flow)."));
+	BCheckBox *fancySound = new BCheckBox("fancySound", B_TRANSLATE("With the sound of a page"),
+		new BMessage(FANCY_SOUND_CHANGED));
+	fancySound->SetValue(settings->GetFancySound());
+
 	BLayoutBuilder::Group<>(this, B_HORIZONTAL)
 		.SetInsets(B_USE_WINDOW_INSETS)
 		.Add(prefScroll)
@@ -192,6 +201,8 @@ void PreferencesWindow::SetupView() {
 				.Add(fullscreen)
 				.Add(selection)
 				.Add(scrolling)
+				.Add(fancy)
+				.Add(fancySound)
 				.AddGlue()
 			.End()
 			.GetLayout(&mLayers)
@@ -295,6 +306,12 @@ void PreferencesWindow::MessageReceived(BMessage *msg) {
 				gApp->GetSettings()->SetAuthor(t->Text());
 			}
 		}
+		break;
+	case FANCY_MODE_CHANGED:
+		mSettings->SetFancyMode(IsOn(msg));
+		break;
+	case FANCY_SOUND_CHANGED:
+		mSettings->SetFancySound(IsOn(msg));
 		break;
 	case INVERT_VERTICAL_SCROLLING_CHANGED:
 		mSettings->SetInvertVerticalScrolling(IsOn(msg));
