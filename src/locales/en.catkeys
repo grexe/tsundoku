@@ -1,4 +1,4 @@
-1	English	application/x-vnd.sen-labs.Toji	453287713
+1	English	application/x-vnd.sen-labs.Toji	93407289
 Selection rectangle	AnnotationWindow		Selection rectangle
 Toji reading file: 	PDFView		Toji reading file: 
 Cancel	PDFView		Cancel
@@ -73,7 +73,6 @@ ISBN:	FileInfoWindow		ISBN:
 Text	PDFView		Text
 Text	PDFWindow		Text
 Open in workspace:	AnnotationWindow		Open in workspace:
-This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.	PDFWindow		This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.
 Go to next page	PDFWindow		Go to next page
 Restore page number	AnnotationWindow		Restore page number
 Last	PDFWindow		Last
@@ -281,6 +280,7 @@ Show help…	PDFWindow		Show help…
 Edit	PDFWindow		Edit
 Toji printing	PrintingProgressWindow		Toji printing
 Search backwards	FindTextWindow		Search backwards
+This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF. Your choice applies to all files like this, and you can change it later in the settings.	PDFWindow		This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF. Your choice applies to all files like this, and you can change it later in the settings.
 Highlight selection	PDFWindow		Highlight selection
 EPUB version:	FileInfoWindow		EPUB version:
 Reload	PDFWindow		Reload

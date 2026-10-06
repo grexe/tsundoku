@@ -8,12 +8,12 @@
 #align(center)[
   #v(1.2cm)
   #image("images/toji-logo.png", height: 11cm)
-  #if subtitle != none [
-    #v(0.2cm)
-    #text(size: 20pt, tracking: 0.12em)[#subtitle]
-  ]
   #v(1.2cm)
   #text(size: 12pt, tracking: 0.08em)[A DOCUMENT READER FOR HAIKU]
+  #if subtitle != none [
+    #v(0.35cm)
+    #text(size: 12pt, tracking: 0.08em)[#subtitle]
+  ]
   #v(1.6cm)
   #text(size: 15pt, style: "italic")[
     Tabs, feeds, papers, tides: \

@@ -1,4 +1,4 @@
-1	Polish	application/x-vnd.sen-labs.Toji	453287713
+1	Polish	application/x-vnd.sen-labs.Toji	93407289
 Selection rectangle	AnnotationWindow		Prostokąt zaznaczenia
 Toji reading file: 	PDFView		Toji odczytuje plik:
 Cancel	PDFView		Anuluj
@@ -73,7 +73,6 @@ ISBN:	FileInfoWindow
 Text	PDFView		
 Text	PDFWindow		
 Open in workspace:	AnnotationWindow		Otwórz na przestrzeni roboczej:
-This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.	PDFWindow		
 Go to next page	PDFWindow		Do następnej strony
 Restore page number	AnnotationWindow		Wróć do ostatnio oglądanej strony
 Last	PDFWindow		Ostatnia
@@ -281,6 +280,7 @@ Show help…	PDFWindow		Pokaż pomoc…
 Edit	PDFWindow		Edycja
 Toji printing	PrintingProgressWindow		Toji drukuje
 Search backwards	FindTextWindow		Szukaj od tyłu
+This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF. Your choice applies to all files like this, and you can change it later in the settings.	PDFWindow		
 Highlight selection	PDFWindow		
 EPUB version:	FileInfoWindow		
 Reload	PDFWindow		Odśwież

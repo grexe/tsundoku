@@ -1848,18 +1848,21 @@ PDFView::HandleLink(BPoint point) {
 ///////////////////////////////////////////////////////////////////////////
 void
 PDFView::GotoPosition(int page, float x, float y) {
-	if (page > 0 && page != mCurrentPage)
-		MoveToPage(page);
-	else if (page <= 0)
-		MoveToPage(1);
+	int target = page > 0 ? page : 1;
+	if (target != mCurrentPage)
+		MoveToPage(target);
 
 	if (isnan(x) && isnan(y))
 		return;
 
-	// the page has been set up by now, so the position can be calculated
-	BPoint dev = mPage->PageToDev(fz_make_point(isnan(x) ? 0 : x, isnan(y) ? 0 : y));
+	// the position is on the page that was gone to: its slot (the active page may be another one, in a continuous flow) and
+	// the place of the slot in the view
+	PageSlot* slot = SlotForPage(target);
+	if (slot == NULL)
+		return;
+	BPoint dev = slot->page->PageToDev(fz_make_point(isnan(x) ? 0 : x, isnan(y) ? 0 : y));
 	BRect bounds(Bounds());
-	ScrollTo(isnan(x) ? bounds.left : dev.x, isnan(y) ? bounds.top : dev.y);
+	ScrollTo(isnan(x) ? bounds.left : slot->origin.x + dev.x, isnan(y) ? bounds.top : slot->origin.y + dev.y);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -4948,6 +4951,10 @@ PDFView::TestCommand(BMessage* message)
 		mMarginHover = n >= 0 && n < (int32)boxes.size() ? boxes[n].annotation : NULL;
 		Invalidate();
 		TestLog("hovermargin: %d boxes", (int)boxes.size());
+	} else if (cmd == "gotopos") {
+		// as a link to a place on a page: gotopos with page, x and y of the page
+		GotoPosition((int)TestNumber(message, "page"), TestNumber(message, "x"), TestNumber(message, "y"));
+		TestLog("gotopos: top now %.0f, page %d", Bounds().top, mCurrentPage);
 	} else if (cmd == "editnote") {
 		// as a double click at (x1, y1) does
 		TestLog("editnote: %d", (int)EditNoteAt(BPoint(x1, y1), true, false));

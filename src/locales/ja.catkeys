@@ -1,4 +1,4 @@
-1	Japanese	application/x-vnd.sen-labs.Toji	453287713
+1	Japanese	application/x-vnd.sen-labs.Toji	93407289
 Selection rectangle	AnnotationWindow		範囲指定設定
 Toji reading file: 	PDFView		Toji ファイルを読み込んでいます: 
 Cancel	PDFView		中止
@@ -73,7 +73,6 @@ ISBN:	FileInfoWindow
 Text	PDFView		
 Text	PDFWindow		
 Open in workspace:	AnnotationWindow		ワークスペースを指定して開く:
-This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.	PDFWindow		
 Go to next page	PDFWindow		次ページに移動
 Restore page number	AnnotationWindow		次回起動時に前回終了したページへ移動する
 Last	PDFWindow		最終ページ
@@ -281,6 +280,7 @@ Show help…	PDFWindow		Toji のヘルプ…
 Edit	PDFWindow		編集
 Toji printing	PrintingProgressWindow		Toji 印刷
 Search backwards	FindTextWindow		後方へ検索
+This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF. Your choice applies to all files like this, and you can change it later in the settings.	PDFWindow		
 Highlight selection	PDFWindow		
 EPUB version:	FileInfoWindow		
 Reload	PDFWindow		再読み込み

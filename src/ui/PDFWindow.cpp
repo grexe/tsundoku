@@ -1971,8 +1971,8 @@ PDFWindow::MessageReceived(BMessage* message)
 			B_TRANSLATE("This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal "
 				"standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. "
 				"The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in "
-				"BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with "
-				"this file. You can change this later in the settings."),
+				"BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF. "
+				"Your choice applies to all files like this, and you can change it later in the settings."),
 			B_TRANSLATE("Keep"), B_TRANSLATE("Upgrade"), NULL, B_WIDTH_AS_USUAL,
 			B_IDEA_ALERT);
 		alert->SetShortcut(0, B_ESCAPE);

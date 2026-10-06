@@ -1,4 +1,4 @@
-1	Ukrainian	application/x-vnd.sen-labs.Toji	453287713
+1	Ukrainian	application/x-vnd.sen-labs.Toji	93407289
 Selection rectangle	AnnotationWindow		Прямокутник виділення
 Toji reading file: 	PDFView		Toji читає файл: 
 Cancel	PDFView		Скасувати
@@ -73,7 +73,6 @@ ISBN:	FileInfoWindow
 Text	PDFView		
 Text	PDFWindow		
 Open in workspace:	AnnotationWindow		Робочий простір:
-This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.	PDFWindow		
 Go to next page	PDFWindow		Перейти до наступної сторінки
 Restore page number	AnnotationWindow		Відновити номер сторінки
 Last	PDFWindow		Остання
@@ -281,6 +280,7 @@ Show help…	PDFWindow		Показати довідку…
 Edit	PDFWindow		Редагувати
 Toji printing	PrintingProgressWindow		Toji друкує
 Search backwards	FindTextWindow		Шукати в зворотному напрямку
+This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF. Your choice applies to all files like this, and you can change it later in the settings.	PDFWindow		
 Highlight selection	PDFWindow		
 EPUB version:	FileInfoWindow		
 Reload	PDFWindow		Перезавантажити

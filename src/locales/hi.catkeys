@@ -1,4 +1,4 @@
-1	Hindi	application/x-vnd.sen-labs.Toji	453287713
+1	Hindi	application/x-vnd.sen-labs.Toji	93407289
 Selection rectangle	AnnotationWindow		Chayaan Aayat
 Toji reading file: 	PDFView		Toji pathan file:
 Cancel	PDFView		Radh karana
@@ -73,7 +73,6 @@ ISBN:	FileInfoWindow
 Text	PDFView		
 Text	PDFWindow		
 Open in workspace:	AnnotationWindow		Karyakhetra mein khole:
-This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF with this file. You can change this later in the settings.	PDFWindow		
 Go to next page	PDFWindow		agale pej par jaen
 Restore page number	AnnotationWindow		prshth sankhya punarsthaapit karen
 Last	PDFWindow		Antim
@@ -281,6 +280,7 @@ Show help…	PDFWindow		Madad dikhaen...
 Edit	PDFWindow		sampaadit karen
 Toji printing	PrintingProgressWindow		Toji ki chapae
 Search backwards	FindTextWindow		peechhe kee aur khojen
+This file has attributes that BePDF uses for bookmarks and metadata. Toji uses a universal standard schema for the metadata and Web Annotations for the bookmarks, which BePDF does not know. The document itself stays as it is.\n\nDo you want to keep the proprietary attributes for use in BePDF, or upgrade to the standard ones? Upgrading is recommended unless you still use BePDF. Your choice applies to all files like this, and you can change it later in the settings.	PDFWindow		
 Highlight selection	PDFWindow		
 EPUB version:	FileInfoWindow		
 Reload	PDFWindow		Punah laadna
