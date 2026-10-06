@@ -1119,9 +1119,11 @@ BMenuBar* PDFWindow::BuildMenu()
 			.AddItem(mNewMenu  = new RecentDocumentsMenu(
 				B_TRANSLATE("Open in new window" B_UTF8_ELLIPSIS),
 				OPEN_IN_NEW_WINDOW_CMD))
+			.AddItem(B_TRANSLATE("Reload"), RELOAD_FILE_CMD, 'R')
+			.AddSeparator()
 			.AddItem(B_TRANSLATE("Save"), SAVE_FILE_CMD, 'S')
 			.AddItem(B_TRANSLATE("Save as" B_UTF8_ELLIPSIS), SAVE_AS_FILE_CMD, 'S', B_SHIFT_KEY)
-			.AddItem(B_TRANSLATE("Reload"), RELOAD_FILE_CMD, 'R')
+			.AddSeparator()
 			.AddItem(mFileInfoItem = new BMenuItem(B_TRANSLATE("File info" B_UTF8_ELLIPSIS),
 				new BMessage(FILE_INFO_CMD), 'I'))
 			.AddSeparator()
@@ -1296,8 +1298,8 @@ BToolBar* PDFWindow::BuildToolBar()
 	// marking and annotating: each button arms what the next click or selection works with (Escape lets go)
 	mToolBar->AddAction(MARKER_MENU_CMD, this, WithMenuArrow(LoadVectorIcon("ANNOT_HIGHLIGHT")),
 		B_TRANSLATE("Marker: choose a color, then select the text"), NULL, true);
-	mToolBar->AddAction(NOTE_BUTTON_CMD, this, LoadVectorIcon("ANNOT_NOTE"),
-		B_TRANSLATE("Note: select text for a margin note, or click on the page"), NULL, true);
+	mToolBar->AddAction(NOTE_BUTTON_CMD, this, WithMenuArrow(LoadVectorIcon("ANNOT_NOTE")),
+		B_TRANSLATE("Notes: a margin note for selected text, a note or a text on the page"), NULL, true);
 	mToolBar->AddAction(SHAPES_MENU_CMD, this, WithMenuArrow(LoadVectorIcon("ART_RECTS")),
 		B_TRANSLATE("Text, shapes and drawing: choose one, then click or drag on the page"), NULL, true);
 
@@ -1642,29 +1644,27 @@ PDFWindow::MessageReceived(BMessage* message)
 		SaveDocument();
 		break;
 	case MARKER_MENU_CMD:
+	case NOTE_BUTTON_CMD:
 	case SHAPES_MENU_CMD: {
 		// a button that is armed puts the tool down; else its menu opens under it
-		const bool marker = message->what == MARKER_MENU_CMD;
-		int armed = mMainView->ArmedState();
-		if (marker ? armed == 1 : armed == 3) {
-			if (marker)
+		const int which = message->what == MARKER_MENU_CMD ? 1 : message->what == NOTE_BUTTON_CMD ? 2 : 3;
+		if (mMainView->ArmedState() == which) {
+			if (mMainView->IsMarkupArmed())
 				mMainView->DisarmMarkup();
 			else
 				mMainView->CancelToolFromToolbar();
 		} else if (BButton* button = mToolBar->FindButton(message->what)) {
 			BPoint under = button->ConvertToScreen(BPoint(0, button->Bounds().bottom + 1));
-			if (marker)
+			if (which == 1)
 				mMainView->ShowMarkerMenu(under);
+			else if (which == 2)
+				mMainView->ShowNoteMenu(under);
 			else
 				mMainView->ShowShapesMenu(under);
 		}
 		ToolsChanged();
 		break;
 	}
-	case NOTE_BUTTON_CMD:
-		mMainView->NoteButton();
-		ToolsChanged();
-		break;
 	case ADD_MARGIN_NOTE_CMD:
 		mMainView->MarginNoteOnSelection();
 		break;

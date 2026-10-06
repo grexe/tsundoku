@@ -17,11 +17,10 @@ next click or selection uses it once, and Escape (or the button again) puts it d
 | Button | What it does |
 |:---|:---|
 | **Marker** (highlighter) | opens a menu of colors (and *Underline* and *Strike out*). After you choose, the pointer is an I-beam: select the text (drag, double click for a word, triple click for a line) and it is marked in that color. If some text is already selected, it is marked at once. |
-| **Note** | a margin note: with text selected, that text gets one at once. Otherwise the pointer is an I-beam: select the text (drag, double click for a word, triple click for a line) and a window asks for the note when you let go. |
-| **Text, shapes and drawing** | opens a menu (*Note, Text, Rectangle, Ellipse, Line, Arrow, Drawing*); after you choose, the pointer is a cross and you click (note, text) or drag on the page. The *Note* of this menu is a note icon on the page itself, for places where there is no text to select. |
+| **Note** | opens a menu of the textual notes: *Margin note* (with text selected, that text gets one at once; otherwise the pointer is an I-beam: select the text, and a window asks for the note when you let go), *Note on the page* (a note icon that you click onto the page, for places where there is no text to select) and *Text on the page* (free text). |
+| **Shapes and drawing** | opens a menu (*Rectangle, Ellipse, Line, Arrow, Drawing*); after you choose, the pointer is a cross and you drag on the page. |
 
-A small arrow at the corner of the icon of the **Marker** and of the **Text, shapes and drawing** button says that the button opens a
-menu. The buttons are dimmed for documents that cannot take what they make (see the table above).
+A small arrow at the corner of the icon says that a button opens a menu (all three do). The buttons are dimmed for documents that cannot take what they make (see the table above).
 
 ![The marker menu: choose a color, then select the text.](images/marker-menu.png)
 
@@ -36,9 +35,9 @@ rests on the mark. A selection over several pages gets a mark on each page.
 
 ## Margin notes
 
-A mark can carry a note. Select the text and choose **Edit > Add margin note** (Cmd+Shift+N), or press the **Note** button while
+A mark can carry a note. Select the text and choose **Edit > Add margin note** (Cmd+Shift+N), or choose *Margin note* from the menu of the **Note** button while
 text is selected: the text is highlighted and a window asks for the note. A small note appears in the white margin at the right border of the page, at the height of the mark. Rest the pointer on it to read the note: a dotted line shows to which words it
-belongs. Click it to edit.
+belongs. Click it, or click the marked words, to edit the note.
 
 In a book (EPUB) there are no notes that sit on the page. **View > Show margin notes** switches the small notes off.
 

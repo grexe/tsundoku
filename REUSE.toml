@@ -19,7 +19,7 @@ SPDX-License-Identifier = "AGPL-3.0-or-later"
 # The logo, the name's artwork and the icons that were made for Toji: CC BY 4.0. (This does not give rights to the name
 # Toji or to SEN as trademarks.)
 [[annotations]]
-path = ["images/**", "src/graphics/toji.hvif"]
+path = ["images/**", "src/graphics/toji.hvif", "src/graphics/make-toji-icon.py"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Gregor B. Rosenauer & Claude"
 SPDX-License-Identifier = "CC-BY-4.0"

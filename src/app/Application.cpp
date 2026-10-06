@@ -616,6 +616,12 @@ void BepdfApplication::AboutRequested()
 	titleFont.SetFamilyAndStyle(kTitleFamily, kTitleStyle);
 	titleFont.SetSize(be_plain_font->Size() * 2);
 	v->SetFontAndColor(0, titleEnd, &titleFont, B_FONT_ALL);
+	// the trademark sign is the Unicode character of the ordinary font (the emoji font has a picture of "TM" for it)
+	BFont markFont(be_bold_font);
+	markFont.SetSize(be_plain_font->Size() * 2);
+	const char* mark = strstr(text, "\xE2\x84\xA2");
+	if (mark != NULL && mark - text < titleEnd)
+		v->SetFontAndColor(mark - text, mark - text + 3, &markFont, B_FONT_ALL);
 	// the empty line after it is just a small gap
 	BFont gapFont(be_plain_font);
 	gapFont.SetSize(be_plain_font->Size() * 0.6);

@@ -108,6 +108,7 @@ private:
 	bool mInvertVerticalScrolling;
 
 	BString *mTitle;
+	float mKeptLeft, mKeptTop;	// the last place that was scrolled to (not what the window resizing made of it)
 	float mLeft, mTop;	// position of page inside the view
 	float mWidth, mHeight;		//document width and height
 	const DocLink *mLink;      // link under the mouse
@@ -187,7 +188,8 @@ private:
 	void DrawMarginNotes(BRect updateRect);
 	void MarkSelection(MarkupType type, uint32 rgb, bool note);
 	void EditNewestNote(int page);
-	bool EditNoteAt(BPoint point);	// a note or text at a point of the view is opened for editing
+	bool EditNoteAt(BPoint point, bool marks, bool whenReleased);	// a note or text at a point of the view is opened for editing
+	BMessage* mPendingEdit;	// the note that a double click opens when the button is released
 	bool SelectingText() const;	// the mouse selects text: Option is down, or the marker is armed
 	void ApplyArmedMarkup();
 	void ToolsChanged();		// tells the window (the buttons of the toolbar)
@@ -482,7 +484,8 @@ public:
 	void MarginNoteOnSelection();
 	// the Note button: a margin note if text is selected, else a note on the page (or, where there are none, the next
 	// selection of text gets a margin note)
-	void NoteButton();
+	void NoteButton(BPoint screenPoint);
+	void ShowNoteMenu(BPoint screenPoint);
 	// The link (a toji: URI, see DeepLink.h) to the selected annotation, the selected words or the page that is shown (in a book
 	// its place in the text); and putting it on the clipboard.
 	BString LinkToHere();

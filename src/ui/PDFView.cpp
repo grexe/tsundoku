@@ -107,6 +107,7 @@ static const int kZoomDPI[MAX_ZOOM - MIN_ZOOM + 1] = {
 #define COPY_PLACE_LINK_MSG            'cpPl'
 #define ADD_TOOL_MSG                   'adtl'
 #define ARM_MARKUP_MSG                 'armM'
+#define NOTE_MARGIN_MSG                'mgnn'
 #define CREATE_TEXT_MSG                'crtx'
 #define MODIFIERS_POLL_MSG             'mdfy'
 #define SHOW_BUSY_MSG                  'busy'
@@ -254,6 +255,8 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 	mTool = kToolNone;
 	mMarkupArmed = false;
 	mMarginHover = NULL;
+	mKeptLeft = mKeptTop = 0;
+	mPendingEdit = NULL;
 	mArmedNote = false;
 	mArmedType = kMarkupHighlight;
 	mArmedColor = 0xffeb3b;
@@ -520,6 +523,7 @@ PDFView::LoadFile(entry_ref *ref, FileAttributes *fileAttributes, const char *ow
 ///////////////////////////////////////////////////////////////////////////
 PDFView::~PDFView()
 {
+	delete mPendingEdit;
 	WaitForLayout();
 	StopBusy();
 	SetSlotsDocument(NULL);
@@ -610,6 +614,16 @@ void PDFView::MessageReceived(BMessage *msg) {
 		ArmMarkup((MarkupType)type, (uint32)rgb);
 		break;
 	}
+	case NOTE_MARGIN_MSG:
+		// a margin note: for the selected text, or for the next selection of text
+		if (HasTextSelection() && mDoc->CanMarkText())
+			MarkSelection(kMarkupHighlight, 0xffeb3b, true);
+		else if (mDoc->CanMarkText() && mDoc->CanCopy())
+			ArmMarkup(kMarkupHighlight, 0xffeb3b, true);
+		else
+			beep();
+		ToolsChanged();
+		break;
 	case ADD_TOOL_MSG: {
 		int32 tool = kToolNone;
 		msg->FindInt32("tool", &tool);
@@ -986,6 +1000,12 @@ PDFView::Draw(BRect updateRect)
 ///////////////////////////////////////////////////////////////////////////
 void
 PDFView::ScrollTo (BPoint point) {
+	// (what the resizing of the window makes of the scroll bars is not a place that was scrolled to, see Resize())
+	BMessage* now = Window() != NULL ? Window()->CurrentMessage() : NULL;
+	if (now == NULL || now->what != B_VIEW_RESIZED) {
+		mKeptLeft = point.x;
+		mKeptTop = point.y;
+	}
 	BView::ScrollTo(point);
 	UpdateVisibleSlots();	// pages that come into view
 	BPoint mouse; uint32 buttons;
@@ -1207,18 +1227,27 @@ PDFView::BeginSelection(BPoint point, bool rectangle) {
 	SetMouseEventMask(B_POINTER_EVENTS);
 }
 
-// Opens the note or the text on the page at a point of the view for editing, if there is one.
+// Opens the note or the text on the page at a point of the view for editing, if there is one: when the mouse button is
+// released if it is for a double click (a window that opens while the button is down gets the rest of the click), or at once.
+// With "marks" a mark of text that carries a note counts as well.
 bool
-PDFView::EditNoteAt(BPoint point)
+PDFView::EditNoteAt(BPoint point, bool marks, bool whenReleased)
 {
 	const DocAnnotation* note = OnAnnotation(point);
-	if (note == NULL || (note->kind != kAnnotNote && note->kind != kAnnotText))
+	if (note == NULL)
+		return false;
+	bool wanted = note->kind == kAnnotNote || note->kind == kAnnotText
+		|| (marks && note->kind == kAnnotMarkup && note->contents.Length() > 0);
+	if (!wanted)
 		return false;
 	BMessage edit(EDIT_NOTE_MSG);
 	edit.AddInt32("page", ActivePage());
 	edit.AddInt32("index", note->index);
 	edit.AddString("text", note->contents.String());
-	if (Window() != NULL)
+	if (whenReleased) {
+		delete mPendingEdit;
+		mPendingEdit = new BMessage(edit);
+	} else if (Window() != NULL)
 		Window()->PostMessage(&edit, this);
 	return true;
 }
@@ -1270,7 +1299,10 @@ PDFView::MouseDown (BPoint point) {
 	}
 
 	// a double click on a note or a text opens it for editing
-	if (buttons == B_PRIMARY_MOUSE_BUTTON && clicks >= 2 && !SelectingText() && EditNoteAt(point))
+	if (buttons == B_PRIMARY_MOUSE_BUTTON && clicks >= 2 && !SelectingText() && EditNoteAt(point, false, true))
+		return;
+	// a click on a mark that has a note opens the note, like the note in the margin
+	if (buttons == B_PRIMARY_MOUSE_BUTTON && clicks == 1 && !SelectingText() && EditNoteAt(point, true, false))
 		return;
 
 	// a click on an annotation that can be moved selects it, and a drag from there moves it; elsewhere the click
@@ -1616,6 +1648,15 @@ PDFView::ResizeSelection(BPoint point) {
 ///////////////////////////////////////////////////////////////////////////
 void
 PDFView::MouseUp (BPoint point) {
+	if (mPendingEdit != NULL) {
+		// the note of a double click opens now
+		BMessage edit(*mPendingEdit);
+		delete mPendingEdit;
+		mPendingEdit = NULL;
+		if (Window() != NULL)
+			Window()->PostMessage(&edit, this);
+		return;
+	}
 	if (mMouseAction == ANNOT_ACTION) {
 		SetAction(NO_ACTION);
 		FinishAnnotationDrag();
@@ -2426,6 +2467,7 @@ PDFView::SyncSlots()
 void
 PDFView::Redraw(bool keepRendered)
 {
+
 	PDFWindow* parentWin = GetPDFWindow();
 
 	mMouseWheelDY = 0;
@@ -2625,6 +2667,11 @@ void
 PDFView::Resize() {
 	SyncSlots();
 	FixScrollbars();
+	// When the window is resized the scroll bars reset the view to the top (before it is told about the new size). The place
+	// that was scrolled to stays, and with it the page.
+	BPoint kept(mKeptLeft, mKeptTop);
+	if (Bounds().LeftTop() != kept)
+		ScrollTo(kept.x, kept.y);
 	Invalidate();
 }
 
@@ -3034,7 +3081,7 @@ PDFView::ArmedState() const
 {
 	if (mMarkupArmed)
 		return mArmedNote ? 2 : 1;
-	if (mTool == kToolNote)
+	if (mTool == kToolNote || mTool == kToolFreeText)
 		return 2;
 	return mTool != kToolNone ? 3 : 0;
 }
@@ -3184,8 +3231,9 @@ PDFView::MarginNoteOnSelection()
 }
 
 
+// The Note button: puts the tool down if it is armed, else opens its menu (a margin note, a note on the page, a text).
 void
-PDFView::NoteButton()
+PDFView::NoteButton(BPoint screenPoint)
 {
 	if (mDoc == NULL)
 		return;
@@ -3196,16 +3244,33 @@ PDFView::NoteButton()
 			CancelTool();
 		return;
 	}
-	// the button is for margin notes: the selected text gets one, or the next selection of text does; a note on the page itself
-	// (for a document without text to select) is in the menu of the shapes button and in the Edit menu
-	if (HasTextSelection() && mDoc->CanMarkText())
-		MarkSelection(kMarkupHighlight, 0xffeb3b, true);
-	else if (mDoc->CanMarkText() && mDoc->CanCopy())
-		ArmMarkup(kMarkupHighlight, 0xffeb3b, true);
-	else if (mDoc->CanDrawAnnotations())
-		SetTool(kToolNote);
-	else
-		beep();
+	ShowNoteMenu(screenPoint);
+}
+
+
+void
+PDFView::ShowNoteMenu(BPoint screenPoint)
+{
+	BPopUpMenu* menu = new BPopUpMenu("NoteMenu", false, false);
+	menu->SetAsyncAutoDestruct(true);
+
+	BMenuItem* item = new BMenuItem(B_TRANSLATE("Margin note"), new BMessage(NOTE_MARGIN_MSG));
+	item->SetTarget(this);
+	item->SetEnabled(mDoc->CanMarkText() && mDoc->CanCopy());
+	menu->AddItem(item);
+	menu->AddSeparatorItem();
+	static const struct { const char* label; PlacementTool tool; } kNotes[] = {
+		{ B_TRANSLATE_MARK("Note on the page"), kToolNote }, { B_TRANSLATE_MARK("Text on the page"), kToolFreeText }
+	};
+	for (size_t i = 0; i < sizeof(kNotes) / sizeof(kNotes[0]); i++) {
+		BMessage* message = new BMessage(ADD_TOOL_MSG);
+		message->AddInt32("tool", kNotes[i].tool);
+		item = new BMenuItem(B_TRANSLATE_NOCOLLECT(kNotes[i].label), message);
+		item->SetTarget(this);
+		item->SetEnabled(mDoc->CanDrawAnnotations());
+		menu->AddItem(item);
+	}
+	menu->Go(screenPoint, true, true, true);
 }
 
 
@@ -3252,14 +3317,14 @@ PDFView::MarginNoteBoxes(std::vector<MarginBox>* boxes)
 				std::swap(items[i], items[k]);
 		}
 	}
-	const float kSize = 14;
+	const float kSize = 18;
 	// in the white margin at the right border of the page
-	float left = mWidth - kSize - 3;
+	float left = mWidth - kSize - 8;
 	float lastBottom = -1000;
 	for (size_t i = 0; i < items.size(); i++) {
 		float y = items[i].y > lastBottom + 2 ? items[i].y : lastBottom + 2;
 		MarginBox box;
-		box.box = BRect(left, y, left + kSize - 1, y + kSize - 3);
+		box.box = BRect(left, y, left + kSize - 1, y + kSize - 4);
 		box.annotation = items[i].annotation;
 		boxes->push_back(box);
 		lastBottom = box.box.bottom;
@@ -3273,7 +3338,7 @@ PDFView::MarginNoteAt(BPoint point)
 	std::vector<MarginBox> boxes;
 	MarginNoteBoxes(&boxes);
 	for (size_t i = 0; i < boxes.size(); i++) {
-		if (boxes[i].box.Contains(point))
+		if (boxes[i].box.InsetByCopy(-4, -4).Contains(point))
 			return boxes[i].annotation;
 	}
 	return NULL;
@@ -3288,7 +3353,7 @@ PDFView::MarginNoteAtView(BPoint point, PageSlot** found)
 		std::vector<MarginBox> boxes;
 		MarginNoteBoxes(&boxes);
 		for (size_t k = 0; k < boxes.size(); k++) {
-			if (boxes[k].box.OffsetByCopy(mLeft, mTop).Contains(point)) {
+			if (boxes[k].box.OffsetByCopy(mLeft, mTop).InsetByCopy(-4, -4).Contains(point)) {
 				if (found != NULL)
 					*found = mSlots[i];
 				return boxes[k].annotation;
@@ -3324,10 +3389,10 @@ PDFView::DrawMarginNotes(BRect)
 		SetHighColor(edge);
 		StrokeRoundRect(box, 2, 2);
 		// the lines of the note
-		float inset = 3;
+		float inset = 4;
 		for (int line = 0; line < 3; line++) {
-			float y = box.top + 3 + line * 3;
-			StrokeLine(BPoint(box.left + inset, y), BPoint(box.right - inset - (line == 2 ? 3 : 0), y));
+			float y = box.top + 3 + line * 4;
+			StrokeLine(BPoint(box.left + inset, y), BPoint(box.right - inset - (line == 2 ? 4 : 0), y));
 		}
 	}
 }
@@ -3368,7 +3433,6 @@ void
 PDFView::ShowShapesMenu(BPoint screenPoint)
 {
 	static const struct { const char* label; PlacementTool tool; } kShapes[] = {
-		{ B_TRANSLATE_MARK("Note"), kToolNote }, { B_TRANSLATE_MARK("Text"), kToolFreeText },
 		{ B_TRANSLATE_MARK("Rectangle"), kToolRectangle },
 		{ B_TRANSLATE_MARK("Ellipse"), kToolEllipse }, { B_TRANSLATE_MARK("Line"), kToolLine },
 		{ B_TRANSLATE_MARK("Arrow"), kToolArrow }, { B_TRANSLATE_MARK("Drawing"), kToolInk }
@@ -4846,9 +4910,9 @@ PDFView::TestCommand(BMessage* message)
 		TestLog("hovermargin: %d boxes", (int)boxes.size());
 	} else if (cmd == "editnote") {
 		// as a double click at (x1, y1) does
-		TestLog("editnote: %d", (int)EditNoteAt(BPoint(x1, y1)));
+		TestLog("editnote: %d", (int)EditNoteAt(BPoint(x1, y1), true, false));
 	} else if (cmd == "notebutton") {
-		NoteButton();
+		NoteButton(ConvertToScreen(BPoint(150, 60)));
 		TestLog("notebutton: armed state %d", ArmedState());
 	} else if (cmd == "markermenu") {
 		ShowMarkerMenu(ConvertToScreen(BPoint(150, 60)));
