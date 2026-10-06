@@ -225,6 +225,219 @@ RemoveAttribute(std::string* tag, const char* name)
 }
 
 
+// ---- well-formed XHTML from the tag soup of old MOBI books
+
+static bool
+IsVoidElement(const std::string& name)
+{
+	static const char* kVoid[] = { "br", "hr", "img", "meta", "link", "input", "col", "area", "base", "param", "wbr", NULL };
+	for (int i = 0; kVoid[i] != NULL; i++)
+		if (name == kVoid[i])
+			return true;
+	return false;
+}
+
+
+// text with the "&" that is no entity escaped, and without the characters that XML does not allow
+static std::string
+CleanText(const std::string& in)
+{
+	std::string out;
+	out.reserve(in.size());
+	for (size_t i = 0; i < in.size(); i++) {
+		unsigned char ch = (unsigned char)in[i];
+		if (ch < 0x20 && ch != '\t' && ch != '\n' && ch != '\r')
+			continue;
+		if (ch == '&') {
+			size_t k = i + 1;
+			if (k < in.size() && in[k] == '#')
+				k++;
+			size_t first = k;
+			while (k < in.size() && k - first < 12 && isalnum((unsigned char)in[k]))
+				k++;
+			if (k == first || k >= in.size() || in[k] != ';') {
+				out += "&amp;";
+				continue;
+			}
+			// XML knows five names only; the others of HTML become numbers
+			std::string entity = in.substr(first, k - first);
+			if (in[i + 1] != '#' && entity != "amp" && entity != "lt" && entity != "gt" && entity != "quot" && entity != "apos") {
+				static const struct { const char* name; int code; } kNames[] = {
+					{ "nbsp", 160 }, { "iexcl", 161 }, { "cent", 162 }, { "pound", 163 }, { "yen", 165 }, { "sect", 167 },
+					{ "copy", 169 }, { "laquo", 171 }, { "reg", 174 }, { "deg", 176 }, { "plusmn", 177 }, { "micro", 181 },
+					{ "para", 182 }, { "middot", 183 }, { "raquo", 187 }, { "frac14", 188 }, { "frac12", 189 }, { "frac34", 190 },
+					{ "iquest", 191 }, { "times", 215 }, { "divide", 247 }, { "shy", 173 }, { "ensp", 8194 }, { "emsp", 8195 },
+					{ "thinsp", 8201 }, { "ndash", 8211 }, { "mdash", 8212 }, { "lsquo", 8216 }, { "rsquo", 8217 }, { "sbquo", 8218 },
+					{ "ldquo", 8220 }, { "rdquo", 8221 }, { "bdquo", 8222 }, { "dagger", 8224 }, { "bull", 8226 }, { "hellip", 8230 },
+					{ "euro", 8364 }, { "trade", 8482 }, { "larr", 8592 }, { "rarr", 8594 }, { "minus", 8722 }, { "ne", 8800 },
+					{ "le", 8804 }, { "ge", 8805 }, { NULL, 0 } };
+				int code = 0;
+				for (int n = 0; kNames[n].name != NULL && code == 0; n++)
+					if (entity == kNames[n].name)
+						code = kNames[n].code;
+				if (code != 0) {
+					out += "&#" + Number(code) + ";";
+					i = k;
+					continue;
+				}
+				out += "&amp;";
+				continue;
+			}
+		}
+		out.push_back((char)ch);
+	}
+	return out;
+}
+
+
+// an opening tag with lower case names, all values in quotes, no attribute twice, void elements closed
+static std::string
+NormalizeTag(const std::string& tag, const std::string& name)
+{
+	std::string out = "<" + name;
+	std::vector<std::string> seen;
+	size_t i = 1;
+	while (i < tag.size() && !isspace((unsigned char)tag[i]) && tag[i] != '>' && tag[i] != '/')
+		i++;
+	while (i < tag.size()) {
+		while (i < tag.size() && (isspace((unsigned char)tag[i]) || tag[i] == '/'))
+			i++;
+		if (i >= tag.size() || tag[i] == '>')
+			break;
+		size_t first = i;
+		while (i < tag.size() && !isspace((unsigned char)tag[i]) && tag[i] != '=' && tag[i] != '>' && tag[i] != '/')
+			i++;
+		std::string attribute = Lower(tag.substr(first, i - first));
+		while (i < tag.size() && isspace((unsigned char)tag[i]))
+			i++;
+		std::string value = attribute;
+		if (i < tag.size() && tag[i] == '=') {
+			i++;
+			while (i < tag.size() && isspace((unsigned char)tag[i]))
+				i++;
+			if (i < tag.size() && (tag[i] == '"' || tag[i] == '\'')) {
+				size_t close = tag.find(tag[i], i + 1);
+				if (close == std::string::npos)
+					close = tag.size() - 1;
+				value = tag.substr(i + 1, close - i - 1);
+				i = close + 1;
+			} else {
+				size_t from = i;
+				while (i < tag.size() && !isspace((unsigned char)tag[i]) && tag[i] != '>')
+					i++;
+				value = tag.substr(from, i - from);
+				if (!value.empty() && value[value.size() - 1] == '/')
+					value.erase(value.size() - 1);
+			}
+			value = CleanText(value);
+			std::string quoted;
+			for (size_t k = 0; k < value.size(); k++) {
+				if (value[k] == '"')
+					quoted += "&quot;";
+				else if (value[k] == '<')
+					quoted += "&lt;";
+				else
+					quoted.push_back(value[k]);
+			}
+			value = quoted;
+		}
+		bool valid = !attribute.empty() && (isalpha((unsigned char)attribute[0]) || attribute[0] == '_');
+		for (size_t k = 0; valid && k < attribute.size(); k++)
+			valid = isalnum((unsigned char)attribute[k]) || attribute[k] == '-' || attribute[k] == '_' || attribute[k] == '.';
+		if (!valid || std::find(seen.begin(), seen.end(), attribute) != seen.end())
+			continue;
+		seen.push_back(attribute);
+		out += " " + attribute + "=\"" + value + "\"";
+	}
+	out += IsVoidElement(name) ? " />" : ">";
+	return out;
+}
+
+
+// the elements that are open in a chapter: tags that close nothing are dropped, tags that were forgotten are added
+struct OpenElements {
+	std::vector<std::string> stack;
+
+	std::string Open(const std::string& tag, const std::string& name)
+	{
+		std::string out;
+		// elements that HTML closes by themselves: a new cell closes the open cell, a new row the open cell and row
+		const char* closes[3] = { NULL, NULL, NULL };
+		if (name == "p" || name == "li" || name == "option")
+			closes[0] = name.c_str();
+		else if (name == "dt" || name == "dd") {
+			closes[0] = "dt";
+			closes[1] = "dd";
+		}
+		if (name == "td" || name == "th") {
+			closes[0] = "td";
+			closes[1] = "th";
+		} else if (name == "tr") {
+			closes[0] = "td";
+			closes[1] = "th";
+			closes[2] = "tr";
+		}
+		bool closed = true;
+		while (closed && !stack.empty()) {
+			closed = false;
+			for (int i = 0; i < 3; i++)
+				if (closes[i] != NULL && stack.back() == closes[i]) {
+					out += "</" + stack.back() + ">";
+					stack.pop_back();
+					closed = true;
+					break;
+				}
+		}
+		// text styles between the parts of a table have no place there (a browser would move them out): they are left out
+		static const char* kTable[] = { "table", "thead", "tbody", "tfoot", "tr", NULL };
+		bool inTable = false;
+		size_t top = stack.size();
+		while (top > 0 && stack[top - 1][0] == '!')
+			top--;
+		for (int i = 0; kTable[i] != NULL && top > 0; i++)
+			inTable = inTable || stack[top - 1] == kTable[i];
+		if (inTable && (name == "font" || name == "b" || name == "i" || name == "span" || name == "center" || name == "u")) {
+			stack.push_back("!" + name);
+			return out;
+		}
+		out += NormalizeTag(tag, name);
+		if (!IsVoidElement(name))
+			stack.push_back(name);
+		return out;
+	}
+
+	std::string Close(const std::string& name)
+	{
+		if (IsVoidElement(name))
+			return "";
+		size_t at = stack.size();
+		while (at > 0 && stack[at - 1] != name && stack[at - 1] != "!" + name)
+			at--;
+		if (at == 0)
+			return "";
+		std::string out;
+		while (stack.size() >= at) {
+			if (stack.back()[0] != '!')
+				out += "</" + stack.back() + ">";
+			stack.pop_back();
+		}
+		return out;
+	}
+
+	std::string CloseAll()
+	{
+		std::string out;
+		while (!stack.empty()) {
+			if (stack.back()[0] != '!')
+				out += "</" + stack.back() + ">";
+			stack.pop_back();
+		}
+		return out;
+	}
+};
+
+
+
 static bool
 IsImage(const unsigned char* data, size_t size, std::string* type, const char** extension)
 {
@@ -333,20 +546,16 @@ BitsSet(unsigned mask)
 }
 
 
-struct NcxEntry {
-	size_t offset;
-	size_t label;
-	int    depth;
+struct IndexEntry {
+	std::string key;
+	std::map<unsigned, std::vector<size_t> > tags;
 };
 
 
+// the entries of an index (the INDX records from a record on, with the strings of their CNCX records)
 static void
-ReadNcx(const Reader& reader, const unsigned char* rec0, size_t rec0Size, size_t headerLength,
-	std::vector<NcxEntry>* entries, std::vector<std::string>* cncx)
+ReadIndex(const Reader& reader, size_t index, std::vector<IndexEntry>* entries, std::vector<std::string>* cncx)
 {
-	if (16 + headerLength < 0xF8 || rec0Size < 0xF8)
-		return;
-	size_t index = BE32(rec0 + 0xF4);
 	if (index == 0xFFFFFFFFu || index + 1 >= reader.Count())
 		return;
 	const unsigned char* head = reader.RecordData(index);
@@ -398,8 +607,9 @@ ReadNcx(const Reader& reader, const unsigned char* rec0, size_t rec0Size, size_t
 			size_t at = control + controlBytes;
 			if (at > end)
 				continue;
+			IndexEntry entry;
+			entry.key.assign((const char*)data + start + 1, keyLength);
 			// the values of each tag, as the control bytes say how many there are
-			std::map<unsigned, std::vector<size_t> > values;
 			size_t controlIndex = 0;
 			struct Pending { unsigned tag, valuesPerEntry; size_t count, bytes; bool byBytes; };
 			std::vector<Pending> pending;
@@ -439,7 +649,7 @@ ReadNcx(const Reader& reader, const unsigned char* rec0, size_t rec0Size, size_t
 						size_t v;
 						if (!ReadVwi(data, end, &at, &v))
 							break;
-						values[pending[t].tag].push_back(v);
+						entry.tags[pending[t].tag].push_back(v);
 					}
 				} else {
 					size_t until = at + pending[t].bytes;
@@ -447,24 +657,19 @@ ReadNcx(const Reader& reader, const unsigned char* rec0, size_t rec0Size, size_t
 						size_t v;
 						if (!ReadVwi(data, end, &at, &v))
 							break;
-						values[pending[t].tag].push_back(v);
+						entry.tags[pending[t].tag].push_back(v);
 					}
 				}
 			}
-			if (values[1].empty() || values[3].empty())
-				continue;
-			NcxEntry entry;
-			entry.offset = values[1][0];
-			entry.label = values[3][0];
-			entry.depth = values[4].empty() ? 0 : (int)values[4][0];
 			entries->push_back(entry);
 		}
 	}
 }
 
 
+// a string of the CNCX records: a length (7 bits per byte, the last byte has the top bit) and the bytes
 static std::string
-NcxLabel(const std::vector<std::string>& cncx, size_t offset)
+CncxString(const std::vector<std::string>& cncx, size_t offset)
 {
 	size_t record = offset >> 16, at = offset & 0xFFFF;
 	if (record >= cncx.size() || at >= cncx[record].size())
@@ -476,6 +681,325 @@ NcxLabel(const std::vector<std::string>& cncx, size_t offset)
 	return s.substr(p, std::min(length, s.size() - p));
 }
 
+
+struct NcxEntry {
+	size_t offset;		// in the text (the old format)
+	size_t label;
+	int    depth;
+	size_t fid, fidOffset;	// the fragment and the place in it (the new format)
+	bool   hasFid;
+};
+
+
+static void
+ReadNcx(const Reader& reader, const unsigned char* rec0, size_t rec0Size, size_t headerLength,
+	std::vector<NcxEntry>* entries, std::vector<std::string>* cncx)
+{
+	if (16 + headerLength < 0xF8 || rec0Size < 0xF8)
+		return;
+	std::vector<IndexEntry> index;
+	ReadIndex(reader, BE32(rec0 + 0xF4), &index, cncx);
+	for (size_t i = 0; i < index.size(); i++) {
+		std::map<unsigned, std::vector<size_t> >& tags = index[i].tags;
+		if (tags[3].empty())
+			continue;
+		NcxEntry entry;
+		entry.offset = tags[1].empty() ? 0 : tags[1][0];
+		entry.label = tags[3][0];
+		entry.depth = tags[4].empty() ? 0 : (int)tags[4][0];
+		entry.hasFid = tags[6].size() >= 2;
+		entry.fid = entry.hasFid ? tags[6][0] : 0;
+		entry.fidOffset = entry.hasFid ? tags[6][1] : 0;
+		if (tags[1].empty() && !entry.hasFid)
+			continue;
+		entries->push_back(entry);
+	}
+}
+
+
+static std::string
+NcxLabel(const std::vector<std::string>& cncx, size_t offset)
+{
+	return CncxString(cncx, offset);
+}
+
+
+// ---- the new format (KF8): HTML in parts that the skeleton and fragment indexes put together, flows of style sheets and
+// SVG, links and resources with addresses of the form kindle:...
+
+static size_t
+Base32Value(const std::string& s)
+{
+	size_t v = 0;
+	for (size_t i = 0; i < s.size(); i++) {
+		char c = s[i];
+		unsigned d = c >= '0' && c <= '9' ? c - '0' : (c >= 'A' && c <= 'V' ? c - 'A' + 10 : (c >= 'a' && c <= 'v' ? c - 'a' + 10 : 0));
+		v = v * 32 + d;
+	}
+	return v;
+}
+
+
+// the aid of an element that a fragment belongs to, from the selector the index has for it: P-//*[@aid='0001']
+static std::string
+AidOfSelector(const std::string& selector)
+{
+	size_t at = selector.find("@aid=");
+	if (at == std::string::npos || at + 6 >= selector.size())
+		return std::string();
+	char quote = selector[at + 5];
+	size_t end = selector.find(quote, at + 6);
+	if (end == std::string::npos)
+		return std::string();
+	return selector.substr(at + 6, end - at - 6);
+}
+
+
+struct Kf8 {
+	std::vector<std::string> flows;
+	std::vector<std::string> parts;
+	std::vector<size_t> partOfFragment;
+	std::vector<std::string> aidOfFragment;
+	std::map<size_t, size_t> imageOfRecord;
+	size_t firstImage;
+	Book* book;
+};
+
+
+static std::string
+PartName(size_t part)
+{
+	return "part" + Number(part + 1, 4) + ".xhtml";
+}
+
+
+// the addresses of the form kindle:... in a text become those of the files of the book
+static std::string
+Kf8Addresses(const Kf8& k, const std::string& in, std::vector<std::string>* flowNames)
+{
+	std::string out;
+	size_t i = 0;
+	while (i < in.size()) {
+		size_t at = in.find("kindle:", i);
+		if (at == std::string::npos) {
+			out.append(in, i, std::string::npos);
+			break;
+		}
+		out.append(in, i, at - i);
+		size_t p = at + 7;
+		size_t colon = in.find(':', p);
+		std::string kind = colon == std::string::npos ? std::string() : in.substr(p, colon - p);
+		std::string replacement;
+		size_t end = at + 7;
+		if (kind == "pos" && in.compare(colon, 5, ":fid:") == 0 && colon + 5 + 4 <= in.size()) {
+			size_t fid = Base32Value(in.substr(colon + 5, 4));
+			// (the place in the fragment is not used: the link goes to the element of the fragment)
+			end = colon + 5 + 4;
+			size_t off = in.find(":off:", end);
+			if (off == end)
+				end += 5 + 10;
+			if (fid < k.partOfFragment.size()) {
+				replacement = PartName(k.partOfFragment[fid]);
+				if (!k.aidOfFragment[fid].empty())
+					replacement += "#a-" + k.aidOfFragment[fid];
+			}
+		} else if (kind == "flow" || kind == "embed") {
+			size_t n = colon != std::string::npos ? Base32Value(in.substr(colon + 1, 4)) : 0;
+			end = colon != std::string::npos ? colon + 1 + 4 : at + 7;
+			std::string mime;
+			if (end < in.size() && in[end] == '?') {
+				size_t stop = end;
+				while (stop < in.size() && in[stop] != '"' && in[stop] != '\'' && in[stop] != ')' && !isspace((unsigned char)in[stop]))
+					stop++;
+				std::string query = in.substr(end + 1, stop - end - 1);
+				size_t m = query.find("mime=");
+				if (m != std::string::npos)
+					mime = query.substr(m + 5);
+				end = stop;
+			}
+			if (kind == "embed") {
+				std::map<size_t, size_t>::const_iterator image = k.imageOfRecord.find(k.firstImage + n - 1);
+				if (image != k.imageOfRecord.end())
+					replacement = k.book->images[image->second].name;
+			} else if (n < k.flows.size()) {
+				replacement = "flow" + Number(n, 4) + (mime == "text/css" ? ".css" : (mime == "image/svg+xml" ? ".svg" : ".bin"));
+				if (flowNames != NULL)
+					flowNames->push_back(replacement);
+			}
+		} else
+			end = at + 7;
+		out += replacement;
+		i = end;
+	}
+	return out;
+}
+
+
+// the aid attributes of the elements become the ids that the links need (a link goes to #a-<aid>)
+static std::string
+Kf8Anchors(const std::string& in)
+{
+	std::string out;
+	size_t i = 0;
+	bool inBody = false;
+	while (i < in.size()) {
+		size_t open = in.find('<', i);
+		if (open == std::string::npos) {
+			out.append(in, i, std::string::npos);
+			break;
+		}
+		out.append(in, i, open - i);
+		size_t close = open;
+		char quote = 0;
+		while (close < in.size()) {
+			char c = in[close];
+			if (quote != 0) {
+				if (c == quote)
+					quote = 0;
+			} else if (c == '"' || c == '\'')
+				quote = c;
+			else if (c == '>')
+				break;
+			close++;
+		}
+		if (close >= in.size())
+			close = in.size() - 1;
+		std::string tag = in.substr(open, close - open + 1);
+		size_t start, end;
+		if (Lower(tag.substr(0, 5)) == "<body")
+			inBody = true;
+		if (open + 1 < in.size() && isalpha((unsigned char)in[open + 1]) && FindAttribute(tag, "aid", &start, &end)) {
+			std::string aid = tag.substr(start, end - start);
+			RemoveAttribute(&tag, "aid");
+			size_t idStart, idEnd;
+			if (!FindAttribute(tag, "id", &idStart, &idEnd)) {
+				size_t nameEnd = 1;
+				while (nameEnd < tag.size() && !isspace((unsigned char)tag[nameEnd]) && tag[nameEnd] != '>' && tag[nameEnd] != '/')
+					nameEnd++;
+				tag.insert(nameEnd, " id=\"a-" + aid + "\"");
+			} else {
+				// the id stays, the anchor goes before the element (in the body)
+				if (inBody)
+					out += "<a id=\"a-" + aid + "\"></a>";
+			}
+		}
+		out += tag;
+		i = close + 1;
+	}
+	return out;
+}
+
+
+static Result
+ReadKf8(const Reader& reader, const unsigned char* rec0, size_t rec0Size, size_t headerLength, const std::string& text,
+	size_t firstImage, const std::map<size_t, size_t>& imageOfRecord, Book* book)
+{
+	if (16 + headerLength < 0x108 || rec0Size < 0x108)
+		return kUnsupported;
+	Kf8 k;
+	k.firstImage = firstImage;
+	k.imageOfRecord = imageOfRecord;
+	k.book = book;
+
+	// the flows: the HTML of the book is the first, the style sheets and SVG images are the others
+	size_t fdst = BE32(rec0 + 0xC0);
+	if (fdst < reader.Count() && reader.RecordSize(fdst) >= 12 && memcmp(reader.RecordData(fdst), "FDST", 4) == 0) {
+		const unsigned char* table = reader.RecordData(fdst);
+		size_t tableOffset = BE32(table + 4), count = BE32(table + 8);
+		for (size_t i = 0; i < count && tableOffset + (i + 1) * 8 <= reader.RecordSize(fdst); i++) {
+			size_t from = BE32(table + tableOffset + i * 8), to = BE32(table + tableOffset + i * 8 + 4);
+			if (from <= to && to <= text.size())
+				k.flows.push_back(text.substr(from, to - from));
+			else
+				k.flows.push_back(std::string());
+		}
+	}
+	if (k.flows.empty())
+		k.flows.push_back(text);
+
+	std::vector<IndexEntry> skeletons, fragments;
+	std::vector<std::string> skeletonCncx, fragmentCncx;
+	ReadIndex(reader, BE32(rec0 + 0xFC), &skeletons, &skeletonCncx);
+	ReadIndex(reader, BE32(rec0 + 0xF8), &fragments, &fragmentCncx);
+	if (skeletons.empty())
+		return kUnsupported;
+
+	// the parts: a skeleton with its fragments put in (the fragments follow the skeleton in the text)
+	const std::string& main = k.flows[0];
+	size_t fragmentIndex = 0;
+	for (size_t i = 0; i < skeletons.size(); i++) {
+		std::map<unsigned, std::vector<size_t> >& tags = skeletons[i].tags;
+		if (tags[6].size() < 2)
+			continue;
+		size_t chunks = tags[1].empty() ? 0 : tags[1][0];
+		size_t skeletonStart = tags[6][0], skeletonLength = tags[6][1];
+		if (skeletonStart + skeletonLength > main.size())
+			continue;
+		size_t base = skeletonStart + skeletonLength;
+		std::string part = main.substr(skeletonStart, skeletonLength);
+		for (size_t c = 0; c < chunks && fragmentIndex < fragments.size(); c++, fragmentIndex++) {
+			std::map<unsigned, std::vector<size_t> >& fragment = fragments[fragmentIndex].tags;
+			size_t length = fragment[6].size() >= 2 ? fragment[6][1] : 0;
+			if (base + length > main.size())
+				length = main.size() > base ? main.size() - base : 0;
+			long insert = atol(fragments[fragmentIndex].key.c_str()) - (long)skeletonStart;
+			if (insert < 0 || (size_t)insert > part.size())
+				insert = (long)part.size();
+			// the place must not be inside a tag
+			size_t lastOpen = part.rfind('<', insert > 0 ? (size_t)insert - 1 : 0);
+			size_t lastClose = part.rfind('>', insert > 0 ? (size_t)insert - 1 : 0);
+			if (insert > 0 && lastOpen != std::string::npos && (lastClose == std::string::npos || lastClose < lastOpen)) {
+				size_t after = part.find('>', (size_t)insert);
+				if (after != std::string::npos)
+					insert = (long)after + 1;
+			}
+			part.insert((size_t)insert, main, base, length);
+			base += length;
+			k.partOfFragment.push_back(k.parts.size());
+			k.aidOfFragment.push_back(fragment[2].empty() ? std::string() : AidOfSelector(CncxString(fragmentCncx, fragment[2][0])));
+		}
+		k.parts.push_back(part);
+	}
+	if (k.parts.empty())
+		return kBroken;
+
+	// the other flows become files; the addresses in all of them are those of the files of the book
+	for (size_t i = 0; i < k.parts.size(); i++) {
+		Chapter chapter;
+		chapter.name = PartName(i);
+		chapter.xhtml = Kf8Addresses(k, Kf8Anchors(k.parts[i]), NULL);
+		book->chapters.push_back(chapter);
+	}
+	for (size_t i = 1; i < k.flows.size(); i++) {
+		const std::string& flow = k.flows[i];
+		if (flow.empty())
+			continue;
+		Image resource;
+		bool svg = flow.find("<svg") != std::string::npos && flow.find("<svg") < 400;
+		bool css = !svg && flow.find('{') != std::string::npos;
+		resource.name = "flow" + Number(i, 4) + (svg ? ".svg" : (css ? ".css" : ".bin"));
+		resource.type = svg ? "image/svg+xml" : (css ? "text/css" : "application/octet-stream");
+		resource.data = Kf8Addresses(k, flow, NULL);
+		book->images.push_back(resource);
+	}
+
+	// the table of contents: where the entries lead is a fragment
+	std::vector<NcxEntry> ncxEntries;
+	std::vector<std::string> cncx;
+	ReadNcx(reader, rec0, rec0Size, headerLength, &ncxEntries, &cncx);
+	for (size_t i = 0; i < ncxEntries.size(); i++) {
+		if (!ncxEntries[i].hasFid || ncxEntries[i].fid >= k.partOfFragment.size())
+			continue;
+		TocEntry entry;
+		entry.title = NcxLabel(cncx, ncxEntries[i].label);
+		entry.level = ncxEntries[i].depth + 1;
+		entry.href = PartName(k.partOfFragment[ncxEntries[i].fid]);
+		if (!k.aidOfFragment[ncxEntries[i].fid].empty())
+			entry.href += "#a-" + k.aidOfFragment[ncxEntries[i].fid];
+		book->toc.push_back(entry);
+	}
+	return kOk;
+}
 
 Result
 Read(const unsigned char* data, size_t size, Book* book)
@@ -513,9 +1037,6 @@ Read(const unsigned char* data, size_t size, Book* book)
 		if (headerLength >= 0xE4 && rec0Size >= 0xF4)
 			flags = BE16(rec0 + 0xF2);
 	}
-	if (version >= 8)
-		return kUnsupported;	// the new format (KF8) alone
-
 	// the metadata: the title and the records of the EXTH header
 	std::string pdbName((const char*)data, strnlen((const char*)data, 32));
 	book->title = pdbName;
@@ -592,6 +1113,9 @@ Read(const unsigned char* data, size_t size, Book* book)
 		if (coverOffset >= 0 && imageOfRecord.count(firstImage + coverOffset) > 0)
 			book->coverImage = (int)imageOfRecord[firstImage + coverOffset];
 	}
+
+	if (version >= 8)
+		return ReadKf8(reader, rec0, rec0Size, headerLength, text, firstImage, imageOfRecord, book);
 
 	// the chapters: the text is cut where a page break is (the ranges in the bytes of the text)
 	std::vector<std::pair<size_t, size_t> > ranges;
@@ -671,6 +1195,7 @@ Read(const unsigned char* data, size_t size, Book* book)
 		size_t i = chapters[c].first, end = chapters[c].second;
 		size_t nextTarget = std::lower_bound(targets.begin(), targets.end(), i) - targets.begin();
 		bool skipHead = false;
+		OpenElements open;
 		while (i < end) {
 			if (text[i] == '<') {
 				size_t close = text.find('>', i);
@@ -736,7 +1261,12 @@ Read(const unsigned char* data, size_t size, Book* book)
 						} else
 							openHeading = 0;
 					}
-					out += tag;
+					if (name.empty() || name[0] == '!' || name[0] == '?' || name.find(':') != std::string::npos) {
+						// comments, instructions and tags of other namespaces mean nothing here
+					} else if (closing)
+						out += open.Close(name);
+					else
+						out += open.Open(tag, name);
 				}
 				i = close + 1;
 			} else {
@@ -757,7 +1287,7 @@ Read(const unsigned char* data, size_t size, Book* book)
 						nextTarget++;
 				}
 				if (!skipHead) {
-					out += run;
+					out += CleanText(run);
 					if (openHeading > 0) {
 						// the words of the heading, without tags (they are text here)
 						std::string& title = book->toc[openEntry].title;
@@ -767,6 +1297,7 @@ Read(const unsigned char* data, size_t size, Book* book)
 				}
 			}
 		}
+		out += open.CloseAll();
 		if (encoding == 1252)
 			out = FromCp1252(out);
 		Chapter chapter;

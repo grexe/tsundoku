@@ -36,7 +36,7 @@ If a file has a password, Toji asks for it.
 The buttons next to the fit buttons switch the same way. In the double-sided flow the next and previous page go by a spread.
 
 **Fancy mode** (**View > Fancy page turns**, or in the settings) turns the page like in a book when you go to the next or the previous
-page, with the sound of a page. A page turns right to left in a manga. It works in the single and the double-sided flow (not in
+page, with the sound of a page if you want it. The setting is the same for all documents. A page turns right to left in a manga. It works in the single and the double-sided flow (not in
 the continuous flow, and not for a jump over many pages); a key or a click during the turn ends it.
 
 ## Zoom and rotation

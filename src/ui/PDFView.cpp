@@ -3416,6 +3416,7 @@ void
 PDFView::SetFancyMode(bool fancy)
 {
 	gApp->GetSettings()->SetFancyMode(fancy);
+	gApp->SaveSettings();
 	if (!fancy)
 		CancelTurn();
 	else

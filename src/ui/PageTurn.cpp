@@ -97,9 +97,9 @@ Draw(BView* view, const BBitmap* before, const BBitmap* after, const Geometry& g
 	// the shadow of the leaf on the page below, beyond the roll
 	if (f > 1) {
 		float edge = spine + s * (f + r);
-		for (int i = 0; i < 28; i++) {
+		for (int i = 0; i < 40; i++) {
 			float x = edge + s * i;
-			Shade(view, BRect(x, g.area.top, x, g.area.bottom), 0, 0, 0, 70.0f * (1 - i / 28.0f) * (1 - i / 28.0f));
+			Shade(view, BRect(x, g.area.top, x, g.area.bottom), 0, 0, 0, 44.0f * (1 - i / 40.0f) * (1 - i / 40.0f));
 		}
 	}
 
@@ -134,14 +134,17 @@ Draw(BView* view, const BBitmap* before, const BBitmap* after, const Geometry& g
 			float sx0 = spine + s * c, sx1 = spine + s * c1;
 			BRect source(floorf(fminf(sx0, sx1)), top, ceilf(fmaxf(sx0, sx1)) - 1, bottom);
 			view->DrawBitmap(before, source, dest, B_FILTER_BITMAP_BILINEAR);
-			Shade(view, dest, 0, 0, 0, 105 * sinf(angle));
+			// the light falls on the curve: a soft highlight where it turns away, the shade where it is steep
+			float highlight = (angle - 0.8f) / 0.3f;
+			Shade(view, dest, 255, 255, 255, 42 * expf(-highlight * highlight));
+			Shade(view, dest, 0, 0, 0, 68 * powf(sinf(angle), 1.6f));
 		} else if (g.spread) {
 			// the back of the leaf is the page that comes, from the other side of the spine
 			float sx0 = spine - s * c, sx1 = spine - s * c1;
 			BRect source(floorf(fminf(sx0, sx1)), top, ceilf(fmaxf(sx0, sx1)) - 1, bottom);
 			view->DrawBitmap(after, source, dest, B_FILTER_BITMAP_BILINEAR);
 			Shade(view, dest, 255, 255, 255, 95);
-			Shade(view, dest, 0, 0, 0, 105 * sinf(angle));
+			Shade(view, dest, 0, 0, 0, 70 * powf(sinf(angle), 1.6f));
 		} else {
 			// the back of the page, with the page showing through, from behind
 			view->SetHighColor(kPaper);
@@ -153,32 +156,47 @@ Draw(BView* view, const BBitmap* before, const BBitmap* after, const Geometry& g
 			view->SetHighColor(0, 0, 0, 60);
 			view->DrawBitmap(before, source, dest);
 			view->SetDrawingMode(B_OP_COPY);
-			Shade(view, dest, 0, 0, 0, 120 * sinf(angle));
+			Shade(view, dest, 0, 0, 0, 80 * powf(sinf(angle), 1.6f));
 		}
 	}
 
-	// the back, flat again beyond the roll: one piece
+	// the back, flat again beyond the roll: strips, so that the corners of the leaf fall away toward its free edge and let the page
+	// below show through there
 	if (rollEnd < w) {
 		float lift = height * 0.03f;
 		float dLeft = spine + s * (2 * f + kPi * r - w), dRight = spine + s * f;
-		BRect dest(fminf(dLeft, dRight), top + lift, fmaxf(dLeft, dRight) - 1, bottom - lift);
-		if (dest.Width() >= 1) {
+		float left = fminf(dLeft, dRight), right = fmaxf(dLeft, dRight);
+		float sLeft = fminf(spine - s * w, spine - s * rollEnd), sRight = fmaxf(spine - s * w, spine - s * rollEnd);
+		float ratio = (right > left) ? (sRight - sLeft) / (right - left) : 1;
+		// the lift of the leaf at a place of it: the most at the roll, a quarter of it at the free edge
+		float freeX = s > 0 ? left : right, rollX = s > 0 ? right : left;
+		float lengthX = fmaxf(1.0f, fabsf(rollX - freeX));
+		for (float x = left; x < right; x += kStep) {
+			float x1 = fminf(x + kStep, right);
+			float u = fabsf(((x + x1) / 2) - rollX) / lengthX;
+			float stripLift = lift * (1 - 0.75f * u);
+			BRect dest(x, top + stripLift, x1 - 1, bottom - stripLift);
+			if (dest.Width() < 0)
+				continue;
 			if (g.spread) {
-				float sLeft = spine - s * w, sRight = spine - s * rollEnd;
-				BRect source(fminf(sLeft, sRight), top, fmaxf(sLeft, sRight) - 1, bottom);
+				float sx = sLeft + (x - left) * ratio, sx1 = sLeft + (x1 - left) * ratio;
+				BRect source(floorf(sx), top, ceilf(sx1) - 1, bottom);
 				view->DrawBitmap(after, source, dest);
 				Shade(view, dest, 255, 255, 255, 95);
 			} else {
 				view->SetHighColor(kPaper);
 				view->FillRect(dest);
 			}
+		}
+		if (right - left >= 1) {
 			// its edge, and its shadow on what lies below, toward the spine
-			float endX = s > 0 ? dest.left : dest.right;
-			Shade(view, BRect(endX, top + lift, endX, bottom - lift), 0, 0, 0, 110);
-			for (int i = 1; i <= 16; i++) {
+			float edgeLift = lift * 0.25f;
+			float endX = s > 0 ? left : right - 1;
+			Shade(view, BRect(endX, top + edgeLift, endX, bottom - edgeLift), 0, 0, 0, 70);
+			for (int i = 1; i <= 22; i++) {
 				float x = endX - s * i;
-				float k = 1 - i / 17.0f;
-				Shade(view, BRect(x, top + lift, x, bottom - lift), 0, 0, 0, 80 * k * k);
+				float k = 1 - i / 23.0f;
+				Shade(view, BRect(x, top + edgeLift, x, bottom - edgeLift), 0, 0, 0, 50 * k * k);
 			}
 		}
 	}

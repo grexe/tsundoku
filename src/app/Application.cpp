@@ -348,6 +348,8 @@ InstallMimeTypes(const entry_ref* application, bool keepLegacyColumns)
 			BMessage extensions;
 			extensions.AddString("extensions", "mobi");
 			extensions.AddString("extensions", "prc");
+			extensions.AddString("extensions", "azw");
+			extensions.AddString("extensions", "azw3");
 			mobi.SetFileExtensions(&extensions);
 		}
 		mobi.SetAttrInfo(&epubInfo);

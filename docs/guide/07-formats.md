@@ -25,15 +25,14 @@ with a barber pole says so if it takes more than a moment.
 
 An EPUB read from right to left (a manga or a book in Arabic or Hebrew) says so in its reading order, and Toji follows.
 
-## Mobipocket books
+## Mobipocket and Kindle books
 
-Mobipocket books (`.mobi`, `.prc`, and the `.azw` of a Kindle if it has no DRM) open like EPUB books, with a text size, contents,
-cover, metadata and marks. Toji reads the Mobipocket format itself and makes an EPUB of it in the temporary folder for as long as
+Mobipocket books (`.mobi`, `.prc`) and the books of a Kindle without DRM (`.azw`, `.azw3`, the newer KF8 format) open like EPUB
+books, with a text size, contents, cover, metadata and marks. Toji reads the Mobipocket format itself and makes an EPUB of it in the temporary folder for as long as
 the book is open; the file is not changed (apart from its attributes and your marks, as for any book).
 
-- **Not read:** books with **DRM** (the book says it is protected: the error messages window has the reason), the new Kindle
-  format (`.azw3` that is not also a Mobipocket book, `.kfx`) and the old Huffman compression. Books that Calibre made with both
-  formats open with their Mobipocket part.
+- **Not read:** books with **DRM** (the book says it is protected: the error messages window has the reason), the newest Kindle
+  format (`.kfx`) and the old Huffman compression. Books that have both formats (many have) open as KF8.
 - Images, links, the table of contents and the cover of the book come along.
 
 ## Comic books

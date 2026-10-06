@@ -12,3 +12,4 @@ docs/guide/build/
 dist/docs/
 docs/guide/images/toji-logo.png
 dist/sounds/
+tests/testdata/

@@ -34,7 +34,7 @@
 #define DEFINE_VARIABLE(type, Type, method, name, value)  _##name = value;
 #define DECLARE_SETTER(type, Type, method, name, value)   void Set##method(type name);
 #define DECLARE_GETTER(type, Type, method, name, value)   type Get##method() const;
-#define DEFINE_SETTER(type, Type, method, name, value)    void GlobalSettings::Set##method(type name) { mChanged = mChanged || (_##name == name); _##name = name; }
+#define DEFINE_SETTER(type, Type, method, name, value)    void GlobalSettings::Set##method(type name) { mChanged = mChanged || (_##name != name); _##name = name; }
 #define DEFINE_GETTER(type, Type, method, name, value)    type GlobalSettings::Get##method() const { return _##name; }
 #define STORE_SETTINGS(type, Type, method, name, value)   archive->Add##Type(#name, _##name);
 #define LOAD_SETTINGS(type, Type, method, name, value)  \
@@ -129,7 +129,7 @@
 #define DEFINE_STRING_VARIABLE(method, name, value)  _##name = value;
 #define DECLARE_STRING_SETTER(method, name, value)   void Set##method(const char *string);
 #define DECLARE_STRING_GETTER(method, name, value)   const char* Get##method() const;
-#define DEFINE_STRING_SETTER(method, name, value)    void GlobalSettings::Set##method(const char *string) { mChanged = mChanged || (_##name == string); _##name = string; }
+#define DEFINE_STRING_SETTER(method, name, value)    void GlobalSettings::Set##method(const char *string) { mChanged = mChanged || (_##name != string); _##name = string; }
 #define DEFINE_STRING_GETTER(method, name, value)    const char * GlobalSettings::Get##method() const { return _##name.String(); }
 #define STORE_STRING_SETTINGS(method, name, value)   archive->AddString(#name, _##name.String());
 #define LOAD_STRING_SETTINGS(method, name, value)  \
