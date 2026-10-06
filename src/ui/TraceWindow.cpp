@@ -31,6 +31,8 @@
 #include <locale/Catalog.h>
 #include <Button.h>
 #include <CheckBox.h>
+#include <Clipboard.h>
+#include <TextView.h>
 #include <LayoutBuilder.h>
 #include <ScrollView.h>
 
@@ -74,6 +76,8 @@ TraceWindow::TraceWindow(GlobalSettings *settings)
 	BButton *clear = new BButton("clear", B_TRANSLATE("Clear"),
 		new BMessage(CLEAR_MSG));
 
+	BButton *copy = new BButton("copy", B_TRANSLATE("Copy"), new BMessage(COPY_MSG));
+
 	BLayoutBuilder::Group<>(this, B_VERTICAL)
 		.SetInsets(B_USE_WINDOW_INSETS)
 		.Add(outScroll)
@@ -83,6 +87,7 @@ TraceWindow::TraceWindow(GlobalSettings *settings)
 			.Add(mStdoutCB)
 			.Add(mStderrCB)
 			.AddGlue()
+			.Add(copy)
 			.Add(clear);
 
 	mOutput->MakeEditable(false);
@@ -176,6 +181,27 @@ void TraceWindow::MessageReceived(BMessage* msg) {
 		mOutput->SelectAll();
 		mOutput->Clear();
 		break;
+	case COPY_MSG: {
+		// the whole log (or what is selected in it) goes to the clipboard
+		int32 start = 0, finish = 0;
+		mOutput->GetSelection(&start, &finish);
+		if (finish <= start) {
+			start = 0;
+			finish = mOutput->TextLength();
+		}
+		BString text;
+		if (finish > start)
+			text.SetTo(mOutput->Text() + start, finish - start);
+		if (be_clipboard->Lock()) {
+			be_clipboard->Clear();
+			if (BMessage* clip = be_clipboard->Data()) {
+				clip->AddData("text/plain", B_MIME_TYPE, text.String(), text.Length());
+				be_clipboard->Commit();
+			}
+			be_clipboard->Unlock();
+		}
+		break;
+	}
 	case FLOATING_MSG:
 		mSettings->SetTraceFloating(IsOn(msg));
 		UpdateWindowLookAndFeel();

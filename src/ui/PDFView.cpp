@@ -1093,6 +1093,8 @@ PDFView::KeyDown (const char * bytes, int32 numBytes)
 			CancelTool();
 		else if (mAnnotationIndex >= 0)
 			SelectAnnotation(-1);
+		else if (mFindHighlight)
+			ClearFindHighlights();		// the places where the search found something
 		else
 			BView::KeyDown(bytes, numBytes);
 		break;
@@ -1307,9 +1309,11 @@ PDFView::MouseDown (BPoint point) {
 				SelectionChanged();
 				break;
 			}
-			// a click outside the selected text lets go of the selection
+			// a click outside the selected text lets go of the selection, and of the marks of the search
 			if (mSelected == SELECTED)
 				SelectNone();
+			if (mFindHighlight)
+				ClearFindHighlights();
 			// follow link or move view
 			SetAction(MOVE_ACTION);
 			if (!HandleLink(point)) {

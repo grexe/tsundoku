@@ -55,6 +55,7 @@ protected:
 		SHOW_STDOUT_MSG = 'Sout',
 		SHOW_STDERR_MSG = 'Serr',
 		CLEAR_MSG       = 'Clr ',
+		COPY_MSG        = 'Copy',
 		FLOATING_MSG    = 'Flot',
 		HIDE_MSG        = 'Hide'
 	};
