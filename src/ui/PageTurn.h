@@ -22,7 +22,7 @@ struct Geometry {
 };
 
 // the time of a turn
-static const bigtime_t kDuration = 480000;
+static const bigtime_t kDuration = 600000;
 
 // one picture of the turn from "before" to "after" at the progress of 0 (nothing is turned) to 1 (done), drawn into the view
 // (whose bounds are those of the bitmaps, which has to be locked)

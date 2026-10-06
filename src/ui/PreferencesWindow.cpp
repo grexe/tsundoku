@@ -27,6 +27,7 @@
 #include <locale/Catalog.h>
 #include <Box.h>
 #include <CheckBox.h>
+#include <ControlLook.h>
 #include <Directory.h>
 #include <Entry.h>
 #include <LayoutBuilder.h>
@@ -205,7 +206,7 @@ void PreferencesWindow::SetupView() {
 				.Add(scrolling)
 				.Add(fancy)
 				.AddGroup(B_HORIZONTAL, 0)
-					.AddStrut(be_plain_font->Size() * 2)
+					.AddStrut(be_plain_font->Size() + be_control_look->DefaultLabelSpacing())
 					.Add(fancySound)
 				.End()
 				.AddGlue()

@@ -12,7 +12,7 @@ namespace PageTurn {
 
 static const float kPi = 3.14159265f;
 static const float kStep = 3.0f;			// the width of a strip of the leaf
-static const rgb_color kPaper = { 247, 244, 237, 255 };
+static const rgb_color kPaper = { 234, 230, 220, 255 };		// the back of a leaf: darker than the pages, to be seen on them
 
 
 float
@@ -143,8 +143,16 @@ Draw(BView* view, const BBitmap* before, const BBitmap* after, const Geometry& g
 			Shade(view, dest, 255, 255, 255, 95);
 			Shade(view, dest, 0, 0, 0, 105 * sinf(angle));
 		} else {
+			// the back of the page, with the page showing through, from behind
 			view->SetHighColor(kPaper);
 			view->FillRect(dest);
+			float sx0 = spine + s * c, sx1 = spine + s * c1;
+			BRect source(floorf(fminf(sx0, sx1)), top, ceilf(fmaxf(sx0, sx1)) - 1, bottom);
+			view->SetDrawingMode(B_OP_ALPHA);
+			view->SetBlendingMode(B_CONSTANT_ALPHA, B_ALPHA_OVERLAY);
+			view->SetHighColor(0, 0, 0, 60);
+			view->DrawBitmap(before, source, dest);
+			view->SetDrawingMode(B_OP_COPY);
 			Shade(view, dest, 0, 0, 0, 120 * sinf(angle));
 		}
 	}
@@ -163,6 +171,14 @@ Draw(BView* view, const BBitmap* before, const BBitmap* after, const Geometry& g
 			} else {
 				view->SetHighColor(kPaper);
 				view->FillRect(dest);
+			}
+			// its edge, and its shadow on what lies below, toward the spine
+			float endX = s > 0 ? dest.left : dest.right;
+			Shade(view, BRect(endX, top + lift, endX, bottom - lift), 0, 0, 0, 110);
+			for (int i = 1; i <= 16; i++) {
+				float x = endX - s * i;
+				float k = 1 - i / 17.0f;
+				Shade(view, BRect(x, top + lift, x, bottom - lift), 0, 0, 0, 80 * k * k);
 			}
 		}
 	}
