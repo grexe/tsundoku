@@ -113,6 +113,8 @@ private:
 	float mWidth, mHeight;		//document width and height
 	const DocLink *mLink;      // link under the mouse
 	int mNoteTip;              // the annotation (index + 1) whose note is shown as a tooltip, 0 for none
+	bigtime_t mNoteHoverSince;	// since when the pointer rests on it
+	bool mNoteReady;           // it has rested long enough (the tooltip delay): the cursor says so, and a click edits the note
 	bool mSelectKeyDown;       // the key for selecting was down when the cursor was set last
 	bool mReadOnlyWarned;      // the user knows that changes cannot be saved to the file itself
 	BMessageRunner* mModifierRunner;  // watches the keys for the cursor

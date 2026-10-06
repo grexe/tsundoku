@@ -116,6 +116,10 @@ static const int kZoomDPI[MAX_ZOOM - MIN_ZOOM + 1] = {
 
 static bool SelectModifierDown();
 
+// how long the pointer rests on a note until a click edits it (about the delay of the tooltip)
+static const bigtime_t kNoteEditDelay = 600000;
+
+
 // the colors offered for marking text
 static const struct { const char* name; uint32 rgb; } kMarkerColors[] = {
 	{ B_TRANSLATE_MARK("Yellow"), 0xffeb3b }, { B_TRANSLATE_MARK("Green"), 0x96e678 },
@@ -250,6 +254,8 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 	mWidth = 100; mHeight = 100;
 	mLink = NULL;
 	mNoteTip = 0;
+	mNoteHoverSince = 0;
+	mNoteReady = false;
 	mSelectKeyDown = false;
 	mReadOnlyWarned = false;
 	mTool = kToolNone;
@@ -588,6 +594,15 @@ void PDFView::MessageReceived(BMessage *msg) {
 			FinishTextSize();
 		break;
 	case MODIFIERS_POLL_MSG: {
+		// a note that the pointer has rested on for the time of the tooltip can be edited by a click
+		if (mNoteTip != 0 && !mNoteReady && system_time() - mNoteHoverSince >= kNoteEditDelay) {
+			mNoteReady = true;
+			BPoint point;
+			uint32 buttons;
+			GetMouse(&point, &buttons, false);
+			if (buttons == 0 && Bounds().Contains(point))
+				DisplayLink(point);
+		}
 		// the cursor shows the selecting mode as soon as the key is down
 		bool down = SelectModifierDown();
 		if (down != mSelectKeyDown && Window() != NULL && Window()->IsActive()) {
@@ -1000,13 +1015,17 @@ PDFView::Draw(BRect updateRect)
 ///////////////////////////////////////////////////////////////////////////
 void
 PDFView::ScrollTo (BPoint point) {
-	// (what the resizing of the window makes of the scroll bars is not a place that was scrolled to, see Resize())
+	// (what the resizing of the window makes of the scroll bars is not a place that was scrolled to: Resize() puts the view back
+	// and brings the pages, until then the pages and the current page are left alone, which would make them flicker)
 	BMessage* now = Window() != NULL ? Window()->CurrentMessage() : NULL;
-	if (now == NULL || now->what != B_VIEW_RESIZED) {
+	bool resizing = now != NULL && now->what == B_VIEW_RESIZED;
+	if (!resizing) {
 		mKeptLeft = point.x;
 		mKeptTop = point.y;
 	}
 	BView::ScrollTo(point);
+	if (resizing)
+		return;
 	UpdateVisibleSlots();	// pages that come into view
 	BPoint mouse; uint32 buttons;
 	GetMouse(&mouse, &buttons);
@@ -1237,7 +1256,8 @@ PDFView::EditNoteAt(BPoint point, bool marks, bool whenReleased)
 	if (note == NULL)
 		return false;
 	bool wanted = note->kind == kAnnotNote || note->kind == kAnnotText
-		|| (marks && note->kind == kAnnotMarkup && note->contents.Length() > 0);
+		|| (marks && note->kind == kAnnotMarkup && note->contents.Length() > 0 && mNoteReady
+			&& mNoteTip == note->index + 1);
 	if (!wanted)
 		return false;
 	BMessage edit(EDIT_NOTE_MSG);
@@ -1286,7 +1306,8 @@ PDFView::MouseDown (BPoint point) {
 	// a click on the note in the margin opens it for editing
 	if (buttons == B_PRIMARY_MOUSE_BUTTON && !SelectingText()) {
 		PageSlot* noteSlot = NULL;
-		if (const DocAnnotation* margin = MarginNoteAtView(point, &noteSlot)) {
+		const DocAnnotation* margin = MarginNoteAtView(point, &noteSlot);
+		if (margin != NULL && mNoteReady && mNoteTip == margin->index + 1) {
 			ActivateSlot(noteSlot);
 			BMessage edit(EDIT_NOTE_MSG);
 			edit.AddInt32("page", ActivePage());
@@ -2119,6 +2140,7 @@ PDFView::DisplayLink(BPoint point)
 		SetViewCursor(gApp->textSelectionCursor);
 		if (mNoteTip != 0) {
 			mNoteTip = 0;
+			mNoteReady = false;
 			SetToolTip("");
 			HideToolTip();
 		}
@@ -2132,15 +2154,18 @@ PDFView::DisplayLink(BPoint point)
 	if (note != NULL && note->contents.Length() > 0) {
 		if (mNoteTip != note->index + 1) {
 			mNoteTip = note->index + 1;
+			mNoteHoverSince = system_time();
+			mNoteReady = false;
 			mLink = NULL;
-			SetToolTip(NoteTipText(note).String());
-			ShowToolTip();
+			SetToolTip(NoteTipText(note).String());		// (shown after the usual delay)
 		}
-		SetViewCursor(gApp->handCursor);
+		// after the delay the note can be edited by a click: the cursor says so
+		SetViewCursor(mNoteReady ? gApp->linkCursor : gApp->handCursor);
 		return;
 	}
 	if (mNoteTip != 0) {
 		mNoteTip = 0;
+		mNoteReady = false;
 		SetToolTip("");
 		HideToolTip();
 	}
@@ -2541,6 +2566,9 @@ PDFView::Redraw(bool keepRendered)
 		float width, height;
 		mLayout.PageSize(anchorPage, &width, &height);
 		ScrollTo(Bounds().left, mCanvasTop + mLayout.PageTop(anchorPage) + anchorFraction * height);
+	} else if (mLayout.IsContinuous() && mDoc != NULL && mCurrentPage > 1) {
+		// the flow has just become continuous (or the document is new): the view goes to the current page
+		ScrollToPage(mCurrentPage, true);
 	}
 
 	if (parentWin) {
@@ -2665,13 +2693,20 @@ PDFView::CenterPage() {
 ///////////////////////////////////////////////////////////////////////////
 void
 PDFView::Resize() {
-	SyncSlots();
 	FixScrollbars();
 	// When the window is resized the scroll bars reset the view to the top (before it is told about the new size). The place
 	// that was scrolled to stays, and with it the page.
 	BPoint kept(mKeptLeft, mKeptTop);
 	if (Bounds().LeftTop() != kept)
 		ScrollTo(kept.x, kept.y);
+	SyncSlots();
+	mKeptLeft = Bounds().left;		// (what the new size makes of it)
+	mKeptTop = Bounds().top;
+	if (BScrollBar* bar = ScrollBar(B_VERTICAL))
+		bar->SetValue(mKeptTop);
+	if (BScrollBar* bar = ScrollBar(B_HORIZONTAL))
+		bar->SetValue(mKeptLeft);
+	UpdateVisibleSlots();
 	Invalidate();
 }
 
@@ -3379,7 +3414,7 @@ PDFView::DrawMarginNotes(BRect)
 		// the pointer on a note shows what it belongs to: a dotted line from the end of the marked words
 		if (hover && !boxes[i].annotation->quads.empty()) {
 			BRect words = mPage->PageToDev(boxes[i].annotation->quads[0]).OffsetByCopy(mLeft, mTop);
-			float y = (words.top + words.bottom) / 2;
+			float y = floorf(words.bottom - words.Height() * 0.12f);	// under the baseline
 			SetHighColor(edge);
 			for (float x = words.right + 2; x < box.left - 1; x += 3)
 				StrokeLine(BPoint(x, y), BPoint(x, y));

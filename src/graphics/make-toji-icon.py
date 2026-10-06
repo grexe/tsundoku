@@ -78,23 +78,40 @@ class Icon:
 
 def build():
     icon = Icon()
-    W, H, DX, DY = 44.0, 13.0, 13.0, -7.0
-    shift = (3.5, -2.0)
+    # isometric: u runs to the right and down, v to the right and up, a book is a box of A (along u) by B (along v) by T (height)
+    c, s = 0.866, 0.5
+    A, B, T = 34.0, 26.0, 8.0
 
-    def at(x0, y0, points):
-        return [(x0 + x + shift[0], y0 + y + shift[1]) for x, y in points]
+    def add(p, q, k=1.0):
+        return (p[0] + q[0] * k, p[1] + q[1] * k)
 
-    fronts = [44.0, 32.0, 20.0]
-    for (cover, light), y0 in zip(BOOKS, fronts):
-        hexagon = [(0, 0), (DX, DY), (W + DX, DY), (W + DX, DY + H), (W, H), (0, H)]
-        icon.polygon(at(0, y0, offset_convex(hexagon, 1.1)), INK)
-        icon.polygon(at(0, y0, [(W, 0), (W + DX, DY), (W + DX, DY + H), (W, H)]), shade(cover, 0.82))
-        icon.polygon(at(0, y0, [(0, 0), (W, 0), (W, H), (0, H)]), cover)
-        icon.polygon(at(0, y0, [(2.6, 2.4), (W, 2.4), (W, H - 2.4), (2.6, H - 2.4)]), PAPER)
-        icon.polygon(at(0, y0, [(0, 0), (DX, DY), (W + DX, DY), (W, 0)]), light)
-    for rgb, x, y0 in zip(MARKS, (8.0, 16.0, 11.0), fronts):
-        ribbon = [(0, 0), (4.8, 0), (4.8, 11), (2.4, 8.4), (0, 11)]
-        icon.polygon(at(x, y0 + 2.0, offset_convex(ribbon, 0.0)), rgb)
+    u, v, up = (c, s), (c, -s), (0.0, -1.0)
+    # from the bottom: where the left corner of the top face of each book is
+    tops = [(6.5, 34.0), (4.0, 26.0), (7.0, 18.0)]
+    spans = []
+    for (cover, light), p0 in zip(BOOKS, tops):
+        p1 = add(p0, u, A)
+        p2 = add(p1, v, B)
+        p3 = add(p0, v, B)
+        down = (0.0, T)
+        hexagon = [p0, p3, p2, add(p2, down), add(p1, down), add(p0, down)]
+        icon.polygon(offset_convex(hexagon, 1.1), INK)
+        # the spine and the cover on the left, the pages on the right (with the boards of the cover above and below)
+        icon.polygon([p0, p1, add(p1, down), add(p0, down)], shade(cover, 0.86))
+        icon.polygon([p1, p2, add(p2, down), add(p1, down)], PAPER)
+        for lo, hi, rgb in ((0.0, 1.5, cover), (T - 1.5, T, cover)):
+            icon.polygon([add(p1, up, -lo), add(p2, up, -lo), add(add(p2, up, -lo), (0, 1)), add(p1, (0, 1), 1)] if False else
+                         [add(p1, (0, lo)), add(p2, (0, lo)), add(p2, (0, hi)), add(p1, (0, hi))], shade(cover, 0.92))
+        for z in (3.1, 4.9):
+            icon.polygon([add(p1, (0, z)), add(p2, (0, z)), add(p2, (0, z + 0.55)), add(p1, (0, z + 0.55))], (0xd9, 0xd0, 0xbc))
+        icon.polygon([p0, p1, p2, p3], light)
+        spans.append((p0, p1))
+    # the bookmarks hang out of the spine of each book, over the book below
+    for rgb, (p0, p1), at in zip(MARKS, spans, (0.30, 0.52, 0.22)):
+        r = add(p0, u, A * at)
+        w = 4.2
+        ribbon = [r, add(r, u, w), add(add(r, u, w), (0, 11.5)), add(add(r, u, w / 2), (0, 8.8)), add(r, (0, 11.5))]
+        icon.polygon(ribbon, rgb)
     return icon.data()
 
 
