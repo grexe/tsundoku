@@ -9,8 +9,8 @@ resource app_version {
 	middle = 0,
 	minor  = 0,
 
-	variety = B_APPV_DEVELOPMENT,
-	internal = 0,
+	variety = B_APPV_BETA,
+	internal = 1,
 
 	short_info = "Document reader",
 	long_info = "Document reader with SEN extensions"
