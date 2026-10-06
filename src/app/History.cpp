@@ -79,6 +79,15 @@ void History::MakeEmpty() {
 	mFile = NULL;
 }
 
+void History::ClearPositions() {
+	HistoryEntry **items = (HistoryEntry**)mList.Items();
+	for (int i = GetElements() - 1; i >= 0; i--) {
+		delete items[i];
+	}
+	mList.MakeEmpty();
+	mCurrent = -1;
+}
+
 void History::Add(HistoryEntry* e) {
 	// delete to current (exlusive current)
 	for (int32 i = GetElements()-1; i > mCurrent; i--) {

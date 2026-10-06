@@ -339,7 +339,16 @@ void OutlinesView::SelectPage(int pageNum) {
 			bestPage = itemPage;
 		}
 	}
-	if (chapter == NULL || chapter->IsSelected()) {
+	if (chapter == NULL) {
+		// before the first entry: none is the place of the page (and the one of another page does not stay selected)
+		if (mList->CurrentSelection(0) >= 0) {
+			mList->SetSelectionMessage(NULL);
+			mList->DeselectAll();
+			mList->SetSelectionMessage(new BMessage('Outl'));
+		}
+		return;
+	}
+	if (chapter->IsSelected()) {
 		return;
 	}
 

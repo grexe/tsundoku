@@ -87,8 +87,8 @@ def build():
 
     u, v, up = (c, s), (c, -s), (0.0, -1.0)
     # from the bottom: where the left corner of the top face of each book is
-    tops = [(6.5, 34.0), (4.0, 26.0), (7.0, 18.0)]
-    spans = []
+    tops = [(4.5, 34.0), (2.0, 26.0), (5.0, 18.0)]
+    faces = []
     for (cover, light), p0 in zip(BOOKS, tops):
         p1 = add(p0, u, A)
         p2 = add(p1, v, B)
@@ -99,18 +99,24 @@ def build():
         # the spine and the cover on the left, the pages on the right (with the boards of the cover above and below)
         icon.polygon([p0, p1, add(p1, down), add(p0, down)], shade(cover, 0.86))
         icon.polygon([p1, p2, add(p2, down), add(p1, down)], PAPER)
-        for lo, hi, rgb in ((0.0, 1.5, cover), (T - 1.5, T, cover)):
-            icon.polygon([add(p1, up, -lo), add(p2, up, -lo), add(add(p2, up, -lo), (0, 1)), add(p1, (0, 1), 1)] if False else
-                         [add(p1, (0, lo)), add(p2, (0, lo)), add(p2, (0, hi)), add(p1, (0, hi))], shade(cover, 0.92))
+        for lo, hi in ((0.0, 1.5), (T - 1.5, T)):
+            icon.polygon([add(p1, (0, lo)), add(p2, (0, lo)), add(p2, (0, hi)), add(p1, (0, hi))], shade(cover, 0.92))
         for z in (3.1, 4.9):
             icon.polygon([add(p1, (0, z)), add(p2, (0, z)), add(p2, (0, z + 0.55)), add(p1, (0, z + 0.55))], (0xd9, 0xd0, 0xbc))
         icon.polygon([p0, p1, p2, p3], light)
-        spans.append((p0, p1))
-    # the bookmarks hang out of the spine of each book, over the book below
-    for rgb, (p0, p1), at in zip(MARKS, spans, (0.30, 0.52, 0.22)):
-        r = add(p0, u, A * at)
-        w = 4.2
-        ribbon = [r, add(r, u, w), add(add(r, u, w), (0, 11.5)), add(add(r, u, w / 2), (0, 8.8)), add(r, (0, 11.5))]
+        faces.append((p1, p2))
+    # loose notes between the pages, sticking out of the page edges of two books (a sheet is a small parallelogram)
+    for (p1, p2), z, at, rgb in ((faces[0], 3.2, 0.62, (0xff, 0xf1, 0x9a)), (faces[2], 3.0, 0.30, (0xfb, 0xfb, 0xf6))):
+        q0 = add(add(p1, (0, z)), v, B * at)
+        q1 = add(q0, v, 12.0)
+        sheet = [q0, q1, add(q1, u, 6.0), add(q0, u, 6.0)]
+        icon.polygon(offset_convex(sheet, 0.7), INK)
+        icon.polygon(sheet, rgb)
+    # the bookmarks come out between the pages as well, and hang down over the page edge
+    for rgb, (p1, p2), z, at in zip(MARKS, faces, (4.2, 4.0, 2.6), (0.18, 0.80, 0.50)):
+        r = add(add(p1, (0, z)), v, B * at)
+        w = 4.0
+        ribbon = [r, add(r, v, w), add(add(r, v, w), (0, 12.0)), add(add(r, v, w / 2), (0, 9.4)), add(r, (0, 12.0))]
         icon.polygon(ribbon, rgb)
     return icon.data()
 

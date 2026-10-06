@@ -338,6 +338,7 @@ void PDFWindow::InitAfterOpen() {
 		}
 		Unlock();
 	}
+	mMainView->HistoryStart();
 	TimingMark("open: window initialised");
 }
 

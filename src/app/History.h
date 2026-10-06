@@ -87,6 +87,7 @@ public:
 	History();
 	~History();
 	void MakeEmpty();
+	void ClearPositions();	// the positions go, the file stays
 	bool Back();
 	bool Forward();
 	void AddPosition(int page, int16 zoom, int32 left, int32 top, float rotation);

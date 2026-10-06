@@ -289,6 +289,7 @@ PDFView::PDFView (entry_ref* ref, FileAttributes *fileAttributes,
 	mTargetRunner = NULL;
 	mBusyWindow = NULL;
 	mNavigationState = kNotInHistory;
+	mHistoryOpen = false;
 
 	mViewCursor = NULL;
 	mMouseAction = NO_ACTION;
@@ -522,6 +523,9 @@ PDFView::LoadFile(entry_ref *ref, FileAttributes *fileAttributes, const char *ow
 			ScrollTo(left, top);
 		w->Unlock();
 	}
+
+	if (w != NULL && !init)
+		HistoryStart();
 
 	return true;
 }
@@ -1027,6 +1031,8 @@ PDFView::ScrollTo (BPoint point) {
 	if (!resizing) {
 		mKeptLeft = point.x;
 		mKeptTop = point.y;
+		if (point == view.LeftTop())
+			return;		// (at a limit, a wheel or a drag that asks for more changes nothing: no work, no redraw)
 	}
 	BView::ScrollTo(point);
 	if (resizing)
@@ -2948,8 +2954,21 @@ PDFView::EndHistoryNavigation() {
 }
 
 //////////////////////////////////////////////////////////////////
+// The document is open: from here on the places that are left are recorded, and the first of them is where the document was
+// opened (the saved page).
+void
+PDFView::HistoryStart() {
+	if (mNavigationState == kNotInHistory)
+		mHistory.ClearPositions();
+	mHistoryOpen = true;
+}
+
+//////////////////////////////////////////////////////////////////
 void
 PDFView::RecordHistory() {
+	// (nothing is recorded while the document opens: its zoom and rotation are set at the first page)
+	if (!mHistoryOpen)
+		return;
 	EndHistoryNavigation();
 	BRect bounds(Bounds());
 	mHistory.AddPosition(mCurrentPage, mZoom, bounds.left, bounds.top, mRotation);
