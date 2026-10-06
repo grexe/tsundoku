@@ -1,4 +1,4 @@
-1	Thai	application/x-vnd.sen-labs.Toji	1126492490
+1	Thai	application/x-vnd.sen-labs.Toji	3494065982
 Selection rectangle	AnnotationWindow		สี่เหลี่ยมผืนผ้าที่เลือก
 Toji reading file: 	PDFView		อ่านไฟล์ Toji:
 Cancel	PDFView		ยกเลิก
@@ -115,6 +115,7 @@ Find text	FindTextWindow		ค้นหาข้อความ
 Clear	TraceWindow		ลบ
 toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
 Print	PrintSettingsWindow		พิมพ์
+With sound	AnnotationWindow		
 Enter Password	PasswordWindow		ใส่รหัสผ่าน
 Online help…	PDFWindow		ความช่วยเหลือออนไลน์ ...
 Rectangle	Document		
@@ -124,7 +125,6 @@ Series:	FileInfoWindow
 First	PDFWindow		ลำดับแรก
 Copy link	PDFView		คัดลอกลิงค์
 Add	PDFWindow		เพิ่ม
-With the sound of a page	AnnotationWindow		
 Open in new window…	PDFWindow		เปิดหน้าต่างใหม่…
 Yellow	PDFView		
 OK	PDFSearch		ตกลง

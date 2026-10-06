@@ -1,4 +1,4 @@
-1	Dutch	application/x-vnd.sen-labs.Toji	1126492490
+1	Dutch	application/x-vnd.sen-labs.Toji	3494065982
 Selection rectangle	AnnotationWindow		Selectie rechthoek
 Toji reading file: 	PDFView		Toji reading file: 
 Cancel	PDFView		Cancel
@@ -115,6 +115,7 @@ Find text	FindTextWindow		Zoek volgende
 Clear	TraceWindow		Clear
 toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
 Print	PrintSettingsWindow		Print
+With sound	AnnotationWindow		
 Enter Password	PasswordWindow		Enter Password
 Online help…	PDFWindow		Online help…
 Rectangle	Document		
@@ -124,7 +125,6 @@ Series:	FileInfoWindow
 First	PDFWindow		First
 Copy link	PDFView		Copy link
 Add	PDFWindow		Add
-With the sound of a page	AnnotationWindow		
 Open in new window…	PDFWindow		Open in new window…
 Yellow	PDFView		
 OK	PDFSearch		OK

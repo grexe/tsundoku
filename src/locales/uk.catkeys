@@ -1,4 +1,4 @@
-1	Ukrainian	application/x-vnd.sen-labs.Toji	1126492490
+1	Ukrainian	application/x-vnd.sen-labs.Toji	3494065982
 Selection rectangle	AnnotationWindow		Прямокутник виділення
 Toji reading file: 	PDFView		Toji читає файл: 
 Cancel	PDFView		Скасувати
@@ -115,6 +115,7 @@ Find text	FindTextWindow		Знайти текст
 Clear	TraceWindow		Очистити
 toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
 Print	PrintSettingsWindow		Друк
+With sound	AnnotationWindow		
 Enter Password	PasswordWindow		Введіть пароль
 Online help…	PDFWindow		Довідка онлайн…
 Rectangle	Document		
@@ -124,7 +125,6 @@ Series:	FileInfoWindow
 First	PDFWindow		Перша
 Copy link	PDFView		Копіювати посилання
 Add	PDFWindow		Додати
-With the sound of a page	AnnotationWindow		
 Open in new window…	PDFWindow		Відкрити у новому вікні…
 Yellow	PDFView		
 OK	PDFSearch		OK

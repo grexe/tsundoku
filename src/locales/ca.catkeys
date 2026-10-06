@@ -1,4 +1,4 @@
-1	Catalan	application/x-vnd.sen-labs.Toji	1126492490
+1	Catalan	application/x-vnd.sen-labs.Toji	3494065982
 Selection rectangle	AnnotationWindow		Rectangle de selecció
 Toji reading file: 	PDFView		Fitxer de lectura de Toji:
 Cancel	PDFView		Cancel·la
@@ -115,6 +115,7 @@ Find text	FindTextWindow		Troba el text:
 Clear	TraceWindow		Neteja
 toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
 Print	PrintSettingsWindow		Imprimeix
+With sound	AnnotationWindow		
 Enter Password	PasswordWindow		Escriviu la contrasenya
 Online help…	PDFWindow		Ajuda en línia...
 Rectangle	Document		
@@ -124,7 +125,6 @@ Series:	FileInfoWindow
 First	PDFWindow		Primera
 Copy link	PDFView		Copia l'enllaç
 Add	PDFWindow		Afegeix
-With the sound of a page	AnnotationWindow		
 Open in new window…	PDFWindow		Obre en una finestra nova...
 Yellow	PDFView		
 OK	PDFSearch		D'acord

@@ -1,4 +1,4 @@
-1	Romanian	application/x-vnd.sen-labs.Toji	1126492490
+1	Romanian	application/x-vnd.sen-labs.Toji	3494065982
 Selection rectangle	AnnotationWindow		Selecție dreptunghi
 Toji reading file: 	PDFView		Fișierul de citire Toji:
 Cancel	PDFView		Anulează
@@ -115,6 +115,7 @@ Find text	FindTextWindow		Caută text
 Clear	TraceWindow		Eliberare
 toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
 Print	PrintSettingsWindow		Tipărire
+With sound	AnnotationWindow		
 Enter Password	PasswordWindow		Introduceți parola
 Online help…	PDFWindow		Ajutor online...
 Rectangle	Document		
@@ -124,7 +125,6 @@ Series:	FileInfoWindow
 First	PDFWindow		Primul
 Copy link	PDFView		Copiază legătura
 Add	PDFWindow		Adaugă
-With the sound of a page	AnnotationWindow		
 Open in new window…	PDFWindow		Deschide în fereastră nouă...
 Yellow	PDFView		
 OK	PDFSearch		OK

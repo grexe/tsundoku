@@ -1,4 +1,4 @@
-1	Russian	application/x-vnd.sen-labs.Toji	1126492490
+1	Russian	application/x-vnd.sen-labs.Toji	3494065982
 Selection rectangle	AnnotationWindow		Прямоугольное выделение
 Toji reading file: 	PDFView		Toji читает файл: 
 Cancel	PDFView		Отмена
@@ -115,6 +115,7 @@ Find text	FindTextWindow		Найти текст
 Clear	TraceWindow		Очистить
 toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
 Print	PrintSettingsWindow		Печать
+With sound	AnnotationWindow		
 Enter Password	PasswordWindow		Введите пароль
 Online help…	PDFWindow		Онлайн справка…
 Rectangle	Document		
@@ -124,7 +125,6 @@ Series:	FileInfoWindow
 First	PDFWindow		Первая
 Copy link	PDFView		Копировать ссылку
 Add	PDFWindow		Добавить
-With the sound of a page	AnnotationWindow		
 Open in new window…	PDFWindow		Открыть в новом окне…
 Yellow	PDFView		
 OK	PDFSearch		OK

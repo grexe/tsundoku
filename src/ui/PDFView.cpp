@@ -3532,10 +3532,6 @@ PDFView::TurnReady()
 	if (mTurnFreeze < 0)
 		PlayTurnSound();
 	mTurnStart = system_time();	// (after the sound has been started)
-	if (mTurnFreeze < 0) {
-		BMessage tick(PAGE_TURN_TICK_MSG);
-		mTurnRunner = new BMessageRunner(BMessenger(this), &tick, 16000);
-	}
 	TurnTick();
 }
 
@@ -3561,7 +3557,16 @@ PDFView::TurnTick()
 		PageTurn::Draw(mTurnFrameView, mTurnTo, mTurnFrom, mTurnGeometry, 1 - progress);
 	mTurnFrameView->Sync();
 	mTurnFrame->Unlock();
+	// the picture is shown at once (the messages for the next frames would be in front of the update otherwise, and the turn
+	// would be over before it is seen), and there is at most one message for the next frame
 	Invalidate();
+	if (Window() != NULL)
+		Window()->UpdateIfNeeded();
+	if (mTurnFreeze < 0) {
+		delete mTurnRunner;
+		BMessage tick(PAGE_TURN_TICK_MSG);
+		mTurnRunner = new BMessageRunner(BMessenger(this), &tick, 8000, 1);
+	}
 #ifdef TOJI_TESTING
 	if (FILE* log = fopen("/tmp/ts_test.out", "a")) { fprintf(log, "turn frame t=%.2f took %d ms\n", time, (int)((system_time() - began) / 1000)); fclose(log); }
 #endif
@@ -3571,6 +3576,9 @@ PDFView::TurnTick()
 void
 PDFView::DrawTurn()
 {
+#ifdef TOJI_TESTING
+	if (FILE* log = fopen("/tmp/ts_test.out", "a")) { fprintf(log, "turn drawn at %d ms\n", (int)((system_time() - mTurnStart) / 1000)); fclose(log); }
+#endif
 	BPoint at = Bounds().LeftTop();
 	SetDrawingMode(B_OP_COPY);
 	if (mTurnState == kTurnRunning && mTurnFrame != NULL)

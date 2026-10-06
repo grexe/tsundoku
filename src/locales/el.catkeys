@@ -1,4 +1,4 @@
-1	Greek (Modern)	application/x-vnd.sen-labs.Toji	1126492490
+1	Greek (Modern)	application/x-vnd.sen-labs.Toji	3494065982
 Selection rectangle	AnnotationWindow		Ορθογώνιο επιλογής
 Toji reading file: 	PDFView		Το Toji διαβάζει το αρχείο: 
 Cancel	PDFView		Ακύρωση
@@ -115,6 +115,7 @@ Find text	FindTextWindow		Αναζήτηση κειμένου
 Clear	TraceWindow		Καθάρισμα
 toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
 Print	PrintSettingsWindow		Εκτύπωση
+With sound	AnnotationWindow		
 Enter Password	PasswordWindow		Εισάγετε κωδικό πρόσβασης
 Online help…	PDFWindow		Διαδικτυακή βοήθεια...
 Rectangle	Document		
@@ -124,7 +125,6 @@ Series:	FileInfoWindow
 First	PDFWindow		Πρώτο
 Copy link	PDFView		Αντιγραφή συνδέσμου
 Add	PDFWindow		Προσθήκη
-With the sound of a page	AnnotationWindow		
 Open in new window…	PDFWindow		Άνοιγμα σε νέο παράθυρο...
 Yellow	PDFView		
 OK	PDFSearch		Εντάξει

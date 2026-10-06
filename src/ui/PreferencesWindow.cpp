@@ -189,7 +189,7 @@ void PreferencesWindow::SetupView() {
 	fancy->SetValue(settings->GetFancyMode());
 	fancy->SetToolTip(B_TRANSLATE("A page that turns like in a book when you go to the next or the previous page "
 		"(not in the continuous flow)."));
-	BCheckBox *fancySound = new BCheckBox("fancySound", B_TRANSLATE("With the sound of a page"),
+	BCheckBox *fancySound = new BCheckBox("fancySound", B_TRANSLATE("With sound"),
 		new BMessage(FANCY_SOUND_CHANGED));
 	fancySound->SetValue(settings->GetFancySound());
 	fancySound->SetEnabled(settings->GetFancyMode());
@@ -208,6 +208,7 @@ void PreferencesWindow::SetupView() {
 				.AddGroup(B_HORIZONTAL, 0)
 					.AddStrut(be_plain_font->Size() + be_control_look->DefaultLabelSpacing())
 					.Add(fancySound)
+					.AddGlue()
 				.End()
 				.AddGlue()
 			.End()
@@ -219,6 +220,14 @@ void PreferencesWindow::SetupView() {
 	mLayers->SetVisibleItem((int32)1);
 	mLayers->SetVisibleItem((int32)0);
 	mPreferences->Select(0);
+#ifdef TOJI_TESTING
+	if (getenv("TOJI_PREFS_PAGE") != NULL) {
+		// (tests) the page of the settings that is shown
+		int32 page = atoi(getenv("TOJI_PREFS_PAGE"));
+		mLayers->SetVisibleItem(page);
+		mPreferences->Select(page);
+	}
+#endif
 
 	BuildWorkspaceMenu(mOpenInWorkspace->Menu());
 	UpdateWorkspace();

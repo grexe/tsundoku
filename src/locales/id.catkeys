@@ -1,4 +1,4 @@
-1	Indonesian	application/x-vnd.sen-labs.Toji	1126492490
+1	Indonesian	application/x-vnd.sen-labs.Toji	3494065982
 Selection rectangle	AnnotationWindow		Seleksi persegi
 Toji reading file: 	PDFView		Toji membaca file:
 Cancel	PDFView		Batal
@@ -115,6 +115,7 @@ Find text	FindTextWindow		Temukan teks
 Clear	TraceWindow		Bersih
 toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
 Print	PrintSettingsWindow		Mencetak
+With sound	AnnotationWindow		
 Enter Password	PasswordWindow		Masukkan sandi
 Online help…	PDFWindow		Bantuan online…
 Rectangle	Document		
@@ -124,7 +125,6 @@ Series:	FileInfoWindow
 First	PDFWindow		Pertama
 Copy link	PDFView		Salin Tautan
 Add	PDFWindow		Tambah
-With the sound of a page	AnnotationWindow		
 Open in new window…	PDFWindow		Buka di jendela baru…
 Yellow	PDFView		
 OK	PDFSearch		OKE

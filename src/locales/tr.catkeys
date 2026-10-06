@@ -1,4 +1,4 @@
-1	Turkish	application/x-vnd.sen-labs.Toji	1126492490
+1	Turkish	application/x-vnd.sen-labs.Toji	3494065982
 Selection rectangle	AnnotationWindow		Seçim dörtgeni
 Toji reading file: 	PDFView		Toji dosyayı okuyor:
 Cancel	PDFView		İptal
@@ -115,6 +115,7 @@ Find text	FindTextWindow		Metin bul
 Clear	TraceWindow		Temizle
 toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
 Print	PrintSettingsWindow		Yazdır
+With sound	AnnotationWindow		
 Enter Password	PasswordWindow		Parola girin
 Online help…	PDFWindow		Çevrimiçi yardım…
 Rectangle	Document		
@@ -124,7 +125,6 @@ Series:	FileInfoWindow
 First	PDFWindow		İlk
 Copy link	PDFView		Bağlantıyı kopyala
 Add	PDFWindow		Ekle
-With the sound of a page	AnnotationWindow		
 Open in new window…	PDFWindow		Yeni pencerede aç…
 Yellow	PDFView		
 OK	PDFSearch		Tamam

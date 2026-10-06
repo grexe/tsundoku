@@ -1,4 +1,4 @@
-1	German	application/x-vnd.sen-labs.Toji	1126492490
+1	German	application/x-vnd.sen-labs.Toji	3494065982
 Selection rectangle	AnnotationWindow		Auswahlrechteck
 Toji reading file: 	PDFView		Toji liest Datei:
 Cancel	PDFView		Abbrechen
@@ -115,6 +115,7 @@ Find text	FindTextWindow		Text suchen
 Clear	TraceWindow		Löschen
 toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
 Print	PrintSettingsWindow		Drucken
+With sound	AnnotationWindow		
 Enter Password	PasswordWindow		Kennwort eingeben
 Online help…	PDFWindow		Online-Hilfe…
 Rectangle	Document		
@@ -124,7 +125,6 @@ Series:	FileInfoWindow
 First	PDFWindow		Erste Seite
 Copy link	PDFView		Link kopieren
 Add	PDFWindow		Hinzufügen
-With the sound of a page	AnnotationWindow		
 Open in new window…	PDFWindow		In neuem Fester öffnen…
 Yellow	PDFView		
 OK	PDFSearch		OK

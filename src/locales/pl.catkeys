@@ -1,4 +1,4 @@
-1	Polish	application/x-vnd.sen-labs.Toji	1126492490
+1	Polish	application/x-vnd.sen-labs.Toji	3494065982
 Selection rectangle	AnnotationWindow		Prostokąt zaznaczenia
 Toji reading file: 	PDFView		Toji odczytuje plik:
 Cancel	PDFView		Anuluj
@@ -115,6 +115,7 @@ Find text	FindTextWindow		Znajdź tekst
 Clear	TraceWindow		Wyczyść
 toji-guide.pdf	PDFWindow	Replace with the PDF name of the help document, if there is one for your language.	
 Print	PrintSettingsWindow		Drukuj
+With sound	AnnotationWindow		
 Enter Password	PasswordWindow		Wpisz hasło
 Online help…	PDFWindow		Pomoc online…
 Rectangle	Document		
@@ -124,7 +125,6 @@ Series:	FileInfoWindow
 First	PDFWindow		Pierwsza
 Copy link	PDFView		Kopiuj odnośnik
 Add	PDFWindow		Dodaj
-With the sound of a page	AnnotationWindow		
 Open in new window…	PDFWindow		Otwórz w nowym oknie…
 Yellow	PDFView		
 OK	PDFSearch		OK
