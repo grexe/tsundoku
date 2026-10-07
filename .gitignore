@@ -13,3 +13,4 @@ dist/docs/
 docs/guide/images/toji-logo.png
 dist/sounds/
 tests/testdata/
+tests/vm/out/
