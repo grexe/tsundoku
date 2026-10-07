@@ -168,8 +168,8 @@ application signature (`application/x-vnd.sen-labs.Toji`) and release cycle.
 
 ## Status
 
-Toji is in **beta**: the features are in and usable, and are being tested. Details such as attribute names may still change
-before 1.0 if testing shows a need.
+Toji 1.1 is the first release for everyday reading: the features below are in and tested on Haiku R1/beta6. Bug reports and ideas
+are welcome.
 
 - **Not there yet:** the fonts of a
   document in the file info, fixed-layout EPUB, DRM, JPEG XL and HEIC pages (no translator on Haiku).
